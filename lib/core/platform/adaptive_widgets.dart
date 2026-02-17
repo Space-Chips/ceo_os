@@ -46,15 +46,15 @@ class AdaptiveNavBar extends StatelessWidget implements PreferredSizeWidget {
         middle: largeTitle ? null : Text(title),
         leading: leading,
         trailing: trailing,
-        backgroundColor: CupertinoColors.systemBackground.darkColor.withValues(alpha: 0.85),
-        border: Border(
-          bottom: BorderSide(color: AppColors.border, width: 0.5),
+        backgroundColor: CupertinoColors.systemBackground.darkColor.withValues(
+          alpha: 0.85,
         ),
+        border: Border(bottom: BorderSide(color: AppColors.border, width: 0.5)),
       );
     }
 
     return AppBar(
-      title: Text(title, style: AppTypography.headingMedium),
+      title: Text(title, style: AppTypography.headingSmall),
       leading: leading,
       actions: trailing != null ? [trailing!] : null,
       backgroundColor: Colors.transparent,
@@ -91,13 +91,17 @@ class AdaptiveButton extends StatelessWidget {
           ? CupertinoButton.filled(
               onPressed: onPressed,
               padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.lg, vertical: 14),
+                horizontal: AppSpacing.lg,
+                vertical: 14,
+              ),
               child: _content(Colors.white),
             )
           : CupertinoButton(
               onPressed: onPressed,
               padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.lg, vertical: 14),
+                horizontal: AppSpacing.lg,
+                vertical: 14,
+              ),
               child: _content(AppColors.accent),
             );
       return expand ? SizedBox(width: double.infinity, child: button) : button;
@@ -112,13 +116,13 @@ class AdaptiveButton extends StatelessWidget {
         child: Container(
           width: expand ? double.infinity : null,
           padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.lg, vertical: 14),
+            horizontal: AppSpacing.lg,
+            vertical: 14,
+          ),
           decoration: BoxDecoration(
             color: filled ? AppColors.accent : Colors.transparent,
             borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-            border: filled
-                ? null
-                : Border.all(color: AppColors.border),
+            border: filled ? null : Border.all(color: AppColors.border),
           ),
           child: _content(filled ? Colors.white : AppColors.accent),
         ),
@@ -136,8 +140,13 @@ class AdaptiveButton extends StatelessWidget {
           Icon(icon, size: 18, color: color),
           const SizedBox(width: AppSpacing.sm),
         ],
-        Text(label, style: AppTypography.labelLarge.copyWith(
-          color: color, fontWeight: FontWeight.w600)),
+        Text(
+          label,
+          style: AppTypography.labelLarge.copyWith(
+            color: color,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       ],
     );
   }
@@ -174,8 +183,12 @@ class AdaptiveTextField extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (label != null) ...[
-            Text(label!, style: AppTypography.labelMedium.copyWith(
-              color: AppColors.textSecondary)),
+            Text(
+              label!,
+              style: AppTypography.labelMedium.copyWith(
+                color: AppColors.textSecondary,
+              ),
+            ),
             const SizedBox(height: AppSpacing.xs),
           ],
           CupertinoTextField(
@@ -185,19 +198,23 @@ class AdaptiveTextField extends StatelessWidget {
             keyboardType: keyboardType,
             prefix: prefix != null
                 ? Padding(
-                    padding: const EdgeInsets.only(left: 12), child: prefix)
+                    padding: const EdgeInsets.only(left: 12),
+                    child: prefix,
+                  )
                 : null,
             onChanged: onChanged,
             padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.md, vertical: 14),
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-              border: Border.all(color: AppColors.border),
+              horizontal: AppSpacing.sm,
+              vertical: 14,
             ),
-            style: AppTypography.bodyMedium,
-            placeholderStyle: AppTypography.bodyMedium.copyWith(
-              color: AppColors.textTertiary),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceLight, // tertiarySystemBackground
+              borderRadius: BorderRadius.circular(AppSpacing.radiusMd), // 10pt
+            ),
+            style: AppTypography.bodyLarge, // 17pt Body
+            placeholderStyle: AppTypography.bodyLarge.copyWith(
+              color: AppColors.textTertiary,
+            ),
           ),
         ],
       );
@@ -208,8 +225,12 @@ class AdaptiveTextField extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (label != null) ...[
-          Text(label!, style: AppTypography.labelMedium.copyWith(
-            color: AppColors.textSecondary)),
+          Text(
+            label!,
+            style: AppTypography.labelMedium.copyWith(
+              color: AppColors.textSecondary,
+            ),
+          ),
           const SizedBox(height: AppSpacing.xs),
         ],
         TextField(
@@ -217,25 +238,31 @@ class AdaptiveTextField extends StatelessWidget {
           obscureText: obscureText,
           keyboardType: keyboardType,
           onChanged: onChanged,
-          style: AppTypography.bodyMedium,
+          style: AppTypography.bodyLarge, // 17pt Body
           decoration: InputDecoration(
             hintText: placeholder,
-            hintStyle: AppTypography.bodyMedium.copyWith(
-              color: AppColors.textTertiary),
+            hintStyle: AppTypography.bodyLarge.copyWith(
+              color: AppColors.textTertiary,
+            ),
             prefixIcon: prefix,
             filled: true,
-            fillColor: AppColors.surface,
+            fillColor: AppColors.surfaceLight, // tertiarySystemBackground
             contentPadding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.md, vertical: 14),
+              horizontal: AppSpacing.sm,
+              vertical: 14,
+            ),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-              borderSide: const BorderSide(color: AppColors.border)),
+              borderRadius: BorderRadius.circular(AppSpacing.radiusMd), // 10pt
+              borderSide: BorderSide.none,
+            ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-              borderSide: const BorderSide(color: AppColors.border)),
+              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+              borderSide: BorderSide.none,
+            ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-              borderSide: const BorderSide(color: AppColors.accent)),
+              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+              borderSide: const BorderSide(color: AppColors.accent, width: 1.5),
+            ),
           ),
         ),
       ],
@@ -251,11 +278,7 @@ class AdaptiveSwitch extends StatelessWidget {
   final bool value;
   final ValueChanged<bool>? onChanged;
 
-  const AdaptiveSwitch({
-    super.key,
-    required this.value,
-    this.onChanged,
-  });
+  const AdaptiveSwitch({super.key, required this.value, this.onChanged});
 
   @override
   Widget build(BuildContext context) {
@@ -270,7 +293,7 @@ class AdaptiveSwitch extends StatelessWidget {
     return Switch(
       value: value,
       onChanged: onChanged,
-      activeColor: AppColors.accent,
+      activeThumbColor: AppColors.accent,
       activeTrackColor: AppColors.accentMuted,
       inactiveTrackColor: AppColors.surfaceLight,
       inactiveThumbColor: AppColors.textTertiary,
@@ -358,9 +381,7 @@ class AdaptiveCheckbox extends StatelessWidget {
         height: 24,
         decoration: BoxDecoration(
           shape: isApplePlatform ? BoxShape.rectangle : BoxShape.circle,
-          borderRadius: isApplePlatform
-              ? BorderRadius.circular(6)
-              : null,
+          borderRadius: isApplePlatform ? BorderRadius.circular(6) : null,
           color: value ? color : Colors.transparent,
           border: Border.all(
             color: value ? color : AppColors.textTertiary,
@@ -422,9 +443,7 @@ class AdaptiveTabBar extends StatelessWidget {
         activeColor: AppColors.accent,
         inactiveColor: AppColors.textTertiary,
         backgroundColor: AppColors.background.withValues(alpha: 0.85),
-        border: Border(
-          top: BorderSide(color: AppColors.border, width: 0.5),
-        ),
+        border: Border(top: BorderSide(color: AppColors.border, width: 0.5)),
       );
     }
 
@@ -443,7 +462,9 @@ class AdaptiveTabBar extends StatelessWidget {
             top: false,
             child: Padding(
               padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.sm, vertical: AppSpacing.sm),
+                horizontal: AppSpacing.sm,
+                vertical: AppSpacing.sm,
+              ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: List.generate(4, (index) {
@@ -456,13 +477,16 @@ class AdaptiveTabBar extends StatelessWidget {
                       duration: const Duration(milliseconds: 200),
                       curve: Curves.easeOut,
                       padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+                        horizontal: AppSpacing.md,
+                        vertical: AppSpacing.sm,
+                      ),
                       decoration: BoxDecoration(
                         color: isActive
                             ? AppColors.accent.withValues(alpha: 0.12)
                             : Colors.transparent,
                         borderRadius: BorderRadius.circular(
-                            AppSpacing.radiusFull),
+                          AppSpacing.radiusFull,
+                        ),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -474,9 +498,7 @@ class AdaptiveTabBar extends StatelessWidget {
                                   ? AppColors.accent
                                   : AppColors.textTertiary,
                             ),
-                            child: isActive
-                                ? item.activeIcon
-                                : item.icon,
+                            child: isActive ? item.activeIcon : item.icon,
                           ),
                           if (isActive) ...[
                             const SizedBox(width: AppSpacing.xs),

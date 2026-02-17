@@ -1,38 +1,41 @@
 import 'package:flutter/material.dart';
-import '../platform/adaptive_widgets.dart';
 
-/// CEO OS Spacing System — 8pt grid with platform-aware defaults.
+/// CEO OS Spacing System — Apple HIG-compliant 8pt grid.
 class AppSpacing {
   AppSpacing._();
 
   // ── Spacing Scale (8pt grid) ──
   static const double xxs = 2;
-  static const double xs = 4;
-  static const double sm = 8;
-  static const double md = 16;
-  static const double lg = 24;
-  static const double xl = 32;
+  static const double xs = 4; // tight
+  static const double sm = 8; // standard
+  static const double md = 16; // section
+  static const double lg = 24; // large
+  static const double xl = 32; // extra-large
   static const double xxl = 48;
   static const double xxxl = 64;
 
-  // ── Border Radius ──
-  static const double radiusSm = 8;
-  static const double radiusMd = 12;
-  static const double radiusLg = 16;
-  static const double radiusXl = 20;
-  static const double radiusFull = 999;
+  // ── Border Radius (HIG specs) ──
+  static const double radiusSm = 8; // buttons, small elements
+  static const double radiusMd = 10; // cards, grouped content (HIG: 10pt)
+  static const double radiusLg = 13; // large cards (HIG: 13pt)
+  static const double radiusXl = 20; // sheets
+  static const double radiusFull = 999; // pills
 
-  // ── Platform-Aware Screen Padding ──
-  /// HIG: 20px horizontal on iOS, 16px on Android
-  static EdgeInsets get screenPadding => EdgeInsets.symmetric(
-    horizontal: isApplePlatform ? 20 : md,
-  );
+  // ── Screen Padding (HIG: 16pt on iPhone) ──
+  static const EdgeInsets screenPadding = EdgeInsets.symmetric(horizontal: 16);
 
   /// Standard section spacing between major content blocks
   static const double sectionSpacing = lg;
 
+  // ── Touch Target ──
+  static const double minTouchTarget = 44; // HIG minimum tappable area
+
   // ── Padding Presets ──
   static const EdgeInsets paddingCard = EdgeInsets.all(md);
+  static const EdgeInsets paddingCardList = EdgeInsets.symmetric(
+    horizontal: md,
+    vertical: 11,
+  ); // HIG list cell padding
   static const EdgeInsets paddingSection = EdgeInsets.only(bottom: lg);
 
   // ── Icon Sizes ──

@@ -17,7 +17,7 @@ class AddHabitSheet extends StatefulWidget {
 class _AddHabitSheetState extends State<AddHabitSheet> {
   final _nameController = TextEditingController();
   IconData _icon = Icons.check_circle_outline;
-  Color _color = const Color(0xFF3B82F6);
+  Color _color = const Color(0xFF0A84FF); // systemBlue
   int _target = 1;
 
   static const _iconOptions = [
@@ -36,14 +36,14 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
   ];
 
   static const _colorOptions = [
-    Color(0xFF3B82F6),
-    Color(0xFF8B5CF6),
-    Color(0xFF22C55E),
-    Color(0xFFF59E0B),
-    Color(0xFFEF4444),
-    Color(0xFFEC4899),
-    Color(0xFF06B6D4),
-    Color(0xFFF97316),
+    Color(0xFF0A84FF), // systemBlue
+    Color(0xFFBF5AF2), // systemPurple
+    Color(0xFF30D158), // systemGreen
+    Color(0xFFFFD60A), // systemYellow
+    Color(0xFFFF453A), // systemRed
+    Color(0xFFFF375F), // systemPink
+    Color(0xFF64D2FF), // systemCyan
+    Color(0xFFFF9F0A), // systemOrange
   ];
 
   @override
@@ -105,9 +105,12 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
             const SizedBox(height: AppSpacing.lg),
 
             // Icon selector
-            Text('Icon', style: AppTypography.labelMedium.copyWith(
-              color: AppColors.textSecondary,
-            )),
+            Text(
+              'Icon',
+              style: AppTypography.labelMedium.copyWith(
+                color: AppColors.textSecondary,
+              ),
+            ),
             const SizedBox(height: AppSpacing.sm),
             Wrap(
               spacing: AppSpacing.sm,
@@ -141,9 +144,12 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
             const SizedBox(height: AppSpacing.lg),
 
             // Color selector
-            Text('Color', style: AppTypography.labelMedium.copyWith(
-              color: AppColors.textSecondary,
-            )),
+            Text(
+              'Color',
+              style: AppTypography.labelMedium.copyWith(
+                color: AppColors.textSecondary,
+              ),
+            ),
             const SizedBox(height: AppSpacing.sm),
             Row(
               children: _colorOptions.map((color) {
@@ -163,7 +169,12 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
                             ? Border.all(color: Colors.white, width: 3)
                             : null,
                         boxShadow: isSelected
-                            ? [BoxShadow(color: color.withValues(alpha: 0.4), blurRadius: 8)]
+                            ? [
+                                BoxShadow(
+                                  color: color.withValues(alpha: 0.4),
+                                  blurRadius: 8,
+                                ),
+                              ]
                             : null,
                       ),
                     ),
@@ -177,9 +188,12 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Daily target', style: AppTypography.labelMedium.copyWith(
-                  color: AppColors.textSecondary,
-                )),
+                Text(
+                  'Daily target',
+                  style: AppTypography.labelMedium.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
                 Row(
                   children: [
                     GestureDetector(
@@ -191,17 +205,22 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
                         height: 32,
                         decoration: BoxDecoration(
                           color: AppColors.background,
-                          borderRadius:
-                              BorderRadius.circular(AppSpacing.radiusSm),
+                          borderRadius: BorderRadius.circular(
+                            AppSpacing.radiusSm,
+                          ),
                           border: Border.all(color: AppColors.border),
                         ),
-                        child: const Icon(Icons.remove, size: 16,
-                            color: AppColors.textSecondary),
+                        child: const Icon(
+                          Icons.remove,
+                          size: 16,
+                          color: AppColors.textSecondary,
+                        ),
                       ),
                     ),
                     Padding(
-                      padding:
-                          const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.md,
+                      ),
                       child: Text(
                         '$_target',
                         style: AppTypography.headingSmall,
@@ -214,12 +233,16 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
                         height: 32,
                         decoration: BoxDecoration(
                           color: AppColors.background,
-                          borderRadius:
-                              BorderRadius.circular(AppSpacing.radiusSm),
+                          borderRadius: BorderRadius.circular(
+                            AppSpacing.radiusSm,
+                          ),
                           border: Border.all(color: AppColors.border),
                         ),
-                        child: const Icon(Icons.add, size: 16,
-                            color: AppColors.textSecondary),
+                        child: const Icon(
+                          Icons.add,
+                          size: 16,
+                          color: AppColors.textSecondary,
+                        ),
                       ),
                     ),
                   ],

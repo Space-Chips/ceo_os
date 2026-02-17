@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 
-/// Glassmorphic card with subtle border, optional gradient accent strip.
+/// HIG-compliant card — no border in dark mode, color differentiation only.
 class CeoCard extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry? padding;
   final Color? color;
-  final Color? borderColor;
   final double? borderRadius;
   final VoidCallback? onTap;
   final bool showAccentStrip;
@@ -18,7 +17,6 @@ class CeoCard extends StatelessWidget {
     required this.child,
     this.padding,
     this.color,
-    this.borderColor,
     this.borderRadius,
     this.onTap,
     this.showAccentStrip = false,
@@ -27,33 +25,18 @@ class CeoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final radius = borderRadius ?? AppSpacing.radiusMd;
+    final radius = borderRadius ?? AppSpacing.radiusMd; // 10pt (HIG)
 
     Widget card = Container(
       decoration: BoxDecoration(
-        color: color ?? AppColors.surface,
+        color: color ?? AppColors.surface, // #1C1C1E
         borderRadius: BorderRadius.circular(radius),
-        border: Border.all(
-          color: borderColor ?? AppColors.border,
-          width: 1,
-        ),
+        // No border in dark mode — HIG uses color differentiation
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(radius),
         child: Stack(
           children: [
-            // Noise texture overlay
-            Positioned.fill(
-              child: Opacity(
-                opacity: 0.03,
-                child: Image.asset(
-                  'assets/noise.png',
-                  repeat: ImageRepeat.repeat,
-                  fit: BoxFit.none,
-                  errorBuilder: (_, __, ___) => const SizedBox.shrink(),
-                ),
-              ),
-            ),
             // Accent strip
             if (showAccentStrip)
               Positioned(
@@ -72,10 +55,7 @@ class CeoCard extends StatelessWidget {
                 ),
               ),
             // Content
-            Padding(
-              padding: padding ?? AppSpacing.paddingCard,
-              child: child,
-            ),
+            Padding(padding: padding ?? AppSpacing.paddingCard, child: child),
           ],
         ),
       ),

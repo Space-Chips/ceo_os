@@ -4,7 +4,8 @@ import 'app_colors.dart';
 import 'app_spacing.dart';
 import 'app_typography.dart';
 
-/// CEO OS Theme — dark only. Provides both Material and Cupertino themes.
+/// CEO OS Theme — dark only. Apple HIG-compliant.
+/// Provides both Material and Cupertino themes.
 class AppTheme {
   AppTheme._();
 
@@ -26,17 +27,17 @@ class AppTheme {
         backgroundColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
-        titleTextStyle: AppTypography.headingMedium,
+        titleTextStyle:
+            AppTypography.headingSmall, // 17pt Semibold (HIG nav title)
         iconTheme: const IconThemeData(color: AppColors.textPrimary, size: 22),
       ),
 
-      // Card
+      // Card — no border in dark mode (HIG: color differentiation only)
       cardTheme: CardThemeData(
         color: AppColors.surface,
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-          side: const BorderSide(color: AppColors.border),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd), // 10pt
         ),
       ),
 
@@ -56,30 +57,41 @@ class AppTheme {
           backgroundColor: AppColors.accent,
           foregroundColor: Colors.white,
           elevation: 0,
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: 14),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          minimumSize: const Size(0, 50), // HIG large button height
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.lg,
+            vertical: 14,
           ),
-          textStyle: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w600),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12), // HIG large button radius
+          ),
+          textStyle: AppTypography.bodyLarge.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
 
-      // Input
+      // Input — HIG text field specs
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: AppColors.surface,
-        contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 14),
-        hintStyle: AppTypography.bodyMedium.copyWith(color: AppColors.textTertiary),
+        fillColor: AppColors.surfaceLight, // tertiarySystemBackground
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.sm,
+          vertical: 14,
+        ),
+        hintStyle: AppTypography.bodyLarge.copyWith(
+          color: AppColors.textTertiary,
+        ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-          borderSide: const BorderSide(color: AppColors.border),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd), // 10pt
+          borderSide: BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-          borderSide: const BorderSide(color: AppColors.border),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          borderSide: BorderSide.none,
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
           borderSide: const BorderSide(color: AppColors.accent, width: 1.5),
         ),
       ),
@@ -91,7 +103,7 @@ class AppTheme {
         elevation: 0,
       ),
 
-      // Divider
+      // Divider — HIG separator
       dividerTheme: const DividerThemeData(
         color: AppColors.border,
         thickness: 0.5,
@@ -102,7 +114,7 @@ class AppTheme {
       chipTheme: ChipThemeData(
         backgroundColor: AppColors.surface,
         selectedColor: AppColors.accentMuted,
-        side: const BorderSide(color: AppColors.border),
+        side: BorderSide.none, // no border in dark mode
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
         ),
@@ -113,7 +125,9 @@ class AppTheme {
       bottomSheetTheme: const BottomSheetThemeData(
         backgroundColor: AppColors.surface,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(AppSpacing.radiusLg)),
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(AppSpacing.radiusLg),
+          ), // 13pt
         ),
       ),
 
@@ -135,10 +149,8 @@ class AppTheme {
       brightness: Brightness.dark,
       primaryColor: AppColors.accent,
       scaffoldBackgroundColor: AppColors.background,
-      barBackgroundColor: Color(0xE6000000),
-      textTheme: CupertinoTextThemeData(
-        primaryColor: AppColors.accent,
-      ),
+      barBackgroundColor: Color(0xE6000000), // translucent black
+      textTheme: CupertinoTextThemeData(primaryColor: AppColors.accent),
     );
   }
 }
