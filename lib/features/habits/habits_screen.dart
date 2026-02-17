@@ -1,17 +1,14 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/providers/habit_provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
-import '../../core/widgets/ceo_card.dart';
 import '../../core/widgets/ceo_progress_ring.dart';
 import 'add_habit_sheet.dart';
 
 class HabitsScreen extends StatefulWidget {
   const HabitsScreen({super.key});
-
   @override
   State<HabitsScreen> createState() => _HabitsScreenState();
 }
@@ -25,171 +22,243 @@ class _HabitsScreenState extends State<HabitsScreen> {
     });
   }
 
+  void _showAddHabit() {
+    showCupertinoModalPopup(
+      context: context,
+      builder: (_) => const AddHabitSheet(),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: Padding(
-          padding: AppSpacing.screenPadding,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: AppSpacing.lg),
-              // Header
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('Habits', style: AppTypography.displayMedium),
-                  Consumer<HabitProvider>(
-                    builder: (_, provider, __) {
-                      final total = provider.habits.length;
-                      final done = provider.habits
-                          .where((h) => h.isCompletedOn(DateTime.now()))
-                          .length;
-                      return Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.md,
-                          vertical: AppSpacing.sm,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.successMuted,
-                          borderRadius: BorderRadius.circular(
-                              AppSpacing.radiusFull),
-                        ),
-                        child: Text(
-                          '$done / $total today',
-                          style: AppTypography.labelLarge.copyWith(
-                            color: AppColors.success,
-                            fontWeight: FontWeight.w700,
+    return CupertinoPageScaffold(
+      backgroundColor: AppColors.systemGroupedBackground,
+      child: CustomScrollView(
+        slivers: [
+          CupertinoSliverNavigationBar(
+            largeTitle: const Text('Daily Habits'),
+            backgroundColor: AppColors.systemBackground,
+            border: null,
+            trailing: GestureDetector(
+              onTap: _showAddHabit,
+              child: const Icon(
+                CupertinoIcons.plus_circle_fill,
+                color: AppColors.systemBlue,
+                size: 28,
+              ),
+            ),
+          ),
+
+          // ── Weekly Progress Strip ──
+          SliverToBoxAdapter(
+            child: Consumer<HabitProvider>(
+              builder: (context, prov, _) => _WeeklyStrip(provider: prov),
+            ),
+          ),
+
+          // ── Horizontal Habit Cards ──
+          SliverToBoxAdapter(
+            child: Consumer<HabitProvider>(
+              builder: (context, prov, _) {
+                if (prov.habits.isEmpty) return const SizedBox.shrink();
+                return SizedBox(
+                  height: 140,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.md,
+                      vertical: AppSpacing.sm,
+                    ),
+                    itemCount: prov.habits.length,
+                    itemBuilder: (context, i) =>
+                        _HabitCard(habit: prov.habits[i]),
+                  ),
+                );
+              },
+            ),
+          ),
+
+          // ── Today's summary ──
+          SliverToBoxAdapter(
+            child: Consumer<HabitProvider>(
+              builder: (context, prov, _) {
+                final done = prov.completedToday;
+                final total = prov.habits.length;
+                return Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.md,
+                    vertical: AppSpacing.sm,
+                  ),
+                  child: Container(
+                    padding: const EdgeInsets.all(AppSpacing.md),
+                    decoration: BoxDecoration(
+                      color: AppColors.secondarySystemBackground,
+                      borderRadius: BorderRadius.circular(
+                        AppSpacing.radiusGrouped,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        CeoProgressRing(
+                          progress: total > 0 ? done / total : 0.0,
+                          size: 44,
+                          strokeWidth: 4,
+                          gradientColors: [
+                            AppColors.systemGreen,
+                            AppColors.systemMint,
+                          ],
+                          child: Text(
+                            '$done',
+                            style: AppTypography.headline.copyWith(
+                              color: AppColors.systemGreen,
+                            ),
                           ),
                         ),
-                      );
-                    },
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              Text(
-                'Build consistency, one day at a time',
-                style: AppTypography.bodyMedium.copyWith(
-                  color: AppColors.textSecondary,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.sectionSpacing),
-
-              // Weekly heatmap strip
-              _WeeklyStrip(),
-              const SizedBox(height: AppSpacing.sectionSpacing),
-
-              // Habit list
-              Expanded(
-                child: Consumer<HabitProvider>(
-                  builder: (_, provider, __) {
-                    if (provider.habits.isEmpty) {
-                      return Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
+                        const SizedBox(width: AppSpacing.md),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Icon(CupertinoIcons.flame,
-                                size: 64, color: AppColors.textMuted),
-                            const SizedBox(height: AppSpacing.md),
                             Text(
-                              'No habits yet',
-                              style: AppTypography.bodyLarge.copyWith(
-                                color: AppColors.textTertiary,
+                              '$done of $total completed',
+                              style: AppTypography.headline,
+                            ),
+                            Text(
+                              'Today\'s progress',
+                              style: AppTypography.caption1.copyWith(
+                                color: AppColors.secondaryLabel,
                               ),
                             ),
                           ],
                         ),
-                      );
-                    }
-                    return ListView.separated(
-                      itemCount: provider.habits.length,
-                      separatorBuilder: (_, __) =>
-                          const SizedBox(height: AppSpacing.sm),
-                      itemBuilder: (_, index) {
-                        return _HabitTile(habit: provider.habits[index]);
-                      },
-                    );
-                  },
-                ),
-              ),
-            ],
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
           ),
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          showModalBottomSheet(
-            context: context,
-            isScrollControlled: true,
-            backgroundColor: Colors.transparent,
-            builder: (_) => const AddHabitSheet(),
-          );
-        },
-        child: const Icon(Icons.add, size: 28),
+
+          // ── Habit List with swipe-to-complete ──
+          Consumer<HabitProvider>(
+            builder: (context, prov, _) {
+              if (prov.habits.isEmpty) {
+                return SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          CupertinoIcons.flame,
+                          size: 40,
+                          color: AppColors.tertiaryLabel,
+                        ),
+                        const SizedBox(height: AppSpacing.md),
+                        Text(
+                          'No habits yet',
+                          style: AppTypography.title3.copyWith(
+                            color: AppColors.secondaryLabel,
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.xs),
+                        Text(
+                          'Tap + to create one',
+                          style: AppTypography.subhead.copyWith(
+                            color: AppColors.tertiaryLabel,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }
+              return SliverPadding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md,
+                ).copyWith(bottom: 120),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate((context, i) {
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                      child: _HabitTile(
+                        habit: prov.habits[i],
+                        onToggle: () => prov.toggleHabit(prov.habits[i].id),
+                      ),
+                    );
+                  }, childCount: prov.habits.length),
+                ),
+              );
+            },
+          ),
+        ],
       ),
     );
   }
 }
 
 class _WeeklyStrip extends StatelessWidget {
+  final HabitProvider provider;
+  const _WeeklyStrip({required this.provider});
+
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
-    final dayNames = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+    final weekStart = now.subtract(Duration(days: now.weekday - 1));
+    const days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
-    return Consumer<HabitProvider>(
-      builder: (_, provider, __) {
-        return Row(
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.sm,
+      ),
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.sm,
+          vertical: AppSpacing.md,
+        ),
+        decoration: BoxDecoration(
+          color: AppColors.secondarySystemBackground,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusGrouped),
+        ),
+        child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: List.generate(7, (index) {
-            final date = now.subtract(Duration(days: 6 - index));
-            final isToday = index == 6;
-            final totalHabits = provider.habits.length;
-            final completedHabits = provider.habits
-                .where((h) => h.isCompletedOn(date))
-                .length;
-            final ratio =
-                totalHabits > 0 ? completedHabits / totalHabits : 0.0;
-
+          children: List.generate(7, (i) {
+            final date = weekStart.add(Duration(days: i));
+            final isToday = date.day == now.day && date.month == now.month;
             return Column(
               children: [
                 Text(
-                  dayNames[(date.weekday - 1) % 7],
-                  style: AppTypography.caption.copyWith(
+                  days[i],
+                  style: AppTypography.caption2.copyWith(
                     color: isToday
-                        ? AppColors.textPrimary
-                        : AppColors.textTertiary,
+                        ? AppColors.systemBlue
+                        : AppColors.tertiaryLabel,
                   ),
                 ),
-                const SizedBox(height: AppSpacing.xs),
+                const SizedBox(height: 6),
                 Container(
-                  width: 36,
-                  height: 36,
+                  width: 32,
+                  height: 32,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: ratio > 0
-                        ? AppColors.accent.withValues(
-                            alpha: 0.1 + ratio * 0.5)
-                        : isToday
-                            ? AppColors.surfaceLight
-                            : AppColors.surface,
+                    color: isToday
+                        ? AppColors.systemBlue
+                        : const Color(0x00000000),
                     border: isToday
-                        ? Border.all(color: AppColors.accent, width: 2)
-                        : null,
+                        ? null
+                        : Border.all(
+                            color: AppColors.tertiarySystemBackground,
+                            width: 1.5,
+                          ),
                   ),
                   child: Center(
                     child: Text(
-                      date.day.toString(),
-                      style: AppTypography.labelMedium.copyWith(
+                      '${date.day}',
+                      style: AppTypography.caption1.copyWith(
                         color: isToday
-                            ? AppColors.accent
-                            : ratio > 0
-                                ? AppColors.textPrimary
-                                : AppColors.textTertiary,
-                        fontWeight:
-                            isToday ? FontWeight.w700 : FontWeight.w500,
+                            ? CupertinoColors.white
+                            : AppColors.secondaryLabel,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
@@ -197,108 +266,220 @@ class _WeeklyStrip extends StatelessWidget {
               ],
             );
           }),
-        );
-      },
+        ),
+      ),
     );
   }
 }
 
-class _HabitTile extends StatelessWidget {
+class _HabitCard extends StatelessWidget {
   final Habit habit;
-  const _HabitTile({required this.habit});
+  const _HabitCard({required this.habit});
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.read<HabitProvider>();
-    final isCompletedToday = habit.isCompletedOn(DateTime.now());
-    final completionsToday = habit.completionsOn(DateTime.now());
+    final now = DateTime.now();
+    final today = DateTime(
+      now.year,
+      now.month,
+      now.day,
+    ).toIso8601String().split('T').first;
+    final done = habit.completions[today] ?? 0;
+    final progress = (done / habit.dailyTarget).clamp(0.0, 1.0);
 
-    return CeoCard(
+    return Container(
+      width: 130,
+      margin: const EdgeInsets.only(right: AppSpacing.sm),
       padding: const EdgeInsets.all(AppSpacing.md),
-      child: Row(
+      decoration: BoxDecoration(
+        color: AppColors.secondarySystemBackground,
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Streak ring
-          CeoProgressRing(
-            progress: habit.weeklyRate,
-            size: 52,
-            strokeWidth: 4,
-            gradientColors: [
-              habit.color,
-              habit.color.withValues(alpha: 0.6),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Icon(habit.icon, size: 22, color: habit.color),
+              CeoProgressRing(
+                progress: progress,
+                size: 28,
+                strokeWidth: 3,
+                gradientColors: [habit.color, habit.color],
+              ),
             ],
-            child: Icon(
-              habit.icon,
-              size: 20,
-              color: habit.color,
-            ),
           ),
-          const SizedBox(width: AppSpacing.md),
-          // Info
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(habit.name, style: AppTypography.headingSmall),
-                const SizedBox(height: AppSpacing.xxs),
-                Row(
-                  children: [
-                    Icon(CupertinoIcons.flame,
-                        size: 14, color: AppColors.warning),
-                    const SizedBox(width: AppSpacing.xxs),
-                    Text(
-                      '${habit.currentStreak} day streak',
-                      style: AppTypography.caption.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.md),
-                    Text(
-                      '$completionsToday/${habit.targetPerDay}',
-                      style: AppTypography.caption.copyWith(
-                        color: isCompletedToday
-                            ? AppColors.success
-                            : AppColors.textTertiary,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+          const Spacer(),
+          Text(
+            habit.name,
+            style: AppTypography.callout.copyWith(fontWeight: FontWeight.w500),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
-          // Check-in button
-          GestureDetector(
-            onTap: () {
-              if (isCompletedToday) {
-                provider.uncheckIn(habit.id);
-              } else {
-                provider.checkIn(habit.id);
-              }
-            },
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.elasticOut,
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: isCompletedToday
-                    ? habit.color
-                    : habit.color.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-                border: isCompletedToday
-                    ? null
-                    : Border.all(
-                        color: habit.color.withValues(alpha: 0.3)),
-              ),
-              child: Icon(
-                isCompletedToday
-                    ? CupertinoIcons.checkmark_alt
-                    : CupertinoIcons.add,
-                color: isCompletedToday ? Colors.white : habit.color,
-                size: 22,
-              ),
+          Text(
+            '$done/${habit.dailyTarget}',
+            style: AppTypography.caption2.copyWith(
+              color: AppColors.secondaryLabel,
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _HabitTile extends StatefulWidget {
+  final Habit habit;
+  final VoidCallback onToggle;
+  const _HabitTile({required this.habit, required this.onToggle});
+  @override
+  State<_HabitTile> createState() => _HabitTileState();
+}
+
+class _HabitTileState extends State<_HabitTile>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _streakAnim;
+
+  @override
+  void initState() {
+    super.initState();
+    _streakAnim = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _streakAnim.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final h = widget.habit;
+    final now = DateTime.now();
+    final today = DateTime(
+      now.year,
+      now.month,
+      now.day,
+    ).toIso8601String().split('T').first;
+    final done = h.completions[today] ?? 0;
+    final isComplete = done >= h.dailyTarget;
+
+    return Dismissible(
+      key: ValueKey(h.id),
+      direction: DismissDirection.startToEnd,
+      confirmDismiss: (_) async {
+        widget.onToggle();
+        return false;
+      },
+      background: Container(
+        alignment: Alignment.centerLeft,
+        padding: const EdgeInsets.only(left: AppSpacing.lg),
+        decoration: BoxDecoration(
+          color: AppColors.systemGreen,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusGrouped),
+        ),
+        child: const Icon(
+          CupertinoIcons.checkmark_alt,
+          color: CupertinoColors.white,
+          size: 28,
+        ),
+      ),
+      child: Container(
+        constraints: const BoxConstraints(minHeight: AppSpacing.minTouchTarget),
+        decoration: BoxDecoration(
+          color: AppColors.secondarySystemBackground,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusGrouped),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: 12,
+          ),
+          child: Row(
+            children: [
+              // Icon
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: h.color.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                ),
+                child: Icon(h.icon, size: 20, color: h.color),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              // Name + streak
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      h.name,
+                      style: AppTypography.body.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    Row(
+                      children: [
+                        if (h.currentStreak > 0) ...[
+                          ScaleTransition(
+                            scale: Tween(begin: 0.9, end: 1.1).animate(
+                              CurvedAnimation(
+                                parent: _streakAnim,
+                                curve: Curves.easeInOut,
+                              ),
+                            ),
+                            child: const Icon(
+                              CupertinoIcons.flame_fill,
+                              size: 14,
+                              color: AppColors.systemOrange,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            '${h.currentStreak} day streak',
+                            style: AppTypography.caption2.copyWith(
+                              color: AppColors.systemOrange,
+                            ),
+                          ),
+                          const SizedBox(width: AppSpacing.sm),
+                        ],
+                        Text(
+                          '${h.weeklyRate}%/wk',
+                          style: AppTypography.caption2.copyWith(
+                            color: AppColors.tertiaryLabel,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              // Tap to complete
+              GestureDetector(
+                onTap: widget.onToggle,
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 200),
+                  child: Icon(
+                    isComplete
+                        ? CupertinoIcons.checkmark_circle_fill
+                        : CupertinoIcons.circle,
+                    key: ValueKey(isComplete),
+                    size: 28,
+                    color: isComplete
+                        ? AppColors.systemGreen
+                        : AppColors.tertiaryLabel,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

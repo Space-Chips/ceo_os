@@ -1,13 +1,11 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../core/platform/adaptive_widgets.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
+import '../../core/widgets/ceo_button.dart';
 
 /// Onboarding — clean, Apple HIG compliant.
-/// No gradients, no color backgrounds. Monochrome icons, clear hierarchy.
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
   @override
@@ -44,23 +42,21 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
+    return CupertinoPageScaffold(
+      backgroundColor: AppColors.systemBackground,
+      child: SafeArea(
         child: Column(
           children: [
             // Skip
             Align(
               alignment: Alignment.topRight,
-              child: Padding(
+              child: CupertinoButton(
                 padding: const EdgeInsets.all(AppSpacing.md),
-                child: GestureDetector(
-                  onTap: () => context.go('/tasks'),
-                  child: Text(
-                    'Skip',
-                    style: AppTypography.bodyMedium.copyWith(
-                      color: AppColors.textTertiary,
-                    ),
+                onPressed: () => context.go('/tasks'),
+                child: Text(
+                  'Skip',
+                  style: AppTypography.body.copyWith(
+                    color: AppColors.secondaryLabel,
                   ),
                 ),
               ),
@@ -81,34 +77,36 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     child: Column(
                       children: [
                         const Spacer(),
-                        // Icon — monochrome, large, clean
                         Container(
                           width: 96,
                           height: 96,
                           decoration: BoxDecoration(
-                            color: AppColors.surface,
+                            color: AppColors.secondarySystemBackground,
                             borderRadius: BorderRadius.circular(
-                                AppSpacing.radiusXl),
+                              AppSpacing.radiusXl,
+                            ),
                             border: Border.all(
-                              color: AppColors.border, width: 1),
+                              color: AppColors.separator,
+                              width: 0.5,
+                            ),
                           ),
                           child: Icon(
                             page.icon,
-                            color: AppColors.textSecondary,
+                            color: AppColors.secondaryLabel,
                             size: 40,
                           ),
                         ),
                         const SizedBox(height: AppSpacing.xl),
                         Text(
                           page.title,
-                          style: AppTypography.displayMedium,
+                          style: AppTypography.largeTitle,
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: AppSpacing.md),
                         Text(
                           page.subtitle,
-                          style: AppTypography.bodyLarge.copyWith(
-                            color: AppColors.textSecondary,
+                          style: AppTypography.body.copyWith(
+                            color: AppColors.secondaryLabel,
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -123,7 +121,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             // Indicators + Continue button
             Padding(
               padding: AppSpacing.screenPadding.copyWith(
-                top: 0, bottom: AppSpacing.lg),
+                top: 0,
+                bottom: AppSpacing.lg,
+              ),
               child: Column(
                 children: [
                   // Page dots
@@ -137,17 +137,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         height: 8,
                         decoration: BoxDecoration(
                           color: _currentPage == i
-                              ? AppColors.accent
-                              : AppColors.surfaceLight,
+                              ? AppColors.systemBlue
+                              : AppColors.tertiarySystemBackground,
                           borderRadius: BorderRadius.circular(
-                              AppSpacing.radiusFull),
+                            AppSpacing.radiusFull,
+                          ),
                         ),
                       );
                     }),
                   ),
                   const SizedBox(height: AppSpacing.lg),
-                  // Continue / Get Started
-                  AdaptiveButton(
+                  CeoButton(
                     label: _currentPage == _pages.length - 1
                         ? 'Get Started'
                         : 'Continue',

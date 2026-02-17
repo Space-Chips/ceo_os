@@ -1,8 +1,9 @@
 import 'dart:math';
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import '../theme/app_colors.dart';
 
-/// Circular progress ring with gradient stroke.
+/// Circular progress ring — clean HIG-compatible style.
+/// No glow effect, clean stroke cap, gradient support.
 class CeoProgressRing extends StatelessWidget {
   final double progress; // 0.0 to 1.0
   final double size;
@@ -16,7 +17,7 @@ class CeoProgressRing extends StatelessWidget {
     super.key,
     required this.progress,
     this.size = 100,
-    this.strokeWidth = 6,
+    this.strokeWidth = 5,
     this.color,
     this.trackColor,
     this.gradientColors,
@@ -36,8 +37,8 @@ class CeoProgressRing extends StatelessWidget {
             painter: _RingPainter(
               progress: progress.clamp(0.0, 1.0),
               strokeWidth: strokeWidth,
-              color: color ?? AppColors.accent,
-              trackColor: trackColor ?? AppColors.surfaceLight,
+              color: color ?? AppColors.systemBlue,
+              trackColor: trackColor ?? AppColors.tertiarySystemBackground,
               gradientColors: gradientColors ?? AppColors.accentGradient,
             ),
           ),
@@ -93,26 +94,10 @@ class _RingPainter extends CustomPainter {
         ..strokeCap = StrokeCap.round;
 
       canvas.drawArc(rect, -pi / 2, sweepAngle, false, progressPaint);
-
-      // Glow effect at the tip
-      if (progress > 0.01) {
-        final tipAngle = -pi / 2 + sweepAngle;
-        final tipX = center.dx + radius * cos(tipAngle);
-        final tipY = center.dy + radius * sin(tipAngle);
-        final glowPaint = Paint()
-          ..color = gradientColors.last.withValues(alpha: 0.4)
-          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6);
-        canvas.drawCircle(
-          Offset(tipX, tipY),
-          strokeWidth / 2,
-          glowPaint,
-        );
-      }
     }
   }
 
   @override
   bool shouldRepaint(covariant _RingPainter oldDelegate) =>
-      oldDelegate.progress != progress ||
-      oldDelegate.color != color;
+      oldDelegate.progress != progress || oldDelegate.color != color;
 }

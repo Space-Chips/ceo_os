@@ -1,14 +1,13 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 
-/// Glassmorphic card with subtle border, optional gradient accent strip.
+/// HIG-compliant card — grouped table view cell style.
+/// Background: secondarySystemBackground, 10pt corner radius, subtle separator border.
 class CeoCard extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry? padding;
   final Color? color;
-  final Color? borderColor;
-  final double? borderRadius;
   final VoidCallback? onTap;
   final bool showAccentStrip;
   final Color? accentStripColor;
@@ -18,8 +17,6 @@ class CeoCard extends StatelessWidget {
     required this.child,
     this.padding,
     this.color,
-    this.borderColor,
-    this.borderRadius,
     this.onTap,
     this.showAccentStrip = false,
     this.accentStripColor,
@@ -27,34 +24,15 @@ class CeoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final radius = borderRadius ?? AppSpacing.radiusMd;
-
     Widget card = Container(
       decoration: BoxDecoration(
-        color: color ?? AppColors.surface,
-        borderRadius: BorderRadius.circular(radius),
-        border: Border.all(
-          color: borderColor ?? AppColors.border,
-          width: 1,
-        ),
+        color: color ?? AppColors.secondarySystemBackground,
+        borderRadius: BorderRadius.circular(AppSpacing.radiusGrouped),
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(radius),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusGrouped),
         child: Stack(
           children: [
-            // Noise texture overlay
-            Positioned.fill(
-              child: Opacity(
-                opacity: 0.03,
-                child: Image.asset(
-                  'assets/noise.png',
-                  repeat: ImageRepeat.repeat,
-                  fit: BoxFit.none,
-                  errorBuilder: (_, __, ___) => const SizedBox.shrink(),
-                ),
-              ),
-            ),
-            // Accent strip
             if (showAccentStrip)
               Positioned(
                 left: 0,
@@ -62,20 +40,10 @@ class CeoCard extends StatelessWidget {
                 bottom: 0,
                 child: Container(
                   width: 3,
-                  decoration: BoxDecoration(
-                    color: accentStripColor ?? AppColors.accent,
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(3),
-                      bottomLeft: Radius.circular(3),
-                    ),
-                  ),
+                  color: accentStripColor ?? AppColors.systemBlue,
                 ),
               ),
-            // Content
-            Padding(
-              padding: padding ?? AppSpacing.paddingCard,
-              child: child,
-            ),
+            Padding(padding: padding ?? AppSpacing.paddingCard, child: child),
           ],
         ),
       ),

@@ -1,12 +1,13 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
 
 enum CeoButtonVariant { primary, secondary, ghost, danger }
 
-/// Premium button with press animation and icon support.
-class CeoButton extends StatefulWidget {
+/// HIG-compliant button using CupertinoButton under the hood.
+/// 44pt minimum touch target, press-down animation built-in.
+class CeoButton extends StatelessWidget {
   final String label;
   final VoidCallback? onPressed;
   final CeoButtonVariant variant;
@@ -25,134 +26,90 @@ class CeoButton extends StatefulWidget {
   });
 
   @override
-  State<CeoButton> createState() => _CeoButtonState();
-}
+  Widget build(BuildContext context) {
+    final isDisabled = onPressed == null || isLoading;
 
-class _CeoButtonState extends State<CeoButton>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _scaleAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 100),
+    Widget content = Row(
+      mainAxisSize: expand ? MainAxisSize.max : MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        if (isLoading) ...[
+          const CupertinoActivityIndicator(radius: 9),
+          const SizedBox(width: AppSpacing.sm),
+        ] else if (icon != null) ...[
+          Icon(icon, size: 18, color: _foregroundColor),
+          const SizedBox(width: AppSpacing.sm),
+        ],
+        Text(
+          label,
+          style: AppTypography.headline.copyWith(
+            color: _foregroundColor,
+            fontSize: 15,
+          ),
+        ),
+      ],
     );
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.96).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
-  }
 
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  Color get _backgroundColor {
-    switch (widget.variant) {
+    Widget button;
+    switch (variant) {
       case CeoButtonVariant.primary:
-        return AppColors.accent;
-      case CeoButtonVariant.secondary:
-        return AppColors.surfaceLight;
-      case CeoButtonVariant.ghost:
-        return Colors.transparent;
+        button = CupertinoButton.filled(
+          onPressed: isDisabled ? null : onPressed,
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.lg,
+            vertical: 14,
+          ),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          child: content,
+        );
       case CeoButtonVariant.danger:
-        return AppColors.error;
+        button = CupertinoButton(
+          onPressed: isDisabled ? null : onPressed,
+          color: AppColors.systemRed,
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.lg,
+            vertical: 14,
+          ),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          child: content,
+        );
+      case CeoButtonVariant.secondary:
+        button = CupertinoButton(
+          onPressed: isDisabled ? null : onPressed,
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.lg,
+            vertical: 14,
+          ),
+          color: AppColors.tertiarySystemBackground,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          child: content,
+        );
+      case CeoButtonVariant.ghost:
+        button = CupertinoButton(
+          onPressed: isDisabled ? null : onPressed,
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.lg,
+            vertical: 14,
+          ),
+          child: content,
+        );
     }
+
+    if (expand) {
+      return SizedBox(width: double.infinity, child: button);
+    }
+    return button;
   }
 
   Color get _foregroundColor {
-    switch (widget.variant) {
+    switch (variant) {
       case CeoButtonVariant.primary:
       case CeoButtonVariant.danger:
-        return Colors.white;
+        return CupertinoColors.white;
       case CeoButtonVariant.secondary:
-        return AppColors.textPrimary;
+        return AppColors.label;
       case CeoButtonVariant.ghost:
-        return AppColors.accent;
+        return AppColors.systemBlue;
     }
-  }
-
-  BorderSide get _border {
-    switch (widget.variant) {
-      case CeoButtonVariant.secondary:
-        return const BorderSide(color: AppColors.border);
-      case CeoButtonVariant.ghost:
-        return BorderSide.none;
-      default:
-        return BorderSide.none;
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final isDisabled = widget.onPressed == null || widget.isLoading;
-
-    return AnimatedBuilder(
-      animation: _scaleAnimation,
-      builder: (context, child) {
-        return Transform.scale(
-          scale: _scaleAnimation.value,
-          child: child,
-        );
-      },
-      child: GestureDetector(
-        onTapDown: isDisabled ? null : (_) => _controller.forward(),
-        onTapUp: isDisabled
-            ? null
-            : (_) {
-                _controller.reverse();
-                widget.onPressed?.call();
-              },
-        onTapCancel: isDisabled ? null : () => _controller.reverse(),
-        child: AnimatedOpacity(
-          duration: const Duration(milliseconds: 150),
-          opacity: isDisabled ? 0.5 : 1.0,
-          child: Container(
-            width: widget.expand ? double.infinity : null,
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.lg,
-              vertical: 14,
-            ),
-            decoration: BoxDecoration(
-              color: _backgroundColor,
-              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-              border: Border.fromBorderSide(_border),
-            ),
-            child: Row(
-              mainAxisSize:
-                  widget.expand ? MainAxisSize.max : MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                if (widget.isLoading) ...[
-                  SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: _foregroundColor,
-                    ),
-                  ),
-                  const SizedBox(width: AppSpacing.sm),
-                ] else if (widget.icon != null) ...[
-                  Icon(widget.icon, size: 18, color: _foregroundColor),
-                  const SizedBox(width: AppSpacing.sm),
-                ],
-                Text(
-                  widget.label,
-                  style: AppTypography.labelLarge.copyWith(
-                    color: _foregroundColor,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
   }
 }

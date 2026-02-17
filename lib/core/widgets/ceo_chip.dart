@@ -1,9 +1,9 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
 
-/// Tag/filter chip for priorities and categories.
+/// HIG-style filter pill chip.
 class CeoChip extends StatelessWidget {
   final String label;
   final bool isSelected;
@@ -22,23 +22,18 @@ class CeoChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final chipColor = color ?? AppColors.accent;
+    final chipColor = color ?? AppColors.systemBlue;
 
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.md,
-          vertical: AppSpacing.sm,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
         decoration: BoxDecoration(
-          color: isSelected ? chipColor.withValues(alpha: 0.15) : Colors.transparent,
+          color: isSelected
+              ? chipColor.withValues(alpha: 0.18)
+              : AppColors.tertiarySystemBackground,
           borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
-          border: Border.all(
-            color: isSelected ? chipColor : AppColors.border,
-            width: 1,
-          ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -47,15 +42,15 @@ class CeoChip extends StatelessWidget {
               Icon(
                 icon,
                 size: 14,
-                color: isSelected ? chipColor : AppColors.textSecondary,
+                color: isSelected ? chipColor : AppColors.secondaryLabel,
               ),
               const SizedBox(width: AppSpacing.xs),
             ],
             Text(
               label,
-              style: AppTypography.labelMedium.copyWith(
-                color: isSelected ? chipColor : AppColors.textSecondary,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+              style: AppTypography.subhead.copyWith(
+                color: isSelected ? chipColor : AppColors.secondaryLabel,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
               ),
             ),
           ],

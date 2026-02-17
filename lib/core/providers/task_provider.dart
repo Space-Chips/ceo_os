@@ -11,10 +11,10 @@ class SubTask {
   bool isComplete;
 
   SubTask({String? id, required this.title, this.isComplete = false})
-      : id = id ?? const Uuid().v4();
+    : id = id ?? const Uuid().v4();
 }
 
-/// A task item.
+/// A task item with Eisenhower matrix support.
 class Task {
   final String id;
   String title;
@@ -22,6 +22,8 @@ class Task {
   TaskPriority priority;
   DateTime? dueDate;
   bool isComplete;
+  bool isImportant; // Eisenhower: important axis
+  bool isUrgent; // Eisenhower: urgent axis
   List<SubTask> subtasks;
   DateTime createdAt;
 
@@ -32,11 +34,13 @@ class Task {
     this.priority = TaskPriority.none,
     this.dueDate,
     this.isComplete = false,
+    this.isImportant = false,
+    this.isUrgent = false,
     List<SubTask>? subtasks,
     DateTime? createdAt,
-  })  : id = id ?? const Uuid().v4(),
-        subtasks = subtasks ?? [],
-        createdAt = createdAt ?? DateTime.now();
+  }) : id = id ?? const Uuid().v4(),
+       subtasks = subtasks ?? [],
+       createdAt = createdAt ?? DateTime.now();
 
   double get subtaskProgress {
     if (subtasks.isEmpty) return isComplete ? 1.0 : 0.0;
@@ -58,11 +62,13 @@ class TaskProvider extends ChangeNotifier {
     final today = DateTime(now.year, now.month, now.day);
     final tomorrow = today.add(const Duration(days: 1));
     return _tasks
-        .where((t) =>
-            !t.isComplete &&
-            t.dueDate != null &&
-            t.dueDate!.isAfter(today) &&
-            t.dueDate!.isBefore(tomorrow))
+        .where(
+          (t) =>
+              !t.isComplete &&
+              t.dueDate != null &&
+              t.dueDate!.isAfter(today) &&
+              t.dueDate!.isBefore(tomorrow),
+        )
         .toList();
   }
 
@@ -70,20 +76,43 @@ class TaskProvider extends ChangeNotifier {
     final now = DateTime.now();
     final tomorrow = DateTime(now.year, now.month, now.day + 1);
     return _tasks
-        .where((t) =>
-            !t.isComplete && t.dueDate != null && t.dueDate!.isAfter(tomorrow))
+        .where(
+          (t) =>
+              !t.isComplete &&
+              t.dueDate != null &&
+              t.dueDate!.isAfter(tomorrow),
+        )
         .toList();
   }
 
-  List<Task> get completedTasks =>
-      _tasks.where((t) => t.isComplete).toList();
+  List<Task> get completedTasks => _tasks.where((t) => t.isComplete).toList();
 
-  List<Task> get incompleteTasks =>
-      _tasks.where((t) => !t.isComplete).toList();
+  List<Task> get incompleteTasks => _tasks.where((t) => !t.isComplete).toList();
+
+  // ── Eisenhower Matrix Quadrants ──
+
+  /// Q1: Do First — Urgent + Important
+  List<Task> get doFirstTasks => _tasks
+      .where((t) => !t.isComplete && t.isUrgent && t.isImportant)
+      .toList();
+
+  /// Q2: Schedule — Not Urgent + Important
+  List<Task> get scheduleTasks => _tasks
+      .where((t) => !t.isComplete && !t.isUrgent && t.isImportant)
+      .toList();
+
+  /// Q3: Delegate — Urgent + Not Important
+  List<Task> get delegateTasks => _tasks
+      .where((t) => !t.isComplete && t.isUrgent && !t.isImportant)
+      .toList();
+
+  /// Q4: Eliminate — Not Urgent + Not Important
+  List<Task> get eliminateTasks => _tasks
+      .where((t) => !t.isComplete && !t.isUrgent && !t.isImportant)
+      .toList();
 
   void addTask(Task task) {
     _tasks.insert(0, task);
-    _addSampleDataIfEmpty();
     notifyListeners();
   }
 
@@ -123,6 +152,8 @@ class TaskProvider extends ChangeNotifier {
         description: 'Final review before board meeting',
         priority: TaskPriority.urgent,
         dueDate: now.add(const Duration(hours: 3)),
+        isUrgent: true,
+        isImportant: true,
         subtasks: [
           SubTask(title: 'Check financial projections'),
           SubTask(title: 'Update competitor analysis'),
@@ -133,6 +164,8 @@ class TaskProvider extends ChangeNotifier {
         title: 'Ship v2.0 feature set',
         priority: TaskPriority.high,
         dueDate: now.add(const Duration(days: 2)),
+        isUrgent: false,
+        isImportant: true,
         subtasks: [
           SubTask(title: 'User authentication', isComplete: true),
           SubTask(title: 'Dashboard redesign', isComplete: true),
@@ -144,22 +177,24 @@ class TaskProvider extends ChangeNotifier {
         title: 'Weekly team sync',
         priority: TaskPriority.medium,
         dueDate: now.add(const Duration(days: 1)),
+        isUrgent: true,
+        isImportant: false,
       ),
       Task(
         title: 'Read "The Hard Thing About Hard Things"',
         priority: TaskPriority.low,
         dueDate: now.add(const Duration(days: 7)),
+        isUrgent: false,
+        isImportant: false,
       ),
       Task(
         title: 'Update portfolio website',
         priority: TaskPriority.medium,
         dueDate: now.add(const Duration(days: 3)),
+        isUrgent: false,
+        isImportant: true,
       ),
     ]);
     notifyListeners();
-  }
-
-  void _addSampleDataIfEmpty() {
-    // no-op placeholder
   }
 }

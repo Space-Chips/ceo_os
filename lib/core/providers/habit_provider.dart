@@ -19,9 +19,9 @@ class Habit {
     this.targetPerDay = 1,
     Map<String, int>? completions,
     DateTime? createdAt,
-  })  : id = id ?? const Uuid().v4(),
-        completions = completions ?? {},
-        createdAt = createdAt ?? DateTime.now();
+  }) : id = id ?? const Uuid().v4(),
+       completions = completions ?? {},
+       createdAt = createdAt ?? DateTime.now();
 
   String _dateKey(DateTime date) =>
       '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
@@ -71,10 +71,13 @@ class Habit {
     DateTime? prevDate;
     for (final key in dates) {
       final parts = key.split('-');
-      final date = DateTime(int.parse(parts[0]), int.parse(parts[1]), int.parse(parts[2]));
+      final date = DateTime(
+        int.parse(parts[0]),
+        int.parse(parts[1]),
+        int.parse(parts[2]),
+      );
       if ((completions[key] ?? 0) >= targetPerDay) {
-        if (prevDate != null &&
-            date.difference(prevDate).inDays == 1) {
+        if (prevDate != null && date.difference(prevDate).inDays == 1) {
           current++;
         } else {
           current = 1;
@@ -100,6 +103,9 @@ class Habit {
     }
     return completed / 7;
   }
+
+  /// Alias for targetPerDay for API consistency.
+  int get dailyTarget => targetPerDay;
 }
 
 /// In-memory habit list with check-in tracking.
@@ -107,6 +113,24 @@ class HabitProvider extends ChangeNotifier {
   final List<Habit> _habits = [];
 
   List<Habit> get habits => List.unmodifiable(_habits);
+
+  /// Count of habits completed today.
+  int get completedToday {
+    final now = DateTime.now();
+    return _habits.where((h) => h.isCompletedOn(now)).length;
+  }
+
+  /// Toggle a habit check-in for today.
+  void toggleHabit(String id) {
+    final habit = _habits.firstWhere((h) => h.id == id);
+    final now = DateTime.now();
+    if (habit.isCompletedOn(now)) {
+      habit.uncheckIn(now);
+    } else {
+      habit.checkIn(now);
+    }
+    notifyListeners();
+  }
 
   void addHabit(Habit habit) {
     _habits.add(habit);

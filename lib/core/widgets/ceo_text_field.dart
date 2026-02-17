@@ -1,9 +1,9 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
 
-/// Styled text field matching the dark theme.
+/// HIG-compliant text field using CupertinoTextField.
 class CeoTextField extends StatelessWidget {
   final String? label;
   final String? hint;
@@ -41,27 +41,45 @@ class CeoTextField extends StatelessWidget {
         if (label != null) ...[
           Text(
             label!,
-            style: AppTypography.labelMedium.copyWith(
-              color: AppColors.textSecondary,
+            style: AppTypography.footnote.copyWith(
+              color: AppColors.secondaryLabel,
             ),
           ),
           const SizedBox(height: AppSpacing.sm),
         ],
-        TextFormField(
+        CupertinoTextField(
           controller: controller,
+          placeholder: hint,
           obscureText: obscureText,
           keyboardType: keyboardType,
           maxLines: maxLines,
           autofocus: autofocus,
-          style: AppTypography.bodyMedium,
           onChanged: onChanged,
-          validator: validator,
-          cursorColor: AppColors.accent,
-          decoration: InputDecoration(
-            hintText: hint,
-            prefixIcon: prefixIcon,
-            suffixIcon: suffixIcon,
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: 14,
           ),
+          decoration: BoxDecoration(
+            color: AppColors.tertiarySystemBackground,
+            borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+          ),
+          style: AppTypography.body,
+          placeholderStyle: AppTypography.body.copyWith(
+            color: AppColors.tertiaryLabel,
+          ),
+          cursorColor: AppColors.systemBlue,
+          prefix: prefixIcon != null
+              ? Padding(
+                  padding: const EdgeInsets.only(left: 12),
+                  child: prefixIcon,
+                )
+              : null,
+          suffix: suffixIcon != null
+              ? Padding(
+                  padding: const EdgeInsets.only(right: 12),
+                  child: suffixIcon,
+                )
+              : null,
         ),
       ],
     );

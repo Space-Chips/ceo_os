@@ -1,14 +1,11 @@
 import 'dart:math';
-import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../core/platform/adaptive_widgets.dart';
+import 'package:cupertino_native/cupertino_native.dart';
 import '../../core/providers/focus_provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
-import '../../core/widgets/ceo_card.dart';
 import '../../core/widgets/ceo_progress_ring.dart';
 
 class FocusScreen extends StatefulWidget {
@@ -18,6 +15,8 @@ class FocusScreen extends StatefulWidget {
 }
 
 class _FocusScreenState extends State<FocusScreen> {
+  int _subTab = 0;
+
   @override
   void initState() {
     super.initState();
@@ -28,28 +27,26 @@ class _FocusScreenState extends State<FocusScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: AppSpacing.screenPadding,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    return CupertinoPageScaffold(
+      backgroundColor: AppColors.systemBackground,
+      child: SafeArea(
+        child: Consumer<FocusProvider>(
+          builder: (context, prov, _) => Column(
             children: [
               const SizedBox(height: AppSpacing.lg),
-              Text('Focus', style: AppTypography.displayMedium),
-              const SizedBox(height: AppSpacing.xs),
-              Text(
-                'Eliminate distractions. Get in the zone.',
-                style: AppTypography.bodyMedium.copyWith(
-                    color: AppColors.textSecondary),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                child: CNSegmentedControl(
+                  labels: const ['Sessions', 'Stats'],
+                  selectedIndex: _subTab,
+                  onValueChanged: (i) => setState(() => _subTab = i),
+                ),
               ),
-              const SizedBox(height: AppSpacing.sectionSpacing),
-              _PomodoroSection(),
-              const SizedBox(height: AppSpacing.sectionSpacing),
-              _FocusModeSection(),
-              const SizedBox(height: AppSpacing.sectionSpacing),
-              _UsageChartSection(),
-              const SizedBox(height: AppSpacing.xxl),
+              Expanded(
+                child: _subTab == 0
+                    ? _TimerView(provider: prov)
+                    : _StatsView(provider: prov),
+              ),
             ],
           ),
         ),
@@ -58,341 +55,442 @@ class _FocusScreenState extends State<FocusScreen> {
   }
 }
 
-class _PomodoroSection extends StatelessWidget {
+class _TimerView extends StatelessWidget {
+  final FocusProvider provider;
+  const _TimerView({required this.provider});
+
   @override
   Widget build(BuildContext context) {
-    return Consumer<FocusProvider>(builder: (_, p, __) {
-      return Column(children: [
-        Center(
-          child: CeoProgressRing(
-            progress: p.progress,
+    final isActive = provider.state != FocusState.idle;
+    final isFocusing = provider.state == FocusState.focusing;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+      child: Column(
+        children: [
+          const Spacer(),
+          Text('Focus Time', style: AppTypography.focusDisplay),
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            provider.stateLabel,
+            style: AppTypography.subhead.copyWith(
+              color: AppColors.secondaryLabel,
+            ),
+          ),
+          const Spacer(),
+          CeoProgressRing(
+            progress: provider.progress,
             size: 220,
-            strokeWidth: 8,
-            gradientColors: p.state == FocusState.focusing
-                ? AppColors.accentGradient
-                : [AppColors.success, AppColors.success.withValues(alpha: 0.6)],
+            strokeWidth: 4,
+            gradientColors: isFocusing
+                ? [AppColors.systemYellow, AppColors.systemOrange]
+                : [AppColors.systemGreen, AppColors.systemMint],
+            trackColor: AppColors.tertiarySystemBackground,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(p.timerDisplay, style: AppTypography.mono),
-                const SizedBox(height: AppSpacing.xs),
-                Text(p.stateLabel,
-                    style: AppTypography.labelMedium.copyWith(
-                        color: AppColors.textSecondary)),
+                Text(
+                  provider.timerDisplay,
+                  style: AppTypography.mono.copyWith(
+                    fontSize: 52,
+                    fontWeight: FontWeight.w200,
+                    color: isFocusing
+                        ? AppColors.systemYellow
+                        : AppColors.label,
+                  ),
+                ),
+                if (isActive)
+                  Text(
+                    '${provider.completedSessions} sessions',
+                    style: AppTypography.caption1.copyWith(
+                      color: AppColors.secondaryLabel,
+                    ),
+                  ),
               ],
             ),
           ),
-        ),
-        const SizedBox(height: AppSpacing.lg),
-        // Session dots
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(4, (i) {
-            final done = i < p.completedSessions % 4;
-            final current = i == p.completedSessions % 4 &&
-                p.state == FocusState.focusing;
-            return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                width: current ? 24 : 8,
-                height: 8,
-                decoration: BoxDecoration(
-                  color: done || current
-                      ? AppColors.accent
-                      : AppColors.surfaceLight,
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
-                ),
+          const Spacer(),
+          if (provider.isFocusModeActive)
+            Container(
+              margin: const EdgeInsets.only(bottom: AppSpacing.md),
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.md,
+                vertical: AppSpacing.sm,
               ),
-            );
-          }),
-        ),
-        const SizedBox(height: AppSpacing.xs),
-        Text(
-          '${p.completedSessions} sessions · ${p.totalFocusMinutesToday} min',
-          style: AppTypography.caption,
-        ),
-        const SizedBox(height: AppSpacing.lg),
-        // Controls
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (p.state != FocusState.idle) ...[
-              _CtrlBtn(
-                  icon: CupertinoIcons.stop_fill,
-                  label: 'Reset',
-                  onTap: p.reset),
-              const SizedBox(width: AppSpacing.lg),
-            ],
-            GestureDetector(
-              onTap: () {
-                if (p.state == FocusState.idle) {
-                  p.startFocus();
-                } else if (p.isRunning) {
-                  p.pause();
-                } else {
-                  p.resume();
-                }
-              },
-              child: Container(
-                width: 64,
-                height: 64,
-                decoration: BoxDecoration(
-                  color: AppColors.accent,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.accent.withValues(alpha: 0.3),
-                      blurRadius: 16,
-                      offset: const Offset(0, 4),
+              decoration: BoxDecoration(
+                color: AppColors.systemRed.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    CupertinoIcons.bell_slash_fill,
+                    size: 14,
+                    color: AppColors.systemRed,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Notifications Blocked',
+                    style: AppTypography.caption1.copyWith(
+                      color: AppColors.systemRed,
+                      fontWeight: FontWeight.w600,
                     ),
-                  ],
-                ),
-                child: Icon(
-                  p.state == FocusState.idle || !p.isRunning
-                      ? CupertinoIcons.play_fill
-                      : CupertinoIcons.pause_fill,
-                  color: Colors.white,
-                  size: 28,
-                ),
+                  ),
+                ],
               ),
             ),
-            if (p.state != FocusState.idle) ...[
-              const SizedBox(width: AppSpacing.lg),
-              _CtrlBtn(
-                  icon: CupertinoIcons.forward_fill,
-                  label: 'Skip',
-                  onTap: p.skip),
-            ],
+          _buildControls(isActive, isFocusing),
+          const SizedBox(height: AppSpacing.lg),
+          if (!isActive) _buildSlider(),
+          _buildFocusModeToggle(),
+          const SizedBox(height: AppSpacing.sm),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildControls(bool isActive, bool isFocusing) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        if (isActive) ...[
+          CupertinoButton(
+            padding: EdgeInsets.zero,
+            onPressed: provider.reset,
+            child: Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.tertiarySystemBackground,
+              ),
+              child: const Icon(
+                CupertinoIcons.arrow_counterclockwise,
+                size: 20,
+                color: AppColors.label,
+              ),
+            ),
+          ),
+          const SizedBox(width: AppSpacing.lg),
+        ],
+        CupertinoButton(
+          padding: EdgeInsets.zero,
+          onPressed: () {
+            if (provider.state == FocusState.idle) {
+              provider.startFocus();
+            } else if (provider.isRunning) {
+              provider.pause();
+            } else {
+              provider.resume();
+            }
+          },
+          child: Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: isFocusing ? AppColors.systemYellow : AppColors.systemBlue,
+            ),
+            child: Icon(
+              provider.state == FocusState.idle || !provider.isRunning
+                  ? CupertinoIcons.play_fill
+                  : CupertinoIcons.pause_fill,
+              size: 28,
+              color: isFocusing
+                  ? AppColors.systemBackground
+                  : CupertinoColors.white,
+            ),
+          ),
+        ),
+        if (isActive) ...[
+          const SizedBox(width: AppSpacing.lg),
+          CupertinoButton(
+            padding: EdgeInsets.zero,
+            onPressed: provider.skip,
+            child: Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.tertiarySystemBackground,
+              ),
+              child: const Icon(
+                CupertinoIcons.forward_end_fill,
+                size: 20,
+                color: AppColors.label,
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildSlider() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+      child: Column(
+        children: [
+          Text(
+            '${provider.focusDurationMinutes} min session',
+            style: AppTypography.caption1.copyWith(
+              color: AppColors.secondaryLabel,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          CNSlider(
+            value: provider.focusDurationMinutes.toDouble(),
+            min: 5,
+            max: 90,
+            onChanged: (v) {
+              provider.focusDurationMinutes = v.round();
+              provider.reset();
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFocusModeToggle() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.md,
+      ),
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: 12,
+        ),
+        decoration: BoxDecoration(
+          color: AppColors.secondarySystemBackground,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusGrouped),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              CupertinoIcons.shield_fill,
+              size: 20,
+              color: provider.isFocusModeActive
+                  ? AppColors.systemGreen
+                  : AppColors.secondaryLabel,
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            Expanded(
+              child: Text('Block Distractions', style: AppTypography.body),
+            ),
+            CNSwitch(
+              value: provider.isFocusModeActive,
+              onChanged: (_) => provider.toggleFocusMode(),
+            ),
           ],
         ),
-      ]);
-    });
-  }
-}
-
-class _CtrlBtn extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-  const _CtrlBtn(
-      {required this.icon, required this.label, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(children: [
-        Container(
-          width: 44,
-          height: 44,
-          decoration: const BoxDecoration(
-            color: AppColors.surfaceLight,
-            shape: BoxShape.circle,
-          ),
-          child: Icon(icon, color: AppColors.textSecondary, size: 20),
-        ),
-        const SizedBox(height: AppSpacing.xs),
-        Text(label, style: AppTypography.caption),
-      ]),
+      ),
     );
   }
 }
 
-class _FocusModeSection extends StatelessWidget {
+class _StatsView extends StatelessWidget {
+  final FocusProvider provider;
+  const _StatsView({required this.provider});
+
   @override
   Widget build(BuildContext context) {
-    return Consumer<FocusProvider>(builder: (_, p, __) {
-      return Column(
+    final data = provider.hourlyUsage.sublist(
+      6,
+      min(24, provider.hourlyUsage.length),
+    );
+    final maxVal = data.reduce(max).clamp(1.0, double.infinity);
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          CeoCard(
-            onTap: p.toggleFocusMode,
-            child: Row(children: [
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: p.isFocusModeActive
-                      ? AppColors.accent
-                      : AppColors.surfaceLight,
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-                ),
-                child: Icon(
-                  CupertinoIcons.shield_fill,
-                  color: p.isFocusModeActive
-                      ? Colors.white
-                      : AppColors.textTertiary,
-                  size: 22,
-                ),
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Focus Mode', style: AppTypography.headingSmall),
-                    Text(
-                      p.isFocusModeActive
-                          ? 'Active — Apps blocked'
-                          : 'Tap to activate',
-                      style: AppTypography.caption.copyWith(
-                        color: p.isFocusModeActive
-                            ? AppColors.success
-                            : AppColors.textTertiary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              AdaptiveSwitch(
-                value: p.isFocusModeActive,
-                onChanged: (_) => p.toggleFocusMode(),
-              ),
-            ]),
-          ),
           const SizedBox(height: AppSpacing.md),
-          Text(
-            'BLOCKED APPS',
-            style: AppTypography.labelSmall.copyWith(
-              color: AppColors.textTertiary,
-              letterSpacing: 1.2,
-            ),
+          _StatCard(
+            label: 'Focus Today',
+            value: _fmt(provider.totalFocusMinutesToday),
+            color: AppColors.systemGreen,
           ),
           const SizedBox(height: AppSpacing.sm),
-          ...p.blockedApps.asMap().entries.map((e) {
-            final app = e.value;
-            return Padding(
-              padding: const EdgeInsets.only(bottom: AppSpacing.xs),
-              child: CeoCard(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.md, vertical: AppSpacing.sm),
-                onTap: () => p.toggleBlockedApp(e.key),
-                child: Row(children: [
-                  Icon(app.icon, size: 20, color: AppColors.textSecondary),
-                  const SizedBox(width: AppSpacing.md),
-                  Expanded(
-                    child: Text(app.name, style: AppTypography.bodyMedium),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.sm, vertical: AppSpacing.xxs),
-                    decoration: BoxDecoration(
-                      color: app.isBlocked
-                          ? AppColors.errorMuted
-                          : AppColors.successMuted,
-                      borderRadius: BorderRadius.circular(
-                          AppSpacing.radiusFull),
-                    ),
-                    child: Text(
-                      app.isBlocked ? 'Blocked' : 'Allowed',
-                      style: AppTypography.labelSmall.copyWith(
-                        color: app.isBlocked
-                            ? AppColors.error
-                            : AppColors.success,
-                      ),
-                    ),
-                  ),
-                ]),
-              ),
-            );
-          }),
-        ],
-      );
-    });
-  }
-}
-
-class _UsageChartSection extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Consumer<FocusProvider>(builder: (_, p, __) {
-      final totalH = p.hourlyUsage.reduce((a, b) => a + b).toStringAsFixed(1);
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Screen Time', style: AppTypography.headingSmall),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.sm, vertical: AppSpacing.xxs),
-                decoration: BoxDecoration(
-                  color: AppColors.warningMuted,
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+              Expanded(
+                child: _StatCard(
+                  label: 'Sessions',
+                  value: '${provider.completedSessions}',
+                  color: AppColors.systemBlue,
                 ),
-                child: Text(
-                  '${totalH}h today',
-                  style: AppTypography.labelSmall.copyWith(
-                      color: AppColors.warning),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: _StatCard(
+                  label: 'Score',
+                  value: '${min(100, provider.completedSessions * 25)}%',
+                  color: AppColors.systemPurple,
                 ),
               ),
             ],
           ),
+          const SizedBox(height: AppSpacing.lg),
+          Text('Usage by Hour', style: AppTypography.headline),
           const SizedBox(height: AppSpacing.md),
-          CeoCard(
+          Container(
+            height: 140,
             padding: const EdgeInsets.all(AppSpacing.md),
-            child: SizedBox(
-              height: 120,
-              child: BarChart(BarChartData(
-                alignment: BarChartAlignment.spaceAround,
-                maxY: p.hourlyUsage
-                    .reduce(max)
-                    .clamp(1, 10)
-                    .toDouble(),
-                barTouchData: BarTouchData(enabled: false),
-                titlesData: FlTitlesData(
-                  show: true,
-                  topTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: false)),
-                  rightTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: false)),
-                  leftTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: false)),
-                  bottomTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      getTitlesWidget: (v, _) => v.toInt() % 6 == 0
-                          ? Padding(
-                              padding: const EdgeInsets.only(top: 4),
-                              child: Text(
-                                '${v.toInt()}h',
-                                style: AppTypography.caption
-                                    .copyWith(fontSize: 9),
+            decoration: BoxDecoration(
+              color: AppColors.secondarySystemBackground,
+              borderRadius: BorderRadius.circular(AppSpacing.radiusGrouped),
+            ),
+            child: Column(
+              children: [
+                Expanded(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: data.asMap().entries.map((e) {
+                      final r = e.value / maxVal;
+                      return Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 1),
+                          child: FractionallySizedBox(
+                            heightFactor: r.clamp(0.05, 1.0),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color:
+                                    (e.value < 1.0
+                                            ? AppColors.systemGreen
+                                            : AppColors.systemOrange)
+                                        .withValues(alpha: 0.7),
+                                borderRadius: const BorderRadius.vertical(
+                                  top: Radius.circular(3),
+                                ),
                               ),
-                            )
-                          : const SizedBox.shrink(),
-                    ),
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
                   ),
                 ),
-                gridData: const FlGridData(show: false),
-                borderData: FlBorderData(show: false),
-                barGroups: List.generate(24, (i) {
-                  final v = p.hourlyUsage[i];
-                  final h = DateTime.now().hour;
-                  return BarChartGroupData(
-                    x: i,
-                    barRods: [
-                      BarChartRodData(
-                        toY: v,
-                        width: 6,
-                        color: i == h
-                            ? AppColors.accent
-                            : v > 2
-                                ? AppColors.warning
-                                : AppColors.surfaceLighter,
-                        borderRadius: const BorderRadius.vertical(
-                            top: Radius.circular(3)),
-                      ),
-                    ],
-                  );
-                }),
-              )),
+                const SizedBox(height: AppSpacing.sm),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: ['6AM', '12PM', '6PM', '11PM']
+                      .map(
+                        (l) => Text(
+                          l,
+                          style: AppTypography.caption2.copyWith(
+                            color: AppColors.tertiaryLabel,
+                          ),
+                        ),
+                      )
+                      .toList(),
+                ),
+              ],
             ),
           ),
+          if (provider.blockedApps.isNotEmpty) ...[
+            const SizedBox(height: AppSpacing.lg),
+            Text('Blocked Apps', style: AppTypography.headline),
+            const SizedBox(height: AppSpacing.sm),
+            ...provider.blockedApps.asMap().entries.map(
+              (e) => Padding(
+                padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.md,
+                    vertical: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.secondarySystemBackground,
+                    borderRadius: BorderRadius.circular(
+                      AppSpacing.radiusGrouped,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: AppColors.tertiarySystemBackground,
+                          borderRadius: BorderRadius.circular(
+                            AppSpacing.radiusSm,
+                          ),
+                        ),
+                        child: Icon(
+                          e.value.icon,
+                          size: 20,
+                          color: e.value.isBlocked
+                              ? AppColors.systemRed
+                              : AppColors.secondaryLabel,
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.md),
+                      Expanded(
+                        child: Text(e.value.name, style: AppTypography.body),
+                      ),
+                      CNSwitch(
+                        value: e.value.isBlocked,
+                        onChanged: (_) => provider.toggleBlockedApp(e.key),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+          const SizedBox(height: 100),
         ],
-      );
-    });
+      ),
+    );
   }
+
+  String _fmt(int m) {
+    final h = m ~/ 60, r = m % 60;
+    return h > 0 ? '${h}h ${r}m' : '${r}m';
+  }
+}
+
+class _StatCard extends StatelessWidget {
+  final String label, value;
+  final Color color;
+  const _StatCard({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.all(AppSpacing.md),
+    decoration: BoxDecoration(
+      color: AppColors.secondarySystemBackground,
+      borderRadius: BorderRadius.circular(AppSpacing.radiusGrouped),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label.toUpperCase(),
+          style: AppTypography.caption2.copyWith(
+            color: AppColors.secondaryLabel,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.8,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.xs),
+        Text(
+          value,
+          style: AppTypography.title1.copyWith(
+            fontWeight: FontWeight.w700,
+            color: color,
+          ),
+        ),
+      ],
+    ),
+  );
 }

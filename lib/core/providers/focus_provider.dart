@@ -10,11 +10,7 @@ class BlockedApp {
   final IconData icon;
   bool isBlocked;
 
-  BlockedApp({
-    required this.name,
-    required this.icon,
-    this.isBlocked = true,
-  });
+  BlockedApp({required this.name, required this.icon, this.isBlocked = true});
 }
 
 /// Pomodoro + Focus mode state manager.
@@ -24,6 +20,12 @@ class FocusProvider extends ChangeNotifier {
   int shortBreakMinutes = 5;
   int longBreakMinutes = 15;
   int sessionsBeforeLongBreak = 4;
+  bool autoStartBreaks = true;
+
+  void toggleAutoStartBreaks() {
+    autoStartBreaks = !autoStartBreaks;
+    notifyListeners();
+  }
 
   // ── Timer State ──
   FocusState _state = FocusState.idle;
@@ -175,11 +177,39 @@ class FocusProvider extends ChangeNotifier {
       BlockedApp(name: 'TikTok', icon: Icons.play_circle_outline),
       BlockedApp(name: 'YouTube', icon: Icons.ondemand_video),
       BlockedApp(name: 'Reddit', icon: Icons.forum_outlined),
-      BlockedApp(name: 'Discord', icon: Icons.headset_mic_outlined, isBlocked: false),
+      BlockedApp(
+        name: 'Discord',
+        icon: Icons.headset_mic_outlined,
+        isBlocked: false,
+      ),
     ]);
     // Mock hourly usage data
-    final mockData = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 1.2, 2.5, 1.8, 0.8, 1.5,
-                      2.0, 1.0, 0.5, 1.8, 3.2, 2.5, 1.5, 0.8, 0.3, 0.1, 0.0, 0.0];
+    final mockData = [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.5,
+      1.2,
+      2.5,
+      1.8,
+      0.8,
+      1.5,
+      2.0,
+      1.0,
+      0.5,
+      1.8,
+      3.2,
+      2.5,
+      1.5,
+      0.8,
+      0.3,
+      0.1,
+      0.0,
+      0.0,
+    ];
     for (int i = 0; i < 24 && i < mockData.length; i++) {
       _hourlyUsage[i] = mockData[i];
     }
