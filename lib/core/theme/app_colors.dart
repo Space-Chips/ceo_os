@@ -51,6 +51,8 @@ class AppColors {
 
   // ── Accent (Primary app tint) ──
   static const Color accent = systemBlue;
+  static const Color accentLight = Color(0xFF409CFF);
+  static const Color accentDark = Color(0xFF0064E1);
   static const Color accentMuted = Color(0x330A84FF); // systemBlue @ 20%
 
   // ── Semantic Status ──
@@ -71,6 +73,11 @@ class AppColors {
   static const List<Color> accentGradient = [
     Color(0xFF0A84FF),
     Color(0xFF409CFF),
+  ];
+
+  static const List<Color> surfaceGradient = [
+    Color(0xFF1C1C1E),
+    Color(0xFF000000),
   ];
 
   // ── Legacy aliases (ease migration) ──

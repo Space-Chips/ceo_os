@@ -11,9 +11,11 @@ class CeoCard extends StatelessWidget {
   final VoidCallback? onTap;
   final bool showAccentStrip;
   final Color? accentStripColor;
+  final double? borderRadius;
 
   const CeoCard({
     super.key,
+    this.borderRadius,
     required this.child,
     this.padding,
     this.color,
@@ -24,13 +26,15 @@ class CeoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final radius = borderRadius ?? AppSpacing.radiusGrouped;
+
     Widget card = Container(
       decoration: BoxDecoration(
         color: color ?? AppColors.secondarySystemBackground,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusGrouped),
+        borderRadius: BorderRadius.circular(radius),
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(AppSpacing.radiusGrouped),
+        borderRadius: BorderRadius.circular(radius),
         child: Stack(
           children: [
             if (showAccentStrip)

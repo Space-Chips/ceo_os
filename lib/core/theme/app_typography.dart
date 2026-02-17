@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'app_colors.dart';
@@ -125,11 +126,11 @@ class AppTypography {
     letterSpacing: -1,
   );
 
-  // ── Legacy aliases (ease migration) ──
+  // ── Legacy aliases ──
   static TextStyle get displayLarge => largeTitle;
-  static TextStyle get displayMedium => largeTitle;
-  static TextStyle get headingLarge => title1;
-  static TextStyle get headingMedium => title2;
+  static TextStyle get displayMedium => title1;
+  static TextStyle get headingLarge => title2;
+  static TextStyle get headingMedium => title3;
   static TextStyle get headingSmall => headline;
   static TextStyle get bodyLarge => body;
   static TextStyle get bodyMedium => body;
