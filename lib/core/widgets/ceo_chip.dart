@@ -1,9 +1,7 @@
 import 'package:flutter/cupertino.dart';
+import '../../components/components.dart';
 import '../theme/app_colors.dart';
-import '../theme/app_spacing.dart';
-import '../theme/app_typography.dart';
 
-/// HIG-style filter pill chip.
 class CeoChip extends StatelessWidget {
   final String label;
   final bool isSelected;
@@ -22,34 +20,37 @@ class CeoChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final chipColor = color ?? AppColors.systemBlue;
+    final chipColor = color ?? AppColors.electricCyan;
 
     return GestureDetector(
       onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? chipColor.withValues(alpha: 0.18)
-              : AppColors.tertiarySystemBackground,
-          borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+      child: GlassCard(
+        borderRadius: 100,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        blur: 10,
+        border: Border.all(
+          color: isSelected ? chipColor : AppColors.glassBorder,
+          width: isSelected ? 1.5 : 0.5,
         ),
+        gradientColors: isSelected
+            ? [chipColor.withOpacity(0.2), chipColor.withOpacity(0.05)]
+            : [AppColors.glassBase, AppColors.glassBase],
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             if (icon != null) ...[
               Icon(
                 icon,
-                size: 14,
+                size: 16,
                 color: isSelected ? chipColor : AppColors.secondaryLabel,
               ),
-              const SizedBox(width: AppSpacing.xs),
+              const SizedBox(width: 8),
             ],
             Text(
               label,
-              style: AppTypography.subhead.copyWith(
-                color: isSelected ? chipColor : AppColors.secondaryLabel,
+              style: TextStyle(
+                color: isSelected ? chipColor : AppColors.label,
+                fontSize: 14,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
               ),
             ),

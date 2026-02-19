@@ -1,128 +1,99 @@
 import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'app_colors.dart';
 
-/// CEO OS Typography — Apple HIG Dynamic Type scale.
-/// Uses system font on all platforms for Cupertino-native feel.
-/// All sizes, weights, and line heights match the HIG "Large" default.
+/// CEO OS Typography — Sleek, modern, and monochromatic.
+/// Uses Space Grotesk for display and Inter for body.
+/// JetBrains Mono for utility/modern flair.
 class AppTypography {
   AppTypography._();
 
-  static const TextStyle _base = TextStyle(
-    fontFamily: '.AppleSystemUIFont',
+  static TextStyle get _displayBase =>
+      GoogleFonts.spaceGrotesk(color: AppColors.label, letterSpacing: -0.5);
+
+  static TextStyle get _bodyBase =>
+      GoogleFonts.inter(color: AppColors.label);
+
+  static TextStyle get mono => GoogleFonts.jetBrainsMono(
     color: AppColors.label,
   );
 
-  // ── HIG Dynamic Type Scale ──
+  // ── Type Scale ──
 
-  /// 34pt Bold — Main page headings (collapsible large title)
-  static TextStyle get largeTitle => _base.copyWith(
+  static TextStyle get largeTitle => _displayBase.copyWith(
     fontSize: 34,
     fontWeight: FontWeight.w700,
-    height: 41 / 34,
-    letterSpacing: 0.37,
+    height: 1.2,
   );
 
-  /// 28pt Regular — Primary page headers
-  static TextStyle get title1 => _base.copyWith(
+  static TextStyle get title1 => _displayBase.copyWith(
     fontSize: 28,
-    fontWeight: FontWeight.w400,
-    height: 34 / 28,
-    letterSpacing: 0.36,
+    fontWeight: FontWeight.w600,
+    height: 1.2,
   );
 
-  /// 22pt Regular — Section headers
-  static TextStyle get title2 => _base.copyWith(
-    fontSize: 22,
-    fontWeight: FontWeight.w400,
-    height: 28 / 22,
-    letterSpacing: 0.35,
-  );
+  static TextStyle get title2 =>
+      _displayBase.copyWith(fontSize: 22, fontWeight: FontWeight.w600);
 
-  /// 20pt Regular — Subsection headers
-  static TextStyle get title3 => _base.copyWith(
-    fontSize: 20,
-    fontWeight: FontWeight.w400,
-    height: 25 / 20,
-    letterSpacing: 0.38,
-  );
+  static TextStyle get title3 =>
+      _displayBase.copyWith(fontSize: 20, fontWeight: FontWeight.w500);
 
-  /// 17pt Semibold — Bolded text to distinguish from body
-  static TextStyle get headline => _base.copyWith(
+  static TextStyle get headline => _bodyBase.copyWith(
     fontSize: 17,
     fontWeight: FontWeight.w600,
-    height: 22 / 17,
-    letterSpacing: -0.41,
+    letterSpacing: -0.2,
   );
 
-  /// 17pt Regular — Primary content text
-  static TextStyle get body => _base.copyWith(
-    fontSize: 17,
-    fontWeight: FontWeight.w400,
-    height: 22 / 17,
-    letterSpacing: -0.41,
-  );
-
-  /// 16pt Regular — Highlighted info
-  static TextStyle get callout => _base.copyWith(
+  static TextStyle get body => _bodyBase.copyWith(
     fontSize: 16,
     fontWeight: FontWeight.w400,
-    height: 21 / 16,
-    letterSpacing: -0.32,
+    height: 1.5,
   );
 
-  /// 15pt Regular — Secondary descriptions
-  static TextStyle get subhead => _base.copyWith(
-    fontSize: 15,
-    fontWeight: FontWeight.w400,
-    height: 20 / 15,
-    letterSpacing: -0.24,
-  );
+  static TextStyle get callout =>
+      _bodyBase.copyWith(fontSize: 15, fontWeight: FontWeight.w400);
 
-  /// 13pt Regular — Disclaimers, timestamps
-  static TextStyle get footnote => _base.copyWith(
-    fontSize: 13,
-    fontWeight: FontWeight.w400,
-    height: 18 / 13,
-    letterSpacing: -0.08,
-  );
+  static TextStyle get subhead =>
+      _bodyBase.copyWith(fontSize: 14, fontWeight: FontWeight.w400);
 
-  /// 12pt Regular — Image captions
-  static TextStyle get caption1 => _base.copyWith(
+  static TextStyle get footnote => _bodyBase.copyWith(
     fontSize: 12,
     fontWeight: FontWeight.w400,
-    height: 16 / 12,
+    color: AppColors.secondaryLabel,
   );
 
-  /// 11pt Regular — Smallest legible metadata
-  static TextStyle get caption2 => _base.copyWith(
+  static TextStyle get caption1 => _bodyBase.copyWith(
     fontSize: 11,
     fontWeight: FontWeight.w400,
-    height: 13 / 11,
+    color: AppColors.tertiaryLabel,
   );
 
-  // ── Mono (for timers / large numeric displays) ──
-  static TextStyle get mono => _base.copyWith(
+  static TextStyle get caption2 => _bodyBase.copyWith(
+    fontSize: 10,
+    fontWeight: FontWeight.w400,
+    color: AppColors.quaternaryLabel,
+  );
+
+  // ── Special ──
+
+  static TextStyle get displayMono => mono.copyWith(
     fontSize: 48,
     fontWeight: FontWeight.w200,
-    letterSpacing: 2,
-    fontFeatures: const [FontFeature.tabularFigures()],
+    color: AppColors.label,
   );
 
-  /// Large hero number for Opal-style stats display
-  static TextStyle get heroNumber => _base.copyWith(
-    fontSize: 56,
+  static TextStyle get heroNumber => mono.copyWith(
+    fontSize: 64,
     fontWeight: FontWeight.w700,
+    letterSpacing: -3,
     height: 1.0,
-    letterSpacing: -2,
   );
 
-  /// Ultra-large display for Focus timer (42pt, regular weight)
-  static TextStyle get focusDisplay => _base.copyWith(
-    fontSize: 42,
-    fontWeight: FontWeight.w400,
-    height: 1.0,
+  static TextStyle get focusDisplay => mono.copyWith(
+    fontSize: 54,
+    fontWeight: FontWeight.w500,
     letterSpacing: -1,
   );
 

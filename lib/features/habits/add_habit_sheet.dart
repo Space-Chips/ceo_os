@@ -1,51 +1,39 @@
+import 'dart:ui';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart' show Colors;
 import 'package:provider/provider.dart';
+import '../../components/components.dart';
 import '../../core/providers/habit_provider.dart';
 import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
-import '../../core/widgets/ceo_button.dart';
-import '../../core/widgets/ceo_text_field.dart';
 
-/// Add habit modal sheet — Cupertino style.
 class AddHabitSheet extends StatefulWidget {
   const AddHabitSheet({super.key});
+
   @override
   State<AddHabitSheet> createState() => _AddHabitSheetState();
 }
 
 class _AddHabitSheetState extends State<AddHabitSheet> {
   final _nameCtrl = TextEditingController();
-  IconData _selectedIcon = CupertinoIcons.checkmark_circle;
-  Color _selectedColor = AppColors.systemBlue;
-  int _targetPerDay = 1;
+  bool _isDaily = true;
+  String _selectedIcon = 'bolt';
 
-  static const _icons = [
-    CupertinoIcons.checkmark_circle,
-    CupertinoIcons.heart,
-    CupertinoIcons.book,
-    CupertinoIcons.sportscourt,
-    CupertinoIcons.pencil,
-    CupertinoIcons.moon,
-    CupertinoIcons.drop,
-    CupertinoIcons.music_note,
-    CupertinoIcons.leaf_arrow_circlepath,
-    CupertinoIcons.person_2,
-    CupertinoIcons.desktopcomputer,
-    CupertinoIcons.cart,
-  ];
+  final List<String> _icons = ['bolt', 'flame', 'drop', 'heart', 'star', 'timer', 'briefcase', 'book'];
 
-  static const _colors = [
-    AppColors.systemBlue,
-    AppColors.systemPurple,
-    AppColors.systemGreen,
-    AppColors.systemOrange,
-    AppColors.systemRed,
-    AppColors.systemTeal,
-    AppColors.systemPink,
-    AppColors.systemYellow,
-    AppColors.systemIndigo,
-  ];
+  IconData _getIconData(String iconName) {
+    switch (iconName) {
+      case 'bolt': return CupertinoIcons.bolt_fill;
+      case 'flame': return CupertinoIcons.flame_fill;
+      case 'drop': return CupertinoIcons.drop_fill;
+      case 'heart': return CupertinoIcons.heart_fill;
+      case 'star': return CupertinoIcons.star_fill;
+      case 'timer': return CupertinoIcons.timer;
+      case 'briefcase': return CupertinoIcons.briefcase_fill;
+      case 'book': return CupertinoIcons.book_fill;
+      default: return CupertinoIcons.bolt_fill;
+    }
+  }
 
   @override
   void dispose() {
@@ -55,178 +43,164 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
 
   void _addHabit() {
     if (_nameCtrl.text.trim().isEmpty) return;
-    context.read<HabitProvider>().addHabit(
-      Habit(
-        name: _nameCtrl.text.trim(),
-        icon: _selectedIcon,
-        color: _selectedColor,
-        targetPerDay: _targetPerDay,
-      ),
+
+    context.read<HabitProvider>().createHabit(
+      _nameCtrl.text.trim(),
+      isDaily: _isDaily,
+      icon: _selectedIcon,
     );
     Navigator.of(context).pop();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
-      ),
-      decoration: const BoxDecoration(
-        color: AppColors.secondarySystemBackground,
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(AppSpacing.radiusLg),
+    return BackdropFilter(
+      filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+      child: Container(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        decoration: BoxDecoration(
+          color: AppColors.background.withOpacity(0.8),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+          border: const Border(top: BorderSide(color: AppColors.glassBorder, width: 0.5)),
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: AppColors.glassBorder,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                const NeoMonoText('NEW_PROTOCOL_INIT', fontSize: 18, fontWeight: FontWeight.bold),
+                const SizedBox(height: 24),
+
+                GlassInputField(
+                  placeholder: 'PROTOCOL_NAME...',
+                  controller: _nameCtrl,
+                  autofocus: true,
+                ),
+                const SizedBox(height: 24),
+
+                _sectionLabel('SELECT_IDENTIFIER'),
+                const SizedBox(height: 12),
+                SizedBox(
+                  height: 50,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: _icons.length,
+                    itemBuilder: (context, i) {
+                      final iconName = _icons[i];
+                      final isSelected = _selectedIcon == iconName;
+                      return GestureDetector(
+                        onTap: () => setState(() => _selectedIcon = iconName),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          margin: const EdgeInsets.only(right: 12),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: isSelected ? AppColors.primaryOrange.withOpacity(0.2) : Colors.transparent,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: isSelected ? AppColors.primaryOrange : AppColors.glassBorder,
+                              width: 0.5,
+                            ),
+                          ),
+                          child: Icon(
+                            _getIconData(iconName),
+                            size: 20,
+                            color: isSelected ? AppColors.primaryOrange : AppColors.secondaryLabel,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                _sectionLabel('EXECUTION_FREQUENCY'),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    _FrequencyChip(
+                      label: 'DAILY_RECURRENCE',
+                      isSelected: _isDaily,
+                      onTap: () => setState(() => _isDaily = true),
+                    ),
+                    const SizedBox(width: 12),
+                    _FrequencyChip(
+                      label: 'WEEKLY_RECURRENCE',
+                      isSelected: !_isDaily,
+                      onTap: () => setState(() => _isDaily = false),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 32),
+                LiquidButton(
+                  label: 'AUTHORIZE_PROTOCOL',
+                  fullWidth: true,
+                  onPressed: _addHabit,
+                ),
+                const SizedBox(height: 12),
+              ],
+            ),
+          ),
         ),
       ),
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.md),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Handle
-              Center(
-                child: Container(
-                  width: 36,
-                  height: 5,
-                  decoration: BoxDecoration(
-                    color: AppColors.tertiaryLabel,
-                    borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
-                  ),
-                ),
-              ),
-              const SizedBox(height: AppSpacing.md),
+    );
+  }
 
-              Text(
-                'New Habit',
-                style: AppTypography.title3.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.md),
+  Widget _sectionLabel(String label) => Text(
+    label,
+    style: AppTypography.mono.copyWith(fontSize: 10, color: AppColors.tertiaryLabel, letterSpacing: 1.5),
+  );
+}
 
-              // Name
-              CeoTextField(
-                hint: 'Habit name',
-                controller: _nameCtrl,
-                autofocus: true,
-              ),
-              const SizedBox(height: AppSpacing.md),
+class _FrequencyChip extends StatelessWidget {
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
 
-              // Icon picker
-              Text(
-                'Icon',
-                style: AppTypography.footnote.copyWith(
-                  color: AppColors.secondaryLabel,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              Wrap(
-                spacing: AppSpacing.sm,
-                runSpacing: AppSpacing.sm,
-                children: _icons.map((ic) {
-                  final isSelected = _selectedIcon == ic;
-                  return GestureDetector(
-                    onTap: () => setState(() => _selectedIcon = ic),
-                    child: Container(
-                      width: AppSpacing.minTouchTarget,
-                      height: AppSpacing.minTouchTarget,
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? _selectedColor.withValues(alpha: 0.18)
-                            : AppColors.tertiarySystemBackground,
-                        borderRadius: BorderRadius.circular(
-                          AppSpacing.radiusSm,
-                        ),
-                        border: isSelected
-                            ? Border.all(color: _selectedColor, width: 2)
-                            : null,
-                      ),
-                      child: Icon(
-                        ic,
-                        size: 20,
-                        color: isSelected
-                            ? _selectedColor
-                            : AppColors.secondaryLabel,
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
-              const SizedBox(height: AppSpacing.md),
+  const _FrequencyChip({
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
 
-              // Color picker
-              Text(
-                'Color',
-                style: AppTypography.footnote.copyWith(
-                  color: AppColors.secondaryLabel,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              Wrap(
-                spacing: AppSpacing.sm,
-                runSpacing: AppSpacing.sm,
-                children: _colors.map((c) {
-                  final isSelected = _selectedColor == c;
-                  return GestureDetector(
-                    onTap: () => setState(() => _selectedColor = c),
-                    child: Container(
-                      width: 36,
-                      height: 36,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: c,
-                        border: isSelected
-                            ? Border.all(color: CupertinoColors.white, width: 3)
-                            : null,
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
-              const SizedBox(height: AppSpacing.md),
-
-              // Daily target
-              Row(
-                children: [
-                  Text('Daily Target', style: AppTypography.body),
-                  const Spacer(),
-                  CupertinoButton(
-                    padding: EdgeInsets.zero,
-                    onPressed: _targetPerDay > 1
-                        ? () => setState(() => _targetPerDay--)
-                        : null,
-                    child: const Icon(CupertinoIcons.minus_circle, size: 28),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.md,
-                    ),
-                    child: Text(
-                      '$_targetPerDay',
-                      style: AppTypography.title3.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                  CupertinoButton(
-                    padding: EdgeInsets.zero,
-                    onPressed: () => setState(() => _targetPerDay++),
-                    child: const Icon(CupertinoIcons.plus_circle, size: 28),
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.lg),
-
-              // Create
-              CeoButton(
-                label: 'Create Habit',
-                expand: true,
-                onPressed: _addHabit,
-              ),
-              const SizedBox(height: AppSpacing.sm),
-            ],
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.primaryOrange.withOpacity(0.2) : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? AppColors.primaryOrange : AppColors.glassBorder,
+            width: 0.5,
+          ),
+        ),
+        child: Text(
+          label,
+          style: AppTypography.mono.copyWith(
+            fontSize: 10,
+            color: isSelected ? AppColors.primaryOrange : AppColors.secondaryLabel,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
           ),
         ),
       ),

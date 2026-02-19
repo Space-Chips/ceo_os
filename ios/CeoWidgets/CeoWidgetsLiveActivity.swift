@@ -19,6 +19,7 @@ struct CeoWidgetsAttributes: ActivityAttributes {
     var name: String
 }
 
+@available(iOSApplicationExtension 16.1, *)
 struct CeoWidgetsLiveActivity: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: CeoWidgetsAttributes.self) { context in
@@ -72,9 +73,12 @@ extension CeoWidgetsAttributes.ContentState {
      }
 }
 
+@available(iOSApplicationExtension 17.0, *)
 #Preview("Notification", as: .content, using: CeoWidgetsAttributes.preview) {
    CeoWidgetsLiveActivity()
 } contentStates: {
     CeoWidgetsAttributes.ContentState.smiley
     CeoWidgetsAttributes.ContentState.starEyes
 }
+
+

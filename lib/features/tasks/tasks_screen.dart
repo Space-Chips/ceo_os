@@ -1,14 +1,14 @@
+import 'dart:ui';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart' show Colors, Divider; // Explicitly import Colors and Divider
 import 'package:provider/provider.dart';
-import 'package:cupertino_native/cupertino_native.dart';
+import '../../components/components.dart';
+import '../../core/models/task_models.dart';
 import '../../core/providers/task_provider.dart';
 import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
-import '../../core/widgets/ceo_progress_ring.dart';
 import 'add_task_sheet.dart';
 
-/// Tasks screen — HIG grouped list + Eisenhower Matrix with CNSegmentedControl.
 class TasksScreen extends StatefulWidget {
   const TasksScreen({super.key});
   @override
@@ -16,14 +16,14 @@ class TasksScreen extends StatefulWidget {
 }
 
 class _TasksScreenState extends State<TasksScreen> {
-  int _viewIndex = 0; // 0 = List, 1 = Matrix
-  int _filterIndex = 0; // 0=All, 1=Today, 2=Upcoming, 3=Done
+  bool _isMatrixView = false;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<TaskProvider>().loadSampleData();
+      context.read<TaskProvider>().loadTasks();
+      context.read<TaskProvider>().loadGroups();
     });
   }
 
@@ -37,333 +37,272 @@ class _TasksScreenState extends State<TasksScreen> {
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
-      backgroundColor: AppColors.systemGroupedBackground,
-      child: CustomScrollView(
-        slivers: [
-          // ── Large Title Nav Bar ──
-          CupertinoSliverNavigationBar(
-            largeTitle: const Text('My Tasks'),
-            backgroundColor: AppColors.systemBackground,
-            border: null,
-            trailing: GestureDetector(
-              onTap: _showAddTask,
-              child: const CNIcon(symbol: CNSymbol('plus.circle.fill')),
-            ),
-          ),
-
-          // ── View Toggle: List / Matrix ──
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.md,
-                AppSpacing.md,
-                AppSpacing.md,
-                AppSpacing.sm,
+      backgroundColor: AppColors.background,
+      child: Stack(
+        children: [
+          // Background Glow
+          Positioned(
+            top: -50,
+            left: -50,
+            child: Container(
+              width: 250,
+              height: 250,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.primaryOrange.withOpacity(0.05),
               ),
-              child: CNSegmentedControl(
-                labels: const ['List', 'Matrix'],
-                selectedIndex: _viewIndex,
-                onValueChanged: (i) => setState(() => _viewIndex = i),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 80, sigmaY: 80),
+                child: Container(color: Colors.transparent),
               ),
             ),
           ),
 
-          if (_viewIndex == 0) ..._buildListView(),
-          if (_viewIndex == 1) ..._buildMatrixView(),
+          CustomScrollView(
+            slivers: [
+              CupertinoSliverNavigationBar(
+                largeTitle: const NeoMonoText(
+                  'TASKS',
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                ),
+                backgroundColor: AppColors.background.withOpacity(0.8),
+                border: null,
+                stretch: true,
+                trailing: CupertinoButton(
+                  padding: EdgeInsets.zero,
+                  onPressed: () => setState(() => _isMatrixView = !_isMatrixView),
+                  child: Icon(
+                    _isMatrixView ? CupertinoIcons.list_bullet : CupertinoIcons.square_grid_2x2,
+                    color: AppColors.primaryOrange,
+                  ),
+                ),
+              ),
+
+              Consumer<TaskProvider>(
+                builder: (context, prov, _) {
+                  if (prov.isLoading && prov.tasks.isEmpty) {
+                    return const SliverFillRemaining(
+                      child: Center(
+                        child: CupertinoActivityIndicator(
+                          color: AppColors.primaryOrange,
+                        ),
+                      ),
+                    );
+                  }
+
+                  final tasks = prov.tasks.where((t) => !t.completed).toList();
+
+                  if (tasks.isEmpty) {
+                    return SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              CupertinoIcons.square_list,
+                              size: 48,
+                              color: AppColors.tertiaryLabel,
+                            ),
+                            const SizedBox(height: 16),
+                            const NeoMonoText(
+                              'NO_ACTIVE_TASKS',
+                              fontSize: 14,
+                              color: AppColors.secondaryLabel,
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }
+
+                  if (_isMatrixView) {
+                    return _EisenhowerMatrix(tasks: tasks, onToggle: (id) => prov.completeTask(id));
+                  }
+
+                  // Group tasks by groupId
+                  final groupedTasks = <String?, List<ParetoTask>>{};
+                  for (final task in tasks) {
+                    groupedTasks.putIfAbsent(task.groupId, () => []).add(task);
+                  }
+
+                  return SliverPadding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 20,
+                    ).copyWith(bottom: 150),
+                    sliver: SliverList(
+                      delegate: SliverChildBuilderDelegate((context, index) {
+                        final groupId = groupedTasks.keys.elementAt(index);
+                        final groupTasks = groupedTasks[groupId]!;
+                        final group = prov.groups.where((g) => g.id == groupId).firstOrNull;
+
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: EdgeInsets.only(
+                                left: 4, 
+                                bottom: 12, 
+                                top: index == 0 ? 0 : 24,
+                              ),
+                              child: NeoMonoText(
+                                group?.name.toUpperCase() ?? 'GENERAL_TASKS',
+                                fontSize: 11,
+                                color: AppColors.primaryOrange,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            GlassCard(
+                              padding: EdgeInsets.zero,
+                              borderRadius: 24,
+                              child: Column(
+                                children: List.generate(groupTasks.length, (i) {
+                                  final task = groupTasks[i];
+                                  return Column(
+                                    children: [
+                                      _TaskTile(
+                                        task: task,
+                                        onToggle: () => prov.completeTask(task.id),
+                                      ),
+                                      if (i < groupTasks.length - 1)
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                                          child: Divider(
+                                            height: 1,
+                                            thickness: 0.5,
+                                            color: AppColors.glassBorder,
+                                          ),
+                                        ),
+                                    ],
+                                  );
+                                }),
+                              ),
+                            ),
+                          ],
+                        );
+                      }, childCount: groupedTasks.length),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+
+          Positioned(
+            right: 24,
+            bottom: 40,
+            child: FloatingAddButton(onPressed: _showAddTask),
+          ),
         ],
       ),
     );
   }
+}
 
-  // ──────────────────────────────────────────────────────
-  // LIST VIEW
-  // ──────────────────────────────────────────────────────
+class _EisenhowerMatrix extends StatelessWidget {
+  final List<ParetoTask> tasks;
+  final Function(String) onToggle;
 
-  List<Widget> _buildListView() {
-    return [
-      // Filter chips
-      SliverToBoxAdapter(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.md,
-            vertical: AppSpacing.xs,
-          ),
-          child: CNSegmentedControl(
-            labels: const ['All', 'Today', 'Upcoming', 'Done'],
-            selectedIndex: _filterIndex,
-            onValueChanged: (i) => setState(() => _filterIndex = i),
-          ),
+  const _EisenhowerMatrix({required this.tasks, required this.onToggle});
+
+  @override
+  Widget build(BuildContext context) {
+    // Quadrants:
+    // 1: Critical/High Importance + Short Duration (Do First)
+    // 2: Medium Importance + Short Duration (Schedule)
+    // 3: High Importance + Long Duration (Delegate/Break down)
+    // 4: Low Importance (Eliminate/Backlog)
+    
+    // Simplification for prototype:
+    final q1 = tasks.where((t) => t.importanceLevel == 'Critical' || t.importanceLevel == 'High').toList();
+    final q2 = tasks.where((t) => t.importanceLevel == 'Medium').toList();
+    final q3 = tasks.where((t) => t.importanceLevel == 'Low').toList();
+    final q4 = tasks.where((t) => t.importanceLevel == null).toList();
+
+    return SliverPadding(
+      padding: const EdgeInsets.all(20).copyWith(bottom: 150),
+      sliver: SliverGrid(
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          mainAxisSpacing: 16,
+          crossAxisSpacing: 16,
+          childAspectRatio: 0.8,
         ),
+        delegate: SliverChildListDelegate([
+          _MatrixQuadrant(title: 'DO_FIRST', tasks: q1, color: AppColors.error, onToggle: onToggle),
+          _MatrixQuadrant(title: 'SCHEDULE', tasks: q2, color: AppColors.primaryOrange, onToggle: onToggle),
+          _MatrixQuadrant(title: 'DELEGATE', tasks: q3, color: AppColors.secondaryLabel, onToggle: onToggle),
+          _MatrixQuadrant(title: 'ELIMINATE', tasks: q4, color: AppColors.tertiaryLabel, onToggle: onToggle),
+        ]),
       ),
-
-      // Task list
-      Consumer<TaskProvider>(
-        builder: (context, prov, _) {
-          final tasks = switch (_filterIndex) {
-            0 => prov.incompleteTasks,
-            1 => prov.todayTasks,
-            2 => prov.upcomingTasks,
-            3 => prov.completedTasks,
-            _ => prov.incompleteTasks,
-          };
-
-          if (tasks.isEmpty) {
-            return SliverFillRemaining(
-              hasScrollBody: false,
-              child: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const CNIcon(symbol: CNSymbol('checkmark.circle')),
-                    const SizedBox(height: AppSpacing.md),
-                    Text(
-                      'No tasks',
-                      style: AppTypography.title3.copyWith(
-                        color: AppColors.secondaryLabel,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.xs),
-                    Text(
-                      'Tap + to add your first task',
-                      style: AppTypography.subhead.copyWith(
-                        color: AppColors.tertiaryLabel,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }
-
-          return SliverPadding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.md,
-              vertical: AppSpacing.sm,
-            ).copyWith(bottom: 120),
-            sliver: SliverList(
-              delegate: SliverChildBuilderDelegate((context, index) {
-                final task = tasks[index];
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                  child: Dismissible(
-                    key: ValueKey(task.id),
-                    direction: DismissDirection.endToStart,
-                    onDismissed: (_) => prov.deleteTask(task.id),
-                    background: Container(
-                      alignment: Alignment.centerRight,
-                      padding: const EdgeInsets.only(right: AppSpacing.lg),
-                      decoration: BoxDecoration(
-                        color: AppColors.systemRed,
-                        borderRadius: BorderRadius.circular(
-                          AppSpacing.radiusGrouped,
-                        ),
-                      ),
-                      child: const Icon(
-                        CupertinoIcons.trash,
-                        color: CupertinoColors.white,
-                        size: 22,
-                      ),
-                    ),
-                    child: _TaskTile(
-                      task: task,
-                      onToggle: () => prov.toggleTask(task.id),
-                    ),
-                  ),
-                );
-              }, childCount: tasks.length),
-            ),
-          );
-        },
-      ),
-    ];
-  }
-
-  // ──────────────────────────────────────────────────────
-  // EISENHOWER MATRIX VIEW
-  // ──────────────────────────────────────────────────────
-
-  List<Widget> _buildMatrixView() {
-    return [
-      Consumer<TaskProvider>(
-        builder: (context, prov, _) {
-          return SliverPadding(
-            padding: const EdgeInsets.all(AppSpacing.md).copyWith(bottom: 120),
-            sliver: SliverToBoxAdapter(
-              child: Column(
-                children: [
-                  // Top row: Q1 + Q2
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _MatrixQuadrant(
-                          title: 'Do First',
-                          subtitle: 'Urgent & Important',
-                          color: AppColors.systemRed,
-                          icon: CupertinoIcons.bolt_fill,
-                          tasks: prov.doFirstTasks,
-                          onToggle: (id) => prov.toggleTask(id),
-                        ),
-                      ),
-                      const SizedBox(width: AppSpacing.sm),
-                      Expanded(
-                        child: _MatrixQuadrant(
-                          title: 'Schedule',
-                          subtitle: 'Important',
-                          color: AppColors.systemBlue,
-                          icon: CupertinoIcons.calendar,
-                          tasks: prov.scheduleTasks,
-                          onToggle: (id) => prov.toggleTask(id),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  // Bottom row: Q3 + Q4
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _MatrixQuadrant(
-                          title: 'Delegate',
-                          subtitle: 'Urgent',
-                          color: AppColors.systemOrange,
-                          icon: CupertinoIcons.person_2,
-                          tasks: prov.delegateTasks,
-                          onToggle: (id) => prov.toggleTask(id),
-                        ),
-                      ),
-                      const SizedBox(width: AppSpacing.sm),
-                      Expanded(
-                        child: _MatrixQuadrant(
-                          title: 'Eliminate',
-                          subtitle: 'Neither',
-                          color: AppColors.tertiaryLabel,
-                          icon: CupertinoIcons.trash,
-                          tasks: prov.eliminateTasks,
-                          onToggle: (id) => prov.toggleTask(id),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
-    ];
+    );
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────
-// EISENHOWER MATRIX QUADRANT
-// ─────────────────────────────────────────────────────────────────────
-
 class _MatrixQuadrant extends StatelessWidget {
   final String title;
-  final String subtitle;
+  final List<ParetoTask> tasks;
   final Color color;
-  final IconData icon;
-  final List<Task> tasks;
-  final ValueChanged<String> onToggle;
+  final Function(String) onToggle;
 
   const _MatrixQuadrant({
     required this.title,
-    required this.subtitle,
-    required this.color,
-    required this.icon,
     required this.tasks,
+    required this.color,
     required this.onToggle,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      constraints: const BoxConstraints(minHeight: 200),
-      decoration: BoxDecoration(
-        color: AppColors.secondarySystemBackground,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-        child: Stack(
-          children: [
-            // Color strip at top
-            Positioned(
-              left: 0,
-              right: 0,
-              top: 0,
-              child: Container(height: 3, color: color),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(AppSpacing.md),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 2),
-                  Row(
-                    children: [
-                      Icon(icon, size: 16, color: color),
-                      const SizedBox(width: 6),
-                      Text(
-                        title,
-                        style: AppTypography.headline.copyWith(
-                          color: color,
-                          fontSize: 15,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    subtitle,
-                    style: AppTypography.caption2.copyWith(
-                      color: AppColors.secondaryLabel,
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  if (tasks.isEmpty)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: AppSpacing.md,
-                      ),
-                      child: Center(
-                        child: Text(
-                          'None',
-                          style: AppTypography.footnote.copyWith(
-                            color: AppColors.tertiaryLabel,
-                          ),
-                        ),
-                      ),
-                    )
-                  else
-                    ...tasks.map(
-                      (task) => Padding(
-                        padding: const EdgeInsets.only(bottom: 6),
-                        child: GestureDetector(
-                          onTap: () => onToggle(task.id),
+    return GlassCard(
+      padding: const EdgeInsets.all(12),
+      borderRadius: 20,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 8,
+                height: 8,
+                decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: NeoMonoText(
+                  title,
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Expanded(
+            child: tasks.isEmpty
+                ? Center(
+                    child: Icon(CupertinoIcons.check_mark, size: 16, color: color.withOpacity(0.3)),
+                  )
+                : ListView.builder(
+                    padding: EdgeInsets.zero,
+                    itemCount: tasks.length,
+                    itemBuilder: (context, i) {
+                      final task = tasks[i];
+                      return GestureDetector(
+                        onTap: () => onToggle(task.id),
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
                           child: Row(
                             children: [
-                              Icon(
-                                task.isComplete
-                                    ? CupertinoIcons.checkmark_circle_fill
-                                    : CupertinoIcons.circle,
-                                size: 18,
-                                color: task.isComplete
-                                    ? AppColors.systemGreen
-                                    : AppColors.tertiaryLabel,
-                              ),
+                              Icon(CupertinoIcons.circle, size: 12, color: color),
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
-                                  task.title,
-                                  style: AppTypography.subhead.copyWith(
-                                    decoration: task.isComplete
-                                        ? TextDecoration.lineThrough
-                                        : null,
-                                    color: task.isComplete
-                                        ? AppColors.tertiaryLabel
-                                        : AppColors.label,
-                                  ),
+                                  task.title.toUpperCase(),
+                                  style: AppTypography.mono.copyWith(fontSize: 9, color: AppColors.label),
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
                                 ),
@@ -371,214 +310,115 @@ class _MatrixQuadrant extends StatelessWidget {
                             ],
                           ),
                         ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ],
-        ),
+                      );
+                    },
+                  ),
+          ),
+        ],
       ),
     );
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────
-// TASK TILE — HIG grouped cell style (44pt min touch target)
-// ─────────────────────────────────────────────────────────────────────
-
-class _TaskTile extends StatefulWidget {
-  final Task task;
+class _TaskTile extends StatelessWidget {
+  final ParetoTask task;
   final VoidCallback onToggle;
   const _TaskTile({required this.task, required this.onToggle});
 
-  @override
-  State<_TaskTile> createState() => _TaskTileState();
-}
-
-class _TaskTileState extends State<_TaskTile>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _anim;
-  late Animation<double> _scale;
-
-  @override
-  void initState() {
-    super.initState();
-    _anim = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 300),
-    );
-    _scale = Tween<double>(
-      begin: 1.0,
-      end: 1.2,
-    ).animate(CurvedAnimation(parent: _anim, curve: Curves.easeInOut));
+  Color get _priorityColor {
+    switch (task.importanceLevel) {
+      case 'Critical':
+        return AppColors.error;
+      case 'High':
+        return AppColors.primaryOrange;
+      case 'Medium':
+        return AppColors.primaryOrange.withOpacity(0.6);
+      case 'Low':
+        return AppColors.secondaryLabel;
+      default:
+        return AppColors.tertiaryLabel;
+    }
   }
-
-  @override
-  void dispose() {
-    _anim.dispose();
-    super.dispose();
-  }
-
-  void _handleTap() {
-    _anim.forward().then((_) => _anim.reverse());
-    widget.onToggle();
-  }
-
-  Color get _priorityColor => switch (widget.task.priority) {
-    TaskPriority.urgent => AppColors.systemRed,
-    TaskPriority.high => AppColors.systemOrange,
-    TaskPriority.medium => AppColors.systemYellow,
-    TaskPriority.low => AppColors.systemBlue,
-    TaskPriority.none => AppColors.tertiaryLabel,
-  };
 
   @override
   Widget build(BuildContext context) {
-    final task = widget.task;
     return Container(
-      constraints: const BoxConstraints(minHeight: AppSpacing.minTouchTarget),
-      decoration: BoxDecoration(
-        color: AppColors.secondarySystemBackground,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusGrouped),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(AppSpacing.radiusGrouped),
-        child: Stack(
-          children: [
-            // Priority accent strip
-            if (task.priority != TaskPriority.none)
-              Positioned(
-                left: 0,
-                top: 0,
-                bottom: 0,
-                child: Container(width: 3, color: _priorityColor),
-              ),
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.md,
-                vertical: 12,
-              ),
-              child: Row(
-                children: [
-                  // Animated checkbox
-                  GestureDetector(
-                    onTap: _handleTap,
-                    child: SizedBox(
-                      width: AppSpacing.minTouchTarget,
-                      height: AppSpacing.minTouchTarget,
-                      child: Center(
-                        child: ScaleTransition(
-                          scale: _scale,
-                          child: AnimatedSwitcher(
-                            duration: const Duration(milliseconds: 200),
-                            child: Icon(
-                              task.isComplete
-                                  ? CupertinoIcons.checkmark_circle_fill
-                                  : CupertinoIcons.circle,
-                              key: ValueKey(task.isComplete),
-                              size: 24,
-                              color: task.isComplete
-                                  ? _priorityColor
-                                  : AppColors.tertiaryLabel,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: onToggle,
+            child: Icon(
+              task.completed
+                  ? CupertinoIcons.checkmark_circle_fill
+                  : CupertinoIcons.circle,
+              size: 24,
+              color: task.completed
+                  ? AppColors.success
+                  : AppColors.tertiaryLabel,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  task.title.toUpperCase(),
+                  style: AppTypography.mono.copyWith(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    decoration: task.completed
+                        ? TextDecoration.lineThrough
+                        : null,
+                    color: task.completed
+                        ? AppColors.tertiaryLabel
+                        : AppColors.label,
+                  ),
+                ),
+                if (task.timeDuration != null ||
+                    task.importanceLevel != null) ...[
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      if (task.timeDuration != null)
+                        Text(
+                          task.timeDuration!,
+                          style: AppTypography.mono.copyWith(
+                            fontSize: 10,
+                            color: AppColors.secondaryLabel,
+                          ),
+                        ),
+                      if (task.timeDuration != null &&
+                          task.importanceLevel != null)
+                        const SizedBox(width: 8),
+                      if (task.importanceLevel != null)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: _priorityColor.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            task.importanceLevel!.toUpperCase(),
+                            style: AppTypography.mono.copyWith(
+                              fontSize: 9,
+                              color: _priorityColor,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),
-                      ),
-                    ),
+                    ],
                   ),
-                  const SizedBox(width: AppSpacing.sm),
-                  // Content
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          task.title,
-                          style: AppTypography.body.copyWith(
-                            fontWeight: FontWeight.w600,
-                            decoration: task.isComplete
-                                ? TextDecoration.lineThrough
-                                : null,
-                            color: task.isComplete
-                                ? AppColors.tertiaryLabel
-                                : AppColors.label,
-                          ),
-                        ),
-                        if (task.dueDate != null ||
-                            task.subtasks.isNotEmpty) ...[
-                          const SizedBox(height: AppSpacing.xs),
-                          Row(
-                            children: [
-                              if (task.dueDate != null) ...[
-                                // Due date capsule badge
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 3,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: task.isOverdue
-                                        ? AppColors.systemRed.withValues(
-                                            alpha: 0.15,
-                                          )
-                                        : AppColors.tertiarySystemBackground,
-                                    borderRadius: BorderRadius.circular(
-                                      AppSpacing.radiusFull,
-                                    ),
-                                  ),
-                                  child: Text(
-                                    _formatDate(task.dueDate!),
-                                    style: AppTypography.caption2.copyWith(
-                                      color: task.isOverdue
-                                          ? AppColors.systemRed
-                                          : AppColors.secondaryLabel,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                              if (task.subtasks.isNotEmpty) ...[
-                                if (task.dueDate != null)
-                                  const SizedBox(width: AppSpacing.sm),
-                                Text(
-                                  '${task.subtasks.where((s) => s.isComplete).length}/${task.subtasks.length}',
-                                  style: AppTypography.caption2.copyWith(
-                                    color: AppColors.secondaryLabel,
-                                  ),
-                                ),
-                              ],
-                            ],
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                  // Progress mini ring
-                  if (task.subtasks.isNotEmpty) ...[
-                    const SizedBox(width: AppSpacing.sm),
-                    CeoProgressRing(
-                      progress: task.subtaskProgress,
-                      size: 28,
-                      strokeWidth: 3,
-                      gradientColors: [_priorityColor, _priorityColor],
-                    ),
-                  ],
                 ],
-              ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
-  }
-
-  String _formatDate(DateTime date) {
-    final now = DateTime.now();
-    final diff = date.difference(DateTime(now.year, now.month, now.day));
-    if (diff.inDays == 0) return 'Today';
-    if (diff.inDays == 1) return 'Tomorrow';
-    if (diff.inDays < 7) return '${diff.inDays}d';
-    return '${date.month}/${date.day}';
   }
 }

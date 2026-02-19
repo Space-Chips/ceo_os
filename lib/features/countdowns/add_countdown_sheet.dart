@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
-import 'package:cupertino_native/cupertino_native.dart';
+import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import '../../core/providers/countdown_provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
@@ -219,7 +219,7 @@ class _AddCountdownSheetState extends State<AddCountdownSheet> {
 
               SizedBox(
                 width: double.infinity,
-                child: CNButton(
+                child: AdaptiveButton(
                   label: 'Create Countdown',
                   onPressed: _addCountdown,
                 ),

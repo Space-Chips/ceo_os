@@ -1,155 +1,113 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'app_colors.dart';
-import 'app_spacing.dart';
 import 'app_typography.dart';
 
-/// CEO OS Theme — Cupertino-first, dark only.
-/// Primary theme is CupertinoThemeData; Material ThemeData provided for
-/// fallback compatibility (charts, bottom sheets, etc.).
+/// CEO OS Theme — Monochromatic Dark with Orange Accent.
 class AppTheme {
   AppTheme._();
 
-  // ── Primary Cupertino Theme (iOS) ──
   static CupertinoThemeData get cupertino {
     return const CupertinoThemeData(
       brightness: Brightness.dark,
-      primaryColor: AppColors.systemBlue,
-      scaffoldBackgroundColor: AppColors.systemBackground,
-      barBackgroundColor: Color(0xF0000000), // Translucent black for bars
-      textTheme: CupertinoTextThemeData(primaryColor: AppColors.systemBlue),
+      primaryColor: AppColors.primaryOrange,
+      scaffoldBackgroundColor: AppColors.background,
+      barBackgroundColor: Color(0xCC000000),
+      textTheme: CupertinoTextThemeData(
+        primaryColor: AppColors.primaryOrange,
+      ),
     );
   }
 
-  // ── Material Fallback Theme (for fl_chart, showModalBottomSheet, etc.) ──
   static ThemeData get materialFallback {
     return ThemeData(
       brightness: Brightness.dark,
-      scaffoldBackgroundColor: AppColors.systemBackground,
-      primaryColor: AppColors.systemBlue,
+      scaffoldBackgroundColor: AppColors.background,
+      primaryColor: AppColors.primaryOrange,
+      canvasColor: AppColors.background,
       colorScheme: const ColorScheme.dark(
-        primary: AppColors.systemBlue,
-        secondary: AppColors.systemBlue,
-        surface: AppColors.secondarySystemBackground,
-        error: AppColors.systemRed,
+        primary: AppColors.primaryOrange,
+        secondary: AppColors.primaryOrange,
+        surface: AppColors.backgroundLight,
+        error: AppColors.error,
       ),
 
-      // AppBar (rarely used, but just in case)
-      appBarTheme: const AppBarTheme(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        titleTextStyle: TextStyle(
-          fontSize: 17,
-          fontWeight: FontWeight.w600,
-          color: AppColors.label,
-        ),
-        iconTheme: IconThemeData(color: AppColors.label, size: 22),
+      // Text Theme
+      textTheme: TextTheme(
+        displayLarge: AppTypography.largeTitle,
+        displayMedium: AppTypography.title1,
+        headlineMedium: AppTypography.title2,
+        titleLarge: AppTypography.title3,
+        bodyLarge: AppTypography.body,
+        bodyMedium: AppTypography.body,
+        labelLarge: AppTypography.headline,
       ),
 
-      // Card — no border in dark mode (HIG: color differentiation only)
+      // Card
       cardTheme: CardThemeData(
-        color: AppColors.secondarySystemBackground,
+        color: AppColors.surface,
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.radiusGrouped),
+          borderRadius: BorderRadius.circular(24),
+          side: const BorderSide(color: AppColors.glassBorder, width: 0.5),
         ),
       ),
 
-      // Bottom Navigation
-      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-        backgroundColor: AppColors.systemBackground,
-        selectedItemColor: AppColors.systemBlue,
-        unselectedItemColor: AppColors.tertiaryLabel,
-        type: BottomNavigationBarType.fixed,
-        showSelectedLabels: true,
-        showUnselectedLabels: true,
-      ),
-
-      // Elevated Button
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.systemBlue,
-          foregroundColor: Colors.white,
-          elevation: 0,
-          minimumSize: const Size(0, 50), // HIG large button height
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.lg,
-            vertical: 14,
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12), // HIG large button radius
-          ),
-        ),
-      ),
-
-      // Input — HIG text field specs
+      // Input
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: AppColors.tertiarySystemBackground,
+        fillColor: AppColors.backgroundLight,
         contentPadding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.sm,
-          vertical: 14,
+          horizontal: 20,
+          vertical: 18,
         ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-          borderSide: BorderSide.none,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-          borderSide: BorderSide.none,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-          borderSide: const BorderSide(color: AppColors.systemBlue, width: 1.5),
-        ),
-      ),
-
-      // FAB
-      floatingActionButtonTheme: const FloatingActionButtonThemeData(
-        backgroundColor: AppColors.systemBlue,
-        foregroundColor: Colors.white,
-        elevation: 0,
-      ),
-
-      // Divider — HIG separator
-      dividerTheme: const DividerThemeData(
-        color: AppColors.separator,
-        thickness: 0.5,
-        space: 0,
-      ),
-
-      // Chip
-      chipTheme: ChipThemeData(
-        backgroundColor: AppColors.tertiarySystemBackground,
-        selectedColor: AppColors.accentMuted,
-        side: BorderSide.none,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
-        ),
-      ),
-
-      // Bottom Sheet
-      bottomSheetTheme: const BottomSheetThemeData(
-        backgroundColor: AppColors.secondarySystemBackground,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(
-            top: Radius.circular(AppSpacing.radiusLg),
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(
+            color: AppColors.glassBorder,
+            width: 0.5,
           ),
         ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(
+            color: AppColors.glassBorder,
+            width: 0.5,
+          ),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(
+            color: AppColors.primaryOrange,
+            width: 1.5,
+          ),
+        ),
+        labelStyle: AppTypography.body.copyWith(color: AppColors.secondaryLabel),
+        hintStyle: AppTypography.body.copyWith(color: AppColors.tertiaryLabel),
       ),
 
-      // SnackBar
-      snackBarTheme: SnackBarThemeData(
-        backgroundColor: AppColors.tertiarySystemBackground,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+      // Buttons
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.primaryOrange,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          textStyle: AppTypography.headline,
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
         ),
-        behavior: SnackBarBehavior.floating,
+      ),
+
+      // Divider
+      dividerTheme: const DividerThemeData(
+        color: AppColors.glassBorder,
+        thickness: 0.5,
+        space: 1,
       ),
     );
   }
 
-  // ── Legacy aliases ──
   static ThemeData get dark => materialFallback;
 }

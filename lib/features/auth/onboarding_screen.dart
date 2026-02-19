@@ -1,11 +1,10 @@
+import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
+import '../../components/components.dart';
 import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
-import '../../core/widgets/ceo_button.dart';
 
-/// Onboarding — clean, Apple HIG compliant.
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
   @override
@@ -18,19 +17,22 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   static const _pages = [
     _Page(
-      icon: CupertinoIcons.checkmark_circle,
-      title: 'Organize Everything',
-      subtitle: 'Tasks, priorities, and deadlines\nin one focused workspace.',
+      icon: CupertinoIcons.layers_fill,
+      title: 'CORE_SYSTEM',
+      subtitle:
+          'Advanced AI productivity matrix\ndesigned for high-performance operators.',
     ),
     _Page(
-      icon: CupertinoIcons.flame,
-      title: 'Build Consistency',
-      subtitle: 'Track habits with streaks\nand daily check-ins.',
+      icon: CupertinoIcons.waveform_path_ecg,
+      title: 'NEURAL_HABITS',
+      subtitle:
+          'Rewire your focus with biometric\ntracking and consistency protocols.',
     ),
     _Page(
-      icon: CupertinoIcons.shield,
-      title: 'Eliminate Distractions',
-      subtitle: 'Pomodoro timer and app blocking\nto protect your focus time.',
+      icon: CupertinoIcons.shield_lefthalf_fill,
+      title: 'FOCUS_SHIELD',
+      subtitle:
+          'Active distraction blocking to protect\nyour cognitive bandwidth.',
     ),
   ];
 
@@ -43,131 +45,135 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
-      backgroundColor: AppColors.systemBackground,
-      child: SafeArea(
-        child: Column(
-          children: [
-            // Skip
-            Align(
-              alignment: Alignment.topRight,
-              child: CupertinoButton(
-                padding: const EdgeInsets.all(AppSpacing.md),
-                onPressed: () => context.go('/tasks'),
-                child: Text(
-                  'Skip',
-                  style: AppTypography.body.copyWith(
-                    color: AppColors.secondaryLabel,
+      backgroundColor: AppColors.background,
+      child: Stack(
+        children: [
+          // Background Glow
+          Positioned(
+            top: 100,
+            right: -50,
+            child: Container(
+              width: 300,
+              height: 300,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.primaryOrange.withValues(alpha: 0.05),
+              ),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 100, sigmaY: 100),
+                child: Container(color: CupertinoColors.transparent),
+              ),
+            ),
+          ),
+
+          SafeArea(
+            child: Column(
+              children: [
+                Align(
+                  alignment: Alignment.topRight,
+                  child: CupertinoButton(
+                    padding: const EdgeInsets.all(20),
+                    onPressed: () => context.go('/signup'),
+                    child: Text(
+                      'SKIP_PROTOCOL',
+                      style: AppTypography.mono.copyWith(
+                        color: AppColors.secondaryLabel,
+                        fontSize: 10,
+                      ),
+                    ),
                   ),
                 ),
-              ),
-            ),
 
-            // Pages
-            Expanded(
-              child: PageView.builder(
-                controller: _pageController,
-                onPageChanged: (i) => setState(() => _currentPage = i),
-                itemCount: _pages.length,
-                itemBuilder: (_, i) {
-                  final page = _pages[i];
-                  return Padding(
-                    padding: AppSpacing.screenPadding.copyWith(
-                      top: AppSpacing.xxxl,
-                    ),
-                    child: Column(
-                      children: [
-                        const Spacer(),
-                        Container(
-                          width: 96,
-                          height: 96,
-                          decoration: BoxDecoration(
-                            color: AppColors.secondarySystemBackground,
-                            borderRadius: BorderRadius.circular(
-                              AppSpacing.radiusXl,
+                Expanded(
+                  child: PageView.builder(
+                    controller: _pageController,
+                    onPageChanged: (i) => setState(() => _currentPage = i),
+                    itemCount: _pages.length,
+                    itemBuilder: (_, i) {
+                      final page = _pages[i];
+                      return Padding(
+                        padding: const EdgeInsets.all(32),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            GlassCard(
+                              padding: const EdgeInsets.all(32),
+                              borderRadius: 40,
+                              child: Icon(
+                                page.icon,
+                                color: AppColors.primaryOrange,
+                                size: 48,
+                              ),
                             ),
-                            border: Border.all(
-                              color: AppColors.separator,
-                              width: 0.5,
+                            const SizedBox(height: 48),
+                            NeoMonoText(
+                              page.title,
+                              fontSize: 28,
+                              fontWeight: FontWeight.w800,
                             ),
-                          ),
-                          child: Icon(
-                            page.icon,
-                            color: AppColors.secondaryLabel,
-                            size: 40,
-                          ),
-                        ),
-                        const SizedBox(height: AppSpacing.xl),
-                        Text(
-                          page.title,
-                          style: AppTypography.largeTitle,
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: AppSpacing.md),
-                        Text(
-                          page.subtitle,
-                          style: AppTypography.body.copyWith(
-                            color: AppColors.secondaryLabel,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const Spacer(flex: 2),
-                      ],
-                    ),
-                  );
-                },
-              ),
-            ),
-
-            // Indicators + Continue button
-            Padding(
-              padding: AppSpacing.screenPadding.copyWith(
-                top: 0,
-                bottom: AppSpacing.lg,
-              ),
-              child: Column(
-                children: [
-                  // Page dots
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(_pages.length, (i) {
-                      return AnimatedContainer(
-                        duration: const Duration(milliseconds: 300),
-                        margin: const EdgeInsets.symmetric(horizontal: 4),
-                        width: _currentPage == i ? 24 : 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          color: _currentPage == i
-                              ? AppColors.systemBlue
-                              : AppColors.tertiarySystemBackground,
-                          borderRadius: BorderRadius.circular(
-                            AppSpacing.radiusFull,
-                          ),
+                            const SizedBox(height: 24),
+                            Text(
+                              page.subtitle.toUpperCase(),
+                              style: AppTypography.mono.copyWith(
+                                color: AppColors.secondaryLabel,
+                                fontSize: 12,
+                                height: 1.6,
+                                letterSpacing: 1.2,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
                         ),
                       );
-                    }),
-                  ),
-                  const SizedBox(height: AppSpacing.lg),
-                  CeoButton(
-                    label: _currentPage == _pages.length - 1
-                        ? 'Get Started'
-                        : 'Continue',
-                    expand: true,
-                    onPressed: () {
-                      if (_currentPage < _pages.length - 1) {
-                        _pageController.nextPage(
-                          duration: const Duration(milliseconds: 400),
-                          curve: Curves.easeInOut,
-                        );
-                      } else {
-                        context.go('/tasks');
-                      }
                     },
                   ),
-                ],
-              ),
+                ),
+
+                Padding(
+                  padding: const EdgeInsets.all(32),
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: List.generate(_pages.length, (i) {
+                          return AnimatedContainer(
+                            duration: const Duration(milliseconds: 300),
+                            margin: const EdgeInsets.symmetric(horizontal: 4),
+                            width: _currentPage == i ? 32 : 8,
+                            height: 4,
+                            decoration: BoxDecoration(
+                              color: _currentPage == i
+                                  ? AppColors.primaryOrange
+                                  : AppColors.glassBorder,
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                          );
+                        }),
+                      ),
+                      const SizedBox(height: 32),
+                      LiquidButton(
+                        label: _currentPage == _pages.length - 1
+                            ? 'INITIALIZE'
+                            : 'NEXT_PHASE',
+                        fullWidth: true,
+                        onPressed: () {
+                          if (_currentPage < _pages.length - 1) {
+                            _pageController.nextPage(
+                              duration: const Duration(milliseconds: 400),
+                              curve: Curves.easeOutQuart,
+                            );
+                          } else {
+                            context.go('/signup');
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

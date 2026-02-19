@@ -14,13 +14,13 @@ class AppSpacing {
   static const double xxl = 48;
   static const double xxxl = 64;
 
-  // ── Border Radius (HIG specifications) ──
-  static const double radiusSm = 8; // buttons, small elements
-  static const double radiusMd = 10; // cards, grouped content (HIG: 10pt)
-  static const double radiusLg = 13; // large cards (HIG: 13pt)
-  static const double radiusXl = 20; // sheets
-  static const double radiusGrouped = 10; // Grouped table view cells
-  static const double radiusFull = 999; // pills
+  // ── Border Radius (Liquid Glass aesthetic) ──
+  static const double radiusSm = 12; // small buttons
+  static const double radiusMd = 16; // input fields
+  static const double radiusLg = 24; // cards, main containers
+  static const double radiusXl = 32; // large sheets
+  static const double radiusGrouped = 24;
+  static const double radiusFull = 100; // pills
 
   // ── Screen Padding (HIG: 16pt on iPhone) ──
   static const EdgeInsets screenPadding = EdgeInsets.symmetric(horizontal: 16);

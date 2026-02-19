@@ -76,9 +76,11 @@ struct CeoWidgets: Widget {
     }
 }
 
+@available(iOSApplicationExtension 17.0, *)
 #Preview(as: .systemSmall) {
     CeoWidgets()
 } timeline: {
     SimpleEntry(date: .now, emoji: "😀")
     SimpleEntry(date: .now, emoji: "🤩")
 }
+

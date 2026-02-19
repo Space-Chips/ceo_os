@@ -1,12 +1,12 @@
+import 'dart:ui';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import '../../components/components.dart';
 import '../../core/providers/auth_provider.dart';
 import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
-import '../../core/widgets/ceo_button.dart';
-import '../../core/widgets/ceo_text_field.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -28,107 +28,178 @@ class _SignupScreenState extends State<SignupScreen> {
     super.dispose();
   }
 
+  Future<void> _showError(dynamic error) async {
+    if (!mounted) return;
+    showCupertinoDialog(
+      context: context,
+      builder: (context) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+        child: CupertinoAlertDialog(
+          title: Text('AUTH ERROR', style: AppTypography.mono.copyWith(fontSize: 16)),
+          content: Padding(
+            padding: const EdgeInsets.only(top: 8.0),
+            child: Text(error.toString(), style: AppTypography.caption1),
+          ),
+          actions: [
+            CupertinoDialogAction(
+              child: const Text('DISMISS', style: TextStyle(color: AppColors.primaryOrange)),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> _signup() async {
-    if (_nameCtrl.text.isEmpty ||
-        _emailCtrl.text.isEmpty ||
-        _passCtrl.text.isEmpty) {
+    if (_nameCtrl.text.isEmpty || _emailCtrl.text.isEmpty || _passCtrl.text.isEmpty) {
       return;
     }
     setState(() => _loading = true);
-    await context.read<AuthProvider>().signup(
-      _nameCtrl.text,
-      _emailCtrl.text,
-      _passCtrl.text,
-    );
-    if (mounted) setState(() => _loading = false);
+    try {
+      await context.read<AuthProvider>().signup(
+            _nameCtrl.text,
+            _emailCtrl.text,
+            _passCtrl.text,
+          );
+    } catch (e) {
+      _showError(e);
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
-      backgroundColor: AppColors.systemBackground,
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          child: Column(
-            children: [
-              const Spacer(),
-              Text('Create Account', style: AppTypography.largeTitle),
-              const SizedBox(height: AppSpacing.xs),
-              Text(
-                'Start your productivity journey',
-                style: AppTypography.body.copyWith(
-                  color: AppColors.secondaryLabel,
-                ),
+      backgroundColor: AppColors.background,
+      child: Stack(
+        children: [
+          // Background Glow
+          Positioned(
+            bottom: -100,
+            left: -50,
+            child: Container(
+              width: 300,
+              height: 300,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.primaryOrange.withOpacity(0.08),
               ),
-              const Spacer(),
-              CeoTextField(
-                label: 'Name',
-                hint: 'Your name',
-                controller: _nameCtrl,
-                prefixIcon: const Icon(
-                  CupertinoIcons.person,
-                  size: 18,
-                  color: AppColors.tertiaryLabel,
-                ),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 100, sigmaY: 100),
+                child: Container(color: Colors.transparent),
               ),
-              const SizedBox(height: AppSpacing.md),
-              CeoTextField(
-                label: 'Email',
-                hint: 'you@company.com',
-                controller: _emailCtrl,
-                keyboardType: TextInputType.emailAddress,
-                prefixIcon: const Icon(
-                  CupertinoIcons.mail,
-                  size: 18,
-                  color: AppColors.tertiaryLabel,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.md),
-              CeoTextField(
-                label: 'Password',
-                hint: '••••••••',
-                controller: _passCtrl,
-                obscureText: true,
-                prefixIcon: const Icon(
-                  CupertinoIcons.lock,
-                  size: 18,
-                  color: AppColors.tertiaryLabel,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.lg),
-              CeoButton(
-                label: 'Create Account',
-                expand: true,
-                isLoading: _loading,
-                onPressed: _signup,
-              ),
-              const SizedBox(height: AppSpacing.lg),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    'Already have an account? ',
-                    style: AppTypography.subhead.copyWith(
-                      color: AppColors.secondaryLabel,
+            ),
+          ),
+
+          SafeArea(
+            child: Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Header
+                    Column(
+                      children: [
+                        const NeoMonoText(
+                          'REGISTER',
+                          fontSize: 32,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.label,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'NEW OPERATOR PROTOCOL',
+                          style: AppTypography.mono.copyWith(
+                            color: AppColors.primaryOrange,
+                            fontSize: 10,
+                            letterSpacing: 2,
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                  GestureDetector(
-                    onTap: () => context.go('/login'),
-                    child: Text(
-                      'Sign In',
-                      style: AppTypography.subhead.copyWith(
-                        color: AppColors.systemBlue,
-                        fontWeight: FontWeight.w600,
+                    const SizedBox(height: 48),
+
+                    // Auth Form
+                    GlassCard(
+                      blur: 40,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'IDENTIFICATION',
+                            style: AppTypography.mono.copyWith(
+                              fontSize: 11,
+                              color: AppColors.tertiaryLabel,
+                              letterSpacing: 1.5,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          GlassInputField(
+                            placeholder: 'FULL_NAME',
+                            controller: _nameCtrl,
+                            prefix: const Icon(CupertinoIcons.person, size: 16, color: AppColors.secondaryLabel),
+                          ),
+                          const SizedBox(height: 16),
+                          GlassInputField(
+                            placeholder: 'EMAIL_ADDRESS',
+                            controller: _emailCtrl,
+                            keyboardType: TextInputType.emailAddress,
+                            prefix: const Icon(CupertinoIcons.mail, size: 16, color: AppColors.secondaryLabel),
+                          ),
+                          const SizedBox(height: 16),
+                          GlassInputField(
+                            placeholder: 'ACCESS_KEY',
+                            controller: _passCtrl,
+                            obscureText: true,
+                            prefix: const Icon(CupertinoIcons.lock, size: 16, color: AppColors.secondaryLabel),
+                          ),
+                          const SizedBox(height: 32),
+                          LiquidButton(
+                            label: 'CREATE_ACCOUNT',
+                            fullWidth: true,
+                            isLoading: _loading,
+                            onPressed: _signup,
+                          ),
+                        ],
                       ),
                     ),
-                  ),
-                ],
+
+                    const SizedBox(height: 32),
+
+                    // Footer
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          "ALREADY_REGISTERED? ",
+                          style: AppTypography.mono.copyWith(
+                            fontSize: 12,
+                            color: AppColors.tertiaryLabel,
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () => context.go('/login'),
+                          child: Text(
+                            'SIGN_IN',
+                            style: AppTypography.mono.copyWith(
+                              fontSize: 12,
+                              color: AppColors.primaryOrange,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-              const SizedBox(height: AppSpacing.md),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

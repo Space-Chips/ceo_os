@@ -1,6 +1,8 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'core/config/supabase_config.dart';
 import 'core/providers/auth_provider.dart';
 import 'core/providers/task_provider.dart';
 import 'core/providers/habit_provider.dart';
@@ -12,7 +14,7 @@ import 'core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
@@ -21,7 +23,26 @@ void main() {
       systemNavigationBarColor: AppColors.systemBackground,
     ),
   );
-  runApp(const CeoOsApp());
+
+  // Initialize Supabase
+  // Note: This relies on placeholders in SupabaseConfig being filled
+  await Supabase.initialize(
+    url: SupabaseConfig.url,
+    anonKey: SupabaseConfig.anonKey,
+  );
+
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => TaskProvider()),
+        ChangeNotifierProvider(create: (_) => HabitProvider()),
+        ChangeNotifierProvider(create: (_) => FocusProvider()),
+        ChangeNotifierProvider(create: (_) => CountdownProvider()),
+      ],
+      child: const CeoOsApp(),
+    ),
+  );
 }
 
 class CeoOsApp extends StatefulWidget {
@@ -37,7 +58,7 @@ class _CeoOsAppState extends State<CeoOsApp> {
   @override
   void initState() {
     super.initState();
-    _router = AppRouter.create();
+    _router = AppRouter.create(context);
   }
 
   @override
@@ -48,26 +69,12 @@ class _CeoOsAppState extends State<CeoOsApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => AuthProvider()),
-        ChangeNotifierProvider(create: (_) => TaskProvider()),
-        ChangeNotifierProvider(create: (_) => HabitProvider()),
-        ChangeNotifierProvider(create: (_) => FocusProvider()),
-        ChangeNotifierProvider(create: (_) => CountdownProvider()),
-      ],
-      child: CupertinoApp.router(
-        title: 'CEOOS',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.cupertino,
-        routerConfig: _router,
-        builder: (context, child) {
-          return Theme(
-            data: AppTheme.materialFallback,
-            child: child ?? const SizedBox.shrink(),
-          );
-        },
-      ),
+    return AdaptiveApp.router(
+      title: 'CEOOS',
+      themeMode: ThemeMode.dark,
+      cupertinoDarkTheme: AppTheme.cupertino,
+      materialDarkTheme: AppTheme.materialFallback,
+      routerConfig: _router,
     );
   }
 }

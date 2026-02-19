@@ -1,9 +1,7 @@
 import 'package:flutter/cupertino.dart';
+import '../../components/components.dart';
 import '../theme/app_colors.dart';
-import '../theme/app_spacing.dart';
 
-/// HIG-compliant card — grouped table view cell style.
-/// Background: secondarySystemBackground, 10pt corner radius, subtle separator border.
 class CeoCard extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry? padding;
@@ -26,41 +24,25 @@ class CeoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final radius = borderRadius ?? AppSpacing.radiusGrouped;
-
-    Widget card = Container(
-      decoration: BoxDecoration(
-        color: color ?? AppColors.secondarySystemBackground,
-        borderRadius: BorderRadius.circular(radius),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(radius),
-        child: Stack(
-          children: [
-            if (showAccentStrip)
-              Positioned(
-                left: 0,
-                top: 0,
-                bottom: 0,
-                child: Container(
-                  width: 3,
-                  color: accentStripColor ?? AppColors.systemBlue,
+    return GestureDetector(
+      onTap: onTap,
+      child: GlassCard(
+        borderRadius: borderRadius ?? 24,
+        padding: padding,
+        gradientColors: color != null ? [color!, color!] : null,
+        border: showAccentStrip
+            ? Border(
+                left: BorderSide(
+                  color: accentStripColor ?? AppColors.electricCyan,
+                  width: 4,
                 ),
-              ),
-            Padding(padding: padding ?? AppSpacing.paddingCard, child: child),
-          ],
-        ),
+                top: BorderSide(color: AppColors.glassBorder, width: 0.5),
+                right: BorderSide(color: AppColors.glassBorder, width: 0.5),
+                bottom: BorderSide(color: AppColors.glassBorder, width: 0.5),
+              )
+            : null,
+        child: child,
       ),
     );
-
-    if (onTap != null) {
-      card = GestureDetector(
-        onTap: onTap,
-        behavior: HitTestBehavior.opaque,
-        child: card,
-      );
-    }
-
-    return card;
   }
 }

@@ -1,193 +1,139 @@
 import 'package:flutter/material.dart';
-import 'package:uuid/uuid.dart';
+import '../models/habit_models.dart';
+import '../repositories/habit_repository.dart';
 
-/// A habit with streak tracking.
-class Habit {
-  final String id;
-  String name;
-  IconData icon;
-  Color color;
-  int targetPerDay; // how many times per day
-  Map<String, int> completions; // date string -> count
-  DateTime createdAt;
-
-  Habit({
-    String? id,
-    required this.name,
-    this.icon = Icons.check_circle_outline,
-    this.color = const Color(0xFF3B82F6),
-    this.targetPerDay = 1,
-    Map<String, int>? completions,
-    DateTime? createdAt,
-  }) : id = id ?? const Uuid().v4(),
-       completions = completions ?? {},
-       createdAt = createdAt ?? DateTime.now();
-
-  String _dateKey(DateTime date) =>
-      '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
-
-  bool isCompletedOn(DateTime date) {
-    final key = _dateKey(date);
-    return (completions[key] ?? 0) >= targetPerDay;
-  }
-
-  int completionsOn(DateTime date) => completions[_dateKey(date)] ?? 0;
-
-  void checkIn(DateTime date) {
-    final key = _dateKey(date);
-    completions[key] = (completions[key] ?? 0) + 1;
-  }
-
-  void uncheckIn(DateTime date) {
-    final key = _dateKey(date);
-    final current = completions[key] ?? 0;
-    if (current > 0) {
-      completions[key] = current - 1;
-    }
-  }
-
-  /// Current streak in days (consecutive completions ending today or yesterday).
-  int get currentStreak {
-    int streak = 0;
-    var date = DateTime.now();
-    // Allow starting from today or yesterday
-    if (!isCompletedOn(date)) {
-      date = date.subtract(const Duration(days: 1));
-    }
-    while (isCompletedOn(date)) {
-      streak++;
-      date = date.subtract(const Duration(days: 1));
-    }
-    return streak;
-  }
-
-  /// Best streak ever.
-  int get bestStreak {
-    if (completions.isEmpty) return 0;
-    int best = 0;
-    int current = 0;
-    // Sort dates and iterate
-    final dates = completions.keys.toList()..sort();
-    DateTime? prevDate;
-    for (final key in dates) {
-      final parts = key.split('-');
-      final date = DateTime(
-        int.parse(parts[0]),
-        int.parse(parts[1]),
-        int.parse(parts[2]),
-      );
-      if ((completions[key] ?? 0) >= targetPerDay) {
-        if (prevDate != null && date.difference(prevDate).inDays == 1) {
-          current++;
-        } else {
-          current = 1;
-        }
-        if (current > best) best = current;
-        prevDate = date;
-      } else {
-        current = 0;
-        prevDate = null;
-      }
-    }
-    return best;
-  }
-
-  /// Completion rate over last 7 days.
-  double get weeklyRate {
-    int completed = 0;
-    final now = DateTime.now();
-    for (int i = 0; i < 7; i++) {
-      if (isCompletedOn(now.subtract(Duration(days: i)))) {
-        completed++;
-      }
-    }
-    return completed / 7;
-  }
-
-  /// Alias for targetPerDay for API consistency.
-  int get dailyTarget => targetPerDay;
-}
-
-/// In-memory habit list with check-in tracking.
 class HabitProvider extends ChangeNotifier {
-  final List<Habit> _habits = [];
+  final HabitRepository _repository;
+
+  List<Habit> _habits = [];
+  Map<String, List<HabitCompletion>> _completions =
+      {}; // habitId -> completions
+  bool _isLoading = false;
+
+  HabitProvider({HabitRepository? repository})
+    : _repository = repository ?? HabitRepository();
 
   List<Habit> get habits => List.unmodifiable(_habits);
+  bool get isLoading => _isLoading;
 
   /// Count of habits completed today.
   int get completedToday {
     final now = DateTime.now();
-    return _habits.where((h) => h.isCompletedOn(now)).length;
-  }
+    final todayStr =
+        '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+    int count = 0;
 
-  /// Toggle a habit check-in for today.
-  void toggleHabit(String id) {
-    final habit = _habits.firstWhere((h) => h.id == id);
-    final now = DateTime.now();
-    if (habit.isCompletedOn(now)) {
-      habit.uncheckIn(now);
-    } else {
-      habit.checkIn(now);
+    for (var habit in _habits) {
+      final comps = _completions[habit.id] ?? [];
+      final isDone = comps.any((c) => c.date == todayStr && c.completed);
+      if (isDone) count++;
     }
-    notifyListeners();
+    return count;
   }
 
-  void addHabit(Habit habit) {
-    _habits.add(habit);
-    notifyListeners();
-  }
-
-  void removeHabit(String id) {
-    _habits.removeWhere((h) => h.id == id);
-    notifyListeners();
-  }
-
-  void checkIn(String id, {DateTime? date}) {
-    final habit = _habits.firstWhere((h) => h.id == id);
-    habit.checkIn(date ?? DateTime.now());
-    notifyListeners();
-  }
-
-  void uncheckIn(String id, {DateTime? date}) {
-    final habit = _habits.firstWhere((h) => h.id == id);
-    habit.uncheckIn(date ?? DateTime.now());
-    notifyListeners();
-  }
-
-  void loadSampleData() {
-    if (_habits.isNotEmpty) return;
+  bool isHabitCompletedToday(String habitId) {
     final now = DateTime.now();
-    final habit1 = Habit(
-      name: 'Meditate',
-      icon: Icons.self_improvement,
-      color: const Color(0xFF8B5CF6),
-    );
-    final habit2 = Habit(
-      name: 'Read 30 min',
-      icon: Icons.menu_book,
-      color: const Color(0xFF3B82F6),
-    );
-    final habit3 = Habit(
-      name: 'Exercise',
-      icon: Icons.fitness_center,
-      color: const Color(0xFF22C55E),
-    );
-    final habit4 = Habit(
-      name: 'Journal',
-      icon: Icons.edit_note,
-      color: const Color(0xFFF59E0B),
-    );
+    final todayStr =
+        '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+    final comps = _completions[habitId] ?? [];
+    return comps.any((c) => c.date == todayStr && c.completed);
+  }
 
-    // Add some historical data
-    for (int i = 1; i <= 14; i++) {
-      final date = now.subtract(Duration(days: i));
-      if (i % 1 == 0) habit1.checkIn(date);
-      if (i % 2 == 0) habit2.checkIn(date);
-      if (i % 1 == 0 && i < 10) habit3.checkIn(date);
-      if (i % 3 == 0) habit4.checkIn(date);
-    }
-
-    _habits.addAll([habit1, habit2, habit3, habit4]);
+  Future<void> loadData() async {
+    _isLoading = true;
     notifyListeners();
+
+    try {
+      _habits = await _repository.getHabits();
+
+      // Load completions for each habit (this could be optimized with a single query or join)
+      // For now, let's just load today's completions to be fast
+      final todayCompletions = await _repository.getTodaysCompletions();
+
+      // Organize into map
+      _completions.clear();
+      for (var comp in todayCompletions) {
+        if (_completions.containsKey(comp.habitId)) {
+          _completions[comp.habitId]!.add(comp);
+        } else {
+          _completions[comp.habitId] = [comp];
+        }
+      }
+
+      // We might need historical completions for streaks, but let's handle that later or separately
+    } catch (e) {
+      print('Error loading habit data: $e');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> createHabit(String title, {bool isDaily = true, String? icon}) async {
+    try {
+      final newHabit = await _repository.createHabit(title, isDaily: isDaily, icon: icon);
+      if (newHabit != null) {
+        _habits.add(newHabit);
+        notifyListeners();
+      }
+    } catch (e) {
+      print('Error creating habit: $e');
+    }
+  }
+
+  Future<void> toggleHabit(String habitId) async {
+    try {
+      // Optimistic update
+      final now = DateTime.now();
+      final todayStr =
+          '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+
+      // Update local state temporarily
+      if (_completions.containsKey(habitId)) {
+        final index = _completions[habitId]!.indexWhere(
+          (c) => c.date == todayStr,
+        );
+        if (index != -1) {
+          // Toggle existing
+          final old = _completions[habitId]![index];
+          _completions[habitId]![index] = HabitCompletion(
+            id: old.id,
+            habitId: old.habitId,
+            date: old.date,
+            completed: !old.completed,
+            createdBy: old.createdBy,
+            createdAt: old.createdAt,
+          );
+        } else {
+          // Add new (a bit tricky without real ID, but UI just needs to know it's done)
+          // We'll rely on reload after toggle for real consistency or sophisticated local state
+          // actually repository toggle handles DB, we should just reload or assume success
+        }
+      }
+
+      await _repository.toggleCompletion(habitId, now);
+
+      // Refresh to get exact state from DB
+      final updatedCompletions = await _repository.getTodaysCompletions();
+      _completions
+          .clear(); // careful clearing everything if we only fetched today
+      // Actually simpler to just reload this habit's completion or all
+      // Let's just update based on what we got back
+      for (var comp in updatedCompletions) {
+        if (_completions.containsKey(comp.habitId)) {
+          // Replace or add
+          _completions[comp.habitId] = [
+            comp,
+          ]; // simplistic, assumes only today matters for this view
+        } else {
+          _completions[comp.habitId] = [comp];
+        }
+      }
+      notifyListeners();
+    } catch (e) {
+      print('Error toggling habit: $e');
+      // Revert if needed
+      await loadData();
+    }
   }
 }

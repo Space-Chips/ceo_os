@@ -37,9 +37,9 @@ class CeoProgressRing extends StatelessWidget {
             painter: _RingPainter(
               progress: progress.clamp(0.0, 1.0),
               strokeWidth: strokeWidth,
-              color: color ?? AppColors.systemBlue,
-              trackColor: trackColor ?? AppColors.tertiarySystemBackground,
-              gradientColors: gradientColors ?? AppColors.accentGradient,
+              color: color ?? AppColors.electricCyan,
+              trackColor: trackColor ?? AppColors.glassBase,
+              gradientColors: gradientColors ?? AppColors.liquidGradient,
             ),
           ),
           if (child != null) child!,

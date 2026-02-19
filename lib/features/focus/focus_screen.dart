@@ -1,12 +1,13 @@
 import 'dart:math';
+import 'dart:ui';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart' show Colors, CircularProgressIndicator; // Import required Material widgets
 import 'package:provider/provider.dart';
-import 'package:cupertino_native/cupertino_native.dart';
+import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
+import '../../components/components.dart';
 import '../../core/providers/focus_provider.dart';
 import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
-import '../../core/widgets/ceo_progress_ring.dart';
 
 class FocusScreen extends StatefulWidget {
   const FocusScreen({super.key});
@@ -15,8 +16,6 @@ class FocusScreen extends StatefulWidget {
 }
 
 class _FocusScreenState extends State<FocusScreen> {
-  int _subTab = 0;
-
   @override
   void initState() {
     super.initState();
@@ -28,28 +27,160 @@ class _FocusScreenState extends State<FocusScreen> {
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
-      backgroundColor: AppColors.systemBackground,
-      child: SafeArea(
-        child: Consumer<FocusProvider>(
-          builder: (context, prov, _) => Column(
-            children: [
-              const SizedBox(height: AppSpacing.lg),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                child: CNSegmentedControl(
-                  labels: const ['Sessions', 'Stats'],
-                  selectedIndex: _subTab,
-                  onValueChanged: (i) => setState(() => _subTab = i),
-                ),
+      backgroundColor: AppColors.background,
+      child: Stack(
+        children: [
+          // Background Glow
+          Positioned(
+            top: 200,
+            left: -100,
+            child: Container(
+              width: 400,
+              height: 400,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.primaryOrange.withOpacity(0.05),
               ),
-              Expanded(
-                child: _subTab == 0
-                    ? _TimerView(provider: prov)
-                    : _StatsView(provider: prov),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 100, sigmaY: 100),
+                child: Container(color: Colors.transparent),
               ),
-            ],
+            ),
           ),
-        ),
+
+          SafeArea(
+            child: Consumer<FocusProvider>(
+              builder: (context, prov, _) {
+                final isIdle = prov.state == FocusState.idle;
+
+                return Column(
+                  children: [
+                    const SizedBox(height: 20),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const NeoMonoText('SYSTEM_FOCUS', fontSize: 24, fontWeight: FontWeight.bold),
+                          if (!isIdle)
+                            CupertinoButton(
+                              padding: EdgeInsets.zero,
+                              onPressed: prov.reset,
+                              child: const Icon(CupertinoIcons.stop_fill, color: AppColors.primaryOrange, size: 20),
+                            ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    Expanded(
+                      child: Stack(
+                        children: [
+                          // Base Content: Stats (only visible if idle or backgrounded by timer)
+                          Opacity(
+                            opacity: isIdle ? 1.0 : 0.2,
+                            child: AbsorbPointer(
+                              absorbing: !isIdle,
+                              child: _StatsView(provider: prov),
+                            ),
+                          ),
+
+                          // Layer 1: The Quick Start Bar (Top-pinned if idle)
+                          if (isIdle)
+                            Positioned(
+                              top: 0,
+                              left: 24,
+                              right: 24,
+                              child: _QuickStartBar(provider: prov),
+                            ),
+
+                          // Layer 2: The Timer / Break Views (Overlay if active)
+                          if (!isIdle)
+                            Positioned.fill(
+                              child: ClipRect(
+                                child: BackdropFilter(
+                                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                                  child: Container(
+                                    color: AppColors.background.withOpacity(0.4),
+                                    child: _buildActiveOverlay(prov),
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActiveOverlay(FocusProvider prov) {
+    switch (prov.state) {
+      case FocusState.requestingBreak:
+        return _BreakWaitView(provider: prov);
+      case FocusState.breakOptionsMenu:
+        return _BreakOptionsView(provider: prov);
+      default:
+        return _TimerView(provider: prov);
+    }
+  }
+}
+
+class _QuickStartBar extends StatelessWidget {
+  final FocusProvider provider;
+  const _QuickStartBar({required this.provider});
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassCard(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      borderRadius: 24,
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('SESSION_LENGTH', style: AppTypography.mono.copyWith(fontSize: 8, color: AppColors.tertiaryLabel)),
+                const SizedBox(height: 4),
+                NeoMonoText('${provider.focusDurationMinutes}M', fontSize: 16, color: AppColors.primaryOrange),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          SizedBox(
+            width: 120,
+            child: AdaptiveSlider(
+              value: provider.focusDurationMinutes.toDouble(),
+              min: 5,
+              max: 90,
+              onChanged: (v) {
+                provider.focusDurationMinutes = v.round();
+                provider.reset();
+              },
+            ),
+          ),
+          const SizedBox(width: 12),
+          CupertinoButton(
+            padding: EdgeInsets.zero,
+            onPressed: provider.startFocus,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: AppColors.primaryOrange,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(CupertinoIcons.play_fill, color: Colors.white, size: 16),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -61,232 +192,157 @@ class _TimerView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isActive = provider.state != FocusState.idle;
     final isFocusing = provider.state == FocusState.focusing;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-      child: Column(
-        children: [
-          const Spacer(),
-          Text('Focus Time', style: AppTypography.focusDisplay),
-          const SizedBox(height: AppSpacing.xs),
-          Text(
-            provider.stateLabel,
-            style: AppTypography.subhead.copyWith(
-              color: AppColors.secondaryLabel,
-            ),
-          ),
-          const Spacer(),
-          CeoProgressRing(
-            progress: provider.progress,
-            size: 220,
-            strokeWidth: 4,
-            gradientColors: isFocusing
-                ? [AppColors.systemYellow, AppColors.systemOrange]
-                : [AppColors.systemGreen, AppColors.systemMint],
-            trackColor: AppColors.tertiarySystemBackground,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  provider.timerDisplay,
-                  style: AppTypography.mono.copyWith(
-                    fontSize: 52,
-                    fontWeight: FontWeight.w200,
-                    color: isFocusing
-                        ? AppColors.systemYellow
-                        : AppColors.label,
-                  ),
-                ),
-                if (isActive)
-                  Text(
-                    '${provider.completedSessions} sessions',
-                    style: AppTypography.caption1.copyWith(
-                      color: AppColors.secondaryLabel,
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          const Spacer(),
-          if (provider.isFocusModeActive)
-            Container(
-              margin: const EdgeInsets.only(bottom: AppSpacing.md),
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.md,
-                vertical: AppSpacing.sm,
-              ),
-              decoration: BoxDecoration(
-                color: AppColors.systemRed.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    CupertinoIcons.bell_slash_fill,
-                    size: 14,
-                    color: AppColors.systemRed,
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    'Notifications Blocked',
-                    style: AppTypography.caption1.copyWith(
-                      color: AppColors.systemRed,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          _buildControls(isActive, isFocusing),
-          const SizedBox(height: AppSpacing.lg),
-          if (!isActive) _buildSlider(),
-          _buildFocusModeToggle(),
-          const SizedBox(height: AppSpacing.sm),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildControls(bool isActive, bool isFocusing) {
-    return Row(
+    return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        if (isActive) ...[
-          CupertinoButton(
-            padding: EdgeInsets.zero,
-            onPressed: provider.reset,
-            child: Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppColors.tertiarySystemBackground,
-              ),
-              child: const Icon(
-                CupertinoIcons.arrow_counterclockwise,
-                size: 20,
-                color: AppColors.label,
-              ),
-            ),
-          ),
-          const SizedBox(width: AppSpacing.lg),
-        ],
-        CupertinoButton(
-          padding: EdgeInsets.zero,
-          onPressed: () {
-            if (provider.state == FocusState.idle) {
-              provider.startFocus();
-            } else if (provider.isRunning) {
-              provider.pause();
-            } else {
-              provider.resume();
-            }
-          },
-          child: Container(
-            width: 60,
-            height: 60,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: isFocusing ? AppColors.systemYellow : AppColors.systemBlue,
-            ),
-            child: Icon(
-              provider.state == FocusState.idle || !provider.isRunning
-                  ? CupertinoIcons.play_fill
-                  : CupertinoIcons.pause_fill,
-              size: 28,
-              color: isFocusing
-                  ? AppColors.systemBackground
-                  : CupertinoColors.white,
-            ),
-          ),
-        ),
-        if (isActive) ...[
-          const SizedBox(width: AppSpacing.lg),
-          CupertinoButton(
-            padding: EdgeInsets.zero,
-            onPressed: provider.skip,
-            child: Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppColors.tertiarySystemBackground,
-              ),
-              child: const Icon(
-                CupertinoIcons.forward_end_fill,
-                size: 20,
-                color: AppColors.label,
-              ),
-            ),
-          ),
-        ],
-      ],
-    );
-  }
-
-  Widget _buildSlider() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
-      child: Column(
-        children: [
-          Text(
-            '${provider.focusDurationMinutes} min session',
-            style: AppTypography.caption1.copyWith(
-              color: AppColors.secondaryLabel,
-            ),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          CNSlider(
-            value: provider.focusDurationMinutes.toDouble(),
-            min: 5,
-            max: 90,
-            onChanged: (v) {
-              provider.focusDurationMinutes = v.round();
-              provider.reset();
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFocusModeToggle() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.md,
-        vertical: AppSpacing.md,
-      ),
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.md,
-          vertical: 12,
-        ),
-        decoration: BoxDecoration(
-          color: AppColors.secondarySystemBackground,
-          borderRadius: BorderRadius.circular(AppSpacing.radiusGrouped),
-        ),
-        child: Row(
+        Stack(
+          alignment: Alignment.center,
           children: [
-            Icon(
-              CupertinoIcons.shield_fill,
-              size: 20,
-              color: provider.isFocusModeActive
-                  ? AppColors.systemGreen
-                  : AppColors.secondaryLabel,
+            Container(
+              width: 240,
+              height: 240,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: AppColors.glassBorder, width: 1),
+              ),
             ),
-            const SizedBox(width: AppSpacing.sm),
-            Expanded(
-              child: Text('Block Distractions', style: AppTypography.body),
+            SizedBox(
+              width: 220,
+              height: 220,
+              child: CircularProgressIndicator(
+                value: provider.progress,
+                strokeWidth: 6,
+                color: AppColors.primaryOrange,
+                backgroundColor: Colors.transparent,
+                strokeCap: StrokeCap.round,
+              ),
             ),
-            CNSwitch(
-              value: provider.isFocusModeActive,
-              onChanged: (_) => provider.toggleFocusMode(),
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                NeoMonoText(provider.timerDisplay, fontSize: 56, fontWeight: FontWeight.bold),
+                Text(
+                  provider.stateLabel.toUpperCase(),
+                  style: AppTypography.mono.copyWith(fontSize: 10, color: AppColors.primaryOrange, letterSpacing: 2),
+                ),
+              ],
             ),
           ],
         ),
+        const SizedBox(height: 64),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 48),
+          child: LiquidButton(
+            label: isFocusing ? 'REQUEST_BREAK' : 'SKIP_BREAK',
+            onPressed: isFocusing ? provider.requestBreak : provider.skip,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _BreakWaitView extends StatelessWidget {
+  final FocusProvider provider;
+  const _BreakWaitView({required this.provider});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const NeoMonoText('ANALYZING_BREAK_REQUEST', fontSize: 16, fontWeight: FontWeight.bold),
+        const SizedBox(height: 12),
+        Text(
+          'PROTOCOL_DELAY_ACTIVE',
+          style: AppTypography.mono.copyWith(fontSize: 10, color: AppColors.error, letterSpacing: 2),
+        ),
+        const SizedBox(height: 48),
+        NeoMonoText(provider.waitTimerDisplay, fontSize: 84, fontWeight: FontWeight.w200, color: AppColors.primaryOrange),
+        const SizedBox(height: 64),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 48),
+          child: CupertinoButton(
+            color: AppColors.backgroundLight,
+            onPressed: provider.cancelBreakRequest,
+            child: const NeoMonoText('NEVERMIND', fontSize: 14, fontWeight: FontWeight.bold),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _BreakOptionsView extends StatelessWidget {
+  final FocusProvider provider;
+  const _BreakOptionsView({required this.provider});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: GlassCard(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const NeoMonoText('OVERRIDE_OPTIONS', fontSize: 18, fontWeight: FontWeight.bold),
+              const SizedBox(height: 32),
+              
+              _optionButton(
+                'TAKE_5M_BREAK', 
+                () => provider.takeCustomBreak(5),
+              ),
+              const SizedBox(height: 12),
+              _optionButton(
+                'TAKE_15M_BREAK', 
+                () => provider.takeCustomBreak(15),
+              ),
+              const SizedBox(height: 12),
+              _optionButton(
+                'TERMINATE_BLOCKING', 
+                provider.cancelBlocking,
+                isDanger: true,
+              ),
+              const SizedBox(height: 32),
+              
+              const NeoMonoText('BLOCKED_APPLICATION_STATUS', fontSize: 10, color: AppColors.tertiaryLabel),
+              const SizedBox(height: 16),
+              ...provider.blockedApps.take(3).map((app) => Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Row(
+                  children: [
+                    Icon(app.icon, size: 14, color: AppColors.secondaryLabel),
+                    const SizedBox(width: 12),
+                    Expanded(child: Text(app.name, style: AppTypography.mono.copyWith(fontSize: 10))),
+                    const NeoMonoText('LOCKED', fontSize: 8, color: AppColors.error),
+                  ],
+                ),
+              )),
+              
+              const SizedBox(height: 24),
+              CupertinoButton(
+                padding: EdgeInsets.zero,
+                onPressed: provider.cancelBreakRequest,
+                child: const NeoMonoText('RESUME_PROTOCOL', fontSize: 12, color: AppColors.primaryOrange),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _optionButton(String label, VoidCallback onTap, {bool isDanger = false}) {
+    return SizedBox(
+      width: double.infinity,
+      child: CupertinoButton(
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        color: isDanger ? AppColors.error.withOpacity(0.1) : AppColors.primaryOrange.withOpacity(0.1),
+        onPressed: onTap,
+        child: NeoMonoText(label, fontSize: 12, color: isDanger ? AppColors.error : AppColors.primaryOrange, fontWeight: FontWeight.bold),
       ),
     );
   }
@@ -298,199 +354,126 @@ class _StatsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final data = provider.hourlyUsage.sublist(
-      6,
-      min(24, provider.hourlyUsage.length),
-    );
-    final maxVal = data.reduce(max).clamp(1.0, double.infinity);
-
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: AppSpacing.md),
-          _StatCard(
-            label: 'Focus Today',
-            value: _fmt(provider.totalFocusMinutesToday),
-            color: AppColors.systemGreen,
-          ),
-          const SizedBox(height: AppSpacing.sm),
+          const SizedBox(height: 100), // Space for QuickStartBar
           Row(
             children: [
               Expanded(
-                child: _StatCard(
-                  label: 'Sessions',
-                  value: '${provider.completedSessions}',
-                  color: AppColors.systemBlue,
-                ),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              Expanded(
-                child: _StatCard(
-                  label: 'Score',
-                  value: '${min(100, provider.completedSessions * 25)}%',
-                  color: AppColors.systemPurple,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.lg),
-          Text('Usage by Hour', style: AppTypography.headline),
-          const SizedBox(height: AppSpacing.md),
-          Container(
-            height: 140,
-            padding: const EdgeInsets.all(AppSpacing.md),
-            decoration: BoxDecoration(
-              color: AppColors.secondarySystemBackground,
-              borderRadius: BorderRadius.circular(AppSpacing.radiusGrouped),
-            ),
-            child: Column(
-              children: [
-                Expanded(
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: data.asMap().entries.map((e) {
-                      final r = e.value / maxVal;
-                      return Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 1),
-                          child: FractionallySizedBox(
-                            heightFactor: r.clamp(0.05, 1.0),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color:
-                                    (e.value < 1.0
-                                            ? AppColors.systemGreen
-                                            : AppColors.systemOrange)
-                                        .withValues(alpha: 0.7),
-                                borderRadius: const BorderRadius.vertical(
-                                  top: Radius.circular(3),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: ['6AM', '12PM', '6PM', '11PM']
-                      .map(
-                        (l) => Text(
-                          l,
-                          style: AppTypography.caption2.copyWith(
-                            color: AppColors.tertiaryLabel,
-                          ),
-                        ),
-                      )
-                      .toList(),
-                ),
-              ],
-            ),
-          ),
-          if (provider.blockedApps.isNotEmpty) ...[
-            const SizedBox(height: AppSpacing.lg),
-            Text('Blocked Apps', style: AppTypography.headline),
-            const SizedBox(height: AppSpacing.sm),
-            ...provider.blockedApps.asMap().entries.map(
-              (e) => Padding(
-                padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.md,
-                    vertical: 12,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.secondarySystemBackground,
-                    borderRadius: BorderRadius.circular(
-                      AppSpacing.radiusGrouped,
-                    ),
-                  ),
-                  child: Row(
+                child: GlassCard(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(
-                        width: 36,
-                        height: 36,
-                        decoration: BoxDecoration(
-                          color: AppColors.tertiarySystemBackground,
-                          borderRadius: BorderRadius.circular(
-                            AppSpacing.radiusSm,
-                          ),
-                        ),
-                        child: Icon(
-                          e.value.icon,
-                          size: 20,
-                          color: e.value.isBlocked
-                              ? AppColors.systemRed
-                              : AppColors.secondaryLabel,
-                        ),
-                      ),
-                      const SizedBox(width: AppSpacing.md),
-                      Expanded(
-                        child: Text(e.value.name, style: AppTypography.body),
-                      ),
-                      CNSwitch(
-                        value: e.value.isBlocked,
-                        onChanged: (_) => provider.toggleBlockedApp(e.key),
-                      ),
+                      Text('TOTAL_FOCUS', style: AppTypography.mono.copyWith(fontSize: 10, color: AppColors.tertiaryLabel)),
+                      const SizedBox(height: 8),
+                      NeoMonoText(_fmt(provider.totalFocusMinutesToday), fontSize: 20, color: AppColors.primaryOrange),
                     ],
                   ),
                 ),
               ),
-            ),
-          ],
-          const SizedBox(height: 100),
+              const SizedBox(width: 12),
+              Expanded(
+                child: GlassCard(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('SESSIONS', style: AppTypography.mono.copyWith(fontSize: 10, color: AppColors.tertiaryLabel)),
+                      const SizedBox(height: 8),
+                      NeoMonoText('${provider.completedSessions}', fontSize: 20, color: AppColors.primaryOrange),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          Text('USAGE_STATISTICS', style: AppTypography.mono.copyWith(fontSize: 12, letterSpacing: 1.5)),
+          const SizedBox(height: 16),
+          GlassCard(
+            height: 180,
+            child: _buildChart(),
+          ),
+          const SizedBox(height: 32),
+          Text('DISTRACTION_CONTROL', style: AppTypography.mono.copyWith(fontSize: 12, letterSpacing: 1.5)),
+          const SizedBox(height: 16),
+          ...provider.blockedApps.asMap().entries.map(
+                (e) => Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: GlassCard(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    child: Row(
+                      children: [
+                        Icon(e.value.icon, size: 20, color: e.value.isBlocked ? AppColors.primaryOrange : AppColors.tertiaryLabel),
+                        const SizedBox(width: 16),
+                        Expanded(child: Text(e.value.name.toUpperCase(), style: AppTypography.mono.copyWith(fontSize: 12))),
+                        AdaptiveSwitch(
+                          value: e.value.isBlocked,
+                          onChanged: (_) => provider.toggleBlockedApp(e.key),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+          const SizedBox(height: 120),
         ],
       ),
     );
   }
 
-  String _fmt(int m) {
-    final h = m ~/ 60, r = m % 60;
-    return h > 0 ? '${h}h ${r}m' : '${r}m';
-  }
-}
+  Widget _buildChart() {
+    final data = provider.hourlyUsage.sublist(6, min(24, provider.hourlyUsage.length));
+    final maxVal = data.reduce(max).clamp(1.0, double.infinity);
 
-class _StatCard extends StatelessWidget {
-  final String label, value;
-  final Color color;
-  const _StatCard({
-    required this.label,
-    required this.value,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.all(AppSpacing.md),
-    decoration: BoxDecoration(
-      color: AppColors.secondarySystemBackground,
-      borderRadius: BorderRadius.circular(AppSpacing.radiusGrouped),
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Column(
       children: [
-        Text(
-          label.toUpperCase(),
-          style: AppTypography.caption2.copyWith(
-            color: AppColors.secondaryLabel,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 0.8,
+        Expanded(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: data.asMap().entries.map((e) {
+              final r = e.value / maxVal;
+              return Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 2),
+                  child: FractionallySizedBox(
+                    heightFactor: r.clamp(0.1, 1.0),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            AppColors.primaryOrange,
+                            AppColors.primaryOrange.withOpacity(0.1),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
           ),
         ),
-        const SizedBox(height: AppSpacing.xs),
-        Text(
-          value,
-          style: AppTypography.title1.copyWith(
-            fontWeight: FontWeight.w700,
-            color: color,
-          ),
+        const SizedBox(height: 8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: ['06:00', '12:00', '18:00', '23:59']
+              .map((l) => Text(l, style: AppTypography.mono.copyWith(fontSize: 8, color: AppColors.tertiaryLabel)))
+              .toList(),
         ),
       ],
-    ),
-  );
+    );
+  }
+
+  String _fmt(int m) {
+    final h = m ~/ 60, r = m % 60;
+    return h > 0 ? '${h}H ${r}M' : '${r}M';
+  }
 }

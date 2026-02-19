@@ -9,10 +9,11 @@ import AppIntents
 import SwiftUI
 import WidgetKit
 
+@available(iOSApplicationExtension 18.0, *)
 struct CeoWidgetsControl: ControlWidget {
     var body: some ControlWidgetConfiguration {
         StaticControlConfiguration(
-            kind: "com.example.ceoOs.CeoWidgets",
+            kind: "com.example.ceoCompass.CeoWidgets",
             provider: Provider()
         ) { value in
             ControlWidgetToggle(
@@ -28,6 +29,7 @@ struct CeoWidgetsControl: ControlWidget {
     }
 }
 
+@available(iOSApplicationExtension 18.0, *)
 extension CeoWidgetsControl {
     struct Provider: ControlValueProvider {
         var previewValue: Bool {
@@ -41,6 +43,7 @@ extension CeoWidgetsControl {
     }
 }
 
+@available(iOSApplicationExtension 18.0, *)
 struct StartTimerIntent: SetValueIntent {
     static let title: LocalizedStringResource = "Start a timer"
 
@@ -52,3 +55,4 @@ struct StartTimerIntent: SetValueIntent {
         return .result()
     }
 }
+

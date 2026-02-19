@@ -12,7 +12,10 @@ import SwiftUI
 struct CeoWidgetsBundle: WidgetBundle {
     var body: some Widget {
         CeoWidgets()
-        CeoWidgetsControl()
-        CeoWidgetsLiveActivity()
+        if #available(iOSApplicationExtension 18.0, *) {
+            CeoWidgetsControl()
+            CeoWidgetsLiveActivity()
+        }
     }
 }
+

@@ -1,200 +1,111 @@
 import 'package:flutter/material.dart';
-import 'package:uuid/uuid.dart';
+import '../models/task_models.dart';
+import '../repositories/task_repository.dart';
 
-/// Priority levels for tasks.
-enum TaskPriority { urgent, high, medium, low, none }
-
-/// A single subtask item.
-class SubTask {
-  final String id;
-  String title;
-  bool isComplete;
-
-  SubTask({String? id, required this.title, this.isComplete = false})
-    : id = id ?? const Uuid().v4();
-}
-
-/// A task item with Eisenhower matrix support.
-class Task {
-  final String id;
-  String title;
-  String? description;
-  TaskPriority priority;
-  DateTime? dueDate;
-  bool isComplete;
-  bool isImportant; // Eisenhower: important axis
-  bool isUrgent; // Eisenhower: urgent axis
-  List<SubTask> subtasks;
-  DateTime createdAt;
-
-  Task({
-    String? id,
-    required this.title,
-    this.description,
-    this.priority = TaskPriority.none,
-    this.dueDate,
-    this.isComplete = false,
-    this.isImportant = false,
-    this.isUrgent = false,
-    List<SubTask>? subtasks,
-    DateTime? createdAt,
-  }) : id = id ?? const Uuid().v4(),
-       subtasks = subtasks ?? [],
-       createdAt = createdAt ?? DateTime.now();
-
-  double get subtaskProgress {
-    if (subtasks.isEmpty) return isComplete ? 1.0 : 0.0;
-    return subtasks.where((s) => s.isComplete).length / subtasks.length;
-  }
-
-  bool get isOverdue =>
-      dueDate != null && dueDate!.isBefore(DateTime.now()) && !isComplete;
-}
-
-/// In-memory task list with CRUD operations.
 class TaskProvider extends ChangeNotifier {
-  final List<Task> _tasks = [];
+  final TaskRepository _repository;
 
-  List<Task> get tasks => List.unmodifiable(_tasks);
+  List<ParetoTask> _tasks = [];
+  List<CalendarEvent> _events = [];
+  List<TaskGroup> _groups = [];
+  bool _isLoading = false;
 
-  List<Task> get todayTasks {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final tomorrow = today.add(const Duration(days: 1));
-    return _tasks
-        .where(
-          (t) =>
-              !t.isComplete &&
-              t.dueDate != null &&
-              t.dueDate!.isAfter(today) &&
-              t.dueDate!.isBefore(tomorrow),
-        )
-        .toList();
-  }
+  TaskProvider({TaskRepository? repository})
+    : _repository = repository ?? TaskRepository();
 
-  List<Task> get upcomingTasks {
-    final now = DateTime.now();
-    final tomorrow = DateTime(now.year, now.month, now.day + 1);
-    return _tasks
-        .where(
-          (t) =>
-              !t.isComplete &&
-              t.dueDate != null &&
-              t.dueDate!.isAfter(tomorrow),
-        )
-        .toList();
-  }
+  List<ParetoTask> get tasks => List.unmodifiable(_tasks);
+  List<CalendarEvent> get events => List.unmodifiable(_events);
+  List<TaskGroup> get groups => List.unmodifiable(_groups);
+  bool get isLoading => _isLoading;
 
-  List<Task> get completedTasks => _tasks.where((t) => t.isComplete).toList();
-
-  List<Task> get incompleteTasks => _tasks.where((t) => !t.isComplete).toList();
-
-  // ── Eisenhower Matrix Quadrants ──
-
-  /// Q1: Do First — Urgent + Important
-  List<Task> get doFirstTasks => _tasks
-      .where((t) => !t.isComplete && t.isUrgent && t.isImportant)
-      .toList();
-
-  /// Q2: Schedule — Not Urgent + Important
-  List<Task> get scheduleTasks => _tasks
-      .where((t) => !t.isComplete && !t.isUrgent && t.isImportant)
-      .toList();
-
-  /// Q3: Delegate — Urgent + Not Important
-  List<Task> get delegateTasks => _tasks
-      .where((t) => !t.isComplete && t.isUrgent && !t.isImportant)
-      .toList();
-
-  /// Q4: Eliminate — Not Urgent + Not Important
-  List<Task> get eliminateTasks => _tasks
-      .where((t) => !t.isComplete && !t.isUrgent && !t.isImportant)
-      .toList();
-
-  void addTask(Task task) {
-    _tasks.insert(0, task);
+  Future<void> loadTasks() async {
+    _isLoading = true;
     notifyListeners();
-  }
-
-  void updateTask(Task task) {
-    final index = _tasks.indexWhere((t) => t.id == task.id);
-    if (index >= 0) {
-      _tasks[index] = task;
+    try {
+      _tasks = await _repository.getTasks();
+    } catch (e) {
+      print('Error loading tasks: $e');
+    } finally {
+      _isLoading = false;
       notifyListeners();
     }
   }
 
-  void toggleTask(String id) {
-    final task = _tasks.firstWhere((t) => t.id == id);
-    task.isComplete = !task.isComplete;
-    notifyListeners();
+  Future<void> loadGroups() async {
+    try {
+      _groups = await _repository.getTaskGroups();
+      notifyListeners();
+    } catch (e) {
+      print('Error loading task groups: $e');
+    }
   }
 
-  void toggleSubtask(String taskId, String subtaskId) {
-    final task = _tasks.firstWhere((t) => t.id == taskId);
-    final subtask = task.subtasks.firstWhere((s) => s.id == subtaskId);
-    subtask.isComplete = !subtask.isComplete;
-    notifyListeners();
+  Future<void> addTask(
+    String title, {
+    String? importance,
+    String? duration,
+    String? groupId,
+  }) async {
+    try {
+      await _repository.addTask(
+        title,
+        importance: importance,
+        duration: duration,
+        groupId: groupId,
+      );
+      await loadTasks();
+    } catch (e) {
+      print('Error adding task: $e');
+    }
   }
 
-  void deleteTask(String id) {
-    _tasks.removeWhere((t) => t.id == id);
-    notifyListeners();
+  Future<void> addTaskGroup(String name, {String? color}) async {
+    try {
+      await _repository.addTaskGroup(name, color: color);
+      await loadGroups();
+    } catch (e) {
+      print('Error adding group: $e');
+    }
   }
 
-  /// Load sample data for demo.
-  void loadSampleData() {
-    if (_tasks.isNotEmpty) return;
-    final now = DateTime.now();
-    _tasks.addAll([
-      Task(
-        title: 'Review Q1 strategy deck',
-        description: 'Final review before board meeting',
-        priority: TaskPriority.urgent,
-        dueDate: now.add(const Duration(hours: 3)),
-        isUrgent: true,
-        isImportant: true,
-        subtasks: [
-          SubTask(title: 'Check financial projections'),
-          SubTask(title: 'Update competitor analysis'),
-          SubTask(title: 'Add market expansion slide'),
-        ],
-      ),
-      Task(
-        title: 'Ship v2.0 feature set',
-        priority: TaskPriority.high,
-        dueDate: now.add(const Duration(days: 2)),
-        isUrgent: false,
-        isImportant: true,
-        subtasks: [
-          SubTask(title: 'User authentication', isComplete: true),
-          SubTask(title: 'Dashboard redesign', isComplete: true),
-          SubTask(title: 'API integration'),
-          SubTask(title: 'Performance optimization'),
-        ],
-      ),
-      Task(
-        title: 'Weekly team sync',
-        priority: TaskPriority.medium,
-        dueDate: now.add(const Duration(days: 1)),
-        isUrgent: true,
-        isImportant: false,
-      ),
-      Task(
-        title: 'Read "The Hard Thing About Hard Things"',
-        priority: TaskPriority.low,
-        dueDate: now.add(const Duration(days: 7)),
-        isUrgent: false,
-        isImportant: false,
-      ),
-      Task(
-        title: 'Update portfolio website',
-        priority: TaskPriority.medium,
-        dueDate: now.add(const Duration(days: 3)),
-        isUrgent: false,
-        isImportant: true,
-      ),
-    ]);
+  Future<void> completeTask(String id) async {
+    try {
+      await _repository.completeTask(id);
+      await loadTasks();
+    } catch (e) {
+      print('Error completing task: $e');
+    }
+  }
+
+  Future<void> loadEvents() async {
+    _isLoading = true;
     notifyListeners();
+    try {
+      _events = await _repository.getAllEvents();
+    } catch (e) {
+      print('Error loading events: $e');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> addCalendarEvent({
+    required String title,
+    required String date,
+    String? time,
+    String? description,
+  }) async {
+    try {
+      await _repository.addEvent(
+        title,
+        date,
+        time: time,
+        description: description,
+      );
+      await loadEvents();
+    } catch (e) {
+      print('Error adding event: $e');
+    }
   }
 }
