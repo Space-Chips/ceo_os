@@ -14,6 +14,15 @@ class SettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
       backgroundColor: AppColors.background,
+      navigationBar: const CupertinoNavigationBar(
+        middle: NeoMonoText(
+          'SYSTEM_CONFIG',
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+        ),
+        backgroundColor: AppColors.background,
+        border: null,
+      ),
       child: Stack(
         children: [
           Positioned(
@@ -32,18 +41,10 @@ class SettingsScreen extends StatelessWidget {
               ),
             ),
           ),
-          CustomScrollView(
-            slivers: [
-              const CupertinoSliverNavigationBar(
-                largeTitle: NeoMonoText(
-                  'SYSTEM_CONFIG',
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                ),
-                backgroundColor: AppColors.background,
-                border: null,
-              ),
-              SliverToBoxAdapter(
+          SafeArea(
+            child: CustomScrollView(
+              slivers: [
+                SliverToBoxAdapter(
                 child: Consumer2<AuthProvider, FocusProvider>(
                   builder: (context, auth, focus, _) => Padding(
                     padding: const EdgeInsets.all(24),
@@ -194,6 +195,7 @@ class SettingsScreen extends StatelessWidget {
               ),
             ],
           ),
+        ),
         ],
       ),
     );

@@ -39,6 +39,23 @@ class FocusRepository {
     });
   }
 
+  Future<void> updateActiveBlockList(String? activeId) async {
+    // Set all to false first
+    await _client
+        .from('block_lists')
+        .update({'is_active': false})
+        .eq('created_by', _currentUserId);
+    
+    // Set the specific one to true
+    if (activeId != null) {
+      await _client
+          .from('block_lists')
+          .update({'is_active': true})
+          .eq('id', activeId)
+          .eq('created_by', _currentUserId);
+    }
+  }
+
   Future<void> deleteBlockList(String id) async {
     await _client.from('block_lists').delete().eq('id', id);
   }

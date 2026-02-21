@@ -38,6 +38,24 @@ class _TasksScreenState extends State<TasksScreen> {
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
       backgroundColor: AppColors.background,
+      navigationBar: CupertinoNavigationBar(
+        middle: NeoMonoText(
+          _isMatrixView ? 'MATRIX' : 'TASKS',
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+        ),
+        backgroundColor: AppColors.background.withOpacity(0.8),
+        border: null,
+        leading: CupertinoButton(
+          padding: EdgeInsets.zero,
+          onPressed: () => setState(() => _isMatrixView = !_isMatrixView),
+          child: Icon(
+            _isMatrixView ? CupertinoIcons.list_bullet : CupertinoIcons.square_grid_2x2,
+            color: AppColors.primaryOrange,
+            size: 22,
+          ),
+        ),
+      ),
       child: Stack(
         children: [
           // Background Glow
@@ -58,29 +76,11 @@ class _TasksScreenState extends State<TasksScreen> {
             ),
           ),
 
-          CustomScrollView(
-            slivers: [
-              CupertinoSliverNavigationBar(
-                largeTitle: const NeoMonoText(
-                  'TASKS',
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                ),
-                backgroundColor: AppColors.background.withOpacity(0.8),
-                border: null,
-                stretch: true,
-                trailing: CupertinoButton(
-                  padding: EdgeInsets.zero,
-                  onPressed: () => setState(() => _isMatrixView = !_isMatrixView),
-                  child: Icon(
-                    _isMatrixView ? CupertinoIcons.list_bullet : CupertinoIcons.square_grid_2x2,
-                    color: AppColors.primaryOrange,
-                  ),
-                ),
-              ),
-
-              Consumer<TaskProvider>(
-                builder: (context, prov, _) {
+          SafeArea(
+            child: CustomScrollView(
+              slivers: [
+                Consumer<TaskProvider>(
+                  builder: (context, prov, _) {
                   if (prov.isLoading && prov.tasks.isEmpty) {
                     return const SliverFillRemaining(
                       child: Center(
@@ -131,7 +131,7 @@ class _TasksScreenState extends State<TasksScreen> {
                     padding: const EdgeInsets.symmetric(
                       horizontal: 20,
                       vertical: 20,
-                    ).copyWith(bottom: 150),
+                    ).copyWith(bottom: 120),
                     sliver: SliverList(
                       delegate: SliverChildBuilderDelegate((context, index) {
                         final groupId = groupedTasks.keys.elementAt(index);
@@ -189,10 +189,11 @@ class _TasksScreenState extends State<TasksScreen> {
               ),
             ],
           ),
+        ),
 
           Positioned(
             right: 24,
-            bottom: 40,
+            bottom: 110,
             child: FloatingAddButton(onPressed: _showAddTask),
           ),
         ],
@@ -209,32 +210,23 @@ class _EisenhowerMatrix extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Quadrants:
-    // 1: Critical/High Importance + Short Duration (Do First)
-    // 2: Medium Importance + Short Duration (Schedule)
-    // 3: High Importance + Long Duration (Delegate/Break down)
-    // 4: Low Importance (Eliminate/Backlog)
-    
-    // Simplification for prototype:
-    final q1 = tasks.where((t) => t.importanceLevel == 'Critical' || t.importanceLevel == 'High').toList();
-    final q2 = tasks.where((t) => t.importanceLevel == 'Medium').toList();
-    final q3 = tasks.where((t) => t.importanceLevel == 'Low').toList();
-    final q4 = tasks.where((t) => t.importanceLevel == null).toList();
+    // Quadrants based on user requirements:
+    final q1 = tasks.where((t) => (t.importanceLevel == 'Critical' || t.importanceLevel == 'High') && (t.timeDuration == 'SHORT' || t.timeDuration == null)).toList(); // Urgent & Important
+    final q2 = tasks.where((t) => (t.importanceLevel == 'Medium' || t.importanceLevel == 'Low') && (t.timeDuration == 'SHORT')).toList(); // Urgent & Unimportant
+    final q3 = tasks.where((t) => (t.importanceLevel == 'Critical' || t.importanceLevel == 'High') && (t.timeDuration == 'LONG')).toList(); // Important but not Urgent
+    final q4 = tasks.where((t) => (t.importanceLevel == 'Medium' || t.importanceLevel == 'Low' || t.importanceLevel == null) && (t.timeDuration == 'LONG' || t.timeDuration == null)).toList(); // Non-urgent & Non-important
 
     return SliverPadding(
-      padding: const EdgeInsets.all(20).copyWith(bottom: 150),
-      sliver: SliverGrid(
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          mainAxisSpacing: 16,
-          crossAxisSpacing: 16,
-          childAspectRatio: 0.8,
-        ),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20).copyWith(bottom: 120),
+      sliver: SliverList(
         delegate: SliverChildListDelegate([
-          _MatrixQuadrant(title: 'DO_FIRST', tasks: q1, color: AppColors.error, onToggle: onToggle),
-          _MatrixQuadrant(title: 'SCHEDULE', tasks: q2, color: AppColors.primaryOrange, onToggle: onToggle),
-          _MatrixQuadrant(title: 'DELEGATE', tasks: q3, color: AppColors.secondaryLabel, onToggle: onToggle),
-          _MatrixQuadrant(title: 'ELIMINATE', tasks: q4, color: AppColors.tertiaryLabel, onToggle: onToggle),
+          _MatrixQuadrant(title: 'URGENT AND IMPORTANT', tasks: q1, color: AppColors.error, onToggle: onToggle),
+          const SizedBox(height: 16),
+          _MatrixQuadrant(title: 'URGENT AND UNIMPORTANT', tasks: q2, color: AppColors.primaryOrange, onToggle: onToggle),
+          const SizedBox(height: 16),
+          _MatrixQuadrant(title: 'IMPORTANT BUT NOT URGENT', tasks: q3, color: AppColors.secondaryLabel, onToggle: onToggle),
+          const SizedBox(height: 16),
+          _MatrixQuadrant(title: 'NON-URGENT AND NON-IMPORTANT', tasks: q4, color: AppColors.tertiaryLabel, onToggle: onToggle),
         ]),
       ),
     );
@@ -257,63 +249,69 @@ class _MatrixQuadrant extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GlassCard(
-      padding: const EdgeInsets.all(12),
-      borderRadius: 20,
+      padding: const EdgeInsets.all(20),
+      borderRadius: 24,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
               Container(
-                width: 8,
-                height: 8,
+                width: 10,
+                height: 10,
                 decoration: BoxDecoration(color: color, shape: BoxShape.circle),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 12),
               Expanded(
                 child: NeoMonoText(
                   title,
-                  fontSize: 10,
+                  fontSize: 12,
                   fontWeight: FontWeight.bold,
                   color: color,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          Expanded(
-            child: tasks.isEmpty
-                ? Center(
-                    child: Icon(CupertinoIcons.check_mark, size: 16, color: color.withOpacity(0.3)),
-                  )
-                : ListView.builder(
-                    padding: EdgeInsets.zero,
-                    itemCount: tasks.length,
-                    itemBuilder: (context, i) {
-                      final task = tasks[i];
-                      return GestureDetector(
-                        onTap: () => onToggle(task.id),
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 8),
-                          child: Row(
-                            children: [
-                              Icon(CupertinoIcons.circle, size: 12, color: color),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  task.title.toUpperCase(),
-                                  style: AppTypography.mono.copyWith(fontSize: 9, color: AppColors.label),
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
+          if (tasks.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            ...List.generate(tasks.length, (i) {
+              final task = tasks[i];
+              return Column(
+                children: [
+                  GestureDetector(
+                    onTap: () => onToggle(task.id),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Row(
+                        children: [
+                          Icon(CupertinoIcons.circle, size: 16, color: color.withOpacity(0.5)),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              task.title.toUpperCase(),
+                              style: AppTypography.mono.copyWith(fontSize: 13, color: AppColors.label),
+                            ),
                           ),
-                        ),
-                      );
-                    },
+                        ],
+                      ),
+                    ),
                   ),
-          ),
+                  if (i < tasks.length - 1)
+                    Divider(height: 1, thickness: 0.5, color: AppColors.glassBorder),
+                ],
+              );
+            }),
+          ] else
+            Padding(
+              padding: const EdgeInsets.only(top: 16),
+              child: Center(
+                child: NeoMonoText(
+                  'CLEAR',
+                  fontSize: 10,
+                  color: AppColors.tertiaryLabel.withOpacity(0.5),
+                ),
+              ),
+            ),
         ],
       ),
     );

@@ -7,7 +7,6 @@ import 'core/providers/auth_provider.dart';
 import 'core/providers/task_provider.dart';
 import 'core/providers/habit_provider.dart';
 import 'core/providers/focus_provider.dart';
-import 'core/providers/countdown_provider.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/app_colors.dart';
@@ -38,7 +37,6 @@ void main() async {
         ChangeNotifierProvider(create: (_) => TaskProvider()),
         ChangeNotifierProvider(create: (_) => HabitProvider()),
         ChangeNotifierProvider(create: (_) => FocusProvider()),
-        ChangeNotifierProvider(create: (_) => CountdownProvider()),
       ],
       child: const CeoOsApp(),
     ),

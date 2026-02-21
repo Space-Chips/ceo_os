@@ -46,6 +46,24 @@ class _BlockListSheetState extends State<BlockListSheet> {
           // In a real app, you might want separate fields or a unified ID system.
           _blockedPackages = tokens; 
         });
+      } else {
+        if (mounted) {
+          showCupertinoDialog(
+            context: context,
+            builder: (ctx) => CupertinoAlertDialog(
+              title: const Text('SETUP REQUIRED'),
+              content: const Text(
+                'To select apps on iOS, this application must be rebuilt with native extensions.\n\nPlease stop the running app and restart it using "flutter run".',
+              ),
+              actions: [
+                CupertinoDialogAction(
+                  child: const Text('OK'),
+                  onPressed: () => Navigator.pop(ctx),
+                ),
+              ],
+            ),
+          );
+        }
       }
     } else {
       // Android / Custom Dart UI
@@ -186,7 +204,9 @@ class _BlockListSheetState extends State<BlockListSheet> {
                                   Text(
                                     _blockedPackages.isEmpty && _blockedCategories.isEmpty 
                                         ? 'TAP_TO_SELECT' 
-                                        : '${_blockedPackages.length} APPS, ${_blockedCategories.length} CATEGORIES',
+                                        : (Platform.isIOS 
+                                            ? 'SELECTED_CONFIGURATION' 
+                                            : '${_blockedPackages.length} APPS, ${_blockedCategories.length} CATEGORIES'),
                                     style: AppTypography.mono.copyWith(fontSize: 10, color: AppColors.secondaryLabel),
                                   ),
                                 ],

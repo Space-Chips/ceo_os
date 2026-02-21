@@ -5,7 +5,7 @@ version: 1.0.0+1
 
 environment:
   sdk: ^3.11.0
-  flutter: 3.41.1
+  flutter: ^3.41.1
 
 dependencies:
   flutter:
@@ -27,11 +27,20 @@ dependencies:
   screen_time: ^0.10.3
   installed_apps: ^2.1.1
   workmanager: ^0.9.0+3
+  icons_launcher: ^3.0.3
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
+
+icons_launcher:
+  image_path: "assets/logo.png"
+  platforms:
+    android:
+      enable: true
+    ios:
+      enable: true
 
 dependency_overrides:
   adaptive_platform_ui:

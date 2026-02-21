@@ -11,6 +11,22 @@ class FocusService {
     } on PlatformException catch (e) {
       print("Failed to request permissions: '${e.message}'.");
       return false;
+    } on MissingPluginException {
+      print("Native permissions method missing. Rebuild required.");
+      return false;
+    }
+  }
+
+  // Check if authorized
+  Future<bool> isAuthorized() async {
+    try {
+      final bool result = await _channel.invokeMethod('isAuthorized');
+      return result;
+    } on PlatformException catch (e) {
+      print("Failed to check authorization: '${e.message}'.");
+      return false;
+    } on MissingPluginException {
+      return false;
     }
   }
 
@@ -23,6 +39,8 @@ class FocusService {
       });
     } on PlatformException catch (e) {
       print("Failed to start shield: '${e.message}'.");
+    } on MissingPluginException {
+      print("Native startShield method missing. Rebuild required.");
     }
   }
 
@@ -32,6 +50,8 @@ class FocusService {
       await _channel.invokeMethod('stopShield');
     } on PlatformException catch (e) {
       print("Failed to stop shield: '${e.message}'.");
+    } on MissingPluginException {
+      print("Native stopShield method missing. Rebuild required.");
     }
   }
 
@@ -42,6 +62,9 @@ class FocusService {
       return result;
     } on PlatformException catch (e) {
       print("Failed to check shield status: '${e.message}'.");
+      return false;
+    } on MissingPluginException {
+      print("Native isShieldActive method missing. Rebuild required.");
       return false;
     }
   }
@@ -54,6 +77,9 @@ class FocusService {
       return result?.cast<String>(); 
     } on PlatformException catch (e) {
       print("Failed to open picker: '${e.message}'.");
+      return null;
+    } on MissingPluginException catch (e) {
+      print("CRITICAL: Native focus plugin missing. Please STOP the app and run 'flutter run' again to apply native changes. Error: $e");
       return null;
     }
   }

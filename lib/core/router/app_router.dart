@@ -12,11 +12,12 @@ import '../../features/auth/login_screen.dart';
 import '../../features/auth/signup_screen.dart';
 import '../../features/tasks/tasks_screen.dart';
 import '../../features/habits/habits_screen.dart';
+import '../../features/habits/habit_completion_page.dart';
 import '../../features/focus/focus_screen.dart';
-import '../../features/countdowns/countdown_screen.dart';
 import '../../features/calendar/calendar_screen.dart';
 import '../../features/settings/settings_screen.dart';
 import '../../features/auth/onboarding_screen.dart';
+import '../../core/models/habit_models.dart';
 
 /// App router — AdaptiveApp.router with AdaptiveBottomNavigationBar shell.
 class AppRouter {
@@ -41,6 +42,15 @@ class AppRouter {
           builder: (context, state) => const OnboardingScreen(),
         ),
 
+        // ── Habit Completion (Full Screen) ──
+        GoRoute(
+          path: '/habits/complete',
+          builder: (context, state) {
+            final habit = state.extra as Habit;
+            return HabitCompletionPage(habit: habit);
+          },
+        ),
+
         // ── Main App Shell ──
         ShellRoute(
           builder: (context, state, child) => _AppShell(child: child),
@@ -56,19 +66,14 @@ class AppRouter {
                   const NoTransitionPage(child: HabitsScreen()),
             ),
             GoRoute(
-              path: '/focus',
-              pageBuilder: (context, state) =>
-                  const NoTransitionPage(child: FocusScreen()),
-            ),
-            GoRoute(
-              path: '/countdowns',
-              pageBuilder: (context, state) =>
-                  const NoTransitionPage(child: CountdownScreen()),
-            ),
-            GoRoute(
               path: '/calendar',
               pageBuilder: (context, state) =>
                   const NoTransitionPage(child: CalendarScreen()),
+            ),
+            GoRoute(
+              path: '/focus',
+              pageBuilder: (context, state) =>
+                  const NoTransitionPage(child: FocusScreen()),
             ),
             GoRoute(
               path: '/settings',
@@ -115,14 +120,13 @@ class _AppShell extends StatelessWidget {
     '/habits',
     '/calendar',
     '/focus',
-    '/countdowns',
     '/settings',
   ];
 
   @override
   Widget build(BuildContext context) {
     final location = GoRouterState.of(context).matchedLocation;
-    final currentIndex = _routes.indexOf(location).clamp(0, 5);
+    final currentIndex = _routes.indexOf(location).clamp(0, 4);
 
     return AdaptiveScaffold(
       bottomNavigationBar: AdaptiveBottomNavigationBar(
@@ -134,7 +138,6 @@ class _AppShell extends StatelessWidget {
           AdaptiveNavigationDestination(icon: 'flame.fill', label: 'Habits'),
           AdaptiveNavigationDestination(icon: 'calendar', label: 'Calendar'),
           AdaptiveNavigationDestination(icon: 'shield.fill', label: 'Focus'),
-          AdaptiveNavigationDestination(icon: 'timer', label: 'Countdowns'),
           AdaptiveNavigationDestination(
             icon: 'gearshape.fill',
             label: 'Settings',

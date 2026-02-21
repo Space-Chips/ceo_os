@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:screen_time/screen_time.dart';
@@ -44,6 +43,7 @@ class FocusProvider extends ChangeNotifier {
 
   // ── Focus Mode ──
   bool _isFocusModeActive = false;
+  bool _isAuthorized = false;
   
   // ── Block Lists ──
   List<BlockList> _blockLists = [];
@@ -61,6 +61,7 @@ class FocusProvider extends ChangeNotifier {
   int get completedSessions => _completedSessions;
   bool get isRunning => _timer != null && _timer!.isActive;
   bool get isFocusModeActive => _isFocusModeActive;
+  bool get isAuthorized => _isAuthorized;
   List<BlockList> get blockLists => List.unmodifiable(_blockLists);
   String? get activeBlockListId => _activeBlockListId;
   int get totalFocusMinutesToday => _totalFocusMinutesToday;
@@ -118,9 +119,27 @@ class FocusProvider extends ChangeNotifier {
 
   Future<void> loadInitialData() async {
     _blockLists = await _repository.getBlockLists();
-    if (_blockLists.isNotEmpty && _activeBlockListId == null) {
+    
+    // Check for an active list from DB first
+    final activeInDb = _blockLists.where((l) => l.isActive).toList();
+    if (activeInDb.isNotEmpty) {
+      _activeBlockListId = activeInDb.first.id;
+    } else {
+      // Fallback to SharedPreferences if DB doesn't have it
+      final prefs = await SharedPreferences.getInstance();
+      _activeBlockListId = prefs.getString('active_block_list_id');
+    }
+    
+    if (_blockLists.isNotEmpty && (_activeBlockListId == null || !_blockLists.any((l) => l.id == _activeBlockListId))) {
       _activeBlockListId = _blockLists.first.id;
     }
+    
+    _isAuthorized = await _focusService.isAuthorized();
+
+    if (_activeBlockListId != null) {
+      await _syncToNative();
+    }
+    
     await refreshScreenTime();
     notifyListeners();
   }
@@ -144,11 +163,9 @@ class FocusProvider extends ChangeNotifier {
       // but if we got data, we use it.
     } catch (e) {
       print("ScreenTime error: $e");
-      // Fallback: If the plugin is unimplemented (common on simulators/macOS),
-      // we provide some realistic mock data for the "CEO OS" experience.
-      if (e is UnimplementedError || e.toString().contains('UnimplementedError')) {
-        _generateMockScreenTime();
-      }
+      // Fallback for MissingPluginException (iOS Simulator/Unbuilt Native) 
+      // or UnimplementedError (macOS/Web)
+      _generateMockScreenTime();
     }
     notifyListeners();
   }
@@ -170,21 +187,25 @@ class FocusProvider extends ChangeNotifier {
     });
   }
 
-  void startFocus() {
+  Future<bool> startFocus() async {
+    // Check for authorization first
+    _isAuthorized = await _focusService.isAuthorized();
+    if (!_isAuthorized) {
+      notifyListeners();
+      return false;
+    }
+
     _state = FocusState.focusing;
     _remainingSeconds = focusDurationMinutes * 60;
     _isFocusModeActive = true;
     _sessionStartTime = DateTime.now();
     
-    _syncToNative(); // Ensure native side has active list
-    
-    if (_activeBlockListId != null) {
-      final list = _blockLists.firstWhere((l) => l.id == _activeBlockListId);
-      _focusService.startShield(list.blockedPackageNames, list.blockedCategories);
-    }
+    // _syncToNative handles both SharedPreferences and the active shield if focusing
+    await _syncToNative(); 
     
     _startTimer();
     notifyListeners();
+    return true;
   }
 
   void stopFocus() {
@@ -316,14 +337,14 @@ class FocusProvider extends ChangeNotifier {
       _blockLists.add(list);
     }
     if (_activeBlockListId == null || _activeBlockListId == list.id) {
-      _activeBlockListId = list.id;
-      await _syncToNative();
+      await setActiveBlockList(list.id);
     }
     notifyListeners();
   }
 
   Future<void> setActiveBlockList(String id) async {
     _activeBlockListId = id;
+    await _repository.updateActiveBlockList(id);
     await _syncToNative();
     notifyListeners();
   }
@@ -333,8 +354,10 @@ class FocusProvider extends ChangeNotifier {
     try {
       final list = _blockLists.firstWhere((l) => l.id == _activeBlockListId);
       final prefs = await SharedPreferences.getInstance();
-      final data = jsonEncode(list.toJson());
-      await prefs.setString('active_block_list', data);
+      
+      // Persist active list ID and content
+      await prefs.setString('active_block_list_id', _activeBlockListId!);
+      await prefs.setString('active_block_list', jsonEncode(list.toJson()));
       
       if (_state == FocusState.focusing) {
         await _focusService.startShield(list.blockedPackageNames, list.blockedCategories);
@@ -350,6 +373,8 @@ class FocusProvider extends ChangeNotifier {
   
   Future<void> requestPermissions() async {
     await _focusService.requestPermissions();
+    _isAuthorized = await _focusService.isAuthorized();
+    notifyListeners();
   }
 
   @override

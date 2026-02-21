@@ -1,10 +1,12 @@
 import 'dart:math';
 import 'dart:ui';
+import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart' show Colors, CircularProgressIndicator;
 import 'package:provider/provider.dart';
 import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import '../../components/components.dart';
+import '../../core/models/block_list_model.dart';
 import '../../core/providers/focus_provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
@@ -25,14 +27,23 @@ class _FocusScreenState extends State<FocusScreen> {
     });
   }
 
-  void _showBlockListManager() {
-    final prov = context.read<FocusProvider>();
-    final activeList = prov.blockLists.firstWhere((l) => l.id == prov.activeBlockListId, orElse: () => prov.blockLists.first);
-    
+  void _showBlockListSheet([BlockList? list]) {
     showCupertinoModalPopup(
       context: context,
-      builder: (_) => BlockListSheet(blockList: activeList),
+      builder: (_) => BlockListSheet(blockList: list),
     );
+  }
+
+  void _showBlockListManager() {
+    final prov = context.read<FocusProvider>();
+    BlockList? activeList;
+    if (prov.blockLists.isNotEmpty) {
+      activeList = prov.blockLists.firstWhere(
+        (l) => l.id == prov.activeBlockListId,
+        orElse: () => prov.blockLists.first,
+      );
+    }
+    _showBlockListSheet(activeList);
   }
 
   @override
@@ -98,7 +109,11 @@ class _FocusScreenState extends State<FocusScreen> {
                             opacity: isIdle ? 1.0 : 0.2,
                             child: AbsorbPointer(
                               absorbing: !isIdle,
-                              child: _StatsView(provider: prov, onManageBlockList: _showBlockListManager),
+                              child: _StatsView(
+                                provider: prov, 
+                                onManageBlockList: _showBlockListManager,
+                                onEditBlockList: _showBlockListSheet,
+                              ),
                             ),
                           ),
 
@@ -187,11 +202,16 @@ class _QuickStartBar extends StatelessWidget {
           const SizedBox(width: 12),
           CupertinoButton(
             padding: EdgeInsets.zero,
-            onPressed: provider.startFocus,
+            onPressed: () async {
+              final success = await provider.startFocus();
+              if (!success) {
+                // Permission warning
+              }
+            },
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
-                color: AppColors.primaryOrange,
+                color: provider.isAuthorized ? AppColors.primaryOrange : AppColors.tertiaryLabel,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: const Icon(CupertinoIcons.play_fill, color: Colors.white, size: 16),
@@ -342,8 +362,13 @@ class _BreakOptionsView extends StatelessWidget {
 class _StatsView extends StatelessWidget {
   final FocusProvider provider;
   final VoidCallback onManageBlockList;
+  final Function(BlockList) onEditBlockList;
   
-  const _StatsView({required this.provider, required this.onManageBlockList});
+  const _StatsView({
+    required this.provider, 
+    required this.onManageBlockList,
+    required this.onEditBlockList,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -417,45 +442,50 @@ class _StatsView extends StatelessWidget {
             ...provider.blockLists.map(
               (list) => Padding(
                 padding: const EdgeInsets.only(bottom: 12),
-                child: GlassCard(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: list.id == provider.activeBlockListId 
-                              ? AppColors.primaryOrange.withOpacity(0.2) 
-                              : Colors.transparent,
-                          borderRadius: BorderRadius.circular(8),
+                child: GestureDetector(
+                  onTap: () => onEditBlockList(list),
+                  child: GlassCard(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: list.id == provider.activeBlockListId 
+                                ? AppColors.primaryOrange.withOpacity(0.2) 
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Icon(
+                            list.adultBlocking ? CupertinoIcons.exclamationmark_shield_fill : CupertinoIcons.shield_fill,
+                            size: 16,
+                            color: list.id == provider.activeBlockListId ? AppColors.primaryOrange : AppColors.tertiaryLabel,
+                          ),
                         ),
-                        child: Icon(
-                          list.adultBlocking ? CupertinoIcons.exclamationmark_shield_fill : CupertinoIcons.shield_fill,
-                          size: 16,
-                          color: list.id == provider.activeBlockListId ? AppColors.primaryOrange : AppColors.tertiaryLabel,
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(list.name.toUpperCase(), style: AppTypography.mono.copyWith(fontSize: 12, fontWeight: FontWeight.bold)),
+                              Text(
+                                Platform.isIOS 
+                                    ? 'PROTOCOL_CONFIGURED' 
+                                    : '${list.blockedPackageNames.length} APPS, ${list.blockedCategories.length} CATS', 
+                                style: AppTypography.mono.copyWith(fontSize: 9, color: AppColors.secondaryLabel),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(list.name.toUpperCase(), style: AppTypography.mono.copyWith(fontSize: 12, fontWeight: FontWeight.bold)),
-                            Text(
-                              '${list.blockedPackageNames.length} APPS, ${list.blockedCategories.length} CATS', 
-                              style: AppTypography.mono.copyWith(fontSize: 9, color: AppColors.secondaryLabel),
-                            ),
-                          ],
-                        ),
-                      ),
-                      if (list.id == provider.activeBlockListId)
-                        const Icon(CupertinoIcons.checkmark_alt, color: AppColors.primaryOrange, size: 16)
-                      else
-                        GestureDetector(
-                          onTap: () => provider.setActiveBlockList(list.id),
-                          child: Text('ACTIVATE', style: AppTypography.mono.copyWith(fontSize: 10, color: AppColors.tertiaryLabel)),
-                        ),
-                    ],
+                        if (list.id == provider.activeBlockListId)
+                          const Icon(CupertinoIcons.checkmark_alt, color: AppColors.primaryOrange, size: 16)
+                        else
+                          GestureDetector(
+                            onTap: () => provider.setActiveBlockList(list.id),
+                            child: Text('ACTIVATE', style: AppTypography.mono.copyWith(fontSize: 10, color: AppColors.tertiaryLabel)),
+                          ),
+                      ],
+                    ),
                   ),
                 ),
               ),

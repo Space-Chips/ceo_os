@@ -20,13 +20,6 @@ class FloatingAddButton extends StatelessWidget {
             color: Colors.white.withOpacity(0.2),
             width: 1,
           ),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.primaryOrange.withOpacity(0.3),
-              blurRadius: 20,
-              offset: const Offset(0, 10),
-            ),
-          ],
         ),
         child: const Icon(
           CupertinoIcons.plus,

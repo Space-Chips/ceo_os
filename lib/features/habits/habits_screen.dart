@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/cupertino.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../components/components.dart';
@@ -34,16 +35,22 @@ class _HabitsScreenState extends State<HabitsScreen> {
   }
 
   void _openCompletionPage(Habit habit) {
-    Navigator.push(
-      context,
-      CupertinoPageRoute(builder: (_) => HabitCompletionPage(habit: habit)),
-    );
+    context.push('/habits/complete', extra: habit);
   }
 
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
       backgroundColor: AppColors.background,
+      navigationBar: CupertinoNavigationBar(
+        middle: const NeoMonoText(
+          'DAILY_PROTOCOLS',
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+        ),
+        backgroundColor: AppColors.background.withValues(alpha: 0.8),
+        border: null,
+      ),
       child: Stack(
         children: [
           Positioned(
@@ -62,19 +69,10 @@ class _HabitsScreenState extends State<HabitsScreen> {
               ),
             ),
           ),
-          CustomScrollView(
-            slivers: [
-              CupertinoSliverNavigationBar(
-                largeTitle: const NeoMonoText(
-                  'DAILY_PROTOCOLS',
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                ),
-                backgroundColor: AppColors.background.withValues(alpha: 0.8),
-                border: null,
-              ),
-
-              SliverToBoxAdapter(
+          SafeArea(
+            child: CustomScrollView(
+              slivers: [
+                SliverToBoxAdapter(
                 child: Consumer<HabitProvider>(
                   builder: (context, prov, _) => _WeeklyStrip(provider: prov),
                 ),
@@ -134,9 +132,10 @@ class _HabitsScreenState extends State<HabitsScreen> {
               ),
             ],
           ),
+        ),
           Positioned(
             right: 24,
-            bottom: 40,
+            bottom: 110,
             child: FloatingAddButton(onPressed: _showAddHabit),
           ),
         ],

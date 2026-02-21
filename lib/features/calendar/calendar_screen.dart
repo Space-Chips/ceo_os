@@ -50,6 +50,15 @@ class _CalendarScreenState extends State<CalendarScreen> {
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
       backgroundColor: AppColors.background,
+      navigationBar: CupertinoNavigationBar(
+        middle: const NeoMonoText(
+          'TEMPORAL_GRID',
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+        ),
+        backgroundColor: AppColors.background.withValues(alpha: 0.8),
+        border: null,
+      ),
       child: Stack(
         children: [
           // Background Glow
@@ -70,19 +79,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
             ),
           ),
 
-          CustomScrollView(
-            slivers: [
-              CupertinoSliverNavigationBar(
-                largeTitle: const NeoMonoText(
-                  'TEMPORAL_GRID',
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                ),
-                backgroundColor: AppColors.background.withValues(alpha: 0.8),
-                border: null,
-              ),
-
-              SliverToBoxAdapter(
+          SafeArea(
+            child: CustomScrollView(
+              slivers: [
+                SliverToBoxAdapter(
                 child: Consumer<TaskProvider>(
                   builder: (context, prov, _) {
                     return Padding(
@@ -247,9 +247,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
               ),
             ],
           ),
+        ),
           Positioned(
             right: 24,
-            bottom: 40,
+            bottom: 110,
             child: FloatingAddButton(onPressed: _showAddEvent),
           ),
         ],
