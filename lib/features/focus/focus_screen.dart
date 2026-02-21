@@ -1,13 +1,14 @@
 import 'dart:math';
 import 'dart:ui';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart' show Colors, CircularProgressIndicator; // Import required Material widgets
+import 'package:flutter/material.dart' show Colors, CircularProgressIndicator;
 import 'package:provider/provider.dart';
 import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import '../../components/components.dart';
 import '../../core/providers/focus_provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
+import 'block_list_sheet.dart';
 
 class FocusScreen extends StatefulWidget {
   const FocusScreen({super.key});
@@ -20,8 +21,18 @@ class _FocusScreenState extends State<FocusScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<FocusProvider>().loadSampleData();
+      context.read<FocusProvider>().loadInitialData();
     });
+  }
+
+  void _showBlockListManager() {
+    final prov = context.read<FocusProvider>();
+    final activeList = prov.blockLists.firstWhere((l) => l.id == prov.activeBlockListId, orElse: () => prov.blockLists.first);
+    
+    showCupertinoModalPopup(
+      context: context,
+      builder: (_) => BlockListSheet(blockList: activeList),
+    );
   }
 
   @override
@@ -67,6 +78,12 @@ class _FocusScreenState extends State<FocusScreen> {
                               padding: EdgeInsets.zero,
                               onPressed: prov.reset,
                               child: const Icon(CupertinoIcons.stop_fill, color: AppColors.primaryOrange, size: 20),
+                            )
+                          else
+                            CupertinoButton(
+                              padding: EdgeInsets.zero,
+                              onPressed: prov.requestPermissions,
+                              child: const Icon(CupertinoIcons.shield_fill, color: AppColors.secondaryLabel, size: 20),
                             ),
                         ],
                       ),
@@ -76,16 +93,16 @@ class _FocusScreenState extends State<FocusScreen> {
                     Expanded(
                       child: Stack(
                         children: [
-                          // Base Content: Stats (only visible if idle or backgrounded by timer)
+                          // Base Content
                           Opacity(
                             opacity: isIdle ? 1.0 : 0.2,
                             child: AbsorbPointer(
                               absorbing: !isIdle,
-                              child: _StatsView(provider: prov),
+                              child: _StatsView(provider: prov, onManageBlockList: _showBlockListManager),
                             ),
                           ),
 
-                          // Layer 1: The Quick Start Bar (Top-pinned if idle)
+                          // Quick Start Bar
                           if (isIdle)
                             Positioned(
                               top: 0,
@@ -94,7 +111,7 @@ class _FocusScreenState extends State<FocusScreen> {
                               child: _QuickStartBar(provider: prov),
                             ),
 
-                          // Layer 2: The Timer / Break Views (Overlay if active)
+                          // Active Overlay
                           if (!isIdle)
                             Positioned.fill(
                               child: ClipRect(
@@ -291,37 +308,11 @@ class _BreakOptionsView extends StatelessWidget {
               const NeoMonoText('OVERRIDE_OPTIONS', fontSize: 18, fontWeight: FontWeight.bold),
               const SizedBox(height: 32),
               
-              _optionButton(
-                'TAKE_5M_BREAK', 
-                () => provider.takeCustomBreak(5),
-              ),
+              _optionButton('TAKE_5M_BREAK', () => provider.takeCustomBreak(5)),
               const SizedBox(height: 12),
-              _optionButton(
-                'TAKE_15M_BREAK', 
-                () => provider.takeCustomBreak(15),
-              ),
+              _optionButton('TAKE_15M_BREAK', () => provider.takeCustomBreak(15)),
               const SizedBox(height: 12),
-              _optionButton(
-                'TERMINATE_BLOCKING', 
-                provider.cancelBlocking,
-                isDanger: true,
-              ),
-              const SizedBox(height: 32),
-              
-              const NeoMonoText('BLOCKED_APPLICATION_STATUS', fontSize: 10, color: AppColors.tertiaryLabel),
-              const SizedBox(height: 16),
-              ...provider.blockedApps.take(3).map((app) => Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Row(
-                  children: [
-                    Icon(app.icon, size: 14, color: AppColors.secondaryLabel),
-                    const SizedBox(width: 12),
-                    Expanded(child: Text(app.name, style: AppTypography.mono.copyWith(fontSize: 10))),
-                    const NeoMonoText('LOCKED', fontSize: 8, color: AppColors.error),
-                  ],
-                ),
-              )),
-              
+              _optionButton('TERMINATE_BLOCKING', provider.cancelBlocking, isDanger: true),
               const SizedBox(height: 24),
               CupertinoButton(
                 padding: EdgeInsets.zero,
@@ -350,7 +341,9 @@ class _BreakOptionsView extends StatelessWidget {
 
 class _StatsView extends StatelessWidget {
   final FocusProvider provider;
-  const _StatsView({required this.provider});
+  final VoidCallback onManageBlockList;
+  
+  const _StatsView({required this.provider, required this.onManageBlockList});
 
   @override
   Widget build(BuildContext context) {
@@ -368,9 +361,9 @@ class _StatsView extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('TOTAL_FOCUS', style: AppTypography.mono.copyWith(fontSize: 10, color: AppColors.tertiaryLabel)),
+                      Text('SCREEN_USAGE', style: AppTypography.mono.copyWith(fontSize: 10, color: AppColors.tertiaryLabel)),
                       const SizedBox(height: 8),
-                      NeoMonoText(_fmt(provider.totalFocusMinutesToday), fontSize: 20, color: AppColors.primaryOrange),
+                      NeoMonoText(_fmt(provider.screenTimeToday.toInt()), fontSize: 20, color: AppColors.primaryOrange),
                     ],
                   ),
                 ),
@@ -399,27 +392,75 @@ class _StatsView extends StatelessWidget {
             child: _buildChart(),
           ),
           const SizedBox(height: 32),
-          Text('DISTRACTION_CONTROL', style: AppTypography.mono.copyWith(fontSize: 12, letterSpacing: 1.5)),
+          
+          // Block List Manager
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('DISTRACTION_CONTROL', style: AppTypography.mono.copyWith(fontSize: 12, letterSpacing: 1.5)),
+              GestureDetector(
+                onTap: onManageBlockList,
+                child: Text('CONFIGURE', style: AppTypography.mono.copyWith(fontSize: 10, color: AppColors.primaryOrange, fontWeight: FontWeight.bold)),
+              ),
+            ],
+          ),
           const SizedBox(height: 16),
-          ...provider.blockedApps.asMap().entries.map(
-                (e) => Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: GlassCard(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                    child: Row(
-                      children: [
-                        Icon(e.value.icon, size: 20, color: e.value.isBlocked ? AppColors.primaryOrange : AppColors.tertiaryLabel),
-                        const SizedBox(width: 16),
-                        Expanded(child: Text(e.value.name.toUpperCase(), style: AppTypography.mono.copyWith(fontSize: 12))),
-                        AdaptiveSwitch(
-                          value: e.value.isBlocked,
-                          onChanged: (_) => provider.toggleBlockedApp(e.key),
+          
+          if (provider.blockLists.isEmpty)
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Center(
+                child: Text('NO_CONFIGURED_LISTS', style: AppTypography.mono.copyWith(color: AppColors.secondaryLabel)),
+              ),
+            )
+          else
+            ...provider.blockLists.map(
+              (list) => Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: GlassCard(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: list.id == provider.activeBlockListId 
+                              ? AppColors.primaryOrange.withOpacity(0.2) 
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(8),
                         ),
-                      ],
-                    ),
+                        child: Icon(
+                          list.adultBlocking ? CupertinoIcons.exclamationmark_shield_fill : CupertinoIcons.shield_fill,
+                          size: 16,
+                          color: list.id == provider.activeBlockListId ? AppColors.primaryOrange : AppColors.tertiaryLabel,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(list.name.toUpperCase(), style: AppTypography.mono.copyWith(fontSize: 12, fontWeight: FontWeight.bold)),
+                            Text(
+                              '${list.blockedPackageNames.length} APPS, ${list.blockedCategories.length} CATS', 
+                              style: AppTypography.mono.copyWith(fontSize: 9, color: AppColors.secondaryLabel),
+                            ),
+                          ],
+                        ),
+                      ),
+                      if (list.id == provider.activeBlockListId)
+                        const Icon(CupertinoIcons.checkmark_alt, color: AppColors.primaryOrange, size: 16)
+                      else
+                        GestureDetector(
+                          onTap: () => provider.setActiveBlockList(list.id),
+                          child: Text('ACTIVATE', style: AppTypography.mono.copyWith(fontSize: 10, color: AppColors.tertiaryLabel)),
+                        ),
+                    ],
                   ),
                 ),
               ),
+            ),
+            
           const SizedBox(height: 120),
         ],
       ),

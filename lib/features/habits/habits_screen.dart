@@ -1,12 +1,15 @@
 import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 import '../../components/components.dart';
 import '../../core/models/habit_models.dart';
 import '../../core/providers/habit_provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import 'add_habit_sheet.dart';
+import 'habit_gallery_sheet.dart';
+import 'habit_completion_page.dart';
 
 class HabitsScreen extends StatefulWidget {
   const HabitsScreen({super.key});
@@ -26,7 +29,14 @@ class _HabitsScreenState extends State<HabitsScreen> {
   void _showAddHabit() {
     showCupertinoModalPopup(
       context: context,
-      builder: (_) => const AddHabitSheet(),
+      builder: (_) => const HabitGallerySheet(),
+    );
+  }
+
+  void _openCompletionPage(Habit habit) {
+    Navigator.push(
+      context,
+      CupertinoPageRoute(builder: (_) => HabitCompletionPage(habit: habit)),
     );
   }
 
@@ -72,22 +82,7 @@ class _HabitsScreenState extends State<HabitsScreen> {
 
               SliverToBoxAdapter(
                 child: Consumer<HabitProvider>(
-                  builder: (context, prov, _) {
-                    if (prov.habits.isEmpty) return const SizedBox.shrink();
-                    return SizedBox(
-                      height: 160,
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 12,
-                        ),
-                        itemCount: prov.habits.length,
-                        itemBuilder: (context, i) =>
-                            _HabitCard(habit: prov.habits[i]),
-                      ),
-                    );
-                  },
+                  builder: (context, prov, _) => _GlobalHeatmap(provider: prov),
                 ),
               ),
 
@@ -121,11 +116,15 @@ class _HabitsScreenState extends State<HabitsScreen> {
                     ).copyWith(bottom: 120),
                     sliver: SliverList(
                       delegate: SliverChildBuilderDelegate((context, i) {
+                        final habit = prov.habits[i];
                         return Padding(
                           padding: const EdgeInsets.only(bottom: 12),
-                          child: _HabitTile(
-                            habit: prov.habits[i],
-                            onToggle: () => prov.toggleHabit(prov.habits[i].id),
+                          child: GestureDetector(
+                            onTap: () => _openCompletionPage(habit),
+                            child: _HabitTile(
+                              habit: habit,
+                              onToggle: () => prov.toggleHabit(habit.id),
+                            ),
                           ),
                         );
                       }, childCount: prov.habits.length),
@@ -211,73 +210,78 @@ class _WeeklyStrip extends StatelessWidget {
   }
 }
 
-class _HabitCard extends StatelessWidget {
-  final Habit habit;
-  const _HabitCard({required this.habit});
+class _GlobalHeatmap extends StatefulWidget {
+  final HabitProvider provider;
+  const _GlobalHeatmap({required this.provider});
 
-  IconData _getIconData(String? iconName) {
-    switch (iconName) {
-      case 'bolt': return CupertinoIcons.bolt_fill;
-      case 'flame': return CupertinoIcons.flame_fill;
-      case 'drop': return CupertinoIcons.drop_fill;
-      case 'heart': return CupertinoIcons.heart_fill;
-      case 'star': return CupertinoIcons.star_fill;
-      case 'timer': return CupertinoIcons.timer;
-      case 'briefcase': return CupertinoIcons.briefcase_fill;
-      case 'book': return CupertinoIcons.book_fill;
-      default: return CupertinoIcons.bolt_fill;
+  @override
+  State<_GlobalHeatmap> createState() => _GlobalHeatmapState();
+}
+
+class _GlobalHeatmapState extends State<_GlobalHeatmap> {
+  Map<String, double> _completionRatios = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _loadHeatmapData();
+  }
+
+  Future<void> _loadHeatmapData() async {
+    final now = DateTime.now();
+    final start = now.subtract(const Duration(days: 27));
+    final comps = await widget.provider.getCompletionsForRange(start, now);
+    final totalHabits = widget.provider.habits.length;
+
+    if (totalHabits == 0) return;
+
+    final Map<String, int> counts = {};
+    for (var c in comps.where((c) => c.completed)) {
+      counts[c.date] = (counts[c.date] ?? 0) + 1;
     }
+
+    final Map<String, double> ratios = {};
+    for (int i = 0; i < 28; i++) {
+      final date = start.add(Duration(days: i));
+      final dateStr = DateFormat('yyyy-MM-dd').format(date);
+      ratios[dateStr] = (counts[dateStr] ?? 0) / totalHabits;
+    }
+
+    setState(() => _completionRatios = ratios);
   }
 
   @override
   Widget build(BuildContext context) {
-    final prov = context.watch<HabitProvider>();
-    final isDone = prov.isHabitCompletedToday(habit.id);
+    final now = DateTime.now();
+    final start = now.subtract(const Duration(days: 27));
 
-    return Container(
-      width: 140,
-      margin: const EdgeInsets.only(right: 12),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       child: GlassCard(
         padding: const EdgeInsets.all(16),
-        borderRadius: 24,
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Icon(
-                  _getIconData(habit.icon),
-                  size: 20,
-                  color: AppColors.primaryOrange,
-                ),
-                if (isDone)
-                  const Icon(
-                    CupertinoIcons.checkmark_alt_circle_fill,
-                    size: 20,
-                    color: AppColors.success,
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: List.generate(28, (i) {
+                final date = start.add(Duration(days: i));
+                final dateStr = DateFormat('yyyy-MM-dd').format(date);
+                final ratio = _completionRatios[dateStr] ?? 0.0;
+                
+                return Container(
+                  width: (MediaQuery.of(context).size.width - 40 - 32 - (7 * 6)) / 7,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: ratio == 0 ? AppColors.backgroundLight : AppColors.primaryOrange.withOpacity(ratio.clamp(0.1, 1.0)),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: AppColors.glassBorder, width: 0.5),
                   ),
-              ],
+                );
+              }),
             ),
-            const Spacer(),
-            Text(
-              habit.title.toUpperCase(),
-              style: AppTypography.mono.copyWith(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 4),
-            Text(
-              isDone ? 'PROTOCOL_COMPLETE' : 'PENDING...',
-              style: AppTypography.mono.copyWith(
-                fontSize: 8,
-                color: isDone ? AppColors.success : AppColors.tertiaryLabel,
-              ),
-            ),
+            const SizedBox(height: 12),
+            NeoMonoText('GLOBAL_CONSISTENCY_MATRIX', fontSize: 9, color: AppColors.tertiaryLabel),
           ],
         ),
       ),
@@ -318,13 +322,13 @@ class _HabitTile extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: AppColors.primaryOrange.withValues(alpha: 0.1),
+              color: isComplete ? AppColors.primaryOrange.withOpacity(0.2) : AppColors.primaryOrange.withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
               _getIconData(habit.icon),
               size: 18,
-              color: AppColors.primaryOrange,
+              color: isComplete ? AppColors.primaryOrange : AppColors.primaryOrange.withOpacity(0.6),
             ),
           ),
           const SizedBox(width: 16),
@@ -337,28 +341,21 @@ class _HabitTile extends StatelessWidget {
                   style: AppTypography.mono.copyWith(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
+                    color: isComplete ? AppColors.label : AppColors.label.withOpacity(0.8),
                   ),
                 ),
                 Text(
-                  habit.isDaily ? 'RECURRING_DAILY' : 'RECURRING_WEEKLY',
+                  isComplete ? 'PROTOCOL_LOCKED' : (habit.isDaily ? 'RECURRING_DAILY' : 'RECURRING_WEEKLY'),
                   style: AppTypography.mono.copyWith(
                     fontSize: 10,
-                    color: AppColors.tertiaryLabel,
+                    color: isComplete ? AppColors.success : AppColors.tertiaryLabel,
                   ),
                 ),
               ],
             ),
           ),
-          GestureDetector(
-            onTap: onToggle,
-            child: Icon(
-              isComplete
-                  ? CupertinoIcons.checkmark_circle_fill
-                  : CupertinoIcons.circle,
-              size: 28,
-              color: isComplete ? AppColors.success : AppColors.tertiaryLabel,
-            ),
-          ),
+          if (isComplete)
+            const Icon(CupertinoIcons.checkmark_circle_fill, color: AppColors.success, size: 24),
         ],
       ),
     );

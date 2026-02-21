@@ -4,6 +4,7 @@
 
 list(APPEND FLUTTER_PLUGIN_LIST
   gtk
+  screen_time
   url_launcher_linux
 )
 

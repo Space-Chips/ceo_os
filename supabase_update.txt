@@ -1,0 +1,27 @@
+-- 1. Create the task_groups table
+CREATE TABLE IF NOT EXISTS public.task_groups (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    created_by UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    color TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- 2. Add group_id column to pareto_tasks table
+ALTER TABLE public.pareto_tasks 
+ADD COLUMN IF NOT EXISTS group_id UUID REFERENCES public.task_groups(id) ON DELETE SET NULL;
+
+-- 3. Enable Row Level Security (RLS) for task_groups
+ALTER TABLE public.task_groups ENABLE ROW LEVEL SECURITY;
+
+-- 4. Create RLS Policy for task_groups (Users can only see/edit their own groups)
+CREATE POLICY "Users can manage their own task groups" 
+ON public.task_groups 
+FOR ALL 
+TO authenticated 
+USING (auth.uid() = created_by)
+WITH CHECK (auth.uid() = created_by);
+
+-- 5. (Optional) Create an index for performance
+CREATE INDEX IF NOT EXISTS idx_task_groups_user ON public.task_groups(created_by);
+CREATE INDEX IF NOT EXISTS idx_pareto_tasks_group ON public.pareto_tasks(group_id);

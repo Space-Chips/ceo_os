@@ -39,6 +39,54 @@ class HabitProvider extends ChangeNotifier {
     return comps.any((c) => c.date == todayStr && c.completed);
   }
 
+  Future<List<HabitCompletion>> getCompletionHistory(String habitId) async {
+    return await _repository.getCompletionHistory(habitId);
+  }
+
+  Future<List<HabitCompletion>> getCompletionsForRange(DateTime start, DateTime end) async {
+    return await _repository.getCompletionsForDateRange(start, end);
+  }
+
+  Future<List<HabitLog>> getHabitLogs(String habitId) async {
+    return await _repository.getHabitLogs(habitId);
+  }
+
+  Future<void> addHabitLog(String habitId, String content) async {
+    await _repository.createHabitLog(habitId, content);
+  }
+
+  int calculateStreak(String habitId, List<HabitCompletion> history) {
+    if (history.isEmpty) return 0;
+    
+    int streak = 0;
+    final now = DateTime.now();
+    final sortedComps = history.where((c) => c.completed).toList()
+      ..sort((a, b) => b.date.compareTo(a.date));
+
+    if (sortedComps.isEmpty) return 0;
+
+    // Check if latest completion is today or yesterday
+    final latestDate = DateTime.parse(sortedComps.first.date);
+    final diff = now.difference(latestDate).inDays;
+    if (diff > 1) return 0;
+
+    DateTime current = latestDate;
+    streak = 1;
+
+    for (int i = 1; i < sortedComps.length; i++) {
+      final next = DateTime.parse(sortedComps[i].date);
+      if (current.difference(next).inDays == 1) {
+        streak++;
+        current = next;
+      } else if (current.difference(next).inDays == 0) {
+        continue;
+      } else {
+        break;
+      }
+    }
+    return streak;
+  }
+
   Future<void> loadData() async {
     _isLoading = true;
     notifyListeners();
@@ -69,9 +117,37 @@ class HabitProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> createHabit(String title, {bool isDaily = true, String? icon}) async {
+  Future<void> createHabit(
+    String title, {
+    bool isDaily = true,
+    String? icon,
+    String? category,
+    String? quote,
+    String? frequencyType,
+    int? intervalDays,
+    String? targetType,
+    int? targetValue,
+    String? targetUnit,
+    String? reminderTime,
+    bool autoPopup = false,
+    String? colorTheme,
+  }) async {
     try {
-      final newHabit = await _repository.createHabit(title, isDaily: isDaily, icon: icon);
+      final newHabit = await _repository.createHabit(
+        title,
+        isDaily: isDaily,
+        icon: icon,
+        category: category,
+        quote: quote,
+        frequencyType: frequencyType,
+        intervalDays: intervalDays,
+        targetType: targetType,
+        targetValue: targetValue,
+        targetUnit: targetUnit,
+        reminderTime: reminderTime,
+        autoPopup: autoPopup,
+        colorTheme: colorTheme,
+      );
       if (newHabit != null) {
         _habits.add(newHabit);
         notifyListeners();
@@ -81,7 +157,7 @@ class HabitProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> toggleHabit(String habitId) async {
+  Future<void> toggleHabit(String habitId, {double? amount}) async {
     try {
       // Optimistic update
       final now = DateTime.now();
@@ -104,27 +180,17 @@ class HabitProvider extends ChangeNotifier {
             createdBy: old.createdBy,
             createdAt: old.createdAt,
           );
-        } else {
-          // Add new (a bit tricky without real ID, but UI just needs to know it's done)
-          // We'll rely on reload after toggle for real consistency or sophisticated local state
-          // actually repository toggle handles DB, we should just reload or assume success
         }
       }
 
-      await _repository.toggleCompletion(habitId, now);
+      await _repository.toggleCompletion(habitId, now, amount: amount);
 
       // Refresh to get exact state from DB
       final updatedCompletions = await _repository.getTodaysCompletions();
-      _completions
-          .clear(); // careful clearing everything if we only fetched today
-      // Actually simpler to just reload this habit's completion or all
-      // Let's just update based on what we got back
+      _completions.clear();
       for (var comp in updatedCompletions) {
         if (_completions.containsKey(comp.habitId)) {
-          // Replace or add
-          _completions[comp.habitId] = [
-            comp,
-          ]; // simplistic, assumes only today matters for this view
+          _completions[comp.habitId] = [comp];
         } else {
           _completions[comp.habitId] = [comp];
         }
