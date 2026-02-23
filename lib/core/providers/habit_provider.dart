@@ -14,6 +14,17 @@ class HabitProvider extends ChangeNotifier {
     : _repository = repository ?? HabitRepository();
 
   List<Habit> get habits => List.unmodifiable(_habits);
+  List<Habit> get habitsWithCompletedBottom {
+    final sorted = [..._habits];
+    sorted.sort((a, b) {
+      final aDone = isHabitCompletedToday(a.id);
+      final bDone = isHabitCompletedToday(b.id);
+      if (aDone == bDone) return a.createdAt.compareTo(b.createdAt);
+      return aDone ? 1 : -1;
+    });
+    return sorted;
+  }
+
   bool get isLoading => _isLoading;
 
   /// Count of habits completed today.
@@ -43,7 +54,10 @@ class HabitProvider extends ChangeNotifier {
     return await _repository.getCompletionHistory(habitId);
   }
 
-  Future<List<HabitCompletion>> getCompletionsForRange(DateTime start, DateTime end) async {
+  Future<List<HabitCompletion>> getCompletionsForRange(
+    DateTime start,
+    DateTime end,
+  ) async {
     return await _repository.getCompletionsForDateRange(start, end);
   }
 
@@ -57,7 +71,7 @@ class HabitProvider extends ChangeNotifier {
 
   int calculateStreak(String habitId, List<HabitCompletion> history) {
     if (history.isEmpty) return 0;
-    
+
     int streak = 0;
     final now = DateTime.now();
     final sortedComps = history.where((c) => c.completed).toList()
@@ -131,6 +145,8 @@ class HabitProvider extends ChangeNotifier {
     String? reminderTime,
     bool autoPopup = false,
     String? colorTheme,
+    List<int>? specificDays,
+    bool syncToCalendar = false,
   }) async {
     try {
       final newHabit = await _repository.createHabit(
@@ -147,6 +163,8 @@ class HabitProvider extends ChangeNotifier {
         reminderTime: reminderTime,
         autoPopup: autoPopup,
         colorTheme: colorTheme,
+        specificDays: specificDays,
+        syncToCalendar: syncToCalendar,
       );
       if (newHabit != null) {
         _habits.add(newHabit);
@@ -164,24 +182,33 @@ class HabitProvider extends ChangeNotifier {
       final todayStr =
           '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
 
-      // Update local state temporarily
-      if (_completions.containsKey(habitId)) {
-        final index = _completions[habitId]!.indexWhere(
-          (c) => c.date == todayStr,
+      final comps = _completions.putIfAbsent(habitId, () => []);
+      final index = comps.indexWhere((c) => c.date == todayStr);
+      if (index != -1) {
+        final old = comps[index];
+        comps[index] = HabitCompletion(
+          id: old.id,
+          habitId: old.habitId,
+          date: old.date,
+          state: old.state,
+          completed: !old.completed,
+          createdBy: old.createdBy,
+          checkedInDate: old.checkedInDate,
+          createdAt: old.createdAt,
         );
-        if (index != -1) {
-          // Toggle existing
-          final old = _completions[habitId]![index];
-          _completions[habitId]![index] = HabitCompletion(
-            id: old.id,
-            habitId: old.habitId,
-            date: old.date,
-            completed: !old.completed,
-            createdBy: old.createdBy,
-            createdAt: old.createdAt,
-          );
-        }
+      } else {
+        comps.add(
+          HabitCompletion(
+            id: 'optimistic-$habitId-$todayStr',
+            habitId: habitId,
+            date: todayStr,
+            completed: true,
+            createdBy: 'local',
+            createdAt: DateTime.now(),
+          ),
+        );
       }
+      notifyListeners();
 
       await _repository.toggleCompletion(habitId, now, amount: amount);
 
@@ -190,7 +217,7 @@ class HabitProvider extends ChangeNotifier {
       _completions.clear();
       for (var comp in updatedCompletions) {
         if (_completions.containsKey(comp.habitId)) {
-          _completions[comp.habitId] = [comp];
+          _completions[comp.habitId]!.add(comp);
         } else {
           _completions[comp.habitId] = [comp];
         }
@@ -201,5 +228,19 @@ class HabitProvider extends ChangeNotifier {
       // Revert if needed
       await loadData();
     }
+  }
+
+  Future<void> setHabitCompletionForDate({
+    required String habitId,
+    required DateTime date,
+    required bool completed,
+    String? state,
+  }) async {
+    await _repository.setCompletionForDate(
+      habitId: habitId,
+      date: date,
+      completed: completed,
+      state: state,
+    );
   }
 }

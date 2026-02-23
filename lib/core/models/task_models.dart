@@ -35,6 +35,8 @@ class ParetoTask {
   final String? impactLevel;
   final int? sortOrder;
   final String? groupId;
+  final DateTime? deadline;
+  final String? description;
   final DateTime createdAt;
 
   ParetoTask({
@@ -48,6 +50,8 @@ class ParetoTask {
     this.impactLevel,
     this.sortOrder,
     this.groupId,
+    this.deadline,
+    this.description,
     required this.createdAt,
   });
 
@@ -65,6 +69,10 @@ class ParetoTask {
       impactLevel: json['impact_level'],
       sortOrder: json['sort_order'],
       groupId: json['group_id'],
+      deadline: json['deadline'] != null
+          ? DateTime.parse(json['deadline'])
+          : null,
+      description: json['description'],
       createdAt: DateTime.parse(json['created_at']),
     );
   }
@@ -77,6 +85,9 @@ class CalendarEvent {
   final String? description;
   final String? eventDate;
   final String? eventTime;
+  final String? sourceType;
+  final String? sourceId;
+  final String? recurrenceRule;
   final DateTime? notification24hTime;
   final DateTime? notification2hTime;
   final bool notification24hSent;
@@ -90,6 +101,9 @@ class CalendarEvent {
     this.description,
     this.eventDate,
     this.eventTime,
+    this.sourceType,
+    this.sourceId,
+    this.recurrenceRule,
     this.notification24hTime,
     this.notification2hTime,
     this.notification24hSent = false,
@@ -105,6 +119,9 @@ class CalendarEvent {
       description: json['description'],
       eventDate: json['event_date'],
       eventTime: json['event_time'],
+      sourceType: json['source_type'],
+      sourceId: json['source_id'],
+      recurrenceRule: json['recurrence_rule'],
       notification24hTime: json['notification_24h_time'] != null
           ? DateTime.parse(json['notification_24h_time'])
           : null,

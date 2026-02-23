@@ -68,7 +68,7 @@ class _CeoOsAppState extends State<CeoOsApp> {
   @override
   Widget build(BuildContext context) {
     return AdaptiveApp.router(
-      title: 'CEOOS',
+      title: 'CEO OS',
       themeMode: ThemeMode.dark,
       cupertinoDarkTheme: AppTheme.cupertino,
       materialDarkTheme: AppTheme.materialFallback,

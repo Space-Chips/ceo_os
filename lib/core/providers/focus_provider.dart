@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:screen_time/screen_time.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/block_list_model.dart';
@@ -8,13 +9,13 @@ import '../services/focus_service.dart';
 import '../repositories/focus_repository.dart';
 
 /// Focus/Pomodoro session state.
-enum FocusState { 
-  idle, 
-  focusing, 
-  shortBreak, 
-  longBreak, 
-  requestingBreak, 
-  breakOptionsMenu 
+enum FocusState {
+  idle,
+  focusing,
+  shortBreak,
+  longBreak,
+  requestingBreak,
+  breakOptionsMenu,
 }
 
 class FocusProvider extends ChangeNotifier {
@@ -44,7 +45,11 @@ class FocusProvider extends ChangeNotifier {
   // ── Focus Mode ──
   bool _isFocusModeActive = false;
   bool _isAuthorized = false;
-  
+
+  // ── Session Context ──
+  String? sessionTitle;
+  String? linkedTaskId;
+
   // ── Block Lists ──
   List<BlockList> _blockLists = [];
   String? _activeBlockListId;
@@ -101,12 +106,18 @@ class FocusProvider extends ChangeNotifier {
 
   String get stateLabel {
     switch (_state) {
-      case FocusState.idle: return 'System Idle';
-      case FocusState.focusing: return 'Deep Focus Active';
-      case FocusState.shortBreak: return 'Short Break';
-      case FocusState.longBreak: return 'Long Break';
-      case FocusState.requestingBreak: return 'Analyzing Request...';
-      case FocusState.breakOptionsMenu: return 'Protocol Override';
+      case FocusState.idle:
+        return 'System Idle';
+      case FocusState.focusing:
+        return 'Deep Focus Active';
+      case FocusState.shortBreak:
+        return 'Short Break';
+      case FocusState.longBreak:
+        return 'Long Break';
+      case FocusState.requestingBreak:
+        return 'Analyzing Request...';
+      case FocusState.breakOptionsMenu:
+        return 'Protocol Override';
     }
   }
 
@@ -119,7 +130,7 @@ class FocusProvider extends ChangeNotifier {
 
   Future<void> loadInitialData() async {
     _blockLists = await _repository.getBlockLists();
-    
+
     // Check for an active list from DB first
     final activeInDb = _blockLists.where((l) => l.isActive).toList();
     if (activeInDb.isNotEmpty) {
@@ -129,17 +140,19 @@ class FocusProvider extends ChangeNotifier {
       final prefs = await SharedPreferences.getInstance();
       _activeBlockListId = prefs.getString('active_block_list_id');
     }
-    
-    if (_blockLists.isNotEmpty && (_activeBlockListId == null || !_blockLists.any((l) => l.id == _activeBlockListId))) {
+
+    if (_blockLists.isNotEmpty &&
+        (_activeBlockListId == null ||
+            !_blockLists.any((l) => l.id == _activeBlockListId))) {
       _activeBlockListId = _blockLists.first.id;
     }
-    
+
     _isAuthorized = await _focusService.isAuthorized();
 
     if (_activeBlockListId != null) {
       await _syncToNative();
     }
-    
+
     await refreshScreenTime();
     notifyListeners();
   }
@@ -152,19 +165,20 @@ class FocusProvider extends ChangeNotifier {
         startTime: startOfDay,
         endTime: now,
       );
-      
+
       double totalMinutes = 0;
       for (var app in usage) {
         totalMinutes += app.usageTime?.inMinutes ?? 0;
       }
       _screenTimeToday = totalMinutes;
-      
-      // If we got 0 minutes, maybe it's just a fresh day or restricted, 
+
+      // If we got 0 minutes, maybe it's just a fresh day or restricted,
       // but if we got data, we use it.
+    } on MissingPluginException {
+      // Native screen-time bridge not available on this runtime (ex: simulator).
+      _screenTimeToday = 0;
     } catch (e) {
       print("ScreenTime error: $e");
-      // Fallback for MissingPluginException (iOS Simulator/Unbuilt Native) 
-      // or UnimplementedError (macOS/Web)
       _generateMockScreenTime();
     }
     notifyListeners();
@@ -174,14 +188,15 @@ class FocusProvider extends ChangeNotifier {
     // Generate realistic-looking data for a high-performer
     // Mostly focused work, some communication
     _screenTimeToday = 142.0; // 2h 22m
-    
+
     // Generate hourly distribution (peaking in morning and afternoon)
     _hourlyUsage = List.generate(24, (hour) {
       if (hour < 6) return 0.0;
       if (hour >= 23) return 0.0;
-      
+
       // Focus peaks
-      if (hour == 9 || hour == 10 || hour == 14 || hour == 15) return 0.8 + (0.2 * hour % 3);
+      if (hour == 9 || hour == 10 || hour == 14 || hour == 15)
+        return 0.8 + (0.2 * hour % 3);
       if (hour >= 9 && hour <= 18) return 0.4 + (0.3 * hour % 2);
       return 0.1;
     });
@@ -192,17 +207,17 @@ class FocusProvider extends ChangeNotifier {
     _isAuthorized = await _focusService.isAuthorized();
     if (!_isAuthorized) {
       notifyListeners();
-      return false;
+      // Continue even if unauthorized to allow the internal timer to run.
     }
 
     _state = FocusState.focusing;
     _remainingSeconds = focusDurationMinutes * 60;
     _isFocusModeActive = true;
     _sessionStartTime = DateTime.now();
-    
+
     // _syncToNative handles both SharedPreferences and the active shield if focusing
-    await _syncToNative(); 
-    
+    await _syncToNative();
+
     _startTimer();
     notifyListeners();
     return true;
@@ -295,7 +310,7 @@ class FocusProvider extends ChangeNotifier {
       _totalFocusMinutesToday += focusDurationMinutes;
       _isFocusModeActive = false;
       _focusService.stopShield();
-      
+
       if (_completedSessions % sessionsBeforeLongBreak == 0) {
         _state = FocusState.longBreak;
         _remainingSeconds = longBreakMinutes * 60;
@@ -354,23 +369,26 @@ class FocusProvider extends ChangeNotifier {
     try {
       final list = _blockLists.firstWhere((l) => l.id == _activeBlockListId);
       final prefs = await SharedPreferences.getInstance();
-      
+
       // Persist active list ID and content
       await prefs.setString('active_block_list_id', _activeBlockListId!);
       await prefs.setString('active_block_list', jsonEncode(list.toJson()));
-      
+
       if (_state == FocusState.focusing) {
-        await _focusService.startShield(list.blockedPackageNames, list.blockedCategories);
+        await _focusService.startShield(
+          list.blockedPackageNames,
+          list.blockedCategories,
+        );
       }
     } catch (e) {
       print("Sync to native failed: $e");
     }
   }
-  
+
   Future<List<String>?> selectAppsNative() async {
     return await _focusService.openFamilyActivityPicker();
   }
-  
+
   Future<void> requestPermissions() async {
     await _focusService.requestPermissions();
     _isAuthorized = await _focusService.isAuthorized();

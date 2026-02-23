@@ -2,6 +2,7 @@ import 'dart:math';
 import 'dart:ui';
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart' show Colors, CircularProgressIndicator;
 import 'package:provider/provider.dart';
 import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
@@ -81,9 +82,14 @@ class _FocusScreenState extends State<FocusScreen> {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 24),
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const NeoMonoText('SYSTEM_FOCUS', fontSize: 24, fontWeight: FontWeight.bold),
+                          CupertinoButton(
+                            padding: EdgeInsets.zero,
+                            onPressed: () => context.go('/home'),
+                            child: const Icon(CupertinoIcons.back, color: AppColors.primaryOrange),
+                          ),
+                          const SizedBox(width: 8),
+                          const Expanded(child: NeoMonoText('SYSTEM_FOCUS', fontSize: 24, fontWeight: FontWeight.bold)),
                           if (!isIdle)
                             CupertinoButton(
                               padding: EdgeInsets.zero,

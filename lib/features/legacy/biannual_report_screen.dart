@@ -1,0 +1,197 @@
+import 'package:flutter/cupertino.dart';
+import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+import '../../components/components.dart';
+import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_typography.dart';
+
+class BiannualReportScreen extends StatefulWidget {
+  const BiannualReportScreen({super.key});
+
+  @override
+  State<BiannualReportScreen> createState() => _BiannualReportScreenState();
+}
+
+class _BiannualReportScreenState extends State<BiannualReportScreen> {
+  bool _loading = true;
+  int _completedTasks = 0;
+  int _focusMinutes = 0;
+  int _habitCompletions = 0;
+  String _dominant = 'Gathering data...';
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    final client = Supabase.instance.client;
+    final uid = client.auth.currentUser?.id;
+    if (uid == null) return;
+
+    final since = DateTime.now()
+        .subtract(const Duration(days: 180))
+        .toIso8601String();
+    final sinceDate = DateFormat(
+      'yyyy-MM-dd',
+    ).format(DateTime.now().subtract(const Duration(days: 180)));
+
+    final tasks = await client
+        .from('pareto_tasks')
+        .select('id')
+        .eq('created_by', uid)
+        .eq('completed', true)
+        .gte('completed_date', since);
+
+    final focus = await client
+        .from('focus_sessions')
+        .select('duration_minutes')
+        .eq('created_by', uid)
+        .eq('completed', true)
+        .gte('start_time', since);
+
+    final habits = await client
+        .from('habit_completions')
+        .select('id')
+        .eq('created_by', uid)
+        .eq('completed', true)
+        .gte('date', sinceDate);
+
+    final completedTasks = (tasks as List).length;
+    final habitCompletions = (habits as List).length;
+    final focusMinutes = (focus as List).fold<int>(
+      0,
+      (sum, row) => sum + ((row['duration_minutes'] as num?)?.toInt() ?? 0),
+    );
+
+    final dominant = _dominantInsight(
+      completedTasks,
+      habitCompletions,
+      focusMinutes,
+    );
+
+    if (!mounted) return;
+    setState(() {
+      _completedTasks = completedTasks;
+      _habitCompletions = habitCompletions;
+      _focusMinutes = focusMinutes;
+      _dominant = dominant;
+      _loading = false;
+    });
+  }
+
+  String _dominantInsight(int tasks, int habits, int focus) {
+    if (focus < 900) {
+      return 'Deep work volume is low over 6 months. Protect fixed focus blocks.';
+    }
+    if (habits < 120) {
+      return 'Habit consistency is the largest gap. Reduce scope and increase repeatability.';
+    }
+    if (tasks < 60) {
+      return 'Execution throughput is low. Increase weekly shipping cadence.';
+    }
+    return 'Execution, habits, and focus are balanced. Continue compounding this system.';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      backgroundColor: AppColors.background,
+      navigationBar: CupertinoNavigationBar(
+        leading: CupertinoButton(
+          padding: EdgeInsets.zero,
+          onPressed: () => context.go('/home'),
+          child: const Icon(
+            CupertinoIcons.back,
+            color: AppColors.primaryOrange,
+          ),
+        ),
+        middle: const NeoMonoText(
+          'BIANNUAL_REPORT',
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+        ),
+        backgroundColor: AppColors.background,
+        border: null,
+      ),
+      child: _loading
+          ? const Center(
+              child: CupertinoActivityIndicator(color: AppColors.primaryOrange),
+            )
+          : SafeArea(
+              child: ListView(
+                padding: const EdgeInsets.all(20),
+                children: [
+                  GlassCard(
+                    padding: const EdgeInsets.all(18),
+                    borderRadius: 16,
+                    child: Row(
+                      children: [
+                        _metric('COMPLETED_TASKS', '$_completedTasks'),
+                        _metric('HABIT_CHECKINS', '$_habitCompletions'),
+                        _metric(
+                          'FOCUS_HOURS',
+                          (_focusMinutes / 60).toStringAsFixed(1),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  GlassCard(
+                    padding: const EdgeInsets.all(16),
+                    borderRadius: 16,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Dominant insight',
+                          style: AppTypography.mono.copyWith(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          _dominant,
+                          style: AppTypography.mono.copyWith(
+                            fontSize: 11,
+                            color: AppColors.secondaryLabel,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+    );
+  }
+
+  Widget _metric(String label, String value) {
+    return Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: AppTypography.mono.copyWith(
+              fontSize: 8,
+              color: AppColors.tertiaryLabel,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: AppTypography.mono.copyWith(
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

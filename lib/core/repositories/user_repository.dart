@@ -76,4 +76,48 @@ class UserRepository {
       return [];
     }
   }
+
+  Future<void> refreshLeaderboardForMe() async {
+    try {
+      await _client.rpc(
+        'refresh_user_gamification',
+        params: {'p_user': _currentUserId},
+      );
+    } on PostgrestException catch (e) {
+      if (e.code == 'PGRST202' ||
+          e.message.contains('refresh_user_gamification')) {
+        return;
+      }
+      print('Error refreshing leaderboard metrics: $e');
+    } catch (e) {
+      print('Error refreshing leaderboard metrics: $e');
+    }
+  }
+
+  Future<Profile> upsertProfile({String? fullName, String? avatarUrl}) async {
+    final user = _client.auth.currentUser!;
+    final payload = {
+      'id': _currentUserId,
+      'email': user.email,
+      'full_name': fullName ?? user.userMetadata?['full_name'],
+      'avatar_url': avatarUrl,
+    };
+
+    final response = await _client
+        .from('profiles')
+        .upsert(payload)
+        .select()
+        .single();
+
+    return Profile.fromJson(response);
+  }
+
+  Future<void> updateProfile({String? fullName, String? avatarUrl}) async {
+    final payload = <String, dynamic>{};
+    if (fullName != null) payload['full_name'] = fullName;
+    if (avatarUrl != null) payload['avatar_url'] = avatarUrl;
+    if (payload.isEmpty) return;
+
+    await _client.from('profiles').update(payload).eq('id', _currentUserId);
+  }
 }
