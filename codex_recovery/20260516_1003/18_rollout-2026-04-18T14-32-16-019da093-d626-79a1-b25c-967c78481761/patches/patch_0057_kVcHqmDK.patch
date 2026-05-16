@@ -1,0 +1,71 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/providers/focus_provider.dart
+@@
+   Future<_FocusShieldSnapshot> _buildFocusShieldSnapshot() async {
+@@
+     final selectors = <String>{};
+     final websiteDomains = <String>{};
++    final unresolvedBlockedApps = <String>[];
+     var appCount = 0;
+     var websiteCount = 0;
++
++    final legacyFallbackPackageIds = <String>{
++      for (final list in _blockLists)
++        if ((_activeBlockListId != null && list.id == _activeBlockListId) ||
++            (_activeBlockListId == null && list.isActive))
++          ...list.blockedPackageNames
++              .map((item) => item.trim())
++              .where((item) => item.isNotEmpty),
++    };
+ 
+     for (final app in blockedApps) {
+       final binding = appBindings[app.id];
+-      if (binding == null) continue;
+ 
+       if (Platform.isIOS) {
+         var payload = binding.nativePayload?.trim();
+         final bundleId = binding.nativeIdentifier?.trim();
+@@
+         }
+         if (payload != null && payload.isNotEmpty) {
+           selectors.add(payload);
+           appCount++;
++        } else {
++          unresolvedBlockedApps.add(app.appName);
+         }
+       } else {
+         final packageName = binding.nativeIdentifier?.trim();
+         if (packageName != null && packageName.isNotEmpty) {
+           selectors.add(packageName);
+           appCount++;
++        } else {
++          unresolvedBlockedApps.add(app.appName);
+         }
+       }
+     }
++
++    for (final packageId in legacyFallbackPackageIds) {
++      if (Platform.isIOS) {
++        final payload = await _focusService.encodeApplicationBundleSelection(
++          packageId,
++        );
++        final cleaned = payload?.trim();
++        if (cleaned != null && cleaned.isNotEmpty) {
++          if (selectors.add(cleaned)) {
++            appCount++;
++          }
++        }
++      } else {
++        if (selectors.add(packageId)) {
++          appCount++;
++        }
++      }
++    }
++
++    if (unresolvedBlockedApps.isNotEmpty) {
++      AppLogger.warning(
++        'Focus shield could not resolve native identifiers for some restricted apps: '
++        '${unresolvedBlockedApps.join(', ')}',
++      );
++    }
+*** End Patch

@@ -1,0 +1,7 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/screen_time_manager/screen_time_manager_screen.dart
+@@
+ import 'package:flutter/cupertino.dart';
+-import 'package:flutter/material.dart' show FontWeight, IconData;
+ import 'package:go_router/go_router.dart';
+*** End Patch

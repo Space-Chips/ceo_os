@@ -1,0 +1,41 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/profile/profile_screen.dart
+@@
+   String _languageLabel(String code) {
+-    switch (code.toLowerCase()) {
+-      case 'fr':
+-        return 'FRANCAIS';
+-      case 'zh':
+-        return '中文';
+-      case 'hi':
+-        return 'हिन्दी';
+-      case 'es':
+-        return 'ESPANOL';
+-      case 'ar':
+-        return 'العربية';
+-      case 'id':
+-        return 'BAHASA INDONESIA';
+-      case 'ru':
+-        return 'РУССКИЙ';
+-      case 'pt':
+-        return 'PORTUGUES';
+-      default:
+-        return 'ENGLISH';
++    final normalized = code.toLowerCase();
++    for (final language in _languages) {
++      if (language.code == normalized) {
++        return language.nativeLabel;
++      }
+     }
++    return 'English';
+   }
+@@
+         middle: Text(
+-          language.t('profile').toUpperCase(),
++          language.t('profile'),
+@@
+                             : _rowValueChevron(
+-                                theme.currentPreset.name.toUpperCase(),
++                                theme.currentPreset.name,
+                               ),
+*** End Patch

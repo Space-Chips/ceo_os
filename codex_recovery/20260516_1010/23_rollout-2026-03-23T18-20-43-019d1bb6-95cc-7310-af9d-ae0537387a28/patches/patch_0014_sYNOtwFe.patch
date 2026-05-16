@@ -1,0 +1,64 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/providers/ceo_mode_provider.dart
+@@
+   bool _busy = false;
+   bool _ending = false;
+   bool _isAuthorized = false;
++  FocusProtectionStatus _protectionStatus = FocusProtectionStatus.unknown;
+@@
+   bool get isInitialized => _initialized;
+   bool get isAuthorized => _isAuthorized;
++  FocusProtectionStatus get protectionStatus => _protectionStatus;
+   bool get isSessionActive => _state != CeoModeState.idle;
+@@
+     _initialized = true;
+     WidgetsBinding.instance.addObserver(this);
+ 
+     await _restoreFromPrefs();
+-    _isAuthorized = await _focusService.isAuthorized();
++    await _refreshProtectionStatus();
+     _ensureTicker();
+     notifyListeners();
+   }
+@@
+   Future<bool> requestPermissions() async {
+     await _focusService.requestPermissions();
+-    _isAuthorized = await _focusService.isAuthorized();
++    await _refreshProtectionStatus();
+     notifyListeners();
+     return _isAuthorized;
+   }
++
++  Future<void> refreshProtectionStatus() async {
++    await _refreshProtectionStatus();
++    notifyListeners();
++  }
++
++  Future<bool> openSystemSettings() async {
++    return _focusService.openSystemSettings();
++  }
+@@
+-      _isAuthorized = await _focusService.isAuthorized();
++      await _refreshProtectionStatus();
+       if (!_isAuthorized) {
+         await requestPermissions();
+       }
+       if (!_isAuthorized) {
+-        _lastStartIssue = 'permissions';
++        _lastStartIssue = _protectionStatus.isSupported
++            ? (_protectionStatus.shouldOpenSettings
++                  ? 'permissions_denied'
++                  : 'permissions')
++            : 'unsupported';
+         return false;
+       }
+@@
+   Future<BlockList?> _resolveFallbackBlockList() async {
+@@
+   }
++
++  Future<void> _refreshProtectionStatus() async {
++    _protectionStatus = await _focusService.getProtectionStatus();
++    _isAuthorized = _protectionStatus.isAuthorized;
++  }
+*** End Patch

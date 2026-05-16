@@ -1,0 +1,66 @@
+*** Begin Patch
+*** Update File: android/app/src/main/kotlin/com/wakeapp/ceoos/ForegroundAppDetector.kt
+@@
+         private val supportedBrowserPackages = setOf(
++            "com.android.browser",
+             "com.android.chrome",
+             "com.chrome.beta",
+             "com.chrome.dev",
+             "com.chrome.canary",
+             "com.brave.browser",
+@@
+             "com.qwant.liberty",
+             "com.UCMobile.intl",
+             "com.naver.whale",
+             "org.bromite.bromite",
++            "com.huawei.browser",
++            "com.hihonor.browser",
++            "com.mi.globalbrowser",
++            "com.miui.browser",
++            "com.oppo.browser",
++            "com.coloros.browser",
++            "com.vivo.browser",
+         )
+ 
+         private val browserPackagePrefixes = listOf(
++            "com.android.browser",
+             "org.mozilla.",
+             "com.brave.",
+             "com.microsoft.emmx",
+             "com.sec.android.app.sbrowser",
+             "com.opera.",
+@@
+             "com.qwant.",
+             "com.ucmobile.",
+             "com.naver.whale",
++            "com.huawei.",
++            "com.hihonor.",
++            "com.mi.globalbrowser",
++            "com.miui.browser",
++            "com.coloros.",
++            "com.oppo.browser",
++            "com.vivo.browser",
+         )
+ 
+         private val prioritizedViewIdHints = listOf(
+             "url_bar",
+             "location_bar",
+             "address_bar",
+             "address_text",
++            "url_edit",
++            "url_input",
++            "address_edit",
++            "location_input",
++            "location_text",
+             "toolbar_url",
+             "omnibox",
+             "search_box",
+             "search_src_text",
++            "search_url",
++            "url_container",
+             "url",
+             "address",
+             "location",
+             "omnibar",
+         )
+*** End Patch

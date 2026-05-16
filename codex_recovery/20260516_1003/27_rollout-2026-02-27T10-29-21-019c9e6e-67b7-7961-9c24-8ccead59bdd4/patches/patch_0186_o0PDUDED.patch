@@ -1,0 +1,43 @@
+*** Begin Patch
+*** Update File: lib/core/providers/habit_provider.dart
+@@
+ import 'package:flutter/material.dart';
+ import '../models/habit_models.dart';
++import '../models/premium_models.dart';
+ import '../repositories/habit_repository.dart';
++import '../repositories/premium_repository.dart';
+@@
+ class HabitProvider extends ChangeNotifier {
+   final HabitRepository _repository;
++  final PremiumRepository _premiumRepository;
+@@
+   HabitProvider({HabitRepository? repository})
+-    : _repository = repository ?? HabitRepository();
++    : _repository = repository ?? HabitRepository(),
++      _premiumRepository = PremiumRepository();
+@@
+-  Future<void> createHabit(
++  Future<PremiumCheckResult> createHabit(
+     String title, {
+     bool isDaily = true,
+@@
+     bool syncToCalendar = false,
+   }) async {
+     try {
++      final premiumCheck = await _premiumRepository.canCreateHabit();
++      if (!premiumCheck.allowed) return premiumCheck;
++
+       final newHabit = await _repository.createHabit(
+         title,
+@@
+       if (newHabit != null) {
+         _habits.add(newHabit);
+         notifyListeners();
+       }
++      return const PremiumCheckResult.allowed();
+     } catch (e) {
+       print('Error creating habit: $e');
++      return const PremiumCheckResult.allowed();
+     }
+   }
+*** End Patch

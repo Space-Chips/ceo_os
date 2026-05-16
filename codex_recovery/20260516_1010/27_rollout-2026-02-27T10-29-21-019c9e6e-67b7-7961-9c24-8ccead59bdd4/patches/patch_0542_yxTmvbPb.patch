@@ -1,0 +1,905 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/profile/profile_screen.dart
+@@
+ import 'package:flutter/cupertino.dart';
+ import 'package:flutter/services.dart';
++import 'package:flutter/material.dart' show CustomPainter, Canvas, Paint, Path, Size;
+ import 'package:go_router/go_router.dart';
+ import 'package:provider/provider.dart';
+@@
+     return CupertinoPageScaffold(
+       backgroundColor: AppColors.background,
+       navigationBar: CupertinoNavigationBar(
+         leading: CupertinoButton(
+           padding: EdgeInsets.zero,
+           onPressed: () => context.go('/home'),
+-          child: Icon(CupertinoIcons.back, color: AppColors.primaryOrange),
++          child: Container(
++            width: 36,
++            height: 36,
++            decoration: BoxDecoration(
++              borderRadius: BorderRadius.circular(10),
++              color: CupertinoColors.white.withValues(alpha: 0.05),
++            ),
++            alignment: Alignment.center,
++            child: Icon(
++              CupertinoIcons.back,
++              size: 18,
++              color: AppColors.secondaryLabel,
++            ),
++          ),
+         ),
+-        middle: NeoMonoText(
+-          language.t('profile'),
+-          fontSize: 18,
+-          fontWeight: FontWeight.bold,
++        middle: Text(
++          language.t('profile').toUpperCase(),
++          style: AppTypography.title1.copyWith(
++            fontSize: 28,
++            fontWeight: FontWeight.w700,
++            letterSpacing: 1,
++          ),
+         ),
+         trailing: CupertinoButton(
+           padding: EdgeInsets.zero,
+           onPressed: _isSaving ? null : _save,
+           child: Text(
+             _isSaving ? language.t('saving') : language.t('save'),
+-            style: AppTypography.mono.copyWith(
+-              fontSize: 11,
+-              fontWeight: FontWeight.bold,
+-              color: AppColors.primaryOrange,
++            style: AppTypography.callout.copyWith(
++              fontSize: 14,
++              fontWeight: FontWeight.w600,
++              color: const Color(0xFF4C7DFF),
+             ),
+           ),
+         ),
+@@
+               child: ListView(
+                 padding: const EdgeInsets.all(20),
+                 children: [
+                   GlassCard(
+                     padding: const EdgeInsets.all(20),
+-                    borderRadius: 18,
++                    borderRadius: 20,
++                    showEdgeGlow: false,
++                    gradientColors: [
++                      CupertinoColors.white.withValues(alpha: 0.04),
++                      CupertinoColors.white.withValues(alpha: 0.03),
++                    ],
++                    border: Border.all(
++                      color: CupertinoColors.white.withValues(alpha: 0.06),
++                      width: 1,
++                    ),
+                     child: Column(
+                       crossAxisAlignment: CrossAxisAlignment.start,
+                       children: [
+                         Text(
+                           language.t('display_name'),
+-                          style: AppTypography.mono.copyWith(
+-                            fontSize: 10,
+-                            color: AppColors.tertiaryLabel,
++                          style: AppTypography.overline.copyWith(
++                            fontSize: 11,
++                            letterSpacing: 1.5,
++                            color: AppColors.secondaryLabel.withValues(alpha: 0.55),
+                           ),
+                         ),
+                         const SizedBox(height: 10),
+-                        GlassInputField(
+-                          controller: _nameCtrl,
+-                          placeholder: 'Your name',
++                        Container(
++                          height: 48,
++                          decoration: BoxDecoration(
++                            borderRadius: BorderRadius.circular(14),
++                            color: CupertinoColors.white.withValues(alpha: 0.05),
++                            border: Border.all(
++                              color: CupertinoColors.white.withValues(alpha: 0.06),
++                            ),
++                          ),
++                          child: CupertinoTextField(
++                            controller: _nameCtrl,
++                            placeholder: 'Your name',
++                            padding: const EdgeInsets.symmetric(
++                              horizontal: 14,
++                              vertical: 12,
++                            ),
++                            decoration: null,
++                            style: AppTypography.body.copyWith(
++                              fontSize: 16,
++                              fontWeight: FontWeight.w500,
++                              color: AppColors.label,
++                            ),
++                            placeholderStyle: AppTypography.body.copyWith(
++                              fontSize: 16,
++                              fontWeight: FontWeight.w500,
++                              color: AppColors.secondaryLabel.withValues(alpha: 0.5),
++                            ),
++                          ),
+                         ),
+-                        const SizedBox(height: 12),
++                        const SizedBox(height: 6),
+                         Text(
+                           _profile?.email ?? '-',
+-                          style: AppTypography.mono.copyWith(
+-                            fontSize: 11,
+-                            color: AppColors.secondaryLabel,
++                          style: AppTypography.subhead.copyWith(
++                            fontSize: 13,
++                            color: AppColors.secondaryLabel.withValues(alpha: 0.6),
+                           ),
+                         ),
+                       ],
+@@
+                   GlassCard(
+                     padding: const EdgeInsets.all(20),
+-                    borderRadius: 18,
+-                    child: Row(
+-                      children: [
+-                        _metric('RANK', _rank?.rankName ?? 'Starter'),
+-                        _metric('LEVEL', '${_rank?.rankLevel ?? 1}'),
+-                        _metric('POINTS', '${_rank?.totalRankPoints ?? 0}'),
+-                      ],
++                    borderRadius: 20,
++                    showEdgeGlow: false,
++                    gradientColors: [
++                      CupertinoColors.white.withValues(alpha: 0.04),
++                      CupertinoColors.white.withValues(alpha: 0.03),
++                    ],
++                    border: Border.all(
++                      color: CupertinoColors.white.withValues(alpha: 0.06),
++                      width: 1,
++                    ),
++                    child: Column(
++                      children: [
++                        Padding(
++                          padding: const EdgeInsets.symmetric(vertical: 16),
++                          child: Row(
++                            children: [
++                              _metric('RANK', _rank?.rankName ?? 'Starter'),
++                              _metric('LEVEL', '${_rank?.rankLevel ?? 1}'),
++                              _metric('POINTS', '${_rank?.totalRankPoints ?? 0}'),
++                            ],
++                          ),
++                        ),
++                        _divider(),
++                        Padding(
++                          padding: const EdgeInsets.symmetric(vertical: 16),
++                          child: Row(
++                            children: [
++                              _metric(
++                                'STREAK',
++                                '${_streak?.currentStreak ?? 0}d',
++                                valueColor: const Color(0xFFFF9F43),
++                                valueSize: 20,
++                                valueWeight: FontWeight.w700,
++                              ),
++                              _metric(
++                                'BEST',
++                                '${_streak?.longestStreak ?? 0}d',
++                                valueSize: 20,
++                                valueWeight: FontWeight.w700,
++                              ),
++                              _metric(
++                                'SESSIONS',
++                                '${_streak?.totalCompletedSessions ?? 0}',
++                                valueSize: 20,
++                                valueWeight: FontWeight.w700,
++                              ),
++                            ],
++                          ),
++                        ),
++                      ],
+                     ),
+                   ),
+-                  const SizedBox(height: 16),
+-                  GlassCard(
+-                    padding: const EdgeInsets.all(20),
+-                    borderRadius: 18,
+-                    child: Row(
+-                      children: [
+-                        _metric('STREAK', '${_streak?.currentStreak ?? 0}d'),
+-                        _metric('BEST', '${_streak?.longestStreak ?? 0}d'),
+-                        _metric(
+-                          'SESSIONS',
+-                          '${_streak?.totalCompletedSessions ?? 0}',
+-                        ),
+-                      ],
+-                    ),
+-                  ),
+                   const SizedBox(height: 24),
+                   _sectionHeader(language.t('focus_protocols')),
+-                  const SizedBox(height: 12),
+-                  GlassCard(
+-                    padding: EdgeInsets.zero,
+-                    borderRadius: 18,
+-                    child: Column(
+-                      children: [
+-                        _settingRow(
+-                          label: 'SESSION_DURATION',
+-                          trailing: Text(
+-                            '${focus.focusDurationMinutes}M',
+-                            style: AppTypography.mono.copyWith(
+-                              fontSize: 13,
+-                              color: AppColors.primaryOrange,
+-                              fontWeight: FontWeight.bold,
+-                            ),
+-                          ),
+-                        ),
+-                        _divider(),
+-                        _settingRow(
+-                          label: 'SHORT_BREAK',
+-                          trailing: Text(
+-                            '${focus.shortBreakMinutes}M',
+-                            style: AppTypography.mono.copyWith(
+-                              fontSize: 13,
+-                              color: AppColors.primaryOrange,
+-                              fontWeight: FontWeight.bold,
+-                            ),
+-                          ),
+-                        ),
+-                        _divider(),
+-                        _settingRow(
+-                          label: 'AUTO_START_BREAKS',
+-                          trailing: CupertinoSwitch(
+-                            activeTrackColor: AppColors.primaryOrange,
+-                            value: focus.autoStartBreaks,
+-                            onChanged: (_) => focus.toggleAutoStartBreaks(),
+-                          ),
+-                        ),
+-                      ],
+-                    ),
+-                  ),
++                  const SizedBox(height: 10),
++                  _settingCard(
++                    child: Column(
++                      children: [
++                        _settingRow(
++                          label: 'SESSION_DURATION',
++                          trailing: Text(
++                            '${focus.focusDurationMinutes}M',
++                            style: AppTypography.callout.copyWith(
++                              fontSize: 14,
++                              color: AppColors.primaryOrange,
++                              fontWeight: FontWeight.w600,
++                            ),
++                          ),
++                        ),
++                        const SizedBox(height: 12),
++                        _settingRow(
++                          label: 'SHORT_BREAK',
++                          trailing: Text(
++                            '${focus.shortBreakMinutes}M',
++                            style: AppTypography.callout.copyWith(
++                              fontSize: 14,
++                              color: AppColors.primaryOrange,
++                              fontWeight: FontWeight.w600,
++                            ),
++                          ),
++                        ),
++                        const SizedBox(height: 12),
++                        _settingRow(
++                          label: 'AUTO_START_BREAKS',
++                          trailing: _adaptiveSwitch(
++                            value: focus.autoStartBreaks,
++                            onChanged: (_) => focus.toggleAutoStartBreaks(),
++                          ),
++                        ),
++                      ],
++                    ),
++                  ),
+                   const SizedBox(height: 24),
+                   _sectionHeader(language.t('system_preferences')),
+-                  const SizedBox(height: 12),
+-                  GlassCard(
+-                    padding: EdgeInsets.zero,
+-                    borderRadius: 18,
+-                    child: Column(
+-                      children: [
+-                        _settingRow(
+-                          label: language.t('interface_appearance'),
+-                          onTap: _isThemeSaving ? null : _showThemePicker,
+-                          trailing: _isThemeSaving
+-                              ? CupertinoActivityIndicator(
+-                                  color: AppColors.primaryOrange,
+-                                )
+-                              : Row(
+-                                  mainAxisSize: MainAxisSize.min,
+-                                  children: [
+-                                    Text(
+-                                      theme.currentPreset.name.toUpperCase(),
+-                                      style: AppTypography.mono.copyWith(
+-                                        fontSize: 10,
+-                                        color: AppColors.secondaryLabel,
+-                                      ),
+-                                    ),
+-                                    const SizedBox(width: 8),
+-                                    Icon(
+-                                      CupertinoIcons.chevron_right,
+-                                      size: 16,
+-                                      color: AppColors.tertiaryLabel,
+-                                    ),
+-                                  ],
+-                                ),
+-                        ),
+-                        _divider(),
+-                        _settingRow(
+-                          label: language.t('language'),
+-                          onTap: _isSettingsSaving ? null : _showLanguagePicker,
+-                          trailing: _isSettingsSaving
+-                              ? CupertinoActivityIndicator(
+-                                  color: AppColors.primaryOrange,
+-                                )
+-                              : Row(
+-                                  mainAxisSize: MainAxisSize.min,
+-                                  children: [
+-                                    Text(
+-                                      _languageLabel(languageCode),
+-                                      style: AppTypography.mono.copyWith(
+-                                        fontSize: 10,
+-                                        color: AppColors.secondaryLabel,
+-                                      ),
+-                                    ),
+-                                    const SizedBox(width: 8),
+-                                    Icon(
+-                                      CupertinoIcons.chevron_right,
+-                                      size: 16,
+-                                      color: AppColors.tertiaryLabel,
+-                                    ),
+-                                  ],
+-                                ),
+-                        ),
+-                        _divider(),
+-                        _settingRow(
+-                          label: language.t('notification_channels'),
+-                          onTap: _isSettingsSaving
+-                              ? null
+-                              : _showNotificationChannels,
+-                          trailing: Row(
+-                            mainAxisSize: MainAxisSize.min,
+-                            children: [
+-                              Text(
+-                                notificationsEnabled
+-                                    ? '$enabledChannels/3 ON'
+-                                    : 'OFF',
+-                                style: AppTypography.mono.copyWith(
+-                                  fontSize: 10,
+-                                  color: notificationsEnabled
+-                                      ? AppColors.secondaryLabel
+-                                      : AppColors.error,
+-                                  fontWeight: FontWeight.bold,
+-                                ),
+-                              ),
+-                              const SizedBox(width: 8),
+-                              Icon(
+-                                CupertinoIcons.chevron_right,
+-                                size: 16,
+-                                color: AppColors.tertiaryLabel,
+-                              ),
+-                            ],
+-                          ),
+-                        ),
+-                      ],
+-                    ),
+-                  ),
++                  const SizedBox(height: 10),
++                  Column(
++                    children: [
++                      _settingRow(
++                        label: language.t('interface_appearance'),
++                        onTap: _isThemeSaving ? null : _showThemePicker,
++                        trailing: _isThemeSaving
++                            ? CupertinoActivityIndicator(color: AppColors.primaryOrange)
++                            : _rowValueChevron(theme.currentPreset.name.toUpperCase()),
++                      ),
++                      const SizedBox(height: 12),
++                      _settingRow(
++                        label: language.t('language'),
++                        onTap: _isSettingsSaving ? null : _showLanguagePicker,
++                        trailing: _isSettingsSaving
++                            ? CupertinoActivityIndicator(color: AppColors.primaryOrange)
++                            : _rowValueChevron(_languageLabel(languageCode)),
++                      ),
++                      const SizedBox(height: 12),
++                      _settingRow(
++                        label: language.t('notification_channels'),
++                        onTap: _isSettingsSaving ? null : _showNotificationChannels,
++                        trailing: _rowValueChevron(
++                          notificationsEnabled ? '$enabledChannels/3 ON' : 'OFF',
++                          valueColor: notificationsEnabled
++                              ? AppColors.secondaryLabel
++                              : AppColors.error,
++                        ),
++                      ),
++                    ],
++                  ),
+                   const SizedBox(height: 24),
+                   _sectionHeader(language.t('settings_legal')),
+-                  const SizedBox(height: 12),
+-                  GlassCard(
+-                    padding: EdgeInsets.zero,
+-                    borderRadius: 18,
+-                    child: Column(
+-                      children: [
+-                        _settingRow(
+-                          label: language.t('privacy_policy'),
+-                          onTap: _openPrivacyPolicy,
+-                          trailing: Icon(
+-                            CupertinoIcons.chevron_right,
+-                            size: 16,
+-                            color: AppColors.tertiaryLabel,
+-                          ),
+-                        ),
+-                        _divider(),
+-                        _settingRow(
+-                          label: language.t('permissions'),
+-                          onTap: _openPermissionsPolicy,
+-                          trailing: Icon(
+-                            CupertinoIcons.chevron_right,
+-                            size: 16,
+-                            color: AppColors.tertiaryLabel,
+-                          ),
+-                        ),
+-                        _divider(),
+-                        _settingRow(
+-                          label: language.t('terms_of_use'),
+-                          onTap: _openTermsOfUse,
+-                          trailing: Icon(
+-                            CupertinoIcons.chevron_right,
+-                            size: 16,
+-                            color: AppColors.tertiaryLabel,
+-                          ),
+-                        ),
+-                        _divider(),
+-                        _settingRow(
+-                          label: language.t('contact_support'),
+-                          onTap: _openContactSupport,
+-                          trailing: Icon(
+-                            CupertinoIcons.doc_on_doc,
+-                            size: 16,
+-                            color: AppColors.tertiaryLabel,
+-                          ),
+-                        ),
+-                        _divider(),
+-                        _settingRow(
+-                          label: language.t('data_deletion'),
+-                          onTap: _openDataDeletionFlow,
+-                          trailing: Icon(
+-                            CupertinoIcons.delete,
+-                            size: 16,
+-                            color: AppColors.error,
+-                          ),
+-                        ),
+-                      ],
+-                    ),
+-                  ),
++                  const SizedBox(height: 10),
++                  Column(
++                    children: [
++                      _settingRow(
++                        label: language.t('privacy_policy'),
++                        onTap: _openPrivacyPolicy,
++                        leadingIcon: CupertinoIcons.lock_doc,
++                        trailing: _rowArrow(),
++                      ),
++                      const SizedBox(height: 12),
++                      _settingRow(
++                        label: language.t('permissions'),
++                        onTap: _openPermissionsPolicy,
++                        leadingIcon: CupertinoIcons.hand_raised,
++                        trailing: _rowArrow(),
++                      ),
++                      const SizedBox(height: 12),
++                      _settingRow(
++                        label: language.t('terms_of_use'),
++                        onTap: _openTermsOfUse,
++                        leadingIcon: CupertinoIcons.doc_text,
++                        trailing: _rowArrow(),
++                      ),
++                      const SizedBox(height: 12),
++                      _settingRow(
++                        label: language.t('contact_support'),
++                        onTap: _openContactSupport,
++                        leadingIcon: CupertinoIcons.chat_bubble_text,
++                        trailing: Icon(
++                          CupertinoIcons.doc_on_doc,
++                          size: 16,
++                          color: AppColors.tertiaryLabel.withValues(alpha: 0.6),
++                        ),
++                      ),
++                      const SizedBox(height: 12),
++                      _settingRow(
++                        label: language.t('data_deletion'),
++                        onTap: _openDataDeletionFlow,
++                        leadingIcon: CupertinoIcons.delete,
++                        leadingColor: const Color(0xFFFF5E5E),
++                        trailing: Icon(
++                          CupertinoIcons.delete,
++                          size: 16,
++                          color: const Color(0xFFFF5E5E),
++                        ),
++                        isDanger: true,
++                      ),
++                    ],
++                  ),
+                   const SizedBox(height: 24),
+                   _sectionHeader('DEBUG'),
+-                  const SizedBox(height: 12),
+-                  GlassCard(
+-                    padding: EdgeInsets.zero,
+-                    borderRadius: 18,
+-                    child: _settingRow(
+-                      label: 'DATABASE WRITE CHECKS',
+-                      onTap: () => context.push('/debug/database'),
+-                      trailing: Icon(
+-                        CupertinoIcons.lab_flask,
+-                        size: 16,
+-                        color: AppColors.systemBlue,
+-                      ),
+-                    ),
++                  const SizedBox(height: 10),
++                  CustomPaint(
++                    painter: _DashedBorderPainter(
++                      color: CupertinoColors.white.withValues(alpha: 0.08),
++                      radius: 16,
++                    ),
++                    child: Container(
++                      decoration: BoxDecoration(
++                        borderRadius: BorderRadius.circular(16),
++                        color: CupertinoColors.white.withValues(alpha: 0.02),
++                      ),
++                      child: _settingRow(
++                        label: 'DATABASE WRITE CHECKS',
++                        onTap: () => context.push('/debug/database'),
++                        leadingIcon: CupertinoIcons.lab_flask,
++                        leadingColor: const Color(0xFF9CA3AF),
++                        trailing: Icon(
++                          CupertinoIcons.chevron_right,
++                          size: 16,
++                          color: AppColors.tertiaryLabel.withValues(alpha: 0.4),
++                        ),
++                      ),
++                    ),
+                   ),
+                   const SizedBox(height: 24),
+                   _sectionHeader(language.t('actions')),
+-                  const SizedBox(height: 12),
+-                  LiquidButton(
+-                    label: language.t('open_leaderboard'),
+-                    fullWidth: true,
+-                    onPressed: () => context.push('/leaderboard'),
+-                  ),
+-                  const SizedBox(height: 10),
+-                  LiquidButton(
+-                    label: language.t('open_rank'),
+-                    fullWidth: true,
+-                    onPressed: () => context.push('/rank'),
+-                  ),
+-                  const SizedBox(height: 10),
+-                  LiquidButton(
+-                    label: language.t('open_screen_manager'),
+-                    fullWidth: true,
+-                    onPressed: () => context.push('/screen-time-manager'),
+-                  ),
++                  const SizedBox(height: 10),
++                  _actionButton(
++                    label: language.t('open_leaderboard'),
++                    onPressed: () => context.push('/leaderboard'),
++                  ),
++                  const SizedBox(height: 10),
++                  _actionButton(
++                    label: language.t('open_rank'),
++                    onPressed: () => context.push('/rank'),
++                  ),
++                  const SizedBox(height: 10),
++                  _actionButton(
++                    label: language.t('open_screen_manager'),
++                    onPressed: () => context.push('/screen-time-manager'),
++                  ),
+@@
+   Widget _settingRow({
+     required String label,
+     required Widget trailing,
+     VoidCallback? onTap,
++    IconData? leadingIcon,
++    Color? leadingColor,
++    bool isDanger = false,
+   }) {
+-    final row = Padding(
+-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+-      child: Row(
+-        children: [
+-          Expanded(
+-            child: Text(
+-              label,
+-              style: AppTypography.mono.copyWith(fontSize: 12),
+-            ),
+-          ),
+-          trailing,
+-        ],
++    final row = Container(
++      height: 56,
++      decoration: BoxDecoration(
++        borderRadius: BorderRadius.circular(16),
++        color: CupertinoColors.white.withValues(alpha: 0.04),
++        border: Border.all(
++          color: CupertinoColors.white.withValues(alpha: 0.05),
++          width: 1,
++        ),
+       ),
+-    );
++      padding: const EdgeInsets.symmetric(horizontal: 16),
++      child: Row(
++        children: [
++          if (leadingIcon != null) ...[
++            Icon(
++              leadingIcon,
++              size: 16,
++              color: leadingColor ??
++                  AppColors.secondaryLabel.withValues(alpha: 0.6),
++            ),
++            const SizedBox(width: 10),
++          ],
++          Expanded(
++            child: Text(
++              label,
++              style: AppTypography.callout.copyWith(
++                fontSize: 13,
++                color: isDanger ? const Color(0xFFFF5E5E) : AppColors.label,
++                fontWeight: FontWeight.w500,
++              ),
++            ),
++          ),
++          trailing,
++        ],
++      ),
++    );
+ 
+-    if (onTap == null) return row;
++    if (onTap == null) return row;
+ 
+-    return CupertinoButton(
+-      padding: EdgeInsets.zero,
+-      onPressed: onTap,
+-      child: row,
++    return _PressScale(
++      pressedScale: 0.98,
++      child: GestureDetector(
++        onTap: onTap,
++        child: row,
++      ),
+     );
+   }
+ 
+   Widget _sectionHeader(String text) => Padding(
+     padding: const EdgeInsets.only(left: 4),
+     child: Text(
+       text,
+-      style: AppTypography.mono.copyWith(
+-        color: AppColors.secondaryLabel,
+-        fontSize: 10,
+-        letterSpacing: 1.5,
++      style: AppTypography.overline.copyWith(
++        color: AppColors.secondaryLabel.withValues(alpha: 0.5),
++        fontSize: 11,
++        letterSpacing: 2,
+       ),
+     ),
+   );
+ 
+   Widget _divider() => Container(
+-    height: 0.5,
+-    color: AppColors.glassBorder,
+-    margin: const EdgeInsets.only(left: 20),
++    height: 1,
++    color: CupertinoColors.white.withValues(alpha: 0.05),
+   );
+ 
+-  Widget _metric(String label, String value) {
++  Widget _metric(
++    String label,
++    String value, {
++    Color? valueColor,
++    double valueSize = 18,
++    FontWeight valueWeight = FontWeight.w600,
++  }) {
+     return Expanded(
+       child: Column(
+         crossAxisAlignment: CrossAxisAlignment.start,
+         children: [
+           Text(
+             label,
+-            style: AppTypography.mono.copyWith(
+-              fontSize: 9,
+-              color: AppColors.tertiaryLabel,
++            style: AppTypography.overline.copyWith(
++              fontSize: 11,
++              letterSpacing: 1.5,
++              color: AppColors.secondaryLabel.withValues(alpha: 0.55),
+             ),
+           ),
+           const SizedBox(height: 6),
+           Text(
+             value,
+-            style: AppTypography.mono.copyWith(
+-              fontSize: 14,
+-              fontWeight: FontWeight.bold,
+-              color: AppColors.label,
++            style: AppTypography.title3.copyWith(
++              fontSize: valueSize,
++              fontWeight: valueWeight,
++              color: valueColor ?? AppColors.label,
+             ),
+           ),
+         ],
+       ),
+     );
+   }
++
++  Widget _settingCard({required Widget child}) {
++    return GlassCard(
++      padding: const EdgeInsets.all(0),
++      borderRadius: 18,
++      showEdgeGlow: false,
++      gradientColors: [
++        CupertinoColors.white.withValues(alpha: 0.02),
++        CupertinoColors.white.withValues(alpha: 0.02),
++      ],
++      border: Border.all(
++        color: CupertinoColors.white.withValues(alpha: 0.0),
++        width: 0,
++      ),
++      child: child,
++    );
++  }
++
++  Widget _rowArrow() => Icon(
++    CupertinoIcons.chevron_right,
++    size: 16,
++    color: AppColors.tertiaryLabel.withValues(alpha: 0.4),
++  );
++
++  Widget _rowValueChevron(String value, {Color? valueColor}) {
++    return Row(
++      mainAxisSize: MainAxisSize.min,
++      children: [
++        Text(
++          value,
++          style: AppTypography.caption1.copyWith(
++            fontSize: 11,
++            color: valueColor ?? AppColors.secondaryLabel,
++          ),
++        ),
++        const SizedBox(width: 8),
++        _rowArrow(),
++      ],
++    );
++  }
++
++  Widget _adaptiveSwitch({
++    required bool value,
++    required ValueChanged<bool>? onChanged,
++  }) {
++    return CupertinoSwitch(
++      value: value,
++      onChanged: onChanged,
++      activeTrackColor: const Color(0xFF4C7DFF),
++      inactiveTrackColor: CupertinoColors.white.withValues(alpha: 0.15),
++      thumbColor: CupertinoColors.white,
++    );
++  }
++
++  Widget _actionButton({
++    required String label,
++    required VoidCallback onPressed,
++  }) {
++    return _PressScale(
++      pressedScale: 0.98,
++      child: GestureDetector(
++        onTap: onPressed,
++        child: Container(
++          width: double.infinity,
++          height: 52,
++          decoration: BoxDecoration(
++            borderRadius: BorderRadius.circular(16),
++            gradient: const LinearGradient(
++              begin: Alignment.topCenter,
++              end: Alignment.bottomCenter,
++              colors: [Color(0xFFFFFFFF), Color(0xFFE8ECF2)],
++            ),
++            boxShadow: const [
++              BoxShadow(
++                color: Color(0x40000000),
++                blurRadius: 16,
++                offset: Offset(0, 4),
++              ),
++            ],
++          ),
++          alignment: Alignment.center,
++          child: Text(
++            label,
++            style: AppTypography.callout.copyWith(
++              fontSize: 15,
++              fontWeight: FontWeight.w600,
++              color: const Color(0xFF1F2937),
++            ),
++          ),
++        ),
++      ),
++    );
++  }
+ }
++
++class _PressScale extends StatefulWidget {
++  final Widget child;
++  final double pressedScale;
++
++  const _PressScale({required this.child, required this.pressedScale});
++
++  @override
++  State<_PressScale> createState() => _PressScaleState();
++}
++
++class _PressScaleState extends State<_PressScale> {
++  bool _pressed = false;
++
++  @override
++  Widget build(BuildContext context) {
++    return GestureDetector(
++      behavior: HitTestBehavior.translucent,
++      onTapDown: (_) => setState(() => _pressed = true),
++      onTapUp: (_) => setState(() => _pressed = false),
++      onTapCancel: () => setState(() => _pressed = false),
++      child: AnimatedScale(
++        scale: _pressed ? widget.pressedScale : 1,
++        duration: const Duration(milliseconds: 120),
++        curve: Curves.easeOut,
++        child: widget.child,
++      ),
++    );
++  }
++}
++
++class _DashedBorderPainter extends CustomPainter {
++  final Color color;
++  final double radius;
++
++  _DashedBorderPainter({required this.color, required this.radius});
++
++  @override
++  void paint(Canvas canvas, Size size) {
++    final paint = Paint()
++      ..color = color
++      ..style = PaintingStyle.stroke
++      ..strokeWidth = 1;
++
++    final rect = Path()
++      ..addRRect(
++        RRect.fromRectAndRadius(
++          Offset.zero & size,
++          Radius.circular(radius),
++        ),
++      );
++
++    for (final metric in rect.computeMetrics()) {
++      double distance = 0;
++      const dash = 6.0;
++      const gap = 4.0;
++      while (distance < metric.length) {
++        final next = distance + dash;
++        canvas.drawPath(metric.extractPath(distance, next), paint);
++        distance += dash + gap;
++      }
++    }
++  }
++
++  @override
++  bool shouldRepaint(covariant _DashedBorderPainter oldDelegate) {
++    return oldDelegate.color != color || oldDelegate.radius != radius;
++  }
++}
+*** End Patch

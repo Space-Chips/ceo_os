@@ -1,0 +1,36 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/profile/profile_screen.dart
+@@
+     if (confirmed != true) {
+       await _showNotice(
+         title: 'DELETION_ABORTED',
+         message: 'Confirmation token mismatch or flow canceled.',
+       );
+       return;
+     }
+ 
+-    if (!mounted) return;
+-    await context.read<AuthProvider>().logout();
++    setState(() => _isSettingsSaving = true);
++    try {
++      await _settingsRepository.deleteMyAccountData();
++      if (!mounted) return;
++      await _showNotice(
++        title: 'ACCOUNT_DATA_DELETED',
++        message: 'Your cloud data has been deleted. Session will close now.',
++      );
++      if (!mounted) return;
++      await context.read<AuthProvider>().logout();
++    } catch (_) {
++      await _showNotice(
++        title: 'DELETION_FAILED',
++        message:
++            'Unable to delete account data right now. Retry after running the deletion SQL migration.',
++      );
++    } finally {
++      if (mounted) {
++        setState(() => _isSettingsSaving = false);
++      }
++    }
+   }
+*** End Patch

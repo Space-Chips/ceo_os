@@ -1,0 +1,18 @@
+*** Begin Patch
+*** Update File: lib/components/premium_paywall.dart
+@@
+-class _MicroProofRow extends StatelessWidget {
+-  final bool isFr;
+-  final Color textColor;
+-  final bool showRestore;
+-  const _MicroProofRow({required this.isFr, required this.textColor});
++class _MicroProofRow extends StatelessWidget {
++  final bool isFr;
++  final Color textColor;
++  final bool showRestore;
++  const _MicroProofRow({
++    required this.isFr,
++    required this.textColor,
++    required this.showRestore,
++  });
+*** End Patch

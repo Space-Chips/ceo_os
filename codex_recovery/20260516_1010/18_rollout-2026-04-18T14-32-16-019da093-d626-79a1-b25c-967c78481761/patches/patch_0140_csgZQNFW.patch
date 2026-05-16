@@ -1,0 +1,37 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/focus/focus_preparation/focus_preparation_animation_view.dart
+@@
+ import 'dart:math' as math;
+ 
+ import 'package:flutter/cupertino.dart';
++import 'package:provider/provider.dart';
+ 
++import '../../../core/providers/language_provider.dart';
+ import '../../../core/theme/app_colors.dart';
+ import '../../../core/theme/app_typography.dart';
+@@
+   @override
+   Widget build(BuildContext context) {
++    final language = context.watch<LanguageProvider>();
+     return RepaintBoundary(
+@@
+           padding: const EdgeInsets.fromLTRB(14, 14, 14, 16),
+           child: AnimatedBuilder(
+             animation: _controller,
+-            builder: (context, _) => _FocusPhoneMock(progress: _controller.value),
++            builder: (context, _) =>
++                _FocusPhoneMock(progress: _controller.value, language: language),
+           ),
+         ),
+       ),
+     );
+   }
+ }
+ 
+ class _FocusPhoneMock extends StatelessWidget {
+-  const _FocusPhoneMock({required this.progress});
++  const _FocusPhoneMock({required this.progress, required this.language});
+ 
+   final double progress;
++  final LanguageProvider language;
+*** End Patch

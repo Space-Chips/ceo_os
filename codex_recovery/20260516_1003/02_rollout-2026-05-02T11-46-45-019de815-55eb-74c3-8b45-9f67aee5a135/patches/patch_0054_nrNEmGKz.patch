@@ -1,0 +1,7 @@
+*** Begin Patch
+*** Update File: lib/core/providers/language_provider.dart
+@@
+     'widget_configuration_hint':
+-        'On iOS, you can add 1, 2, or 3 instances of the widget and set each one (To‑Do / Dashboard / Habits) in “Edit Widget”. Open this screen and tap “Refresh” after changes.',
++        'On iOS, you will see three separate widgets in the widget gallery: WakeApp — To‑Do, WakeApp — Dashboard, WakeApp — Habits. Enable the ones you want here, then tap “Refresh” so they show data.',
+*** End Patch

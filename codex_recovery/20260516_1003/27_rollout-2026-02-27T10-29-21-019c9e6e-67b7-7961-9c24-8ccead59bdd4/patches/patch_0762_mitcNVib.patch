@@ -1,0 +1,27 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/screen_time_manager/screen_time_manager_screen.dart
+@@
+ import '../../components/components.dart';
++import '../../core/models/settings_models.dart';
+ import '../../core/models/user_models.dart';
+@@
+-      final blockedApps = results[3] as List<dynamic>;
+-      final blockedSites = results[4] as List<dynamic>;
++      final blockedApps = results[3] as List<BlockedApp>;
++      final blockedSites = results[4] as List<BlockedWebsite>;
+       final adultShieldEnabled = blockedSites.any(
+         (site) =>
+-            ((site.urlDomain ?? '') as String).trim() ==
++            (site.urlDomain ?? '').trim() ==
+             FeatureRepository.adultContentShieldMarker,
+       );
+       final classicBlockedTargets =
+           blockedApps.length +
+           blockedSites
+               .where(
+                 (site) =>
+-                    ((site.urlDomain ?? '') as String).trim() !=
++                    (site.urlDomain ?? '').trim() !=
+                     FeatureRepository.adultContentShieldMarker,
+               )
+*** End Patch

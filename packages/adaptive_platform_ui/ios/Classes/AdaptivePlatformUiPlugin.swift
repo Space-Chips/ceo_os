@@ -5,7 +5,13 @@ import UIKit
 /// Registers platform views and handles plugin lifecycle
 public class AdaptivePlatformUiPlugin: NSObject, FlutterPlugin {
 
-    public static func register(with registrar: FlutterPluginRegistrar) {
+    public static func register(with registrar: FlutterPluginRegistrar?) {
+        guard let registrar else {
+            // Defensive guard for rare engine lifecycle races where Flutter can
+            // provide a nil registrar during startup/re-registration.
+            return
+        }
+
         // Initialize iOS 26+ Native Tab Bar Manager
         if #available(iOS 26.0, *) {
             iOS26NativeTabBarManager.shared.setup(messenger: registrar.messenger())

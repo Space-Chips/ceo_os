@@ -1,0 +1,57 @@
+*** Begin Patch
+*** Update File: lib/core/repositories/premium_repository.dart
+@@
+ class PremiumRepository {
+@@
+   Future<PremiumRuntime> getRuntime() async {
+     final config = await getConfig();
+     await _syncLaunchEntitlementsIfNeeded();
+-    final subscriptionStatus = await _getSubscriptionStatus();
+     final entitlements = await getUserEntitlements();
+-    final graceActive = await _isClientGraceActive();
++    const subscriptionStatus = 'disabled';
++    const graceActive = false;
+     final resolved = _resolveEntitlements(
+       config: config,
+       entitlements: entitlements,
+       subscriptionStatus: subscriptionStatus,
+       clientGraceActive: graceActive,
+     );
+@@
+   ResolvedEntitlements _resolveEntitlements({
+     required PremiumConfig config,
+     required UserEntitlements entitlements,
+     required String subscriptionStatus,
+     required bool clientGraceActive,
+   }) {
+-    final normalizedStatus = subscriptionStatus.toLowerCase().trim();
+-    final hasPaidSubscription = normalizedStatus == 'active';
+-    final isTrialing = normalizedStatus == 'trialing';
+     final now = DateTime.now();
+     final overrideActive =
+         entitlements.premiumOverride &&
+         (entitlements.premiumOverrideExpiresAt == null ||
+             (entitlements.premiumOverrideExpiresAt?.isAfter(now) ?? false));
+-    // Premium auto-grant should not depend on launch mode anymore.
+-    final launchPremiumActive = false;
+-    // Premium is account-based (persisted in `user_entitlements` / billing status),
+-    // not install-based. TestFlight should grant premium only at account creation.
+-    final testFlightPremiumActive = false;
+-    final isPremiumUser =
+-        TesterConfig.testerPremiumEnabled ||
+-        testFlightPremiumActive ||
+-        hasPaidSubscription ||
+-        isTrialing ||
+-        clientGraceActive ||
+-        overrideActive;
++    // WakeApp rule (as requested): Premium depends ONLY on the allowlist-backed
++    // server override stored in `user_entitlements.premium_override`.
++    final launchPremiumActive = false;
++    final hasPaidSubscription = false;
++    final isTrialing = false;
++    final isPremiumUser = overrideActive;
+     final canUsePremiumThemes =
+         isPremiumUser || entitlements.themeBundleGranted;
+@@
+   Future<String> _getSubscriptionStatus() async {
+*** End Patch

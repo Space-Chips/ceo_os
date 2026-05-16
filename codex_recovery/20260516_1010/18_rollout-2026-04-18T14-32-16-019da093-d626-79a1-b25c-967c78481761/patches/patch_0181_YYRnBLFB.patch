@@ -1,0 +1,29 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/main.dart
+@@
+ class _CeoOsAppState extends State<CeoOsApp> {
+-  late final GoRouter _router;
++  late GoRouter _router;
++  String _routerLanguageCode = 'en';
+@@
+   void initState() {
+     super.initState();
+     _router = AppRouter.create(context);
+   }
+@@
+   @override
+   Widget build(BuildContext context) {
+     return Consumer2<ThemeProvider, LanguageProvider>(
+       builder: (context, theme, language, _) {
++        // Rebuild router when language changes so route trees that do not
++        // directly watch LanguageProvider still refresh their visible labels.
++        if (_routerLanguageCode != language.languageCode) {
++          _router.dispose();
++          _router = AppRouter.create(context);
++          _routerLanguageCode = language.languageCode;
++        }
+         final overlayStyle = SystemUiOverlayStyle(
+           statusBarBrightness: theme.currentPreset.isDark
+               ? Brightness.dark
+               : Brightness.light,
+*** End Patch

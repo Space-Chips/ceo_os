@@ -1,0 +1,36 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/home/stats_screen.dart
+@@
+-      final yesterdayMap = {
+-        for (final c in yesterdayCompletions) c.habitId: c.completed,
+-      };
++      final yesterdayCompletionMap = {
++        for (final c in yesterdayCompletions) c.habitId: c,
++      };
+ 
+       final todayHabits = habits.where((h) => _isScheduled(h, today)).toList();
+-      final yesterdayHabits = habits
++      final unresolvedYesterdayHabits = habits
+           .where((h) => _isScheduled(h, yesterday))
++          .where((h) => yesterdayCompletionMap[h.id] == null)
+           .toList();
+ 
+       _yesterdayStates
+         ..clear()
+         ..addEntries(
+-          yesterdayHabits.map(
+-            (h) => MapEntry(h.id, yesterdayMap[h.id] ?? false),
++          unresolvedYesterdayHabits.map(
++            (h) => MapEntry(h.id, false),
+           ),
+         );
+@@
+         _topTasks = uncompletedTasks.take(3).toList();
+         _upcomingEvents = upcoming.take(5).toList();
+         _todayHabits = todayHabits;
+-        _yesterdayHabits = yesterdayHabits;
++        _yesterdayHabits = unresolvedYesterdayHabits;
+         _error = null;
+         _loading = false;
+       });
+*** End Patch

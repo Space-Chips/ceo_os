@@ -1,0 +1,12 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/profile/profile_screen.dart
+@@
+     const supportEmail = 'timofrmac@gmail.com';
+     await Clipboard.setData(const ClipboardData(text: supportEmail));
+     await _showNotice(
+-      title: 'SUPPORT_CONTACT',
++      title: _t('support_contact'),
+       message: _t('support_email_copied'),
+     );
+   }
+*** End Patch

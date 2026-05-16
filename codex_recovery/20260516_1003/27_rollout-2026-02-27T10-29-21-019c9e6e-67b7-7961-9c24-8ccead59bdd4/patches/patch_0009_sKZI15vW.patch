@@ -1,0 +1,146 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/theme/app_theme.dart
+@@
+ import 'package:flutter/cupertino.dart';
+ import 'package:flutter/material.dart';
+ import 'app_colors.dart';
+ import 'app_typography.dart';
++import 'theme_catalog.dart';
+ 
+-/// CEO OS Theme — Monochromatic Dark with Orange Accent.
++/// App theme builders powered by the active preset.
+ class AppTheme {
+   AppTheme._();
+ 
+-  static CupertinoThemeData get cupertino {
+-    return const CupertinoThemeData(
+-      brightness: Brightness.dark,
+-      primaryColor: AppColors.primaryOrange,
+-      scaffoldBackgroundColor: AppColors.background,
+-      barBackgroundColor: Color(0xCC000000),
++  static CupertinoThemeData cupertinoForTone(AppThemeTone tone) {
++    final isDark = tone == AppThemeTone.dark;
++    return CupertinoThemeData(
++      brightness: isDark ? Brightness.dark : Brightness.light,
++      primaryColor: AppColors.primaryOrange,
++      scaffoldBackgroundColor: AppColors.background,
++      barBackgroundColor: AppColors.background.withValues(
++        alpha: isDark ? 0.8 : 0.9,
++      ),
+       textTheme: CupertinoTextThemeData(
+         primaryColor: AppColors.primaryOrange,
++        textStyle: AppTypography.body,
++        navLargeTitleTextStyle: AppTypography.title1,
++        navTitleTextStyle: AppTypography.headline,
+       ),
+     );
+   }
+ 
+-  static ThemeData get materialFallback {
++  static ThemeData materialForTone(AppThemeTone tone) {
++    final isDark = tone == AppThemeTone.dark;
+     return ThemeData(
+-      brightness: Brightness.dark,
++      brightness: isDark ? Brightness.dark : Brightness.light,
+       scaffoldBackgroundColor: AppColors.background,
+       primaryColor: AppColors.primaryOrange,
+       canvasColor: AppColors.background,
+-      colorScheme: const ColorScheme.dark(
++      colorScheme: ColorScheme(
++        brightness: isDark ? Brightness.dark : Brightness.light,
+         primary: AppColors.primaryOrange,
+         secondary: AppColors.primaryOrange,
+         surface: AppColors.backgroundLight,
++        onSurface: AppColors.label,
++        onPrimary: AppColors.white,
++        onSecondary: AppColors.white,
++        onError: AppColors.white,
++        onTertiary: AppColors.label,
++        tertiary: AppColors.accentSecondary,
++        tertiaryContainer: AppColors.accentMuted,
++        onTertiaryContainer: AppColors.label,
++        primaryContainer: AppColors.accentMuted,
++        onPrimaryContainer: AppColors.label,
++        secondaryContainer: AppColors.accentMuted,
++        onSecondaryContainer: AppColors.label,
++        surfaceContainerHighest: AppColors.surface,
++        outline: AppColors.glassBorder,
++        shadow: Colors.black.withValues(alpha: isDark ? 0.4 : 0.08),
++        scrim: Colors.black.withValues(alpha: isDark ? 0.5 : 0.15),
+         error: AppColors.error,
+       ),
+-
+-      // Text Theme
+       textTheme: TextTheme(
+         displayLarge: AppTypography.largeTitle,
+         displayMedium: AppTypography.title1,
+@@
+       cardTheme: CardThemeData(
+         color: AppColors.surface,
+         elevation: 0,
+         shape: RoundedRectangleBorder(
+           borderRadius: BorderRadius.circular(24),
+-          side: const BorderSide(color: AppColors.glassBorder, width: 0.5),
++          side: BorderSide(color: AppColors.glassBorder, width: 0.5),
+         ),
+       ),
+-
+-      // Input
+       inputDecorationTheme: InputDecorationTheme(
+         filled: true,
+         fillColor: AppColors.backgroundLight,
+@@
+         border: OutlineInputBorder(
+           borderRadius: BorderRadius.circular(16),
+-          borderSide: const BorderSide(
++          borderSide: BorderSide(
+             color: AppColors.glassBorder,
+             width: 0.5,
+           ),
+         ),
+         enabledBorder: OutlineInputBorder(
+           borderRadius: BorderRadius.circular(16),
+-          borderSide: const BorderSide(
++          borderSide: BorderSide(
+             color: AppColors.glassBorder,
+             width: 0.5,
+           ),
+         ),
+         focusedBorder: OutlineInputBorder(
+           borderRadius: BorderRadius.circular(16),
+-          borderSide: const BorderSide(
++          borderSide: BorderSide(
+             color: AppColors.primaryOrange,
+             width: 1.5,
+           ),
+@@
+         labelStyle: AppTypography.body.copyWith(color: AppColors.secondaryLabel),
+         hintStyle: AppTypography.body.copyWith(color: AppColors.tertiaryLabel),
+       ),
+-
+-      // Buttons
+       elevatedButtonTheme: ElevatedButtonThemeData(
+         style: ElevatedButton.styleFrom(
+           backgroundColor: AppColors.primaryOrange,
+@@
+           padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+         ),
+       ),
+-
+-      // Divider
+-      dividerTheme: const DividerThemeData(
++      dividerTheme: DividerThemeData(
+         color: AppColors.glassBorder,
+         thickness: 0.5,
+         space: 1,
+       ),
+     );
+   }
+ 
+-  static ThemeData get dark => materialFallback;
++  static CupertinoThemeData get cupertino =>
++      cupertinoForTone(AppThemeTone.dark);
++  static ThemeData get materialFallback => materialForTone(AppThemeTone.dark);
++  static ThemeData get dark => materialFallback;
+ }
+*** End Patch

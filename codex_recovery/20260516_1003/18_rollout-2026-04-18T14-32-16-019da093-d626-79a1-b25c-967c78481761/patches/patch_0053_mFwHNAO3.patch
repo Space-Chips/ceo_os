@@ -1,0 +1,14 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/tasks/task_detail_sheet.dart
+@@
+-                if (task.description != null &&
+-                    task.description!.trim().isNotEmpty)
++                if ((task.description ?? '').trim().isNotEmpty)
+                   GlassCard(
+                     padding: const EdgeInsets.all(20),
+                     borderRadius: 16,
+                     child: Text(
+-                      task.description!,
++                      task.description ?? '',
+                       style: AppTypography.mono.copyWith(
+*** End Patch

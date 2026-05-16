@@ -1,0 +1,15 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/packages/app_links/ios/app_links/Sources/app_links/AppLinksIosPlugin.swift
+@@
+-  public static func register(with registrar: FlutterPluginRegistrar) {
++  public static func register(with registrar: FlutterPluginRegistrar?) {
++    guard let registrar else {
++      #if DEBUG
++      print("AppLinksIosPlugin registration skipped because registrar is nil.")
++      #endif
++      return
++    }
+     #if DEBUG
+     // https://github.com/llfbandit/app_links/issues/211
+     // https://github.com/flutter/flutter/issues/149214
+*** End Patch

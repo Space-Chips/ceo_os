@@ -1,0 +1,44 @@
+import 'package:flutter/cupertino.dart';
+
+import '../../../core/theme/app_colors.dart';
+
+class SetupProgressIndicator extends StatelessWidget {
+  final int currentIndex;
+  final int total;
+
+  const SetupProgressIndicator({
+    super.key,
+    required this.currentIndex,
+    required this.total,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final progress = total <= 0 ? 0.0 : (currentIndex + 1) / total;
+    return Container(
+      width: 140,
+      height: 6,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(999),
+        color: AppColors.white.withValues(alpha: 0.08),
+      ),
+      child: TweenAnimationBuilder<double>(
+        tween: Tween<double>(begin: 0, end: progress.clamp(0, 1)),
+        duration: const Duration(milliseconds: 260),
+        curve: Curves.easeOutCubic,
+        builder: (context, v, _) {
+          return FractionallySizedBox(
+            widthFactor: v,
+            alignment: Alignment.centerLeft,
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(999),
+                gradient: LinearGradient(colors: AppColors.buttonGradient),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}

@@ -1,0 +1,10 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/habits/habits_screen.dart
+@@
+         final scorePercent = totalExpected > 0
+             ? ((totalCompleted / totalExpected) * 100).round()
+             : 0;
+-        final isOnTrack = scorePercent >= 90;
+ 
+         return ListView(
+*** End Patch

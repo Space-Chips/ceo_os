@@ -1,0 +1,162 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/components/premium_gate_dialog.dart
+@@
+ class _PremiumPaywallSheet extends StatelessWidget {
+@@
+   bool get _isFr => languageCode.trim().toLowerCase() == 'fr';
+@@
+   }
+-
+-  String _footnoteText() {
+-    if (runtime.resolved.discountEligible) {
+-      final percent = runtime.resolved.discountPercent;
+-      if (_isFr) {
+-        return percent != null
+-            ? 'Ton compte conserve une offre early access de $percent% quand l’abonnement ouvrira.'
+-            : 'Ton compte conserve une offre early access quand l’abonnement ouvrira.';
+-      }
+-      return percent != null
+-          ? 'Your account keeps an early access discount of $percent% when subscriptions open.'
+-          : 'Your account keeps early access pricing when subscriptions open.';
+-    }
+-
+-    if (_isFr) {
+-      return runtime.config.paywallEnabled
+-          ? 'Le paiement est branché côté app. L’activation dépend maintenant de la configuration store et du webhook backend.'
+-          : 'Premium est déjà structuré dans l’app. Le paiement sera activé après la période de lancement.';
+-    }
+-    return runtime.config.paywallEnabled
+-        ? 'Billing is connected in the app. Activation now depends on store configuration and backend webhook sync.'
+-        : 'Premium is already structured in the app. Billing will go live after the launch period.';
+-  }
+-
+-  Future<void> _showUpgradeInfo(BuildContext context) async {
+-    final result = await BillingService().purchasePremium();
+-    if (!context.mounted) return;
+-
+-    final (title, message) = switch (result.status) {
+-      BillingPurchaseStatus.success => (
+-        _isFr ? 'Premium activé' : 'Premium activated',
+-        _isFr
+-            ? 'L’achat a été confirmé et ton accès Premium est maintenant actif.'
+-            : 'Your purchase was confirmed and Premium access is now active.',
+-      ),
+-      BillingPurchaseStatus.pendingBackendSync => (
+-        _isFr ? 'Achat confirmé' : 'Purchase confirmed',
+-        _isFr
+-            ? 'L’achat est terminé côté store. Le backend synchronise encore ton accès Premium.'
+-            : 'The purchase is complete in the store. The backend is still syncing your Premium access.',
+-      ),
+-      BillingPurchaseStatus.userCancelled => (
+-        _isFr ? 'Achat annulé' : 'Purchase cancelled',
+-        _isFr
+-            ? 'Aucun changement n’a été appliqué à ton compte.'
+-            : 'No change was applied to your account.',
+-      ),
+-      BillingPurchaseStatus.unavailable => (
+-        _isFr ? 'Paiement indisponible' : 'Billing unavailable',
+-        _isFr
+-            ? 'Les clés RevenueCat ne sont pas encore configurées dans cet environnement.'
+-            : 'RevenueCat keys are not configured in the current environment.',
+-      ),
+-      BillingPurchaseStatus.failed => (
+-        _isFr
+-            ? 'Impossible de finaliser l’achat'
+-            : 'Unable to complete purchase',
+-        result.message ??
+-            (_isFr
+-                ? 'Le store a refusé ou interrompu la transaction.'
+-                : 'The store rejected or interrupted the transaction.'),
+-      ),
+-    };
+-
+-    await showCupertinoDialog<void>(
+-      context: context,
+-      builder: (dialogContext) => CupertinoAlertDialog(
+-        title: Text(title),
+-        content: Text(message),
+-        actions: [
+-          CupertinoDialogAction(
+-            isDefaultAction: true,
+-            onPressed: () {
+-              Navigator.of(dialogContext).pop();
+-              Navigator.of(context).pop();
+-            },
+-            child: Text(_isFr ? 'Compris' : 'Got it'),
+-          ),
+-        ],
+-      ),
+-    );
+-  }
+-
+-  Future<void> _showRestoreInfo(BuildContext context) async {
+-    final result = await BillingService().restorePurchases();
+-    if (!context.mounted) return;
+-
+-    final (title, message) = switch (result.status) {
+-      BillingPurchaseStatus.success => (
+-        _isFr ? 'Achat restauré' : 'Purchase restored',
+-        _isFr
+-            ? 'Tes achats ont été restaurés et Premium est de nouveau disponible.'
+-            : 'Your purchases were restored and Premium is available again.',
+-      ),
+-      BillingPurchaseStatus.pendingBackendSync => (
+-        _isFr ? 'Restauration en cours' : 'Restore in progress',
+-        _isFr
+-            ? 'Le store a bien renvoyé tes achats. Le backend termine encore la synchronisation.'
+-            : 'The store returned your purchases. The backend is still finalizing the sync.',
+-      ),
+-      BillingPurchaseStatus.userCancelled => (
+-        _isFr ? 'Restauration annulée' : 'Restore cancelled',
+-        _isFr ? 'Aucun changement n’a été appliqué.' : 'No change was applied.',
+-      ),
+-      BillingPurchaseStatus.unavailable => (
+-        _isFr ? 'Restauration indisponible' : 'Restore unavailable',
+-        _isFr
+-            ? 'Les clés RevenueCat ne sont pas encore configurées dans cet environnement.'
+-            : 'RevenueCat keys are not configured in the current environment.',
+-      ),
+-      BillingPurchaseStatus.failed => (
+-        _isFr ? 'Impossible de restaurer' : 'Unable to restore',
+-        result.message ??
+-            (_isFr
+-                ? 'Le store ou le backend n’a pas pu confirmer les achats.'
+-                : 'The store or backend could not confirm the purchases.'),
+-      ),
+-    };
+-
+-    await showCupertinoDialog<void>(
+-      context: context,
+-      builder: (dialogContext) => CupertinoAlertDialog(
+-        title: Text(title),
+-        content: Text(message),
+-        actions: [
+-          CupertinoDialogAction(
+-            isDefaultAction: true,
+-            onPressed: () => Navigator.of(dialogContext).pop(),
+-            child: Text(_isFr ? 'OK' : 'OK'),
+-          ),
+-        ],
+-      ),
+-    );
+-  }
+ }
++
++String _footnoteText(PremiumRuntime runtime, bool isFr) {
++  if (runtime.resolved.discountEligible) {
++    final percent = runtime.resolved.discountPercent;
++    if (isFr) {
++      return percent != null
++          ? 'Ton compte conserve une offre early access de $percent% lorsqu’un abonnement éligible est disponible.'
++          : 'Ton compte conserve une offre early access lorsqu’un abonnement éligible est disponible.';
++    }
++    return percent != null
++        ? 'Your account keeps an early access discount of $percent% when an eligible subscription is available.'
++        : 'Your account keeps early access pricing when an eligible subscription is available.';
++  }
++
++  return isFr
++      ? 'Le paiement Premium est traité par Apple. L’accès Premium est activé après confirmation du store et synchronisation du compte.'
++      : 'Premium billing is processed by Apple. Premium access is activated after store confirmation and account sync.';
++}
+*** End Patch

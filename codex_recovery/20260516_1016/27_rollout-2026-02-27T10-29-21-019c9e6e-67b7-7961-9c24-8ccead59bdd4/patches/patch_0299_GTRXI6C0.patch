@@ -1,0 +1,23 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/ios/Runner.xcodeproj/project.pbxproj
+@@
+ 				dependencies = (
+ 					8578F9882F4379B50038063F /* PBXTargetDependency */,
++					61CBCB7B69E447D481CE0C9B /* PBXTargetDependency */,
+ 				);
+@@
+ 						8578F9742F4379B20038063F = {
+ 							CreatedOnToolsVersion = 16.4;
+ 						};
++						84C0EEF5E0064471B8DD0227 = {
++							CreatedOnToolsVersion = 16.4;
++						};
+ 						97C146ED1CF9000F007C117D = {
+@@
+ 				targets = (
+ 					97C146ED1CF9000F007C117D /* Runner */,
+ 					331C8080294A63A400263BE5 /* RunnerTests */,
+ 					8578F9742F4379B20038063F /* CeoWidgetsExtension */,
++					84C0EEF5E0064471B8DD0227 /* FocusActivityMonitorExtension */,
+ 				);
+*** End Patch

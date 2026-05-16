@@ -1,0 +1,153 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/habits/habits_screen.dart
+@@
+-        final yesterday = today.subtract(const Duration(days: 1));
+         const dayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+         final sortedHabits = [...prov.habits]
+           ..sort((a, b) => _frequencyScore(b).compareTo(_frequencyScore(a)));
+ 
+-        // Parity with web model: score only uses locked days (past except yesterday).
++        // Weekly score uses only past days of current week.
+         int totalExpected = 0;
+         int totalCompleted = 0;
+         for (final habit in sortedHabits) {
+@@
+             if (!isScheduled) continue;
+ 
+             final dayStr = DateFormat('yyyy-MM-dd').format(day);
+-            final isLocked = day.isBefore(today) && !_sameDay(day, yesterday);
+-            if (!isLocked) continue;
++            final isPastDay = day.isBefore(today);
++            if (!isPastDay) continue;
+ 
+             totalExpected++;
+             final comp = _weeklyCompletions[habit.id]?[dayStr];
+@@
+             const SizedBox(height: 14),
+-            // ── Weekly Grid ──
+             GlassCard(
+               padding: const EdgeInsets.all(12),
+               borderRadius: 18,
+@@
+             ),
+-
+-            const SizedBox(height: 20),
+-
+-            // ── Habit List ──
+-            ...sortedHabits.map(
+-              (habit) => Padding(
+-                padding: const EdgeInsets.only(bottom: 10),
+-                child: GestureDetector(
+-                  onTap: () => widget.onOpenHabit(habit),
+-                  child: _HabitTile(
+-                    habit: habit,
+-                    onToggle: () => prov.toggleHabit(habit.id),
+-                  ),
+-                ),
+-              ),
+-            ),
+           ],
+         );
+       },
+@@
+   @override
+   Widget build(BuildContext context) {
+     final now = DateTime.now();
+     final today = DateTime(now.year, now.month, now.day);
+-    final yesterday = today.subtract(const Duration(days: 1));
+ 
+     return GestureDetector(
+       onTap: onTap,
+@@
+ 
+               final comp = weeklyCompletions[dayStr];
+-              final isCompleted = comp != null && comp.completed;
+-              final isMissed = comp?.state == 'missed';
++              final hasCompletion = comp != null;
++              final isCompleted = hasCompletion && comp.completed;
++              final isMissed = hasCompletion && !comp.completed;
+               final isToday =
+                   day.year == today.year &&
+                   day.month == today.month &&
+                   day.day == today.day;
+-              final isYesterday =
+-                  day.year == yesterday.year &&
+-                  day.month == yesterday.month &&
+-                  day.day == yesterday.day;
+               final isPast = day.isBefore(today);
+-              final isLocked = isPast && !isYesterday;
+-
+-              var blockedByPreviousLockedDay = false;
+-              for (var i = 0; i < d; i++) {
+-                final prevDay = weekStart.add(Duration(days: i));
+-                final prevDayNum = prevDay.weekday % 7;
+-                final prevScheduled =
+-                    habit.isDaily ||
+-                    (habit.specificDays != null &&
+-                        habit.specificDays!.contains(prevDayNum));
+-                if (!prevScheduled) continue;
+-
+-                final prevIsYesterday =
+-                    prevDay.year == yesterday.year &&
+-                    prevDay.month == yesterday.month &&
+-                    prevDay.day == yesterday.day;
+-                final prevLocked = prevDay.isBefore(today) && !prevIsYesterday;
+-                if (!prevLocked) continue;
+-
+-                final prevKey = DateFormat('yyyy-MM-dd').format(prevDay);
+-                final prevComp = weeklyCompletions[prevKey];
+-                final prevCompleted = prevComp != null && prevComp.completed;
+-                if (!prevCompleted) {
+-                  blockedByPreviousLockedDay = true;
+-                  break;
+-                }
+-              }
++              final isMissingPastValidation =
++                  isPast && !hasCompletion && !isCompleted && !isMissed;
+ 
+               return SizedBox(
+                 width: 32,
+                 child: Center(
+                   child: _DayCell(
+                     isCompleted: isCompleted,
+                     isMissed: isMissed,
+-                    isLockedMissing: isLocked && !isCompleted && !isMissed,
+-                    isBlocked: blockedByPreviousLockedDay && !isLocked,
++                    isLockedMissing: isMissingPastValidation,
+                     isToday: isToday,
+                   ),
+                 ),
+@@
+ class _DayCell extends StatelessWidget {
+   final bool isCompleted;
+   final bool isMissed;
+   final bool isLockedMissing;
+-  final bool isBlocked;
+   final bool isToday;
+ 
+   const _DayCell({
+     required this.isCompleted,
+     required this.isMissed,
+     required this.isLockedMissing,
+-    required this.isBlocked,
+     required this.isToday,
+   });
+@@
+-    if (isBlocked) {
+-      return Container(
+-        width: 16,
+-        height: 16,
+-        decoration: BoxDecoration(
+-          shape: BoxShape.circle,
+-          border: Border.all(
+-            color: AppColors.quaternaryLabel.withValues(alpha: 0.6),
+-            width: 1.4,
+-          ),
+-        ),
+-      );
+-    }
+-
+     if (isToday) {
+       return Container(
+         width: 20,
+*** End Patch

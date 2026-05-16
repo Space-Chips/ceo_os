@@ -1,0 +1,9 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/repositories/insights_repository.dart
+@@
+-        rankLevel: (rank?['rank_level'] as num?)?.toInt() ?? 1,
++        rankLevel: (rank?['rank_level'] as num?)?.toInt() ?? 0,
+@@
+-        rankLevel: 1,
++        rankLevel: 0,
+*** End Patch

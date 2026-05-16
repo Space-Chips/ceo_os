@@ -1,0 +1,111 @@
+*** Begin Patch
+*** Update File: lib/core/widgets/home_widgets/widget_views.dart
+@@
+ class HabitsTodayWidgetSquareView extends StatelessWidget {
+   final LanguageProvider language;
+   final List<Habit> habits;
+@@
+   @override
+   Widget build(BuildContext context) {
+-    final items = habits.take(4).toList();
++    final items = habits.take(3).toList();
++    final total = habits.length;
+     final more = (habits.length - items.length).clamp(0, 999);
+ 
+     return WidgetRoot(
+       padding: WidgetDesignTokens.padSquare,
+       child: Column(
+         crossAxisAlignment: CrossAxisAlignment.start,
+         children: [
+-          Text(
+-            'Habits',
+-            style: WidgetDesignTokens.title.copyWith(fontSize: 21),
+-          ),
+-          const SizedBox(height: 8),
++          Row(
++            children: [
++              Expanded(
++                child: Text(
++                  'Habits',
++                  style: WidgetDesignTokens.title.copyWith(fontSize: 22),
++                ),
++              ),
++              _WidgetCountPill(value: '${items.where((_) => false).length}', label: ''),
++            ],
++          ),
++          const SizedBox(height: 10),
+           Expanded(
+             child: Container(
+               decoration: WidgetDesignTokens.innerSurface(
+                 tint: const Color(0xFF191B20),
+               ),
+               child: ClipRRect(
+                 borderRadius: BorderRadius.circular(
+                   WidgetDesignTokens.radiusInner,
+                 ),
+                 child: items.isEmpty
+                     ? Center(
+                         child: Text(
+-                          language.t('widget_no_habits'),
+-                          style: WidgetDesignTokens.subtitle,
++                          'No habits today',
++                          style: AppTypography.title3.copyWith(
++                            fontSize: 18,
++                            fontWeight: FontWeight.w800,
++                            color: WidgetDesignTokens.primaryText,
++                            height: 1.05,
++                          ),
+                         ),
+                       )
+                     : Column(
+                         children: [
+                           for (var i = 0; i < items.length; i++) ...[
+                             Expanded(
+                               child: _HabitsTodayRow(
+                                 title: items[i].title,
+                                 index: i + 1,
+                               ),
+                             ),
+                             if (i != items.length - 1)
+                               Container(
+-                                height: 0.8,
++                                height: 0.8,
+                                 margin: const EdgeInsets.symmetric(
+                                   horizontal: 12,
+                                 ),
+-                                color: AppColors.border.withValues(alpha: 0.42),
++                                color: AppColors.border.withValues(alpha: 0.4),
+                               ),
+                           ],
+                           if (more > 0)
+                             Padding(
+                               padding: const EdgeInsets.fromLTRB(12, 6, 12, 10),
+                               child: Align(
+                                 alignment: Alignment.centerLeft,
+                                 child: Text(
+-                                  '+$more ${language.t('widget_more')}',
++                                  '+$more more',
+                                   style: WidgetDesignTokens.subtitle.copyWith(
+-                                    fontSize: 11,
+-                                    color: AppColors.secondaryLabel.withValues(
+-                                      alpha: 0.7,
+-                                    ),
++                                    fontSize: 13,
++                                    color: WidgetDesignTokens.secondaryText,
+                                   ),
+                                 ),
+                               ),
+                             )
+                           else
+                             const SizedBox.shrink(),
+                         ],
+                       ),
+               ),
+             ),
+           ),
+         ],
+       ),
+     );
+   }
+ }
+*** End Patch

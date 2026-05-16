@@ -1,0 +1,13 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/screen_time_screen.dart
+@@
+-      final adultEnabled = effectiveWebsites.any(
+-        (site) =>
+-            (site.urlDomain ?? '').trim() ==
+-            FeatureRepository.adultContentShieldMarker,
+-      );
+       final filteredWebsites = effectiveWebsites
+           .where(
+             (site) =>
+                 (site.urlDomain ?? '').trim() !=
+*** End Patch

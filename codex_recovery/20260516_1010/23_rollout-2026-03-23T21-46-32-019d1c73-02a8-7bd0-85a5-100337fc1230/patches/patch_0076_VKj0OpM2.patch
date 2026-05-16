@@ -1,0 +1,241 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/assets/marketing/play_icon_concept.svg
+@@
+-<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+-  <defs>
+-    <linearGradient id="bg" x1="64" y1="48" x2="448" y2="464" gradientUnits="userSpaceOnUse">
+-      <stop stop-color="#161A1F"/>
+-      <stop offset="1" stop-color="#090B0E"/>
+-    </linearGradient>
+-    <radialGradient id="halo" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(256 188) rotate(90) scale(188 188)">
+-      <stop stop-color="#7DA2FF" stop-opacity="0.28"/>
+-      <stop offset="1" stop-color="#7DA2FF" stop-opacity="0"/>
+-    </radialGradient>
+-    <linearGradient id="arrow" x1="256" y1="128" x2="256" y2="382" gradientUnits="userSpaceOnUse">
+-      <stop stop-color="#FFFFFF"/>
+-      <stop offset="1" stop-color="#DDE6F7"/>
+-    </linearGradient>
+-    <filter id="softGlow" x="67" y="63" width="378" height="382" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+-      <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+-      <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+-      <feGaussianBlur stdDeviation="10" result="effect1_foregroundBlur_0_1"/>
+-    </filter>
+-  </defs>
+-
+-  <rect x="16" y="16" width="480" height="480" rx="112" fill="url(#bg)"/>
+-  <rect x="16.5" y="16.5" width="479" height="479" rx="111.5" stroke="#2A313C"/>
+-  <circle cx="256" cy="188" r="188" fill="url(#halo)"/>
+-
+-  <g opacity="0.38">
+-    <path d="M88 132C148 110 210 98 274 98C352 98 411 116 446 135" stroke="#2D3642" stroke-width="1.5"/>
+-    <path d="M76 380C137 396 198 404 259 404C340 404 406 390 448 368" stroke="#20262F" stroke-width="1.5"/>
+-  </g>
+-
+-  <g filter="url(#softGlow)">
+-    <path d="M152 234L256 130L360 234" stroke="url(#arrow)" stroke-width="26" stroke-linecap="round" stroke-linejoin="round"/>
+-    <path d="M256 144V370" stroke="url(#arrow)" stroke-width="28" stroke-linecap="round"/>
+-  </g>
+-</svg>
++<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
++  <defs>
++    <linearGradient id="bg" x1="70" y1="48" x2="444" y2="468" gradientUnits="userSpaceOnUse">
++      <stop stop-color="#171B20"/>
++      <stop offset="1" stop-color="#080A0D"/>
++    </linearGradient>
++    <radialGradient id="coreGlow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(256 256) rotate(90) scale(144 144)">
++      <stop stop-color="#9EB8FF" stop-opacity="0.32"/>
++      <stop offset="1" stop-color="#9EB8FF" stop-opacity="0"/>
++    </radialGradient>
++    <linearGradient id="frame" x1="154" y1="154" x2="358" y2="358" gradientUnits="userSpaceOnUse">
++      <stop stop-color="#EEF3FC"/>
++      <stop offset="1" stop-color="#B7C6E4"/>
++    </linearGradient>
++    <linearGradient id="accent" x1="186" y1="186" x2="326" y2="326" gradientUnits="userSpaceOnUse">
++      <stop stop-color="#FFFFFF"/>
++      <stop offset="1" stop-color="#DEE7F8"/>
++    </linearGradient>
++  </defs>
++
++  <rect x="16" y="16" width="480" height="480" rx="112" fill="url(#bg)"/>
++  <rect x="16.5" y="16.5" width="479" height="479" rx="111.5" stroke="#2A313C"/>
++  <circle cx="256" cy="256" r="144" fill="url(#coreGlow)"/>
++
++  <g opacity="0.34">
++    <path d="M92 138C149 115 206 104 266 104C338 104 398 119 440 139" stroke="#29313B" stroke-width="1.5"/>
++    <path d="M80 376C141 394 201 404 262 404C336 404 397 391 444 370" stroke="#1E242D" stroke-width="1.5"/>
++  </g>
++
++  <path d="M178 202V178C178 163.641 189.641 152 204 152H228" stroke="url(#frame)" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
++  <path d="M334 202V178C334 163.641 322.359 152 308 152H284" stroke="url(#frame)" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
++  <path d="M178 310V334C178 348.359 189.641 360 204 360H228" stroke="url(#frame)" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
++  <path d="M334 310V334C334 348.359 322.359 360 308 360H284" stroke="url(#frame)" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
++
++  <circle cx="256" cy="256" r="54" fill="#10141A" stroke="url(#accent)" stroke-width="18"/>
++  <circle cx="256" cy="256" r="14" fill="#F7FAFF"/>
++</svg>
+*** Update File: /Users/timo/ceo_os/assets/marketing/play_feature_graphic_concept.svg
+@@
+-<svg width="1024" height="500" viewBox="0 0 1024 500" fill="none" xmlns="http://www.w3.org/2000/svg">
+-  <defs>
+-    <linearGradient id="bg" x1="88" y1="42" x2="948" y2="462" gradientUnits="userSpaceOnUse">
+-      <stop stop-color="#171B20"/>
+-      <stop offset="1" stop-color="#090B0E"/>
+-    </linearGradient>
+-    <radialGradient id="orb1" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(256 116) rotate(90) scale(224 224)">
+-      <stop stop-color="#7EA5FF" stop-opacity="0.22"/>
+-      <stop offset="1" stop-color="#7EA5FF" stop-opacity="0"/>
+-    </radialGradient>
+-    <radialGradient id="orb2" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(768 398) rotate(90) scale(208 208)">
+-      <stop stop-color="#A2B8EB" stop-opacity="0.14"/>
+-      <stop offset="1" stop-color="#A2B8EB" stop-opacity="0"/>
+-    </radialGradient>
+-    <linearGradient id="arrow" x1="260" y1="120" x2="260" y2="364" gradientUnits="userSpaceOnUse">
+-      <stop stop-color="#FFFFFF"/>
+-      <stop offset="1" stop-color="#DDE6F7"/>
+-    </linearGradient>
+-    <linearGradient id="panelStroke" x1="518" y1="130" x2="944" y2="364" gradientUnits="userSpaceOnUse">
+-      <stop stop-color="#3A4250"/>
+-      <stop offset="1" stop-color="#232932"/>
+-    </linearGradient>
+-  </defs>
+-
+-  <rect width="1024" height="500" rx="40" fill="url(#bg)"/>
+-  <circle cx="256" cy="116" r="224" fill="url(#orb1)"/>
+-  <circle cx="768" cy="398" r="208" fill="url(#orb2)"/>
+-
+-  <g opacity="0.36">
+-    <path d="M44 106C177 66 306 46 432 46C602 46 786 78 976 144" stroke="#2A323D" stroke-width="1.5"/>
+-    <path d="M60 432C196 458 330 470 464 470C664 470 838 444 980 390" stroke="#1E242B" stroke-width="1.5"/>
+-  </g>
+-
+-  <g>
+-    <path d="M164 228L260 132L356 228" stroke="url(#arrow)" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
+-    <path d="M260 148V354" stroke="url(#arrow)" stroke-width="26" stroke-linecap="round"/>
+-  </g>
+-
+-  <rect x="490" y="116" width="452" height="248" rx="28" fill="#14181D" fill-opacity="0.72" stroke="url(#panelStroke)"/>
+-  <text x="538" y="182" fill="#F6F8FC" font-size="34" font-family="SF Pro Display, Inter, Arial, sans-serif" font-weight="700">
+-    Control your focus.
+-  </text>
+-  <text x="538" y="224" fill="#A7B2C3" font-size="20" font-family="SF Pro Display, Inter, Arial, sans-serif">
+-    One adaptable control center for sessions,
+-  </text>
+-  <text x="538" y="252" fill="#A7B2C3" font-size="20" font-family="SF Pro Display, Inter, Arial, sans-serif">
+-    limits, routines, and distraction blocking.
+-  </text>
+-
+-  <g>
+-    <rect x="538" y="286" width="116" height="38" rx="19" fill="#1E2632" stroke="#334055"/>
+-    <text x="572" y="311" fill="#F2F5FA" font-size="17" font-family="SF Pro Display, Inter, Arial, sans-serif" font-weight="600">Focus</text>
+-    <rect x="668" y="286" width="112" height="38" rx="19" fill="#1A212A" stroke="#313B49"/>
+-    <text x="703" y="311" fill="#F2F5FA" font-size="17" font-family="SF Pro Display, Inter, Arial, sans-serif" font-weight="600">Limits</text>
+-    <rect x="794" y="286" width="118" height="38" rx="19" fill="#1A212A" stroke="#313B49"/>
+-    <text x="826" y="311" fill="#F2F5FA" font-size="17" font-family="SF Pro Display, Inter, Arial, sans-serif" font-weight="600">Control</text>
+-  </g>
+-</svg>
++<svg width="1024" height="500" viewBox="0 0 1024 500" fill="none" xmlns="http://www.w3.org/2000/svg">
++  <defs>
++    <linearGradient id="bg" x1="88" y1="42" x2="948" y2="462" gradientUnits="userSpaceOnUse">
++      <stop stop-color="#171B20"/>
++      <stop offset="1" stop-color="#080A0D"/>
++    </linearGradient>
++    <radialGradient id="orb1" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(228 124) rotate(90) scale(216 216)">
++      <stop stop-color="#8DAAFF" stop-opacity="0.22"/>
++      <stop offset="1" stop-color="#8DAAFF" stop-opacity="0"/>
++    </radialGradient>
++    <radialGradient id="orb2" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(792 394) rotate(90) scale(206 206)">
++      <stop stop-color="#CED8EA" stop-opacity="0.12"/>
++      <stop offset="1" stop-color="#CED8EA" stop-opacity="0"/>
++    </radialGradient>
++    <linearGradient id="frame" x1="120" y1="114" x2="366" y2="360" gradientUnits="userSpaceOnUse">
++      <stop stop-color="#EEF3FC"/>
++      <stop offset="1" stop-color="#B6C5E3"/>
++    </linearGradient>
++    <linearGradient id="panelStroke" x1="492" y1="124" x2="946" y2="366" gradientUnits="userSpaceOnUse">
++      <stop stop-color="#39414D"/>
++      <stop offset="1" stop-color="#232A33"/>
++    </linearGradient>
++  </defs>
++
++  <rect width="1024" height="500" rx="40" fill="url(#bg)"/>
++  <circle cx="228" cy="124" r="216" fill="url(#orb1)"/>
++  <circle cx="792" cy="394" r="206" fill="url(#orb2)"/>
++
++  <g opacity="0.36">
++    <path d="M42 110C181 64 318 42 454 42C614 42 792 76 980 144" stroke="#2A323D" stroke-width="1.5"/>
++    <path d="M56 430C194 456 336 468 474 468C664 468 842 442 984 384" stroke="#1D232B" stroke-width="1.5"/>
++  </g>
++
++  <path d="M146 212V184C146 168.536 158.536 156 174 156H202" stroke="url(#frame)" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
++  <path d="M342 212V184C342 168.536 329.464 156 314 156H286" stroke="url(#frame)" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
++  <path d="M146 310V338C146 353.464 158.536 366 174 366H202" stroke="url(#frame)" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
++  <path d="M342 310V338C342 353.464 329.464 366 314 366H286" stroke="url(#frame)" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
++  <circle cx="244" cy="261" r="52" fill="#10141A" stroke="url(#frame)" stroke-width="16"/>
++  <circle cx="244" cy="261" r="13" fill="#F7FAFF"/>
++
++  <rect x="472" y="116" width="470" height="248" rx="30" fill="#14181D" fill-opacity="0.74" stroke="url(#panelStroke)"/>
++  <text x="522" y="184" fill="#F6F8FC" font-size="34" font-family="SF Pro Display, Inter, Arial, sans-serif" font-weight="700">
++    Run your focus from one place.
++  </text>
++  <text x="522" y="226" fill="#A8B3C4" font-size="20" font-family="SF Pro Display, Inter, Arial, sans-serif">
++    An adaptable control center for sessions,
++  </text>
++  <text x="522" y="254" fill="#A8B3C4" font-size="20" font-family="SF Pro Display, Inter, Arial, sans-serif">
++    limits, routines, and distraction blocking.
++  </text>
++
++  <g>
++    <rect x="522" y="292" width="126" height="40" rx="20" fill="#1F2632" stroke="#344053"/>
++    <text x="556" y="318" fill="#F1F5FB" font-size="17" font-family="SF Pro Display, Inter, Arial, sans-serif" font-weight="600">Sessions</text>
++    <rect x="664" y="292" width="106" height="40" rx="20" fill="#1B2129" stroke="#313A47"/>
++    <text x="700" y="318" fill="#F1F5FB" font-size="17" font-family="SF Pro Display, Inter, Arial, sans-serif" font-weight="600">Limits</text>
++    <rect x="786" y="292" width="126" height="40" rx="20" fill="#1B2129" stroke="#313A47"/>
++    <text x="820" y="318" fill="#F1F5FB" font-size="17" font-family="SF Pro Display, Inter, Arial, sans-serif" font-weight="600">Control</text>
++  </g>
++</svg>
+*** Update File: /Users/timo/ceo_os/docs/google_play_console_field_guide.md
+@@
+ ### Short description
+ Recommended:
+ 
+-`Your control center for focus, limits, and distraction-free routines.`
++`Focus app with app blocking, website limits, daily limits, and routines.`
+@@
+ ### Full description
+ Recommended:
+ 
+ ```text
+-CEO OS is a personal control center for focus, discipline, and everyday execution. It brings the settings that matter most into one place so you can shape your environment more intentionally: focus sessions, app blocking, website limits, daily limits, planned pauses, tasks, habits, and notes.
+-
+-Instead of juggling separate tools, you manage your concentration from one adaptable workspace:
+-- start Focus Mode to protect a work session
+-- activate CEO Mode for stricter protection
+-- block distracting apps
+-- limit selected websites on Android in supported browsers
+-- apply daily limits to selected apps and supported websites
+-- schedule pauses and time-based restrictions
+-- keep routines, tasks, habits, and notes in the same control center
+-
+-On Android, CEO OS uses on-device protection flows to apply the restrictions you choose. Accessibility is used to detect when a selected distracting app or supported website is opened, Usage Access is used for daily-limit enforcement, and display-over-other-apps permission is used to show the blocking shield.
+-
+-CEO OS is designed for self-control and digital wellbeing. It does not present itself as a disability accessibility tool, and it does not claim universal website blocking across all Android browsers or web views.
+-
+-Premium features may be offered through subscriptions where available.
++CEO OS is a focus app and personal control center for concentration, discipline, and daily execution. It combines app blocking, website limits, daily limits, routines, tasks, habits, and notes in one place so you can manage your environment more intentionally.
++
++Use CEO OS to:
++- block distracting apps during focus sessions
++- limit selected websites on Android in supported browsers
++- apply daily limits to selected apps and supported websites
++- start Focus Mode for protected work sessions
++- activate CEO Mode for stricter focus protection
++- schedule pauses and time-based restrictions
++- manage routines, tasks, habits, and notes from the same control center
++
++On Android, CEO OS uses on-device protection flows to apply the restrictions you choose. Accessibility is used to detect when a selected distracting app or supported website is opened, Usage Access is used for daily-limit enforcement, and display-over-other-apps permission is used to show the blocking shield.
++
++CEO OS is designed for self-control, productivity, and digital wellbeing. It does not present itself as a disability accessibility tool, and it does not claim universal website blocking across all Android browsers or web views.
++
++Premium features may be offered through subscriptions where available.
+ ```
+*** End Patch

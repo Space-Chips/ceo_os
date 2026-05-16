@@ -1,0 +1,24 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/home/home_screen.dart
+@@
+     return CupertinoPageScaffold(
+       backgroundColor: AppColors.background,
+-      child: SafeArea(
+-        child: ListView(
+-          padding: const EdgeInsets.fromLTRB(20, 10, 20, 120),
+-          children: [
++      child: AmbientBackdrop(
++        child: SafeArea(
++          child: ListView(
++            padding: const EdgeInsets.fromLTRB(20, 10, 20, 120),
++            children: [
+@@
+-          ],
++            ],
++          ),
+         ),
+       ),
+     );
+   }
+ }
+*** End Patch

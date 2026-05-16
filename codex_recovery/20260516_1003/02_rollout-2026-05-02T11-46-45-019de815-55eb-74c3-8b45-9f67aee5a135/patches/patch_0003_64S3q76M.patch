@@ -1,0 +1,67 @@
+*** Begin Patch
+*** Update File: lib/features/legacy/notes_screen.dart
+@@
+ class _SplitNoteContent {
+   final String tagLine;
+   final String body;
+ 
+   const _SplitNoteContent({required this.tagLine, required this.body});
+ }
++
++class _ParsedNoteContent {
++  final String tagLine;
++  final String body;
++  final String? photoPath;
++
++  const _ParsedNoteContent({
++    required this.tagLine,
++    required this.body,
++    required this.photoPath,
++  });
++}
++
++class _NotePhotoViewer extends StatelessWidget {
++  final String path;
++
++  const _NotePhotoViewer({required this.path});
++
++  @override
++  Widget build(BuildContext context) {
++    return CupertinoPageScaffold(
++      backgroundColor: CupertinoColors.black,
++      navigationBar: CupertinoNavigationBar(
++        backgroundColor: CupertinoColors.black.withValues(alpha: 0.75),
++        middle: Text(
++          'Photo',
++          style: AppTypography.headline.copyWith(color: CupertinoColors.white),
++        ),
++        leading: CupertinoButton(
++          padding: EdgeInsets.zero,
++          onPressed: () => Navigator.of(context).maybePop(),
++          child: const Icon(
++            CupertinoIcons.xmark,
++            color: CupertinoColors.white,
++          ),
++        ),
++      ),
++      child: SafeArea(
++        child: Center(
++          child: InteractiveViewer(
++            minScale: 1,
++            maxScale: 4,
++            child: Image.file(
++              File(path),
++              fit: BoxFit.contain,
++              errorBuilder: (context, error, stack) => const Icon(
++                CupertinoIcons.photo,
++                color: CupertinoColors.white,
++                size: 44,
++              ),
++            ),
++          ),
++        ),
++      ),
++    );
++  }
++}
+*** End Patch

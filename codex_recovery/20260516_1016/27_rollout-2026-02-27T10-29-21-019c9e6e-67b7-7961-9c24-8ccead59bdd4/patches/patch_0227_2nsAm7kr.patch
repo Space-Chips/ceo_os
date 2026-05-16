@@ -1,0 +1,11 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/habits/habits_screen.dart
+@@
+           CupertinoButton(
+             padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 9),
+-            minSize: Size.zero,
++            minimumSize: Size.zero,
+             color: const Color(0xFFECECEE),
+             borderRadius: BorderRadius.circular(16),
+             onPressed: _onTopActionPressed,
+*** End Patch

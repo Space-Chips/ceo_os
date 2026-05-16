@@ -1,0 +1,116 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/ios/Runner.xcodeproj/project.pbxproj
+@@
+ 		249021D4217E4FDB00AE95B9 /* Profile */ = {
+ 			isa = XCBuildConfiguration;
+ 			baseConfigurationReference = 7AFA3C8E1D35360C0083082E /* Release.xcconfig */;
+@@
+ 			};
+ 			name = Profile;
+ 		};
++		D14E2F3A4B5C6D7E8F901111 /* Debug */ = {
++			isa = XCBuildConfiguration;
++			buildSettings = {
++				APPLICATION_EXTENSION_API_ONLY = YES;
++				CODE_SIGN_ENTITLEMENTS = ScreenTimeReport/ScreenTimeReport.entitlements;
++				CODE_SIGN_STYLE = Automatic;
++				CURRENT_PROJECT_VERSION = 1;
++				DEVELOPMENT_TEAM = CGXFXXRW4Q;
++				GENERATE_INFOPLIST_FILE = YES;
++				INFOPLIST_FILE = ScreenTimeReport/Info.plist;
++				INFOPLIST_KEY_CFBundleDisplayName = ScreenTimeReport;
++				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
++				LD_RUNPATH_SEARCH_PATHS = (
++					"$(inherited)",
++					"@executable_path/Frameworks",
++					"@executable_path/../../Frameworks",
++				);
++				MARKETING_VERSION = 1.0;
++				PRODUCT_BUNDLE_IDENTIFIER = com.wakeapp.ceoos.screentimereport;
++				PRODUCT_NAME = "$(TARGET_NAME)";
++				SKIP_INSTALL = YES;
++				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
++				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
++				SWIFT_VERSION = 5.0;
++				TARGETED_DEVICE_FAMILY = "1,2";
++			};
++			name = Debug;
++		};
++		D14E2F3A4B5C6D7E8F901112 /* Release */ = {
++			isa = XCBuildConfiguration;
++			buildSettings = {
++				APPLICATION_EXTENSION_API_ONLY = YES;
++				CODE_SIGN_ENTITLEMENTS = ScreenTimeReport/ScreenTimeReport.entitlements;
++				CODE_SIGN_STYLE = Automatic;
++				CURRENT_PROJECT_VERSION = 1;
++				DEVELOPMENT_TEAM = CGXFXXRW4Q;
++				GENERATE_INFOPLIST_FILE = YES;
++				INFOPLIST_FILE = ScreenTimeReport/Info.plist;
++				INFOPLIST_KEY_CFBundleDisplayName = ScreenTimeReport;
++				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
++				LD_RUNPATH_SEARCH_PATHS = (
++					"$(inherited)",
++					"@executable_path/Frameworks",
++					"@executable_path/../../Frameworks",
++				);
++				MARKETING_VERSION = 1.0;
++				PRODUCT_BUNDLE_IDENTIFIER = com.wakeapp.ceoos.screentimereport;
++				PRODUCT_NAME = "$(TARGET_NAME)";
++				SKIP_INSTALL = YES;
++				SWIFT_VERSION = 5.0;
++				TARGETED_DEVICE_FAMILY = "1,2";
++			};
++			name = Release;
++		};
++		D14E2F3A4B5C6D7E8F901113 /* Profile */ = {
++			isa = XCBuildConfiguration;
++			buildSettings = {
++				APPLICATION_EXTENSION_API_ONLY = YES;
++				CODE_SIGN_ENTITLEMENTS = ScreenTimeReport/ScreenTimeReport.entitlements;
++				CODE_SIGN_STYLE = Automatic;
++				CURRENT_PROJECT_VERSION = 1;
++				DEVELOPMENT_TEAM = CGXFXXRW4Q;
++				GENERATE_INFOPLIST_FILE = YES;
++				INFOPLIST_FILE = ScreenTimeReport/Info.plist;
++				INFOPLIST_KEY_CFBundleDisplayName = ScreenTimeReport;
++				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
++				LD_RUNPATH_SEARCH_PATHS = (
++					"$(inherited)",
++					"@executable_path/Frameworks",
++					"@executable_path/../../Frameworks",
++				);
++				MARKETING_VERSION = 1.0;
++				PRODUCT_BUNDLE_IDENTIFIER = com.wakeapp.ceoos.screentimereport;
++				PRODUCT_NAME = "$(TARGET_NAME)";
++				SKIP_INSTALL = YES;
++				SWIFT_VERSION = 5.0;
++				TARGETED_DEVICE_FAMILY = "1,2";
++			};
++			name = Profile;
++		};
+ 		331C8088294A63A400263BE5 /* Debug */ = {
+ 			isa = XCBuildConfiguration;
+ 			baseConfigurationReference = B3B4ACEBE78D43AAC271FCB9 /* Pods-RunnerTests.debug.xcconfig */;
+@@
+ 		902D615C7F5841E4B0E9C9D2 /* Build configuration list for PBXNativeTarget "FocusActivityMonitorExtension" */ = {
+ 			isa = XCConfigurationList;
+ 			buildConfigurations = (
+ 				88D6050D4C554E189EB6AF6F /* Debug */,
+ 				C39C6B8B1FE3487DA4527DA8 /* Release */,
+ 				131E291FEE79432E894ACBB6 /* Profile */,
+ 			);
+ 			defaultConfigurationIsVisible = 0;
+ 			defaultConfigurationName = Release;
+ 		};
++		E15F3A4B5C6D7E8F90123456 /* Build configuration list for PBXNativeTarget "ScreenTimeReportExtension" */ = {
++			isa = XCConfigurationList;
++			buildConfigurations = (
++				D14E2F3A4B5C6D7E8F901111 /* Debug */,
++				D14E2F3A4B5C6D7E8F901112 /* Release */,
++				D14E2F3A4B5C6D7E8F901113 /* Profile */,
++			);
++			defaultConfigurationIsVisible = 0;
++			defaultConfigurationName = Release;
++		};
+ 		97C146E91CF9000F007C117D /* Build configuration list for PBXProject "Runner" */ = {
+*** End Patch

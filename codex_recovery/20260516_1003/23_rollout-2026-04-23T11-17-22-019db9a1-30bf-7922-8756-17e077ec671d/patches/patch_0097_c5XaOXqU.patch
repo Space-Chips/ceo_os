@@ -1,0 +1,28 @@
+*** Begin Patch
+*** Update File: lib/core/providers/language_overrides.dart
+@@
+     'theme_ember_protocol': 'Ember Protocol',
+     'theme_modern_desert': 'Modern Desert',
+     'theme_royal_violet': 'Royal Violet',
+-    'welcome_back': 'Welcome back',
++    'welcome_back': 'Bienvenido de nuevo',
+ 
+     'auth_privacy_body':
+-        'WakeApp uses Supabase for account and cloud sync infrastructure, Google Sign-In when selected by the user, RevenueCat plus Apple or Google Play for purchases, and platform system APIs for blocking, notifications, widgets, and scheduling.',
++        'WakeApp utiliza Supabase para la infraestructura de cuenta y sincronización en la nube, Google Sign-In cuando el usuario lo elige, RevenueCat junto con Apple o Google Play para las compras, y las API del sistema de la plataforma para el bloqueo, las notificaciones, los widgets y la planificación.',
+     'auth_terms_body':
+-        'WakeApp provides productivity, planning, and focus tools. Premium subscriptions may renew automatically unless canceled in your Apple App Store or Google Play subscription settings.',
++        'WakeApp ofrece herramientas de productividad, planificación y concentración. Las suscripciones premium pueden renovarse automáticamente a menos que se cancelen en la configuración de suscripciones del App Store de Apple o de Google Play.',
+     'auth_trust_footer':
+-        'By continuing, you agree to the Terms of Use and Privacy Policy.',
+-    'close': 'Close',
+-    'privacy_short': 'Privacy',
+-    'support_short': 'Support',
+-    'terms_short': 'Terms',
++        'Al continuar, aceptas los Términos de uso y la Política de privacidad.',
++    'close': 'Cerrar',
++    'privacy_short': 'Privacidad',
++    'support_short': 'Soporte',
++    'terms_short': 'Términos',
+   },
+*** End Patch

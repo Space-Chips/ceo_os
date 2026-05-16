@@ -1,0 +1,27 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/services/family_controls_local_store.dart
+@@
+   Future<void> setBlockedWebsiteTime(String id, int minutes) async {
+@@
+     await _saveRows(_blockedWebsitesKey, next);
+   }
++
++  Future<void> updateBlockedWebsiteDomain(String id, String? domain) async {
++    final trimmed = domain?.trim();
++    final normalized = (trimmed != null && trimmed.isNotEmpty)
++        ? trimmed
++        : null;
++    final rows = await _loadRows(_blockedWebsitesKey);
++    final next = rows
++        .map(
++          (row) => row['id'] == id
++              ? {
++                  ...row,
++                  'url_domain': normalized,
++                }
++              : row,
++        )
++        .toList(growable: false);
++    await _saveRows(_blockedWebsitesKey, next);
++  }
+*** End Patch

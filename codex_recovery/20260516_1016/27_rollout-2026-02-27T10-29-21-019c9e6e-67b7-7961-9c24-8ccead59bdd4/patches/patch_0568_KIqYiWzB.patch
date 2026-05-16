@@ -1,0 +1,53 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/home/home_screen.dart
+@@
+   Future<DashboardSnapshot>? _snapshotFuture;
+   String _userLabel = 'You';
+   String? _settingsId;
+-  int _winStreak = 0;
+   Set<String> _activeApps = {..._defaultActiveApps};
+   Set<String> _enabledShortcuts = {..._defaultEnabledShortcuts};
+   bool _hideNoModulesMessage = false;
+@@
+     await _loadHomePreferences();
+     if (!mounted) return;
+-    await _loadWinStreak();
+-    if (!mounted) return;
+ 
+     _reloadSnapshot();
+   }
+@@
+-  Future<void> _loadWinStreak() async {
+-    final streak = await _featureRepository.getWinStreak();
+-    if (!mounted) return;
+-
+-    setState(() {
+-      _winStreak = streak?.currentStreak ?? 0;
+-    });
+-  }
+-
+   void _reloadSnapshot() {
+@@
+-              final rankName = (data?.rankName.trim().isNotEmpty ?? false)
+-                  ? data!.rankName
+-                  : 'Bronze';
+               final habitsCount =
+                   data?.totalHabits ?? habitProvider.habits.length;
+@@
+                 _ShortcutCardData(
+                   shortcutId: 'leaderboard',
+                   title: 'Leaderboard',
+-                  icon: CupertinoIcons.trophy_fill,
++                  icon: CupertinoIcons.rosette,
+                   onTap: () => context.push('/leaderboard'),
+                 ),
+@@
+-      icon: CupertinoIcons.trophy_fill,
++      icon: CupertinoIcons.rosette,
+@@
+-                                  color: Colors.transparent,
++                                  color: const Color(0x00000000),
+                                 ),
+                               ),
+                             ),
+*** End Patch

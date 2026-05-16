@@ -1,0 +1,19 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/ios/Runner/AppDelegate.swift
+@@
+-        if requiresWebDomains && selection.webDomainTokens.isEmpty {
+-            result(FlutterError(
+-                code: "NO_WEBSITES_SELECTED",
+-                message: "Select at least one website to continue.",
+-                details: nil
+-            ))
+-            return
+-        }
++        if requiresWebDomains && selection.webDomainTokens.isEmpty {
++            // Treat an empty website pick as a graceful no-op instead of an error.
++            // This prevents Flutter-side flow breakage when the user exits the picker
++            // without selecting a website token.
++            result([])
++            return
++        }
+*** End Patch

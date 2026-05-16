@@ -1,0 +1,67 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/dashboard/dashboard_screen.dart
+@@
+   BoxDecoration _panelDecoration({Color? accentColor}) {
+     return BoxDecoration(
+       borderRadius: BorderRadius.circular(20),
+-      gradient: const LinearGradient(
++      gradient: LinearGradient(
+         begin: Alignment.topCenter,
+         end: Alignment.bottomCenter,
+-        colors: [Color(0xFF1A1A1A), Color(0xFF111111)],
++        colors: [AppColors.cardBackgroundStrong, AppColors.cardBase],
+       ),
+       border: Border.all(
+-        color: AppColors.white.withValues(alpha: 0.06),
++        color: AppColors.border,
+         width: 1,
+       ),
+       boxShadow: [
+         BoxShadow(
+-          color: AppColors.black.withValues(alpha: 0.6),
++          color: AppColors.glassShadow.withValues(alpha: 0.3),
+           blurRadius: 30,
+           offset: const Offset(0, 10),
+         ),
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/screen_time_screen.dart
+@@
+   BoxDecoration _moduleDecoration({double radius = 18}) {
+     return BoxDecoration(
+-      gradient: const LinearGradient(
++      gradient: LinearGradient(
+         begin: Alignment.topCenter,
+         end: Alignment.bottomCenter,
+-        colors: [Color(0xFF1A1A1A), Color(0xFF111111)],
++        colors: [AppColors.cardBackgroundStrong, AppColors.cardBase],
+       ),
+       borderRadius: BorderRadius.circular(radius),
+       border: Border.all(
+-        color: AppColors.white.withValues(alpha: 0.06),
++        color: AppColors.border,
+         width: 1,
+       ),
+       boxShadow: [
+         BoxShadow(
+-          color: AppColors.black.withValues(alpha: 0.5),
++          color: AppColors.glassShadow.withValues(alpha: 0.28),
+           blurRadius: 30,
+           offset: const Offset(0, 10),
+         ),
+*** Update File: /Users/timo/ceo_os/lib/features/tasks/tasks_screen.dart
+@@
+       case 'crucial':
+       case 'critical':
+         return _TaskPalette(
+           border: AppColors.error.withValues(alpha: 0.4),
+-          start: AppColors.error.withValues(alpha: 0.12),
+-          end: AppColors.error.withValues(alpha: 0.05),
++          start: Color.alphaBlend(
++            AppColors.error.withValues(alpha: 0.04),
++            AppColors.cardBackgroundAlt,
++          ),
++          end: AppColors.cardBase,
+           badgeBg: AppColors.error.withValues(alpha: 0.12),
+           badgeBorder: AppColors.error.withValues(alpha: 0.35),
+           badgeText: AppColors.error,
+         );
+*** End Patch

@@ -1,0 +1,64 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/router/app_router.dart
+@@
+       body: Stack(
+         children: [
+           child,
++          const Positioned.fill(
++            child: IgnorePointer(
++              child: _GlobalAtmosphereLayer(),
++            ),
++          ),
+           Positioned.fill(
+             child: IgnorePointer(
+               child: Opacity(
+@@
+ }
+ 
++class _GlobalAtmosphereLayer extends StatelessWidget {
++  const _GlobalAtmosphereLayer();
++
++  @override
++  Widget build(BuildContext context) {
++    return Stack(
++      children: [
++        Positioned(
++          top: -120,
++          left: -80,
++          child: Container(
++            width: 280,
++            height: 280,
++            decoration: BoxDecoration(
++              shape: BoxShape.circle,
++              color: AppColors.primaryOrange.withValues(alpha: 0.06),
++            ),
++          ),
++        ),
++        Positioned(
++          bottom: -140,
++          right: -90,
++          child: Container(
++            width: 320,
++            height: 320,
++            decoration: BoxDecoration(
++              shape: BoxShape.circle,
++              color: AppColors.accentSecondary.withValues(alpha: 0.05),
++            ),
++          ),
++        ),
++        Positioned(
++          top: 0,
++          left: 0,
++          right: 0,
++          child: Container(
++            height: 1,
++            color: Colors.white.withValues(alpha: 0.06),
++          ),
++        ),
++      ],
++    );
++  }
++}
++
+ class _GlobalNoisePainter extends CustomPainter {
+*** End Patch

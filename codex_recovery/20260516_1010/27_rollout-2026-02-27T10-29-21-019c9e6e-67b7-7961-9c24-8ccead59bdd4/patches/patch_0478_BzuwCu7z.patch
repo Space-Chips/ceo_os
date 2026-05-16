@@ -1,0 +1,383 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/habits/habits_screen.dart
+@@
+ import 'package:flutter/cupertino.dart';
+ import 'package:flutter/material.dart' show LinearProgressIndicator;
+ import 'package:go_router/go_router.dart';
+ import 'package:provider/provider.dart';
+ import 'package:intl/intl.dart';
+@@
+ class _HabitsScreenState extends State<HabitsScreen> {
+@@
+   Widget _topRow() {
+@@
+                 Text(
+                   'Home',
+-                  style: AppTypography.mono.copyWith(
+-                    fontSize: 15,
+-                    color: AppColors.secondaryLabel,
+-                    fontWeight: FontWeight.w600,
++                  style: AppTypography.subhead.copyWith(
++                    fontSize: 14,
++                    color: AppColors.secondaryLabel.withValues(alpha: 0.72),
++                    fontWeight: FontWeight.w500,
+                   ),
+                 ),
+               ],
+             ),
+           ),
+           const Spacer(),
+-          CupertinoButton(
+-            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 9),
+-            minimumSize: Size.zero,
+-            color: const Color(0xFFECECEE),
+-            borderRadius: BorderRadius.circular(16),
+-            onPressed: _onTopActionPressed,
+-            child: Text(
+-              actionLabel,
+-              style: AppTypography.mono.copyWith(
+-                fontSize: 14,
+-                fontWeight: FontWeight.w700,
+-                color: AppColors.background,
+-              ),
+-            ),
++          _HabitPressScale(
++            onTap: () async => _onTopActionPressed(),
++            child: Container(
++              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 11),
++              decoration: BoxDecoration(
++                gradient: const LinearGradient(
++                  begin: Alignment.topCenter,
++                  end: Alignment.bottomCenter,
++                  colors: [Color(0xFF2A2A2A), Color(0xFF1A1A1A)],
++                ),
++                borderRadius: BorderRadius.circular(18),
++                border: Border.all(
++                  color: AppColors.white.withValues(alpha: 0.08),
++                  width: 1,
++                ),
++              ),
++              child: Text(
++                actionLabel,
++                style: AppTypography.callout.copyWith(
++                  fontSize: 14,
++                  fontWeight: FontWeight.w600,
++                  color: AppColors.label,
++                ),
++              ),
++            ),
+           ),
+         ],
+       ),
+@@
+           Text(
+             'Habits',
+-            style: AppTypography.mono.copyWith(
++            style: AppTypography.largeTitle.copyWith(
+               fontSize: 46,
+               height: 0.95,
+-              fontWeight: FontWeight.w900,
++              fontWeight: FontWeight.w700,
++              letterSpacing: -1.1,
+               color: AppColors.label,
+             ),
+           ),
+@@
+                 Text(
+                   _swipeHint(),
+-                  style: AppTypography.mono.copyWith(
+-                    fontSize: 10,
+-                    color: AppColors.tertiaryLabel,
++                  style: AppTypography.caption1.copyWith(
++                    fontSize: 12,
++                    color: AppColors.tertiaryLabel.withValues(alpha: 0.5),
+                   ),
+                 ),
+               ],
+             ),
+@@
+         return ListView(
+           padding: const EdgeInsets.symmetric(
+             horizontal: 20,
+           ).copyWith(bottom: 24),
+           children: [
+-            GlassCard(
+-              padding: const EdgeInsets.all(12),
+-              borderRadius: 18,
+-              level: GlassCardLevel.standard,
+-              showEdgeGlow: true,
++            Container(
++              padding: const EdgeInsets.all(16),
++              decoration: _habitModuleCardDecoration(radius: 18),
+               child: Column(
+                 children: [
+@@
+                           'HABIT',
+-                          style: AppTypography.mono.copyWith(
+-                            fontSize: 8,
+-                            color: AppColors.tertiaryLabel,
+-                            letterSpacing: 1.5,
+-                            fontWeight: FontWeight.bold,
++                          style: AppTypography.overline.copyWith(
++                            fontSize: 11,
++                            color: AppColors.tertiaryLabel.withValues(alpha: 0.6),
++                            letterSpacing: 2,
++                            fontWeight: FontWeight.w600,
+                           ),
+                         ),
+                       ),
+@@
+                               l,
+-                              style: AppTypography.mono.copyWith(
+-                                fontSize: 9,
+-                                color: AppColors.tertiaryLabel,
+-                                fontWeight: FontWeight.bold,
++                              style: AppTypography.overline.copyWith(
++                                fontSize: 11,
++                                color: AppColors.tertiaryLabel.withValues(alpha: 0.6),
++                                fontWeight: FontWeight.w600,
++                                letterSpacing: 2,
+                               ),
+                             ),
+                           ),
+@@
+               ),
+             ),
+ 
+             const SizedBox(height: 20),
+ 
+             // ── Weekly Score Card ──
+-            GlassCard(
++            Container(
+               padding: const EdgeInsets.all(16),
+-              borderRadius: 18,
+-              level: GlassCardLevel.elevated,
+-              showEdgeGlow: true,
+-              border: Border.all(
+-                color: isOnTrack
+-                    ? AppColors.success.withValues(alpha: 0.4)
+-                    : isAtRisk
+-                    ? AppColors.primaryOrange.withValues(alpha: 0.3)
+-                    : AppColors.error.withValues(alpha: 0.3),
+-                width: 0.5,
+-              ),
++              decoration: _habitModuleCardDecoration(
++                radius: 20,
++                borderColor: AppColors.white.withValues(alpha: 0.06),
++              ),
+               child: Column(
+                 children: [
+@@
+                           Text(
+                             'WEEK SCORE',
+-                            style: AppTypography.mono.copyWith(
++                            style: AppTypography.overline.copyWith(
+                               fontSize: 13,
+-                              fontWeight: FontWeight.bold,
++                              fontWeight: FontWeight.w600,
++                              letterSpacing: 1.8,
++                              color: AppColors.secondaryLabel.withValues(alpha: 0.72),
+                             ),
+                           ),
+                         ],
+                       ),
+                       Text(
+                         '$scorePercent%',
+-                        style: AppTypography.mono.copyWith(
+-                          fontSize: 32,
++                        style: AppTypography.heroNumber.copyWith(
++                          fontSize: 48,
+                           fontWeight: FontWeight.w700,
+-                          color: isOnTrack
+-                              ? AppColors.success
+-                              : isAtRisk
+-                              ? AppColors.primaryOrange
+-                              : AppColors.error,
++                          color: const Color(0xFF55D9A5),
+                         ),
+                       ),
+                     ],
+                   ),
+                   const SizedBox(height: 12),
+                   ClipRRect(
+-                    borderRadius: BorderRadius.circular(3),
++                    borderRadius: BorderRadius.circular(6),
+                     child: SizedBox(
+-                      height: 5,
+-                      child: LinearProgressIndicator(
+-                        value: scorePercent / 100,
+-                        backgroundColor: AppColors.surface,
+-                        valueColor: AlwaysStoppedAnimation<Color>(
+-                          isOnTrack
+-                              ? AppColors.success
+-                              : isAtRisk
+-                              ? AppColors.primaryOrange
+-                              : AppColors.error,
+-                        ),
++                      height: 8,
++                      child: TweenAnimationBuilder<double>(
++                        tween: Tween<double>(begin: 0, end: scorePercent / 100),
++                        duration: const Duration(milliseconds: 280),
++                        curve: Curves.easeOutCubic,
++                        builder: (context, value, child) {
++                          return LinearProgressIndicator(
++                            value: value,
++                            backgroundColor: AppColors.white.withValues(alpha: 0.08),
++                            valueColor: const AlwaysStoppedAnimation<Color>(
++                              Color(0xFF55D9A5),
++                            ),
++                          );
++                        },
+                       ),
+                     ),
+                   ),
+@@
+                       Text(
+                         '$totalCompleted / $totalExpected',
+-                        style: AppTypography.mono.copyWith(
+-                          fontSize: 9,
+-                          color: AppColors.tertiaryLabel,
++                        style: AppTypography.caption1.copyWith(
++                          fontSize: 10,
++                          color: AppColors.tertiaryLabel.withValues(alpha: 0.72),
+                         ),
+                       ),
+                       Text(
+                         'TARGET 90%',
+-                        style: AppTypography.mono.copyWith(
+-                          fontSize: 9,
+-                          color: AppColors.tertiaryLabel,
++                        style: AppTypography.caption1.copyWith(
++                          fontSize: 10,
++                          color: AppColors.tertiaryLabel.withValues(alpha: 0.72),
+                         ),
+                       ),
+                     ],
+@@
+-    return GestureDetector(
++    return _HabitPressScale(
+       onTap: onTap,
+-      child: Padding(
++      child: Padding(
+         padding: const EdgeInsets.symmetric(vertical: 4),
+         child: Row(
+           children: [
+             Expanded(
+               flex: 3,
+               child: Text(
+                 habit.title,
+-                style: AppTypography.mono.copyWith(
+-                  fontSize: 11,
++                style: AppTypography.callout.copyWith(
++                  fontSize: 12,
+                   color: AppColors.secondaryLabel,
++                  fontWeight: FontWeight.w500,
+                 ),
+                 maxLines: 1,
+                 overflow: TextOverflow.ellipsis,
+@@
+                   child: _DayCell(
+                     isCompleted: isCompleted,
+                     isMissed: isMissed,
+                     isLockedMissing: isMissingPastValidation,
+                     isToday: isToday,
+                   ),
+                 ),
+               );
+             }),
+           ],
+         ),
+       ),
+     );
+   }
+@@
+   @override
+   Widget build(BuildContext context) {
+     if (isCompleted) {
+-      return Container(
+-        width: 20,
+-        height: 20,
+-        decoration: BoxDecoration(
+-          shape: BoxShape.circle,
+-          color: AppColors.success.withValues(alpha: 0.2),
+-        ),
+-        child: Icon(
+-          CupertinoIcons.checkmark,
+-          size: 12,
+-          color: AppColors.success,
++      return AnimatedScale(
++        duration: const Duration(milliseconds: 180),
++        curve: Curves.easeOutCubic,
++        scale: 1,
++        child: AnimatedContainer(
++          duration: const Duration(milliseconds: 180),
++          width: 22,
++          height: 22,
++          decoration: const BoxDecoration(
++            shape: BoxShape.circle,
++            color: Color(0xFF55D9A5),
++          ),
++          child: const Icon(
++            CupertinoIcons.checkmark,
++            size: 12,
++            color: CupertinoColors.black,
++          ),
+         ),
+       );
+     }
+ 
+     if (isMissed) {
+       return Container(
+-        width: 20,
+-        height: 20,
++        width: 22,
++        height: 22,
+         decoration: BoxDecoration(
+           shape: BoxShape.circle,
+-          color: AppColors.error.withValues(alpha: 0.15),
++          color: AppColors.error.withValues(alpha: 0.12),
+         ),
+         child: Icon(CupertinoIcons.xmark, size: 10, color: AppColors.error),
+       );
+     }
+@@
+       return Container(
+-        width: 20,
+-        height: 20,
++        width: 22,
++        height: 22,
+         decoration: BoxDecoration(
+           shape: BoxShape.circle,
+-          color: AppColors.error.withValues(alpha: 0.1),
++          color: CupertinoColors.transparent,
+           border: Border.all(color: AppColors.error, width: 1.4),
+         ),
+       );
+@@
+       return Container(
+-        width: 20,
+-        height: 20,
++        width: 22,
++        height: 22,
+         decoration: BoxDecoration(
+           shape: BoxShape.circle,
+           border: Border.all(
+@@
+     return Container(
+-      width: 16,
+-      height: 16,
++      width: 22,
++      height: 22,
+       decoration: BoxDecoration(
+         shape: BoxShape.circle,
+-        border: Border.all(color: AppColors.glassBorder, width: 1),
++        color: CupertinoColors.transparent,
++        border: Border.all(
++          color: AppColors.white.withValues(alpha: 0.25),
++          width: 1,
++        ),
+       ),
+     );
+   }
+ }
+*** End Patch

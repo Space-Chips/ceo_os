@@ -1,0 +1,11 @@
+*** Begin Patch
+*** Update File: lib/core/providers/language_provider.dart
+@@
+     'widget_configuration_hint':
+-        'On iOS, you will see three separate widgets in the widget gallery: WakeApp — To‑Do, WakeApp — Dashboard, WakeApp — Habits. Enable the ones you want here, then tap “Refresh” so they show data.',
++        'On iOS, you will see multiple WakeApp widgets in the widget gallery (To‑Do, Dashboard, Habits Today, Habits Table, Focus, Blackout). Enable the ones you want here, then tap “Refresh” so they show data.',
+@@
+     'widget_configuration_hint':
+-        'Sur iOS, tu verras trois widgets séparés dans la galerie : WakeApp — To‑Do, WakeApp — Dashboard, WakeApp — Habitudes. Active ceux que tu veux ici, puis appuie sur « Rafraîchir » pour afficher les données.',
++        'Sur iOS, tu verras plusieurs widgets WakeApp dans la galerie (To‑Do, Dashboard, Habitudes du jour, Tableau d’habitudes, Focus, Blackout). Active ceux que tu veux ici, puis appuie sur « Rafraîchir » pour afficher les données.',
+*** End Patch

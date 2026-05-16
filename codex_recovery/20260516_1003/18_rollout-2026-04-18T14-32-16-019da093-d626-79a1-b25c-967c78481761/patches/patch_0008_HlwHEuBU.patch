@@ -1,0 +1,9 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/pubspec.yaml
+@@
+ dependency_overrides:
+   adaptive_platform_ui:
+     path: ./packages/adaptive_platform_ui
++  home_widget:
++    path: ./packages/home_widget
+*** End Patch

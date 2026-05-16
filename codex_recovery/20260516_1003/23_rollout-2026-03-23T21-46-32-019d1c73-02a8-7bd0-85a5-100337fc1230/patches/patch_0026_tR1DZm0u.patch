@@ -1,0 +1,23 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/repositories/focus_repository.dart
+@@
+   Future<void> logFocusSession({
+     required DateTime startTime,
+     required DateTime endTime,
+     required int durationMinutes,
+     String? blockListId,
+     bool completed = true,
+   }) async {
++    final persistedBlockListId = _useLocalFamilyControlsStorage
++        ? null
++        : blockListId;
+     await _client.from('focus_sessions').insert({
+       'created_by': _currentUserId,
+       'start_time': startTime.toIso8601String(),
+       'end_time': endTime.toIso8601String(),
+       'duration_minutes': durationMinutes,
+-      'block_list_id': blockListId,
++      'block_list_id': persistedBlockListId,
+       'completed': completed,
+     });
+*** End Patch

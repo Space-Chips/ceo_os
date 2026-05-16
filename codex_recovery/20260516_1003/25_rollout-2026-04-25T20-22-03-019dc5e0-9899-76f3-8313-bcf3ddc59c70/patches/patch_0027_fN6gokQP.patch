@@ -1,0 +1,19 @@
+*** Begin Patch
+*** Update File: lib/core/router/app_router.dart
+@@
+ import '../../features/auth/onboarding_screen.dart';
++import '../../features/control_center_setup/control_center_setup_screen.dart';
+@@
+         // ── Onboarding ──
+         GoRoute(
+           path: '/onboarding',
+           builder: (context, state) => const OnboardingScreen(),
+         ),
++        GoRoute(
++          path: '/control-center-setup',
++          builder: (context, state) {
++            final edit = state.uri.queryParameters['edit'] == 'true';
++            return ControlCenterSetupScreen(isEditing: edit);
++          },
++        ),
+*** End Patch

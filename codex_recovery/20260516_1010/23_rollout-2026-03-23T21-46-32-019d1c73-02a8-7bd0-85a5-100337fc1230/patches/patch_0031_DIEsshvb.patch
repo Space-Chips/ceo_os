@@ -1,0 +1,273 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/supabase_family_controls_privacy_cleanup.sql
+@@
+-do $$
+-begin
++do $$
++declare
++  assignments text[];
++begin
+   if to_regclass('public.advanced_stats_events') is not null then
+     execute $sql$
+       delete from public.advanced_stats_events
+@@
+   end if;
+ 
+   if to_regclass('public.advanced_daily_stats') is not null then
+-    execute $sql$
+-      update public.advanced_daily_stats
+-      set distractions_blocked = 0,
+-          screen_time_minutes = 0,
+-          time_recovered_minutes = 0,
+-          most_distracting_app = null,
+-          most_distracting_time_window = null,
+-          screen_time_delta_minutes = 0
+-    $sql$;
++    assignments := array[]::text[];
++    if exists (
++      select 1 from information_schema.columns
++      where table_schema = 'public'
++        and table_name = 'advanced_daily_stats'
++        and column_name = 'distractions_blocked'
++    ) then
++      assignments := array_append(assignments, 'distractions_blocked = 0');
++    end if;
++    if exists (
++      select 1 from information_schema.columns
++      where table_schema = 'public'
++        and table_name = 'advanced_daily_stats'
++        and column_name = 'screen_time_minutes'
++    ) then
++      assignments := array_append(assignments, 'screen_time_minutes = 0');
++    end if;
++    if exists (
++      select 1 from information_schema.columns
++      where table_schema = 'public'
++        and table_name = 'advanced_daily_stats'
++        and column_name = 'time_recovered_minutes'
++    ) then
++      assignments := array_append(assignments, 'time_recovered_minutes = 0');
++    end if;
++    if exists (
++      select 1 from information_schema.columns
++      where table_schema = 'public'
++        and table_name = 'advanced_daily_stats'
++        and column_name = 'most_distracting_app'
++    ) then
++      assignments := array_append(assignments, 'most_distracting_app = null');
++    end if;
++    if exists (
++      select 1 from information_schema.columns
++      where table_schema = 'public'
++        and table_name = 'advanced_daily_stats'
++        and column_name = 'most_distracting_time_window'
++    ) then
++      assignments := array_append(
++        assignments,
++        'most_distracting_time_window = null'
++      );
++    end if;
++    if exists (
++      select 1 from information_schema.columns
++      where table_schema = 'public'
++        and table_name = 'advanced_daily_stats'
++        and column_name = 'screen_time_delta_minutes'
++    ) then
++      assignments := array_append(assignments, 'screen_time_delta_minutes = 0');
++    end if;
++    if coalesce(array_length(assignments, 1), 0) > 0 then
++      execute format(
++        'update public.advanced_daily_stats set %s',
++        array_to_string(assignments, ', ')
++      );
++    end if;
+   end if;
+ 
+   if to_regclass('public.advanced_weekly_stats') is not null then
+-    execute $sql$
+-      update public.advanced_weekly_stats
+-      set total_time_recovered_minutes = 0,
+-          total_distractions_blocked = 0,
+-          total_screen_time_minutes = 0,
+-          most_distracting_app = null,
+-          most_distracting_time_window = null,
+-          screen_time_trend = 0,
+-          weekly_transformation_delta = 0
+-    $sql$;
++    assignments := array[]::text[];
++    if exists (
++      select 1 from information_schema.columns
++      where table_schema = 'public'
++        and table_name = 'advanced_weekly_stats'
++        and column_name = 'total_time_recovered_minutes'
++    ) then
++      assignments := array_append(
++        assignments,
++        'total_time_recovered_minutes = 0'
++      );
++    end if;
++    if exists (
++      select 1 from information_schema.columns
++      where table_schema = 'public'
++        and table_name = 'advanced_weekly_stats'
++        and column_name = 'total_distractions_blocked'
++    ) then
++      assignments := array_append(
++        assignments,
++        'total_distractions_blocked = 0'
++      );
++    end if;
++    if exists (
++      select 1 from information_schema.columns
++      where table_schema = 'public'
++        and table_name = 'advanced_weekly_stats'
++        and column_name = 'total_screen_time_minutes'
++    ) then
++      assignments := array_append(assignments, 'total_screen_time_minutes = 0');
++    end if;
++    if exists (
++      select 1 from information_schema.columns
++      where table_schema = 'public'
++        and table_name = 'advanced_weekly_stats'
++        and column_name = 'most_distracting_app'
++    ) then
++      assignments := array_append(assignments, 'most_distracting_app = null');
++    end if;
++    if exists (
++      select 1 from information_schema.columns
++      where table_schema = 'public'
++        and table_name = 'advanced_weekly_stats'
++        and column_name = 'most_distracting_time_window'
++    ) then
++      assignments := array_append(
++        assignments,
++        'most_distracting_time_window = null'
++      );
++    end if;
++    if exists (
++      select 1 from information_schema.columns
++      where table_schema = 'public'
++        and table_name = 'advanced_weekly_stats'
++        and column_name = 'screen_time_trend'
++    ) then
++      assignments := array_append(assignments, 'screen_time_trend = 0');
++    end if;
++    if exists (
++      select 1 from information_schema.columns
++      where table_schema = 'public'
++        and table_name = 'advanced_weekly_stats'
++        and column_name = 'weekly_transformation_delta'
++    ) then
++      assignments := array_append(
++        assignments,
++        'weekly_transformation_delta = 0'
++      );
++    end if;
++    if coalesce(array_length(assignments, 1), 0) > 0 then
++      execute format(
++        'update public.advanced_weekly_stats set %s',
++        array_to_string(assignments, ', ')
++      );
++    end if;
+   end if;
+ 
+   if to_regclass('public.advanced_monthly_stats') is not null then
+-    execute $sql$
+-      update public.advanced_monthly_stats
+-      set total_time_recovered_minutes = 0,
+-          total_screen_time_minutes = 0,
+-          lowest_screen_time_day = null
+-    $sql$;
++    assignments := array[]::text[];
++    if exists (
++      select 1 from information_schema.columns
++      where table_schema = 'public'
++        and table_name = 'advanced_monthly_stats'
++        and column_name = 'total_time_recovered_minutes'
++    ) then
++      assignments := array_append(
++        assignments,
++        'total_time_recovered_minutes = 0'
++      );
++    end if;
++    if exists (
++      select 1 from information_schema.columns
++      where table_schema = 'public'
++        and table_name = 'advanced_monthly_stats'
++        and column_name = 'total_screen_time_minutes'
++    ) then
++      assignments := array_append(assignments, 'total_screen_time_minutes = 0');
++    end if;
++    if exists (
++      select 1 from information_schema.columns
++      where table_schema = 'public'
++        and table_name = 'advanced_monthly_stats'
++        and column_name = 'lowest_screen_time_day'
++    ) then
++      assignments := array_append(assignments, 'lowest_screen_time_day = null');
++    end if;
++    if coalesce(array_length(assignments, 1), 0) > 0 then
++      execute format(
++        'update public.advanced_monthly_stats set %s',
++        array_to_string(assignments, ', ')
++      );
++    end if;
+   end if;
+ 
+   if to_regclass('public.advanced_lifetime_stats') is not null then
+-    execute $sql$
+-      update public.advanced_lifetime_stats
+-      set total_time_recovered_minutes = 0,
+-          total_distractions_blocked = 0,
+-          lowest_screen_time_ever = 0,
+-          life_recovered_days = 0
+-    $sql$;
++    assignments := array[]::text[];
++    if exists (
++      select 1 from information_schema.columns
++      where table_schema = 'public'
++        and table_name = 'advanced_lifetime_stats'
++        and column_name = 'total_time_recovered_minutes'
++    ) then
++      assignments := array_append(
++        assignments,
++        'total_time_recovered_minutes = 0'
++      );
++    end if;
++    if exists (
++      select 1 from information_schema.columns
++      where table_schema = 'public'
++        and table_name = 'advanced_lifetime_stats'
++        and column_name = 'total_distractions_blocked'
++    ) then
++      assignments := array_append(
++        assignments,
++        'total_distractions_blocked = 0'
++      );
++    end if;
++    if exists (
++      select 1 from information_schema.columns
++      where table_schema = 'public'
++        and table_name = 'advanced_lifetime_stats'
++        and column_name = 'lowest_screen_time_ever'
++    ) then
++      assignments := array_append(assignments, 'lowest_screen_time_ever = 0');
++    end if;
++    if exists (
++      select 1 from information_schema.columns
++      where table_schema = 'public'
++        and table_name = 'advanced_lifetime_stats'
++        and column_name = 'life_recovered_days'
++    ) then
++      assignments := array_append(assignments, 'life_recovered_days = 0');
++    end if;
++    if coalesce(array_length(assignments, 1), 0) > 0 then
++      execute format(
++        'update public.advanced_lifetime_stats set %s',
++        array_to_string(assignments, ', ')
++      );
++    end if;
+   end if;
+ end
+ $$;
+*** End Patch

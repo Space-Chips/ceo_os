@@ -1,0 +1,533 @@
+*** Begin Patch
+*** Add File: /Users/timo/ceo_os/ios/ScreenTimeReport/Info.plist
++<?xml version="1.0" encoding="UTF-8"?>
++<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "https://www.apple.com/DTDs/PropertyList-1.0.dtd">
++<plist version="1.0">
++<dict>
++	<key>CFBundleDevelopmentRegion</key>
++	<string>$(DEVELOPMENT_LANGUAGE)</string>
++	<key>CFBundleDisplayName</key>
++	<string>ScreenTimeReport</string>
++	<key>CFBundleExecutable</key>
++	<string>$(EXECUTABLE_NAME)</string>
++	<key>CFBundleIdentifier</key>
++	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
++	<key>CFBundleInfoDictionaryVersion</key>
++	<string>6.0</string>
++	<key>CFBundleName</key>
++	<string>$(PRODUCT_NAME)</string>
++	<key>CFBundlePackageType</key>
++	<string>XPC!</string>
++	<key>CFBundleShortVersionString</key>
++	<string>1.0</string>
++	<key>CFBundleVersion</key>
++	<string>1</string>
++	<key>EXAppExtensionAttributes</key>
++	<dict>
++		<key>EXExtensionPointIdentifier</key>
++		<string>com.apple.deviceactivityui.report-extension</string>
++	</dict>
++</dict>
++</plist>
+*** Add File: /Users/timo/ceo_os/ios/ScreenTimeReport/ScreenTimeReport.entitlements
++<?xml version="1.0" encoding="UTF-8"?>
++<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
++<plist version="1.0">
++<dict>
++	<key>com.apple.developer.family-controls</key>
++	<true/>
++</dict>
++</plist>
+*** Add File: /Users/timo/ceo_os/ios/ScreenTimeReport/ScreenTimeReportExtension.swift
++import DeviceActivity
++import ExtensionKit
++import SwiftUI
++
++@main
++struct ScreenTimeReportExtension: DeviceActivityReportExtension {
++    var body: some DeviceActivityReportScene {
++        DailyScreenTimeReport { metric in
++            ScreenTimeMetricView(metric: metric)
++        }
++        WeeklyAverageScreenTimeReport { metric in
++            ScreenTimeMetricView(metric: metric)
++        }
++    }
++}
+*** Add File: /Users/timo/ceo_os/ios/ScreenTimeReport/ScreenTimeMetricView.swift
++import SwiftUI
++
++struct ScreenTimeMetricConfiguration {
++    let title: String
++    let value: String
++    let subtitle: String
++}
++
++enum ScreenTimeMetricFormatter {
++    static func string(from duration: TimeInterval) -> String {
++        let formatter = DateComponentsFormatter()
++        formatter.allowedUnits = duration >= 3600 ? [.hour, .minute] : [.minute]
++        formatter.unitsStyle = .abbreviated
++        formatter.zeroFormattingBehavior = .dropAll
++        return formatter.string(from: duration) ?? "0m"
++    }
++}
++
++struct ScreenTimeMetricView: View {
++    let metric: ScreenTimeMetricConfiguration
++
++    var body: some View {
++        ZStack {
++            RoundedRectangle(cornerRadius: 18, style: .continuous)
++                .fill(Color(red: 0.13, green: 0.15, blue: 0.18))
++            RoundedRectangle(cornerRadius: 18, style: .continuous)
++                .stroke(Color.white.opacity(0.08), lineWidth: 1)
++            VStack(alignment: .leading, spacing: 0) {
++                Text(metric.title)
++                    .font(.system(size: 12, weight: .semibold, design: .rounded))
++                    .foregroundStyle(Color.white.opacity(0.48))
++                    .tracking(2)
++                Spacer(minLength: 8)
++                Text(metric.value)
++                    .font(.system(size: 32, weight: .bold, design: .rounded))
++                    .foregroundStyle(Color.white.opacity(0.96))
++                    .lineLimit(1)
++                    .minimumScaleFactor(0.65)
++                Spacer(minLength: 6)
++                Text(metric.subtitle)
++                    .font(.system(size: 12, weight: .medium, design: .rounded))
++                    .foregroundStyle(Color.white.opacity(0.55))
++                    .lineLimit(1)
++                    .minimumScaleFactor(0.7)
++            }
++            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
++            .padding(16)
++        }
++    }
++}
+*** Add File: /Users/timo/ceo_os/ios/ScreenTimeReport/DailyScreenTimeReport.swift
++import DeviceActivity
++import ExtensionKit
++import SwiftUI
++
++extension DeviceActivityReport.Context {
++    static let ceoosDailyScreenTime = Self("CEO OS Daily Screen Time")
++    static let ceoosWeeklyAverageScreenTime = Self("CEO OS Weekly Average Screen Time")
++}
++
++struct DailyScreenTimeReport: DeviceActivityReportScene {
++    let context: DeviceActivityReport.Context = .ceoosDailyScreenTime
++    let content: (ScreenTimeMetricConfiguration) -> ScreenTimeMetricView
++
++    func makeConfiguration(
++        representing data: DeviceActivityResults<DeviceActivityData>
++    ) async -> ScreenTimeMetricConfiguration {
++        let totalActivityDuration = await data
++            .flatMap { $0.activitySegments }
++            .reduce(0.0) { $0 + $1.totalActivityDuration }
++
++        return ScreenTimeMetricConfiguration(
++            title: "TODAY",
++            value: ScreenTimeMetricFormatter.string(from: totalActivityDuration),
++            subtitle: "private on-device"
++        )
++    }
++}
+*** Add File: /Users/timo/ceo_os/ios/ScreenTimeReport/WeeklyAverageScreenTimeReport.swift
++import DeviceActivity
++import ExtensionKit
++import SwiftUI
++
++struct WeeklyAverageScreenTimeReport: DeviceActivityReportScene {
++    let context: DeviceActivityReport.Context = .ceoosWeeklyAverageScreenTime
++    let content: (ScreenTimeMetricConfiguration) -> ScreenTimeMetricView
++
++    func makeConfiguration(
++        representing data: DeviceActivityResults<DeviceActivityData>
++    ) async -> ScreenTimeMetricConfiguration {
++        let totalActivityDuration = await data
++            .flatMap { $0.activitySegments }
++            .reduce(0.0) { $0 + $1.totalActivityDuration }
++
++        return ScreenTimeMetricConfiguration(
++            title: "7D AVG",
++            value: ScreenTimeMetricFormatter.string(from: totalActivityDuration / 7.0),
++            subtitle: "last 7 days"
++        )
++    }
++}
+*** Update File: /Users/timo/ceo_os/ios/Runner/AppDelegate.swift
+@@
+ struct PickerWrapperView: View {
+@@
+     }
+ }
++
++@available(iOS 16.0, *)
++private final class PrivateScreenTimeSummaryPlatformViewFactory: NSObject, FlutterPlatformViewFactory {
++    func createArgsCodec() -> FlutterMessageCodec & NSObjectProtocol {
++        FlutterStandardMessageCodec.sharedInstance()
++    }
++
++    func create(
++        withFrame frame: CGRect,
++        viewIdentifier viewId: Int64,
++        arguments args: Any?
++    ) -> FlutterPlatformView {
++        PrivateScreenTimeSummaryPlatformView(frame: frame)
++    }
++}
++
++@available(iOS 16.0, *)
++private final class PrivateScreenTimeSummaryPlatformView: NSObject, FlutterPlatformView {
++    private let containerView = UIView()
++    private let hostingController = UIHostingController(rootView: PrivateScreenTimeSummaryView())
++
++    init(frame: CGRect) {
++        super.init()
++        containerView.frame = frame
++        containerView.backgroundColor = .clear
++
++        let hostedView = hostingController.view!
++        hostedView.backgroundColor = .clear
++        hostedView.translatesAutoresizingMaskIntoConstraints = false
++
++        containerView.addSubview(hostedView)
++        NSLayoutConstraint.activate([
++            hostedView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
++            hostedView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor),
++            hostedView.topAnchor.constraint(equalTo: containerView.topAnchor),
++            hostedView.bottomAnchor.constraint(equalTo: containerView.bottomAnchor),
++        ])
++    }
++
++    func view() -> UIView {
++        containerView
++    }
++}
++
++@available(iOS 16.0, *)
++private struct PrivateScreenTimeSummaryView: View {
++    private var todayFilter: DeviceActivityFilter {
++        DeviceActivityFilter(
++            segment: .hourly(
++                during: DateInterval(
++                    start: Calendar.current.startOfDay(for: .now),
++                    end: .now
++                )
++            ),
++            users: .all,
++            devices: .all
++        )
++    }
++
++    private var weeklyAverageFilter: DeviceActivityFilter {
++        let endDate = Date()
++        let startDate =
++            Calendar.current.date(
++                byAdding: .day,
++                value: -6,
++                to: Calendar.current.startOfDay(for: endDate)
++            ) ?? Calendar.current.startOfDay(for: endDate)
++
++        return DeviceActivityFilter(
++            segment: .daily(during: DateInterval(start: startDate, end: endDate)),
++            users: .all,
++            devices: .all
++        )
++    }
++
++    var body: some View {
++        HStack(spacing: 10) {
++            if AuthorizationCenter.shared.authorizationStatus == .approved {
++                DeviceActivityReport(
++                    .ceoosDailyScreenTime,
++                    filter: todayFilter
++                )
++                .frame(maxWidth: .infinity, maxHeight: .infinity)
++
++                DeviceActivityReport(
++                    .ceoosWeeklyAverageScreenTime,
++                    filter: weeklyAverageFilter
++                )
++                .frame(maxWidth: .infinity, maxHeight: .infinity)
++            } else {
++                PrivateScreenTimeFallbackCard(
++                    title: "TODAY",
++                    subtitle: "grant access"
++                )
++                PrivateScreenTimeFallbackCard(
++                    title: "7D AVG",
++                    subtitle: "grant access"
++                )
++            }
++        }
++        .frame(maxWidth: .infinity, maxHeight: .infinity)
++        .background(Color.clear)
++    }
++}
++
++@available(iOS 16.0, *)
++private struct PrivateScreenTimeFallbackCard: View {
++    let title: String
++    let subtitle: String
++
++    var body: some View {
++        ZStack {
++            RoundedRectangle(cornerRadius: 18, style: .continuous)
++                .fill(Color(red: 0.13, green: 0.15, blue: 0.18))
++            RoundedRectangle(cornerRadius: 18, style: .continuous)
++                .stroke(Color.white.opacity(0.08), lineWidth: 1)
++            VStack(alignment: .leading, spacing: 0) {
++                Text(title)
++                    .font(.system(size: 12, weight: .semibold, design: .rounded))
++                    .foregroundStyle(Color.white.opacity(0.48))
++                    .tracking(2)
++                Spacer(minLength: 8)
++                Text("--")
++                    .font(.system(size: 32, weight: .bold, design: .rounded))
++                    .foregroundStyle(Color.white.opacity(0.96))
++                Spacer(minLength: 6)
++                Text(subtitle)
++                    .font(.system(size: 12, weight: .medium, design: .rounded))
++                    .foregroundStyle(Color.white.opacity(0.55))
++                    .lineLimit(1)
++                    .minimumScaleFactor(0.7)
++            }
++            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
++            .padding(16)
++        }
++        .frame(maxWidth: .infinity, maxHeight: .infinity)
++    }
++}
+ 
+ @main
+ @objc class AppDelegate: FlutterAppDelegate {
+@@
+     if #available(iOS 15.0, *) {
+         focusChannel.setMethodCallHandler({
+           (call: FlutterMethodCall, result: @escaping FlutterResult) -> Void in
+             FocusEngine.shared.handle(call, result: result)
+         })
+@@
+             result(FlutterError(code: "UNSUPPORTED", message: "iOS 15.0+ required", details: nil))
+         })
+     }
++
++    if #available(iOS 16.0, *) {
++        registrar.register(
++            PrivateScreenTimeSummaryPlatformViewFactory(),
++            withId: "com.ceoos.app/private_screen_time_summary"
++        )
++    }
+ 
+     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+   }
+*** Update File: /Users/timo/ceo_os/lib/features/screen_time_manager/screen_time_manager_screen.dart
+@@
++import 'package:flutter/foundation.dart';
+ import 'package:flutter/cupertino.dart';
+ import 'package:go_router/go_router.dart';
+ import 'package:provider/provider.dart';
+ 
+ import '../../components/components.dart';
++import '../../core/config/apple_review_compliance.dart';
+ import '../../core/models/settings_models.dart';
+ import '../../core/providers/focus_provider.dart';
+ import '../../core/repositories/feature_repository.dart';
+ import '../../core/repositories/user_repository.dart';
+ import '../../core/services/classic_blocking_coordinator.dart';
+ import '../../core/theme/app_colors.dart';
+ import '../../core/theme/app_typography.dart';
++import '../../core/widgets/rank_art.dart';
+@@
+-  String _privateRankLabel = 'ASLEEP';
++  String _privateRankLabel = 'Asleep';
+@@
+-      final privateRankLabel = (rankLabelRaw != null && rankLabelRaw.isNotEmpty)
+-          ? rankLabelRaw.toUpperCase()
+-          : 'ASLEEP';
++      final privateRankLabel = RankArt.displayName(rankLabelRaw ?? '');
+@@
+-                          activePauseCount: _activePauseCount,
+                           isAuthorized: focus.isAuthorized,
+                           privateRankLabel: _privateRankLabel,
+                         ),
+@@
+                         _actionCard(
+                           icon: CupertinoIcons.nosign,
+                           iconColor: AppColors.accentIcon,
+                           title: 'Block Apps & Sites',
+                           subtitle:
+                               '$_classicBlockedTargets protected on this device',
+                           onTap: () =>
+                               context.push('/screen-time?section=apps'),
+                         ),
+-                        const SizedBox(height: 8),
+-                        _actionCard(
+-                          icon: CupertinoIcons.clock_fill,
+-                          iconColor: AppColors.streakAccent,
+-                          title: 'Planned Pauses',
+-                          subtitle:
+-                              '$_plannedPauseCount scheduled • $_activePauseCount active now',
+-                          onTap: () =>
+-                              context.push('/screen-time?section=pauses'),
+-                        ),
+-                        const SizedBox(height: 8),
+-                        _actionCard(
+-                          icon: CupertinoIcons.star_fill,
+-                          iconColor: AppColors.rankAccent,
+-                          title: 'Private Rank',
+-                          subtitle: 'Your personal progression only',
+-                          onTap: () => context.push('/rank'),
+-                        ),
+                       ],
+                     ),
+                   );
+@@
+   Widget _statsClusterCard({
+     required int blockedTargets,
+     required int plannedPauseCount,
+-    required int activePauseCount,
+     required bool isAuthorized,
+     required String privateRankLabel,
+   }) {
+@@
+-          Row(
+-            children: [
+-              Expanded(
+-                child: _statLargeTile(
+-                  label: 'PROTECTED',
+-                  value: '$blockedTargets',
+-                  unit: 'targets',
+-                  accent: AppColors.scoreValue,
+-                  highlighted: true,
+-                  borderColor: AppColors.screenTimeDailyAccentBorder,
+-                  onTap: () => context.push('/screen-time?section=apps'),
+-                ),
+-              ),
+-              const SizedBox(width: 10),
+-              Expanded(
+-                child: _statLargeTile(
+-                  label: 'PAUSES',
+-                  value: '$plannedPauseCount',
+-                  unit: 'scheduled',
+-                  accent: AppColors.secondaryLabel,
+-                  onTap: () => context.push('/screen-time?section=pauses'),
+-                ),
+-              ),
+-            ],
+-          ),
++          if (AppleReviewCompliance.exposesLocalOnlyFamilyControls)
++            _privateUsageSummaryRow()
++          else
++            Row(
++              children: [
++                Expanded(
++                  child: _statLargeTile(
++                    label: 'PROTECTED',
++                    value: '$blockedTargets',
++                    unit: 'targets',
++                    accent: AppColors.scoreValue,
++                    highlighted: true,
++                    borderColor: AppColors.screenTimeDailyAccentBorder,
++                    onTap: () => context.push('/screen-time?section=apps'),
++                  ),
++                ),
++                const SizedBox(width: 10),
++                Expanded(
++                  child: _statLargeTile(
++                    label: 'PAUSES',
++                    value: '$plannedPauseCount',
++                    unit: 'scheduled',
++                    accent: AppColors.secondaryLabel,
++                    onTap: () => context.push('/screen-time?section=pauses'),
++                  ),
++                ),
++              ],
++            ),
+           const SizedBox(height: 10),
+           Row(
+             children: [
+@@
+                   label: 'RANK',
+                   value: privateRankLabel,
+                   valueColor: AppColors.rankAccent,
++                  leading: RankArt(
++                    rankName: privateRankLabel,
++                    size: RankArtSize.xs,
++                    dimension: 22,
++                  ),
+                   onTap: () => context.push('/rank'),
+                 ),
+               ),
+             ],
+           ),
+         ],
+       ),
+     );
+   }
++
++  Widget _privateUsageSummaryRow() {
++    if (kIsWeb || defaultTargetPlatform != TargetPlatform.iOS) {
++      return Row(
++        children: [
++          Expanded(
++            child: _statLargeTile(
++              label: 'PROTECTED',
++              value: '$_classicBlockedTargets',
++              unit: 'targets',
++              accent: AppColors.scoreValue,
++              highlighted: true,
++              borderColor: AppColors.screenTimeDailyAccentBorder,
++              onTap: () => context.push('/screen-time?section=apps'),
++            ),
++          ),
++          const SizedBox(width: 10),
++          Expanded(
++            child: _statLargeTile(
++              label: 'PAUSES',
++              value: '$_plannedPauseCount',
++              unit: 'scheduled',
++              accent: AppColors.secondaryLabel,
++              onTap: () => context.push('/screen-time?section=pauses'),
++            ),
++          ),
++        ],
++      );
++    }
++
++    return const SizedBox(
++      height: 118,
++      child: UiKitView(viewType: 'com.ceoos.app/private_screen_time_summary'),
++    );
++  }
+@@
+-                  Text(
+-                    value,
+-                    maxLines: 1,
+-                    overflow: TextOverflow.ellipsis,
+-                    style: AppTypography.title2.copyWith(
+-                      fontSize: 28,
+-                      color: valueColor,
+-                      fontWeight: FontWeight.w700,
+-                      height: 0.95,
++                  SizedBox(
++                    height: 32,
++                    child: FittedBox(
++                      alignment: Alignment.centerLeft,
++                      fit: BoxFit.scaleDown,
++                      child: Text(
++                        value,
++                        style: AppTypography.title2.copyWith(
++                          fontSize: 25,
++                          color: valueColor,
++                          fontWeight: FontWeight.w700,
++                          height: 0.95,
++                        ),
++                      ),
+                     ),
+                   ),
+                 ],
+               ),
+*** End Patch

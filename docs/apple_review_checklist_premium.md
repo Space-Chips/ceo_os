@@ -1,0 +1,82 @@
+# WakeApp — Apple Review Checklist (Premium / Subscriptions)
+
+Last updated: 2026-05-08
+
+This checklist is intended for App Store Review readiness of Premium / auto‑renewing subscription flows.
+
+## Paywall surfaces (all entry points)
+
+Verify each paywall entry point shows:
+- Clear product name: **WakeApp Premium**
+- Primary CTA: purchase/upgrade (disabled gracefully if offerings unavailable)
+- **Restore Purchases** action (always accessible)
+- **Manage Subscription** action (always accessible)
+- **Terms of Use** link (always accessible)
+- **Privacy Policy** link (always accessible)
+- Disclosure copy that is not misleading:
+  - billing processed by App Store (iOS) / Google Play (Android)
+  - auto‑renewing subscription
+  - cancel anytime in Apple ID / store settings
+  - restore is available
+
+Entry points to test:
+- Onboarding premium prompt
+- Gate “limit reached” dialogs (tasks/habits/notes/focus/blackout/etc.)
+- Menu “Upgrade/Abonnement” screen
+
+## Pricing correctness
+
+- Price displayed in the UI must match the store localized price label (prefer RevenueCat `priceLabel` / store product price).
+- Avoid hardcoding “€2.99” in UI if it can diverge by locale, taxes, or future price changes.
+- If a price anchor is shown in marketing copy, ensure it is either:
+  - derived from store product data, or
+  - clearly described as “from …” and not contradictory.
+
+## Trials (if applicable)
+
+- Do not claim a free trial unless the current offering actually includes one.
+- If a trial exists, disclose:
+  - trial duration
+  - that the subscription auto‑renews unless canceled at least 24 hours before end (Apple‑style wording)
+
+## Restore behavior
+
+Test:
+- Restore on a device where the user has an active subscription → Premium unlocks
+- Restore on a device with no active entitlement → shows a clear message (not “success”)
+
+## “Locked feature” gating
+
+- When a user hits a free limit, the gate must:
+  - explain why (limit reached)
+  - show the benefit of upgrading
+  - allow dismissal (unless feature is strictly blocked)
+- No dark patterns:
+  - do not hide “Manage subscription”
+  - do not make restore impossible to find
+
+## TestFlight policy
+
+- TestFlight builds may grant Premium automatically for QA/testing.
+- Must not break production entitlement logic.
+- Ensure server-side override is controlled by a secret key and is renewable/revocable.
+
+## Backend correctness (RevenueCat webhook mirror)
+
+- Webhook endpoint authenticates (shared secret) if configured.
+- Webhook events are persisted (idempotent `event_id`).
+- Subscription mirror updates `billing_subscriptions`.
+- Observability:
+  - last webhook event metadata
+  - last error, if any
+
+## Manual review quick run
+
+1) Fresh install, sign up → onboarding prompt shows
+2) Dismiss prompt → app usable
+3) Hit a limit (tasks/habits) → gate paywall shows
+4) Purchase → premium unlocks immediately
+5) Kill/relaunch → premium stays
+6) Restore on a second device → premium unlocks
+7) Manage subscription → opens system subscription page
+8) Terms/Privacy → opens in-app sheet successfully

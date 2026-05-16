@@ -1,0 +1,48 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/theme/app_typography.dart
+@@
+-  static const String _primary = 'Inter';
++  static const String _primary = '.SF Pro Text';
+   static const List<String> _fallbacks = [
+-    '.SF Pro Text',
+-    '.SF Pro Display',
++    'SF Pro Text',
++    '.SF Pro Text',
++    'SF Pro Display',
++    '.SF Pro Display',
++    'Inter',
+     'SF Pro Text',
+     'SF Pro Display',
+     '-apple-system',
+@@
+-  static TextStyle get timer => TextStyle(
+-    fontFamily: 'SF Mono',
+-    fontFamilyFallback: _monoFallbacks,
+-    color: AppColors.label,
+-    fontFeatures: const [FontFeature.tabularFigures()],
+-    letterSpacing: 0.1,
+-    decoration: TextDecoration.none,
+-    decorationColor: Color(0x00000000),
+-  );
++  static TextStyle get timer => _base(
++    color: AppColors.label,
++  ).copyWith(
++    fontFeatures: const [FontFeature.tabularFigures()],
++    letterSpacing: 0.1,
++  );
+@@
+-  static TextStyle get mono => TextStyle(
+-    fontFamily: 'SF Mono',
+-    fontFamilyFallback: _monoFallbacks,
+-    color: AppColors.label,
+-    fontFeatures: const [FontFeature.tabularFigures()],
+-    decoration: TextDecoration.none,
+-    decorationColor: Color(0x00000000),
+-  );
++  static TextStyle get mono => _base(
++    color: AppColors.label,
++  ).copyWith(
++    fontFeatures: const [FontFeature.tabularFigures()],
++    letterSpacing: 0.1,
++  );
+*** End Patch

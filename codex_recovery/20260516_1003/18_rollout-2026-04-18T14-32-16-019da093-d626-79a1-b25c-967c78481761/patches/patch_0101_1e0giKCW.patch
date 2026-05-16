@@ -1,0 +1,7 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/ios/Runner/Info.plist
+@@
+ 	<key>CFBundleDisplayName</key>
+-	<string>Ceo Os</string>
++	<string>WakeApp</string>
+*** End Patch

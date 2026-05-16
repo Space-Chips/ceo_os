@@ -1,0 +1,9 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/providers/focus_provider.dart
+@@
+   void skip() {
+     _timer?.cancel();
+-    _onTimerComplete();
++    unawaited(_onTimerComplete());
+   }
+*** End Patch

@@ -1,0 +1,18 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/tasks/tasks_screen.dart
+@@
+   double _taskCardBorderWidth(String? importanceRaw) {
+     switch ((importanceRaw ?? '').toLowerCase()) {
+       case 'essential':
+       case 'high':
+-        return AppColors.isDark ? 0.82 : 0.94;
++        return AppColors.isDark ? 0.64 : 0.74;
+       case 'average':
+       case 'medium':
+-        return AppColors.isDark ? 0.8 : 0.92;
++        return AppColors.isDark ? 0.6 : 0.7;
+       default:
+         return AppColors.isDark ? 1 : 1.1;
+     }
+   }
+*** End Patch

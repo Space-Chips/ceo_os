@@ -1,0 +1,13 @@
+*** Begin Patch
+*** Update File: lib/components/premium_paywall.dart
+@@
+   Widget build(BuildContext context) {
+     // Ensure paywall updates when the user switches themes while the sheet is open.
+     context.watch<ThemeProvider>();
+-    final premiumGradient = AppColors.isDark
+-        ? <Color>[AppColors.surface, AppColors.cardBackgroundAlt]
+-        : <Color>[AppColors.cardBackgroundAlt, AppColors.cardBase];
+     return BackdropFilter(
+       filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+       child: SafeArea(
+*** End Patch

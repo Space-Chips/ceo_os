@@ -1,0 +1,41 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/packages/shared_preferences_foundation/darwin/shared_preferences_foundation/Sources/shared_preferences_foundation/SharedPreferencesPlugin.swift
+@@
+ public class SharedPreferencesPlugin: NSObject, FlutterPlugin, UserDefaultsApi {
+@@
++  private static func argumentNSError(_ message: String) -> NSError {
++    NSError(domain: argumentError, code: 1, userInfo: [NSLocalizedDescriptionKey: message])
++  }
++
+   public static func register(with registrar: FlutterPluginRegistrar?) {
+@@
+   static private func getUserDefaults(options: SharedPreferencesPigeonOptions) throws
+     -> UserDefaults
+   {
++    let suiteName = options.suiteName ?? ""
+     #if os(iOS)
+-      if !(options.suiteName?.starts(with: "group.") ?? true) {
+-        throw FlutterError(
+-          code: argumentError,
+-          message:
+-            "The provided Suite Name '\(options.suiteName!)' does not follow the predefined requirements",
+-          details: "") as! Error
++      if !(suiteName.isEmpty || suiteName.starts(with: "group.")) {
++        throw argumentNSError(
++          "The provided Suite Name '\(suiteName)' does not follow the predefined requirements")
+       }
+     #endif
+-    let prefs = UserDefaults(suiteName: options.suiteName)
+-
+-    if prefs == nil {
+-      throw FlutterError(
+-        code: argumentError,
+-        message: "The provided Suite Name '\(options.suiteName!)' does not exist",
+-        details: "") as! Error
++    guard let prefs = UserDefaults(suiteName: options.suiteName) else {
++      throw argumentNSError("The provided Suite Name '\(suiteName)' does not exist")
+     }
+-    return prefs!
++    return prefs
+   }
+*** End Patch

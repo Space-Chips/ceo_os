@@ -1,0 +1,80 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/providers/ceo_mode_provider.dart
+@@
+ import 'dart:async';
+ 
+ import 'package:shared_preferences/shared_preferences.dart';
+ 
++import '../models/block_list_model.dart';
+ import '../models/premium_models.dart';
+@@
+   String? _sessionId;
+   PremiumCheckResult? _lastPremiumCheck;
++  String? _lastStartIssue;
+@@
+   int get selectedDurationMinutes => _selectedDurationMinutes;
+   PremiumCheckResult? get lastPremiumCheck => _lastPremiumCheck;
++  String? get lastStartIssue => _lastStartIssue;
+@@
+   Future<bool> startSession() async {
+     if (_state != CeoModeState.idle || _busy) return false;
+ 
+     _busy = true;
++    _lastStartIssue = null;
+     notifyListeners();
+@@
+       _isAuthorized = await _focusService.isAuthorized();
+       if (!_isAuthorized) {
+         await requestPermissions();
++      }
++      if (!_isAuthorized) {
++        _lastStartIssue = 'permissions';
++        return false;
+       }
+@@
+-      await _activateShielding();
++      final shieldingApplied = await _activateShielding();
++      if (!shieldingApplied) {
++        _lastStartIssue = 'block_list';
++        _state = CeoModeState.idle;
++        _sessionStartAt = null;
++        _sessionEndAt = null;
++        _exitReadyAt = null;
++        return false;
++      }
+@@
+-  Future<void> _activateShielding() async {
++  Future<bool> _activateShielding() async {
+     final strictApplied = await _focusService.startCeoShield();
+-    if (strictApplied) return;
+-
+-    final fallbackPackages = await _resolveFallbackPackages();
+-    await _focusService.startShield(fallbackPackages, const []);
++    if (strictApplied) return true;
++
++    final fallbackList = await _resolveFallbackBlockList();
++    if (fallbackList == null ||
++        (fallbackList.blockedPackageNames.isEmpty &&
++            fallbackList.blockedCategories.isEmpty)) {
++      return false;
++    }
++
++    await _focusService.startShield(
++      fallbackList.blockedPackageNames,
++      fallbackList.blockedCategories,
++    );
++    return true;
+   }
+ 
+-  Future<List<String>> _resolveFallbackPackages() async {
++  Future<BlockList?> _resolveFallbackBlockList() async {
+     final lists = await _focusRepository.getBlockLists();
+-    if (lists.isEmpty) return const [];
++    if (lists.isEmpty) return null;
+     final active = lists.where((l) => l.isActive).toList();
+-    if (active.isNotEmpty) return active.first.blockedPackageNames;
+-    return lists.first.blockedPackageNames;
++    if (active.isNotEmpty) return active.first;
++    return lists.first;
+   }
+*** End Patch

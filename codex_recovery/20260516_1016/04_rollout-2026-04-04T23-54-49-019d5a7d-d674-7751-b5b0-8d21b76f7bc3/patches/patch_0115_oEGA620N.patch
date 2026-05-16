@@ -1,0 +1,18 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/android/app/src/test/kotlin/com/wakeapp/ceoos/presentation/launcher/HomeViewModelTest.kt
+@@
+         val policy = SequencedPolicy(
+             mapOf(
+-                "com.example.allowed" to arrayDequeOf(
+-                    BlockDecision(false, null),
+-                    BlockDecision(true, BlockReason.CLASSIC_LIMIT_REACHED),
+-                ),
++                "com.example.allowed" to ArrayDeque(
++                    listOf(
++                        BlockDecision(false, null),
++                        BlockDecision(true, BlockReason.CLASSIC_LIMIT_REACHED),
++                    ),
++                ),
+             ),
+         )
+*** End Patch

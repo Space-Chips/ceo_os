@@ -1,0 +1,49 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/providers/focus_provider.dart
+@@
+   Future<void> syncPlannedFocusSessions(List<CalendarEvent> events) async {
+-    final payload = events
+-        .where((event) => (event.sourceType ?? '').toLowerCase() == 'focus_plan')
+-        .where((event) => event.eventDate != null && event.eventTime != null)
+-        .map((event) => <String, dynamic>{
+-              'id': event.id,
+-              'date': event.eventDate,
+-              'time': event.eventTime,
+-              'durationMinutes': event.durationMinutes ?? 45,
+-              'weekly': (event.recurrenceRule ?? '').toLowerCase().contains('week'),
+-              'title': event.title,
+-            })
+-        .toList(growable: false);
++    final deduped = <String, CalendarEvent>{};
++    for (final event in events) {
++      if ((event.sourceType ?? '').toLowerCase() != 'focus_plan') continue;
++      if (event.eventDate == null || event.eventTime == null) continue;
++      final rootId = event.id.split('::').first;
++      final existing = deduped[rootId];
++      if (existing == null) {
++        deduped[rootId] = event;
++        continue;
++      }
++      final existingDate = DateTime.tryParse(existing.eventDate ?? '');
++      final newDate = DateTime.tryParse(event.eventDate ?? '');
++      if (existingDate == null || (newDate != null && newDate.isBefore(existingDate))) {
++        deduped[rootId] = event;
++      }
++    }
++
++    final payload = deduped.entries
++        .map((entry) {
++          final event = entry.value;
++          return <String, dynamic>{
++            'id': entry.key,
++            'date': event.eventDate,
++            'time': event.eventTime,
++            'durationMinutes': event.durationMinutes ?? 45,
++            'weekly': (event.recurrenceRule ?? '').toLowerCase().contains('week'),
++            'title': event.title,
++          };
++        })
++        .toList(growable: false);
+     await _focusService.syncPlannedSessions(payload);
+   }
+*** End Patch

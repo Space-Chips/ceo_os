@@ -1,0 +1,41 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/notes_screen.dart
+@@
+                                                   placeholderStyle:
+                                                       AppTypography.body
+                                                           .copyWith(
+@@
+                                                                 ),
+                                                           ),
+                                                   padding: EdgeInsets.zero,
+-                                                  decoration: BoxDecoration(
+-                                                    color: AppColors.inputBackground,
+-                                                    borderRadius:
+-                                                        BorderRadius.circular(12),
+-                                                    border: Border.all(
+-                                                      color: AppColors.inputBorder,
+-                                                    ),
+-                                                  ),
++                                                  decoration: null,
+                                                 ),
+                                                 const SizedBox(height: 12),
+                                                 Expanded(
+@@
+                                                             ),
+                                                     padding: EdgeInsets.zero,
+-                                                    decoration: BoxDecoration(
+-                                                      color:
+-                                                          AppColors.inputBackground,
+-                                                      borderRadius:
+-                                                          BorderRadius.circular(
+-                                                            16,
+-                                                          ),
+-                                                      border: Border.all(
+-                                                        color:
+-                                                            AppColors.inputBorder,
+-                                                      ),
+-                                                    ),
++                                                    decoration: null,
+                                                   ),
+                                                 ),
+*** End Patch

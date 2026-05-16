@@ -1,0 +1,73 @@
+*** Begin Patch
+*** Update File: lib/features/widget_configuration/widget_configuration_screen.dart
+@@
+ import '../../components/components.dart';
++import '../../core/providers/ceo_mode_provider.dart';
+ import '../../core/providers/habit_provider.dart';
+ import '../../core/providers/language_provider.dart';
+ import '../../core/providers/task_provider.dart';
+@@
+   Future<void> _setDefaultMode(CeoWidgetMode? mode) async {
+     if (_saving) return;
+     final tasks = context.read<TaskProvider>();
+     final habits = context.read<HabitProvider>();
+     final language = context.read<LanguageProvider>();
++    final ceoMode = context.read<CeoModeProvider>();
+     setState(() {
+       _saving = true;
+       _defaultMode = mode;
+     });
+@@
+       await _ensureWidgetDataLoaded(tasks: tasks, habits: habits);
+       await CeoHomeWidgetService.renderAndUpdateAll(
+         tasks: tasks,
+         habits: habits,
+         language: language,
++        ceoMode: ceoMode,
+       );
+     } finally {
+       if (mounted) setState(() => _saving = false);
+     }
+   }
+@@
+     final tasks = context.read<TaskProvider>();
+     final habitsProvider = context.read<HabitProvider>();
+     final language = context.read<LanguageProvider>();
++    final ceoMode = context.read<CeoModeProvider>();
+     setState(() {
+       _saving = true;
+       if (todo != null) _enabledTodo = todo;
+       if (dashboard != null) _enabledDashboard = dashboard;
+@@
+       await _ensureWidgetDataLoaded(tasks: tasks, habits: habitsProvider);
+       await CeoHomeWidgetService.renderAndUpdateAll(
+         tasks: tasks,
+         habits: habitsProvider,
+         language: language,
++        ceoMode: ceoMode,
+       );
+     } finally {
+       if (mounted) setState(() => _saving = false);
+     }
+   }
+@@
+   Future<void> _renderNow() async {
+     if (_saving) return;
+     final tasks = context.read<TaskProvider>();
+     final habits = context.read<HabitProvider>();
+     final language = context.read<LanguageProvider>();
++    final ceoMode = context.read<CeoModeProvider>();
+     setState(() => _saving = true);
+     try {
+       await _ensureWidgetDataLoaded(tasks: tasks, habits: habits);
+       await CeoHomeWidgetService.renderAndUpdateAll(
+         tasks: tasks,
+         habits: habits,
+         language: language,
++        ceoMode: ceoMode,
+       );
+     } finally {
+       if (mounted) setState(() => _saving = false);
+     }
+   }
+*** End Patch

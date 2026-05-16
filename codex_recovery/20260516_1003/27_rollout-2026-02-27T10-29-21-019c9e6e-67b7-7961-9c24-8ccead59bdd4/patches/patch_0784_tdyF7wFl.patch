@@ -1,0 +1,37 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/ios/Runner/AppDelegate.swift
+@@
+     private func storedClassicPayloads() -> [String] {
+         sharedDefaults()?.stringArray(forKey: classicSelectionStorageKey) ?? []
+     }
++
++    private func storedClassicPausePayloads() -> [String] {
++        sharedDefaults()?.stringArray(forKey: classicPauseSelectionStorageKey) ?? []
++    }
++
++    private func loadClassicRestPeriods() -> [PlannedClassicRest] {
++        guard let defaults = sharedDefaults(),
++              let data = defaults.data(forKey: classicRestPeriodsStorageKey),
++              let periods = try? JSONDecoder().decode([PlannedClassicRest].self, from: data) else {
++            return []
++        }
++        return periods
++    }
++
++    private func saveClassicRestPeriods(_ periods: [PlannedClassicRest]) {
++        guard let defaults = sharedDefaults() else { return }
++        if let data = try? JSONEncoder().encode(periods) {
++            defaults.set(data, forKey: classicRestPeriodsStorageKey)
++        } else {
++            defaults.removeObject(forKey: classicRestPeriodsStorageKey)
++        }
++    }
++
++    private func classicPauseActiveNow(at date: Date = Date(), periods: [PlannedClassicRest]? = nil) -> Bool {
++        let source = periods ?? loadClassicRestPeriods()
++        let nowMillis = Int64(date.timeIntervalSince1970 * 1000.0)
++        return source.contains { period in
++            period.startMillis <= nowMillis && period.endMillis > nowMillis
++        }
++    }
+*** End Patch

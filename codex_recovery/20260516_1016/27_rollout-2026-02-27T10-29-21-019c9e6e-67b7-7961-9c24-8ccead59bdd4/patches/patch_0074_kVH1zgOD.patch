@@ -1,0 +1,8 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/home/home_screen.dart
+@@
+ import 'package:flutter/cupertino.dart';
+-import 'package:flutter/material.dart' show Colors;
+ import 'package:go_router/go_router.dart';
+ import 'package:provider/provider.dart';
+*** End Patch

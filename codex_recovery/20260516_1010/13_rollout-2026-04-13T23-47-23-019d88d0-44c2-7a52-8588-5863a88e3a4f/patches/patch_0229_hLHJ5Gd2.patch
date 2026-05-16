@@ -1,0 +1,38 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/screen_time_screen.dart
+@@
+   Widget _blockedAppCard(BlockedApp app) {
+     final limit = app.timeLimitMinutes ?? 0;
+     final title = _displayNameForBlockedApp(app);
+-    final titleColor = AppColors.isDark ? AppColors.white : AppColors.label;
++    final darkThemeText = AppColors.background.computeLuminance() < 0.45;
++    final titleColor = darkThemeText
++        ? const Color(0xFFF2F5FF)
++        : AppColors.label;
+@@
+                             creationParams: <String, dynamic>{
+                               'payload': appPayload,
+                               'fallbackTitle': title,
+                               'textColorHex': _colorToArgbHex(titleColor),
+-                              'isDarkTheme':
+-                                  AppColors.background.computeLuminance() < 0.45,
++                              'isDarkTheme': darkThemeText,
+                             },
+@@
+   Widget _blockedWebsiteCard(BlockedWebsite site) {
+     final limit = site.timeLimitMinutes ?? 0;
+-    final titleColor = AppColors.isDark ? AppColors.white : AppColors.label;
++    final darkThemeText = AppColors.background.computeLuminance() < 0.45;
++    final titleColor = darkThemeText
++        ? const Color(0xFFF2F5FF)
++        : AppColors.label;
+@@
+                             creationParams: <String, dynamic>{
+                               'payload': websitePayload,
+                               'fallbackTitle': title,
+                               'textColorHex': _colorToArgbHex(titleColor),
+-                              'isDarkTheme':
+-                                  AppColors.background.computeLuminance() < 0.45,
++                              'isDarkTheme': darkThemeText,
+                             },
+*** End Patch

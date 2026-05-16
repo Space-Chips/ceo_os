@@ -1,0 +1,90 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/home/home_screen.dart
+@@
+   @override
+   Widget build(BuildContext context) {
+     return Row(
+       children: [
+         GestureDetector(
+@@
+             ),
+           ),
+         ),
+-        const Spacer(),
+-        _ShortcutPill(
+-          label: rankName,
+-          icon: CupertinoIcons.star_fill,
+-          iconColor: AppColors.warning,
+-          labelColor: AppColors.warning,
+-          onTap: onOpenRank,
+-        ),
+-        const SizedBox(width: 8),
+-        _ShortcutCircle(
+-          icon: CupertinoIcons.bolt_fill,
+-          gradient: [const Color(0xFFFF934D), AppColors.primaryOrange],
+-          onTap: onOpenFocus,
+-        ),
+-        const SizedBox(width: 8),
+-        _ShortcutCircle(
+-          icon: CupertinoIcons.doc_text_fill,
+-          gradient: const [Color(0xFFA26BFF), Color(0xFF7F50F2)],
+-          onTap: onOpenNotes,
+-        ),
+-        const SizedBox(width: 8),
+-        _StreakPill(streak: winStreak, onTap: onOpenStreak),
++        const SizedBox(width: 8),
++        Expanded(
++          child: Align(
++            alignment: Alignment.centerRight,
++            child: FittedBox(
++              fit: BoxFit.scaleDown,
++              alignment: Alignment.centerRight,
++              child: Row(
++                mainAxisSize: MainAxisSize.min,
++                children: [
++                  _ShortcutPill(
++                    label: rankName,
++                    icon: CupertinoIcons.star_fill,
++                    iconColor: AppColors.warning,
++                    labelColor: AppColors.warning,
++                    onTap: onOpenRank,
++                  ),
++                  const SizedBox(width: 6),
++                  _ShortcutCircle(
++                    icon: CupertinoIcons.bolt_fill,
++                    gradient: [const Color(0xFFFF934D), AppColors.primaryOrange],
++                    onTap: onOpenFocus,
++                  ),
++                  const SizedBox(width: 6),
++                  _ShortcutCircle(
++                    icon: CupertinoIcons.doc_text_fill,
++                    gradient: const [Color(0xFFA26BFF), Color(0xFF7F50F2)],
++                    onTap: onOpenNotes,
++                  ),
++                  const SizedBox(width: 6),
++                  _StreakPill(streak: winStreak, onTap: onOpenStreak),
++                ],
++              ),
++            ),
++          ),
++        ),
+       ],
+     );
+   }
+ }
+@@
+       onTap: onTap,
+       child: Container(
+-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+         decoration: BoxDecoration(
+           borderRadius: BorderRadius.circular(22),
+           gradient: LinearGradient(
+@@
+                   Text(
+                     'Dashboard',
++                    maxLines: 1,
++                    overflow: TextOverflow.ellipsis,
+                     style: AppTypography.mono.copyWith(
+                       fontSize: 26,
+                       fontWeight: FontWeight.w900,
+*** End Patch

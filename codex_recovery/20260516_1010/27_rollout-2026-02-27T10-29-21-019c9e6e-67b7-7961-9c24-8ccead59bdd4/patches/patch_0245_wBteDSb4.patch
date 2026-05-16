@@ -1,0 +1,212 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/notes_screen.dart
+@@
+   Future<void> _persistCurrentNote() async {
+@@
+     if (_selected == null) {
+       if (trimmed.isEmpty) return;
+       setState(() => _saving = true);
+       try {
+-        await _repo.createNote(title, text);
+-        await _load();
++        final createdId = await _repo.createNote(title, text);
++        await _load(preferredSelectedId: createdId);
+       } finally {
+         if (mounted) setState(() => _saving = false);
+       }
+       return;
+@@
+   Future<void> _newNoteDraft() async {
+     await _flushAutosaveIfPending();
++    if (!mounted || _saving) return;
++    setState(() => _saving = true);
++    try {
++      final createdId = await _repo.createNote('Untitled', '');
++      if (!mounted) return;
++      setState(() {
++        _filterKind = _NotesFilterKind.all;
++        _selectedTagPath = null;
++      });
++      await _load(preferredSelectedId: createdId);
++      if (!mounted) return;
++      _editorFocus.requestFocus();
++    } finally {
++      if (mounted) setState(() => _saving = false);
++    }
+-    if (!mounted) return;
+-    setState(() {
+-      _selected = null;
+-      _filterKind = _NotesFilterKind.all;
+-      _selectedTagPath = null;
+-    });
+-    _setEditorText('');
+-    _editorFocus.requestFocus();
+   }
+@@
+-                                  GlassCard(
+-                                    padding: const EdgeInsets.fromLTRB(
+-                                      14,
+-                                      12,
+-                                      14,
+-                                      12,
+-                                    ),
+-                                    borderRadius: 14,
+-                                    border: Border.all(
+-                                      color: AppColors.glassBorder.withValues(
+-                                        alpha: 0.85,
+-                                      ),
+-                                      width: 0.6,
+-                                    ),
+-                                    child: Column(
+-                                      crossAxisAlignment:
+-                                          CrossAxisAlignment.start,
+-                                      children: [
+-                                        Row(
+-                                          children: [
+-                                            Text(
+-                                              selected == null
+-                                                  ? 'NEW NOTE'
+-                                                  : 'LAST EDIT: ${DateFormat('MMM d').format(_effectiveUpdateDate(selected))}',
+-                                              style: AppTypography.mono
+-                                                  .copyWith(
+-                                                    fontSize: 10,
+-                                                    color:
+-                                                        AppColors.tertiaryLabel,
+-                                                    letterSpacing: 1.2,
+-                                                  ),
+-                                            ),
+-                                            const Spacer(),
+-                                            if (_saving)
+-                                              Text(
+-                                                'Saving...',
+-                                                style: AppTypography.mono
+-                                                    .copyWith(
+-                                                      fontSize: 10,
+-                                                      color: AppColors
+-                                                          .primaryOrange,
+-                                                    ),
+-                                              ),
+-                                          ],
+-                                        ),
+-                                        const SizedBox(height: 10),
+-                                        Expanded(
+-                                          child: CupertinoTextField(
+-                                            controller: _editor,
+-                                            focusNode: _editorFocus,
+-                                            expands: true,
+-                                            maxLines: null,
+-                                            textAlignVertical:
+-                                                TextAlignVertical.top,
+-                                            placeholder:
+-                                                '#work/meeting\n\nWrite your note...',
+-                                            style: AppTypography.mono.copyWith(
+-                                              fontSize: 20,
+-                                              color: AppColors.label,
+-                                              height: 1.35,
+-                                            ),
+-                                            placeholderStyle: AppTypography.mono
+-                                                .copyWith(
+-                                                  fontSize: 20,
+-                                                  color: AppColors.tertiaryLabel
+-                                                      .withValues(alpha: 0.65),
+-                                                  height: 1.35,
+-                                                ),
+-                                            decoration: null,
+-                                          ),
+-                                        ),
+-                                      ],
+-                                    ),
++                                  Container(
++                                    padding: const EdgeInsets.fromLTRB(
++                                      14,
++                                      12,
++                                      14,
++                                      12,
++                                    ),
++                                    decoration: BoxDecoration(
++                                      borderRadius: BorderRadius.circular(14),
++                                      color: const Color(
++                                        0xFF05070D,
++                                      ).withValues(alpha: 0.96),
++                                      border: Border.all(
++                                        color: AppColors.glassBorder.withValues(
++                                          alpha: 0.78,
++                                        ),
++                                        width: 0.6,
++                                      ),
++                                    ),
++                                    child: Column(
++                                      crossAxisAlignment:
++                                          CrossAxisAlignment.start,
++                                      children: [
++                                        Row(
++                                          children: [
++                                            Expanded(
++                                              child: Text(
++                                                selected == null
++                                                    ? 'NEW NOTE'
++                                                    : 'LAST EDIT: ${DateFormat('MMM d').format(_effectiveUpdateDate(selected))}',
++                                                maxLines: 1,
++                                                overflow: TextOverflow.ellipsis,
++                                                style: AppTypography.mono
++                                                    .copyWith(
++                                                      fontSize: 10,
++                                                      color: AppColors
++                                                          .tertiaryLabel,
++                                                      letterSpacing: 1.2,
++                                                    ),
++                                              ),
++                                            ),
++                                            if (_saving) ...[
++                                              const SizedBox(width: 8),
++                                              Text(
++                                                'Saving...',
++                                                style: AppTypography.mono
++                                                    .copyWith(
++                                                      fontSize: 10,
++                                                      color: AppColors
++                                                          .primaryOrange,
++                                                    ),
++                                              ),
++                                            ],
++                                          ],
++                                        ),
++                                        const SizedBox(height: 10),
++                                        Expanded(
++                                          child: CupertinoTextField(
++                                            controller: _editor,
++                                            focusNode: _editorFocus,
++                                            expands: true,
++                                            maxLines: null,
++                                            textAlignVertical:
++                                                TextAlignVertical.top,
++                                            placeholder:
++                                                '#work/meeting\n\nWrite your note...',
++                                            style: AppTypography.mono.copyWith(
++                                              fontSize: 20,
++                                              color: AppColors.label,
++                                              height: 1.35,
++                                            ),
++                                            placeholderStyle: AppTypography.mono
++                                                .copyWith(
++                                                  fontSize: 20,
++                                                  color: AppColors.tertiaryLabel
++                                                      .withValues(alpha: 0.65),
++                                                  height: 1.35,
++                                                ),
++                                            decoration: null,
++                                          ),
++                                        ),
++                                      ],
++                                    ),
+                                   ),
+@@
+   Widget _tagTreeItem(_TagTreeData data, String tagPath, {required int depth}) {
+     final selected =
+         _filterKind == _NotesFilterKind.tag && _selectedTagPath == tagPath;
+-    final children = (data.childrenByParent[tagPath] ?? const [])
++    final children = List<String>.from(
++      data.childrenByParent[tagPath] ?? const <String>[],
++    )
+       ..sort((a, b) => _tagLabel(a).compareTo(_tagLabel(b)));
+*** End Patch

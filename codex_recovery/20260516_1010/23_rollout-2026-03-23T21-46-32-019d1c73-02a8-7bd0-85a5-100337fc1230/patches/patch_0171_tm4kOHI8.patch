@@ -1,0 +1,57 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/router/app_router.dart
+@@
+ import '../../features/screen_time_manager/family_time_screen.dart';
+ import '../../features/legacy/event_types_screen.dart';
+ import '../../features/legacy/biannual_report_screen.dart';
+ import '../../features/legacy/app_modules_screen.dart';
++import '../../features/setup/setup_gate_screen.dart';
++import '../../features/setup/setup_flow_screen.dart';
+@@
+     return GoRouter(
+-      initialLocation: '/home',
++      initialLocation: '/setup-gate',
+       debugLogDiagnostics: false,
+       routes: [
++        GoRoute(
++          path: '/setup-gate',
++          builder: (context, state) => const SetupGateScreen(),
++        ),
++        GoRoute(
++          path: '/setup',
++          builder: (context, state) => const SetupFlowScreen(),
++        ),
+         // ── Auth ──
+         GoRoute(
+           path: '/login',
+           builder: (context, state) => const LoginScreen(),
+         ),
+@@
+-        final onboarding = state.matchedLocation == '/onboarding';
++        final onboarding = state.matchedLocation == '/onboarding';
++        final setupFlow = state.matchedLocation == '/setup';
++        final setupGate = state.matchedLocation == '/setup-gate';
+@@
+-        if (!auth.isAuthenticated) {
+-          if (!loggingIn && !onboarding) {
++        if (!auth.isAuthenticated) {
++          if (!loggingIn && !onboarding) {
+             return '/onboarding';
+           }
+           return null;
+         }
+ 
+         // 2. If logged in and on auth or onboarding pages, go to home
+-        if (auth.isAuthenticated && (loggingIn || onboarding)) {
+-          return '/home';
++        if (auth.isAuthenticated && (loggingIn || onboarding)) {
++          return '/setup-gate';
+         }
+ 
++        if (auth.isAuthenticated && (setupFlow || setupGate)) {
++          return null;
++        }
++
+         return null;
+       },
+*** End Patch

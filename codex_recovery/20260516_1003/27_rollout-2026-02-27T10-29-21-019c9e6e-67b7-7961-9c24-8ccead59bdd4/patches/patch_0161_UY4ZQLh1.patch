@@ -1,0 +1,38 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/habits/habits_screen.dart
+@@
+-      child: SafeArea(
+-        child: Column(
+-          children: [
++      child: AmbientBackdrop(
++        child: SafeArea(
++          child: Column(
++            children: [
+@@
+-            Expanded(
+-              child: PageView(
+-                controller: _pageController,
+-                onPageChanged: (i) => setState(() => _activeTab = i),
+-                children: [
+-                  _GridTab(onOpenHabit: _openCompletionPage),
+-                  const _GoalsTab(),
+-                ],
++              Expanded(
++                child: PageView(
++                  controller: _pageController,
++                  onPageChanged: (i) => setState(() => _activeTab = i),
++                  children: [
++                    _GridTab(onOpenHabit: _openCompletionPage),
++                    const _GoalsTab(),
++                  ],
++                ),
+               ),
+-            ),
+-          ],
++            ],
++          ),
+         ),
+       ),
+     );
+   }
+*** End Patch

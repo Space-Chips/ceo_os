@@ -1,0 +1,412 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/tasks/add_task_sheet.dart
+@@
+   @override
+   Widget build(BuildContext context) {
+     return BackdropFilter(
+       filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+       child: Container(
+@@
+         decoration: BoxDecoration(
+-          color: AppColors.background.withValues(alpha: 0.8),
++          gradient: LinearGradient(
++            begin: Alignment.topCenter,
++            end: Alignment.bottomCenter,
++            colors: [
++              AppColors.background.withValues(alpha: 0.9),
++              AppColors.cardBackgroundStrong.withValues(alpha: 0.95),
++            ],
++          ),
+           borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+           border: Border(
+             top: BorderSide(color: AppColors.glassBorder, width: 0.5),
+           ),
++          boxShadow: [
++            BoxShadow(
++              color: AppColors.black.withValues(alpha: 0.25),
++              blurRadius: 40,
++              offset: const Offset(0, -8),
++            ),
++          ],
+         ),
+         child: SafeArea(
+           child: SingleChildScrollView(
++            physics: const BouncingScrollPhysics(),
+             padding: const EdgeInsets.all(24),
+             child: Column(
+               mainAxisSize: MainAxisSize.min,
+               crossAxisAlignment: CrossAxisAlignment.start,
+               children: [
+@@
+                 ),
+                 const SizedBox(height: 24),
+ 
+-                const NeoMonoText(
+-                  'NEW_TASK_INPUT',
+-                  fontSize: 18,
+-                  fontWeight: FontWeight.bold,
++                Text(
++                  'New task',
++                  style: AppTypography.title1.copyWith(
++                    fontSize: 30,
++                    color: AppColors.label,
++                  ),
++                ),
++                const SizedBox(height: 6),
++                Text(
++                  'Capture it quickly, refine it later.',
++                  style: AppTypography.subhead.copyWith(
++                    color: AppColors.secondaryLabel,
++                  ),
+                 ),
+                 const SizedBox(height: 24),
+ 
+                 GlassInputField(
+-                  placeholder: 'TASK_TITLE...',
++                  placeholder: 'Task title',
+                   controller: _titleCtrl,
+                   autofocus: true,
++                  textCapitalization: TextCapitalization.sentences,
+                 ),
+-                const SizedBox(height: 16),
+-
+-                // Description
+-                _sectionLabel('DESCRIPTION'),
+-                const SizedBox(height: 8),
+-                Container(
+-                  decoration: BoxDecoration(
+-                    color: AppColors.backgroundLight.withValues(alpha: 0.5),
+-                    borderRadius: BorderRadius.circular(16),
+-                    border: Border.all(
+-                      color: AppColors.glassBorder,
+-                      width: 0.5,
+-                    ),
+-                  ),
+-                  child: CupertinoTextField(
+-                    controller: _descCtrl,
+-                    placeholder: 'OPTIONAL_DETAILS...',
+-                    maxLines: 3,
+-                    minLines: 2,
+-                    style: AppTypography.mono.copyWith(
+-                      fontSize: 13,
+-                      color: AppColors.label,
+-                    ),
+-                    placeholderStyle: AppTypography.mono.copyWith(
+-                      fontSize: 13,
+-                      color: AppColors.tertiaryLabel,
+-                    ),
+-                    padding: const EdgeInsets.all(16),
+-                    decoration: null,
++                const SizedBox(height: 14),
++
++                _glassFieldShell(
++                  child: CupertinoTextField(
++                    controller: _descCtrl,
++                    placeholder: 'Add details (optional)',
++                    minLines: 1,
++                    maxLines: null,
++                    textCapitalization: TextCapitalization.sentences,
++                    style: AppTypography.callout.copyWith(
++                      fontSize: 14,
++                      color: AppColors.label,
++                    ),
++                    placeholderStyle: AppTypography.callout.copyWith(
++                      fontSize: 14,
++                      color: AppColors.tertiaryLabel,
++                    ),
++                    padding: const EdgeInsets.symmetric(
++                      horizontal: 16,
++                      vertical: 12,
++                    ),
++                    decoration: null,
+                   ),
+                 ),
+                 const SizedBox(height: 20),
+ 
+-                // Deadline
+-                _sectionLabel('DEADLINE'),
+-                const SizedBox(height: 8),
+                 GestureDetector(
+                   onTap: _showDeadlinePicker,
+                   child: Container(
+                     padding: const EdgeInsets.symmetric(
+                       horizontal: 16,
+-                      vertical: 12,
++                      vertical: 13,
+                     ),
+                     decoration: BoxDecoration(
+                       color: _deadline != null
+-                          ? AppColors.primaryOrange.withValues(alpha: 0.1)
+-                          : AppColors.backgroundLight.withValues(alpha: 0.5),
++                          ? AppColors.accent.withValues(alpha: 0.14)
++                          : AppColors.inputBackground.withValues(alpha: 0.72),
+                       borderRadius: BorderRadius.circular(12),
+                       border: Border.all(
+                         color: _deadline != null
+-                            ? AppColors.primaryOrange.withValues(alpha: 0.4)
+-                            : AppColors.glassBorder,
+-                        width: 0.5,
++                            ? AppColors.activeBorder
++                            : AppColors.inputBorder,
++                        width: 0.8,
+                       ),
++                      boxShadow: [
++                        BoxShadow(
++                          color: AppColors.black.withValues(alpha: 0.14),
++                          blurRadius: 18,
++                          offset: const Offset(0, 8),
++                          spreadRadius: -12,
++                        ),
++                      ],
+                     ),
+                     child: Row(
+                       children: [
+                         Icon(
+                           CupertinoIcons.calendar,
+-                          size: 16,
++                          size: 17,
+                           color: _deadline != null
+-                              ? AppColors.primaryOrange
++                              ? AppColors.accent
+                               : AppColors.tertiaryLabel,
+                         ),
+                         const SizedBox(width: 10),
+                         Text(
+                           _deadline != null
+                               ? _formatDeadline(_deadline!)
+-                              : 'SET_DEADLINE',
+-                          style: AppTypography.mono.copyWith(
+-                            fontSize: 12,
++                              : 'Set deadline',
++                          style: AppTypography.callout.copyWith(
++                            fontSize: 14,
+                             color: _deadline != null
+-                                ? AppColors.primaryOrange
+-                                : AppColors.tertiaryLabel,
++                                ? AppColors.accentText
++                                : AppColors.secondaryLabel,
+                           ),
+                         ),
+                         const Spacer(),
+                         if (_deadline != null)
+                           GestureDetector(
+@@
+                 const SizedBox(height: 20),
+ 
+-                Row(
+-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+-                  children: [
+-                    Text(
+-                      'SYNC_DEADLINE_TO_CALENDAR',
+-                      style: AppTypography.mono.copyWith(
+-                        fontSize: 10,
+-                        color: AppColors.secondaryLabel,
+-                      ),
+-                    ),
+-                    CupertinoSwitch(
+-                      value: _syncToCalendar,
+-                      activeTrackColor: AppColors.primaryOrange,
+-                      onChanged: (value) =>
+-                          setState(() => _syncToCalendar = value),
+-                    ),
+-                  ],
++                Container(
++                  padding: const EdgeInsets.symmetric(
++                    horizontal: 14,
++                    vertical: 10,
++                  ),
++                  decoration: BoxDecoration(
++                    color: AppColors.backgroundLight.withValues(alpha: 0.38),
++                    borderRadius: BorderRadius.circular(14),
++                    border: Border.all(
++                      color: AppColors.glassBorder.withValues(alpha: 0.9),
++                      width: 0.6,
++                    ),
++                  ),
++                  child: Row(
++                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
++                    children: [
++                      Text(
++                        'Sync deadline to Calendar',
++                        style: AppTypography.footnote.copyWith(
++                          fontSize: 12,
++                          color: AppColors.secondaryLabel,
++                        ),
++                      ),
++                      CupertinoSwitch(
++                        value: _syncToCalendar,
++                        activeTrackColor: AppColors.primaryOrange,
++                        onChanged: (value) =>
++                            setState(() => _syncToCalendar = value),
++                      ),
++                    ],
++                  ),
+                 ),
+                 const SizedBox(height: 20),
+ 
+                 Row(
+                   children: [
+@@
+                       child: Column(
+                         crossAxisAlignment: CrossAxisAlignment.start,
+                         children: [
+-                          _sectionLabel('PRIORITY_LEVEL'),
++                          _sectionLabel('Priority'),
+                           const SizedBox(height: 12),
+-                          SizedBox(
+-                            height: 100,
+-                            child: CupertinoPicker(
+-                              itemExtent: 32,
+-                              onSelectedItemChanged: (i) {
+-                                setState(() => _importance = _importances[i]);
+-                              },
+-                              children: _importances
+-                                  .map(
+-                                    (e) => Center(
+-                                      child: Text(
+-                                        _labelForImportance(e).toUpperCase(),
+-                                        style: AppTypography.mono.copyWith(
+-                                          fontSize: 12,
+-                                          color: _importanceColor(e),
++                          Container(
++                            height: 110,
++                            decoration: BoxDecoration(
++                              color: AppColors.inputBackground.withValues(
++                                alpha: 0.72,
++                              ),
++                              borderRadius: BorderRadius.circular(14),
++                              border: Border.all(
++                                color: AppColors.inputBorder,
++                                width: 0.8,
++                              ),
++                            ),
++                            child: CupertinoPicker(
++                              itemExtent: 32,
++                              selectionOverlay: _pickerSelectionOverlay(),
++                              onSelectedItemChanged: (i) {
++                                setState(() => _importance = _importances[i]);
++                              },
++                              children: _importances
++                                  .map(
++                                    (e) => Center(
++                                      child: Text(
++                                        _labelForImportance(e),
++                                        style: AppTypography.callout.copyWith(
++                                          fontSize: 13,
++                                          color: _importanceColor(e),
+                                         ),
+                                       ),
+                                     ),
+                                   )
+                                   .toList(),
+@@
+                       child: Column(
+                         crossAxisAlignment: CrossAxisAlignment.start,
+                         children: [
+-                          _sectionLabel('EST_DURATION'),
++                          _sectionLabel('Est. duration'),
+                           const SizedBox(height: 12),
+-                          SizedBox(
+-                            height: 100,
+-                            child: CupertinoPicker(
+-                              itemExtent: 32,
+-                              scrollController: FixedExtentScrollController(
+-                                initialItem: 1,
++                          Container(
++                            height: 110,
++                            decoration: BoxDecoration(
++                              color: AppColors.inputBackground.withValues(
++                                alpha: 0.72,
+                               ),
+-                              onSelectedItemChanged: (i) {
+-                                setState(() => _duration = _durations[i]);
+-                              },
+-                              children: _durations
+-                                  .map(
+-                                    (e) => Center(
+-                                      child: Text(
+-                                        _labelForDuration(e).toUpperCase(),
+-                                        style: AppTypography.mono.copyWith(
+-                                          fontSize: 12,
+-                                          color: AppColors.label,
++                              borderRadius: BorderRadius.circular(14),
++                              border: Border.all(
++                                color: AppColors.inputBorder,
++                                width: 0.8,
++                              ),
++                            ),
++                            child: CupertinoPicker(
++                              itemExtent: 32,
++                              selectionOverlay: _pickerSelectionOverlay(),
++                              scrollController: FixedExtentScrollController(
++                                initialItem: 1,
++                              ),
++                              onSelectedItemChanged: (i) {
++                                setState(() => _duration = _durations[i]);
++                              },
++                              children: _durations
++                                  .map(
++                                    (e) => Center(
++                                      child: Text(
++                                        _labelForDuration(e),
++                                        style: AppTypography.callout.copyWith(
++                                          fontSize: 13,
++                                          color: AppColors.label,
+                                         ),
+                                       ),
+                                     ),
+                                   )
+@@
+ 
+                 const SizedBox(height: 32),
+                 LiquidButton(
+-                  label: 'INITIALIZE_TASK',
++                  label: 'Initialize task',
+                   fullWidth: true,
+                   onPressed: _addTask,
+                 ),
+                 const SizedBox(height: 12),
+               ],
+@@
+     );
+   }
+ 
++  Widget _glassFieldShell({required Widget child}) => Container(
++    decoration: BoxDecoration(
++      color: AppColors.inputBackground.withValues(alpha: 0.72),
++      borderRadius: BorderRadius.circular(16),
++      border: Border.all(color: AppColors.inputBorder, width: 0.8),
++      boxShadow: [
++        BoxShadow(
++          color: AppColors.black.withValues(alpha: 0.15),
++          blurRadius: 20,
++          offset: const Offset(0, 10),
++          spreadRadius: -12,
++        ),
++      ],
++    ),
++    child: child,
++  );
++
++  Widget _pickerSelectionOverlay() => Container(
++    margin: const EdgeInsets.symmetric(horizontal: 8),
++    decoration: BoxDecoration(
++      borderRadius: BorderRadius.circular(10),
++      border: Border.all(color: AppColors.glassBorder.withValues(alpha: 0.85)),
++      color: AppColors.white.withValues(alpha: 0.04),
++    ),
++  );
++
+   Widget _sectionLabel(String label) => Text(
+     label,
+-    style: AppTypography.mono.copyWith(
+-      fontSize: 10,
++    style: AppTypography.overline.copyWith(
++      fontSize: 11,
+       color: AppColors.tertiaryLabel,
+-      letterSpacing: 1.5,
++      letterSpacing: 0.6,
+     ),
+   );
+ }
+*** End Patch

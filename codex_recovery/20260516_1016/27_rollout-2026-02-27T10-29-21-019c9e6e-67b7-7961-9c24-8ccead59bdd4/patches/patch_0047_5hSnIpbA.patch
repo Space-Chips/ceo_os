@@ -1,0 +1,86 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/calendar/add_event_sheet.dart
+@@
+ class _AddEventSheetState extends State<AddEventSheet> {
+   final _titleCtrl = TextEditingController();
+   final _descCtrl = TextEditingController();
+   late DateTime _selectedDate;
+   TimeOfDay? _selectedTime;
++  int _durationMinutes = 60;
+@@
+     await context.read<TaskProvider>().addCalendarEvent(
+       title: _titleCtrl.text.trim(),
+       date: dateStr,
+       time: timeStr,
++      durationMinutes: _durationMinutes,
+       description: _descCtrl.text.trim(),
+     );
+@@
+   void _showTimePicker() {
+@@
+   }
++
++  void _adjustDuration(int delta) {
++    setState(() {
++      _durationMinutes = (_durationMinutes + delta).clamp(15, 480);
++    });
++  }
+@@
+                 Row(
+                   children: [
+@@
+                     ),
+                   ],
+                 ),
++                const SizedBox(height: 16),
++                _sectionLabel('DURATION_MINUTES'),
++                const SizedBox(height: 10),
++                GlassCard(
++                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
++                  borderRadius: 12,
++                  child: Row(
++                    children: [
++                      CupertinoButton(
++                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
++                        minimumSize: Size.zero,
++                        color: AppColors.accentMuted,
++                        borderRadius: BorderRadius.circular(8),
++                        onPressed: () => _adjustDuration(-15),
++                        child: Icon(CupertinoIcons.minus, size: 14, color: AppColors.primaryOrange),
++                      ),
++                      const Spacer(),
++                      Column(
++                        children: [
++                          Text(
++                            '$_durationMinutes',
++                            style: AppTypography.mono.copyWith(
++                              fontSize: 20,
++                              fontWeight: FontWeight.bold,
++                            ),
++                          ),
++                          Text(
++                            'MIN',
++                            style: AppTypography.mono.copyWith(
++                              fontSize: 9,
++                              color: AppColors.tertiaryLabel,
++                              letterSpacing: 1.2,
++                            ),
++                          ),
++                        ],
++                      ),
++                      const Spacer(),
++                      CupertinoButton(
++                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
++                        minimumSize: Size.zero,
++                        color: AppColors.accentMuted,
++                        borderRadius: BorderRadius.circular(8),
++                        onPressed: () => _adjustDuration(15),
++                        child: Icon(CupertinoIcons.add, size: 14, color: AppColors.primaryOrange),
++                      ),
++                    ],
++                  ),
++                ),
+ 
+                 const SizedBox(height: 32),
+                 LiquidButton(
+*** End Patch

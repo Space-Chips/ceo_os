@@ -1,0 +1,24 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/notes_screen.dart
+@@
+           _folderRow(
+             label: 'All Notes',
+-            count: _notes.length,
+             selected: selectedAll,
+             onTap: _selectAllNotes,
+           ),
+@@
+           _folderRow(
+             label: 'No Tag',
+-            count: tagTree.untaggedCount,
+             selected: selectedUntagged,
+             onTap: _selectUntagged,
+           ),
+@@
+   Widget _folderRow({
+     required String label,
+-    required int count,
+     required bool selected,
+     required Future<void> Function() onTap,
+   }) {
+*** End Patch

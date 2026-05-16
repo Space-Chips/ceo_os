@@ -1,0 +1,53 @@
+*** Begin Patch
+*** Update File: lib/core/providers/habit_provider.dart
+@@
+ class HabitProvider extends ChangeNotifier {
+@@
+   bool _isLoading = false;
++  Map<String, Set<String>> _widgetLast7DaysDoneByHabit = const {};
++  List<DateTime> _widgetLast7Days = const [];
+@@
+   bool get isLoading => _isLoading;
++
++  /// Precomputed last-7-days window used by the Habits Table widget.
++  /// Days are ordered oldest -> newest (today last).
++  List<DateTime> get widgetLast7Days => List.unmodifiable(_widgetLast7Days);
++
++  /// Precomputed completion map used by the Habits Table widget.
++  /// Map: habitId -> set of yyyy-MM-dd that are completed.
++  Map<String, Set<String>> get widgetCompletionMapLast7Days =>
++      _widgetLast7DaysDoneByHabit;
+@@
+   Future<List<HabitCompletion>> getCompletionsForRange(
+     DateTime start,
+     DateTime end,
+   ) async {
+     return await _repository.getCompletionsForDateRange(start, end);
+   }
++
++  Future<void> loadWidgetCompletionsForLast7Days() async {
++    final now = DateTime.now();
++    final end = DateTime(now.year, now.month, now.day);
++    final start = end.subtract(const Duration(days: 6));
++    _widgetLast7Days = List.generate(
++      7,
++      (i) => DateTime(start.year, start.month, start.day).add(Duration(days: i)),
++    );
++
++    try {
++      final completions = await _repository.getCompletionsForDateRange(
++        start,
++        end.add(const Duration(days: 1)),
++      );
++      final map = <String, Set<String>>{};
++      for (final c in completions) {
++        if (!c.completed) continue;
++        final set = map.putIfAbsent(c.habitId, () => <String>{});
++        set.add(c.date);
++      }
++      _widgetLast7DaysDoneByHabit = map;
++    } catch (e) {
++      _widgetLast7DaysDoneByHabit = const {};
++    }
++  }
+*** End Patch

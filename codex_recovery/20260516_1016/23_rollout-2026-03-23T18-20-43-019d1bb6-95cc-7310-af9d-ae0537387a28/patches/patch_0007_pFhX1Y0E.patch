@@ -1,0 +1,518 @@
+*** Begin Patch
+*** Add File: /Users/timo/ceo_os/lib/features/auth/auth_support.dart
++import 'package:flutter/cupertino.dart';
++import 'package:flutter/services.dart';
++import 'package:supabase_flutter/supabase_flutter.dart';
++
++import '../../core/theme/app_colors.dart';
++import '../../core/theme/app_typography.dart';
++
++String humanizeAuthError(Object error) {
++  if (error is AuthException) {
++    final message = error.message.toLowerCase();
++    if (message.contains('invalid login credentials')) {
++      return 'The email or password is incorrect.';
++    }
++    if (message.contains('email not confirmed')) {
++      return 'Please confirm your email address before signing in.';
++    }
++    if (message.contains('user already registered')) {
++      return 'An account already exists for this email address.';
++    }
++    if (message.contains('password')) {
++      return error.message;
++    }
++    return error.message;
++  }
++
++  final raw = error.toString();
++  if (raw.contains('SocketException')) {
++    return 'Network connection failed. Please try again.';
++  }
++  return 'Something went wrong. Please try again.';
++}
++
++bool isValidEmail(String value) {
++  final email = value.trim();
++  final emailRegex = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$');
++  return emailRegex.hasMatch(email);
++}
++
++Future<void> showAuthDialog(
++  BuildContext context, {
++  required String title,
++  required String message,
++}) async {
++  await showCupertinoDialog<void>(
++    context: context,
++    builder: (context) => CupertinoAlertDialog(
++      title: Text(title, style: AppTypography.mono.copyWith(fontSize: 16)),
++      content: Padding(
++        padding: const EdgeInsets.only(top: 8),
++        child: Text(message, style: AppTypography.caption1),
++      ),
++      actions: [
++        CupertinoDialogAction(
++          isDefaultAction: true,
++          onPressed: () => Navigator.of(context).pop(),
++          child: Text(
++            'OK',
++            style: AppTypography.mono.copyWith(color: AppColors.primaryOrange),
++          ),
++        ),
++      ],
++    ),
++  );
++}
++
++Future<void> showAuthLegalDialog(
++  BuildContext context, {
++  required String title,
++  required String body,
++}) async {
++  await showCupertinoDialog<void>(
++    context: context,
++    builder: (context) => CupertinoAlertDialog(
++      title: Text(title, style: AppTypography.mono.copyWith(fontSize: 16)),
++      content: Padding(
++        padding: const EdgeInsets.only(top: 8),
++        child: Text(body, style: AppTypography.caption1),
++      ),
++      actions: [
++        CupertinoDialogAction(
++          isDefaultAction: true,
++          onPressed: () => Navigator.of(context).pop(),
++          child: Text(
++            'Close',
++            style: AppTypography.mono.copyWith(color: AppColors.primaryOrange),
++          ),
++        ),
++      ],
++    ),
++  );
++}
++
++Future<void> copySupportEmail(BuildContext context) async {
++  const supportEmail = 'timofrmac@gmail.com';
++  await Clipboard.setData(const ClipboardData(text: supportEmail));
++  await showAuthDialog(
++    context,
++    title: 'SUPPORT',
++    message:
++        'Support email copied: $supportEmail. Include your device, app version, and the steps that caused the issue.',
++  );
++}
+*** Update File: /Users/timo/ceo_os/lib/core/providers/auth_provider.dart
+@@
+ import '../config/supabase_config.dart';
++
++class AuthSignupResult {
++  final bool requiresEmailConfirmation;
++
++  const AuthSignupResult({required this.requiresEmailConfirmation});
++}
+@@
+-  Future<void> signup(String name, String email, String password) async {
++  Future<AuthSignupResult> signup(
++    String name,
++    String email,
++    String password,
++  ) async {
+     try {
+-      await _supabase.auth.signUp(
++      final response = await _supabase.auth.signUp(
+         email: email,
+         password: password,
+         data: {'full_name': name},
+       );
+       _hasCompletedOnboarding = true;
++      return AuthSignupResult(
++        requiresEmailConfirmation: response.session == null,
++      );
+     } catch (e) {
+       rethrow;
+     }
+   }
++
++  Future<void> resetPassword(String email) async {
++    try {
++      await _supabase.auth.resetPasswordForEmail(email.trim());
++    } catch (e) {
++      rethrow;
++    }
++  }
+*** Update File: /Users/timo/ceo_os/lib/features/auth/login_screen.dart
+@@
+ import 'dart:ui';
+ import 'package:flutter/cupertino.dart';
+ import 'package:go_router/go_router.dart';
+ import 'package:provider/provider.dart';
+ import '../../components/components.dart';
+ import '../../core/providers/auth_provider.dart';
+ import '../../core/theme/app_colors.dart';
+ import '../../core/theme/app_typography.dart';
++import 'auth_support.dart';
+@@
+   Future<void> _showError(dynamic error) async {
+     if (!mounted) return;
+-    showCupertinoDialog(
+-      context: context,
+-      builder: (context) => BackdropFilter(
+-        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+-        child: CupertinoAlertDialog(
+-          title: Text(
+-            'AUTH ERROR',
+-            style: AppTypography.mono.copyWith(fontSize: 16),
+-          ),
+-          content: Padding(
+-            padding: const EdgeInsets.only(top: 8.0),
+-            child: Text(error.toString(), style: AppTypography.caption1),
+-          ),
+-          actions: [
+-            CupertinoDialogAction(
+-              child: Text(
+-                'DISMISS',
+-                style: TextStyle(color: AppColors.primaryOrange),
+-              ),
+-              onPressed: () => Navigator.pop(context),
+-            ),
+-          ],
+-        ),
+-      ),
++    await showAuthDialog(
++      context,
++      title: 'AUTH ERROR',
++      message: humanizeAuthError(error),
+     );
+   }
+ 
+   Future<void> _login() async {
+-    if (_emailCtrl.text.isEmpty || _passCtrl.text.isEmpty) return;
++    final email = _emailCtrl.text.trim();
++    final password = _passCtrl.text;
++    if (!isValidEmail(email)) {
++      await showAuthDialog(
++        context,
++        title: 'INVALID EMAIL',
++        message: 'Please enter a valid email address.',
++      );
++      return;
++    }
++    if (password.isEmpty) {
++      await showAuthDialog(
++        context,
++        title: 'PASSWORD REQUIRED',
++        message: 'Please enter your password to continue.',
++      );
++      return;
++    }
+     setState(() => _loading = true);
+     try {
+-      await context.read<AuthProvider>().login(_emailCtrl.text, _passCtrl.text);
++      await context.read<AuthProvider>().login(email, password);
+     } catch (e) {
+-      _showError(e);
++      await _showError(e);
+     } finally {
+       if (mounted) setState(() => _loading = false);
+     }
+   }
++
++  Future<void> _resetPassword() async {
++    final email = _emailCtrl.text.trim();
++    if (!isValidEmail(email)) {
++      await showAuthDialog(
++        context,
++        title: 'RESET PASSWORD',
++        message: 'Enter your account email first, then try again.',
++      );
++      return;
++    }
++
++    try {
++      await context.read<AuthProvider>().resetPassword(email);
++      if (!mounted) return;
++      await showAuthDialog(
++        context,
++        title: 'CHECK YOUR EMAIL',
++        message:
++            'If an account exists for $email, a password reset email has been sent.',
++      );
++    } catch (e) {
++      await _showError(e);
++    }
++  }
+@@
+                           LiquidButton(
+                             label: 'AUTHENTICATE',
+                             fullWidth: true,
+                             isLoading: _loading,
+                             onPressed: _login,
+                           ),
++                          const SizedBox(height: 14),
++                          Center(
++                            child: CupertinoButton(
++                              padding: EdgeInsets.zero,
++                              minimumSize: Size.zero,
++                              onPressed: _loading ? null : _resetPassword,
++                              child: Text(
++                                'FORGOT_PASSWORD',
++                                style: AppTypography.mono.copyWith(
++                                  fontSize: 11,
++                                  color: AppColors.primaryOrange,
++                                  letterSpacing: 1.2,
++                                ),
++                              ),
++                            ),
++                          ),
+                         ],
+                       ),
+                     ),
+ 
+                     const SizedBox(height: 32),
++                    _AuthTrustFooter(),
++                    const SizedBox(height: 20),
+ 
+                     // Footer
+                     Row(
+@@
+   }
+ }
++
++class _AuthTrustFooter extends StatelessWidget {
++  @override
++  Widget build(BuildContext context) {
++    return Column(
++      children: [
++        Text(
++          'By continuing, you agree to the Terms of Use and Privacy Policy.',
++          textAlign: TextAlign.center,
++          style: AppTypography.caption1.copyWith(
++            color: AppColors.tertiaryLabel,
++            height: 1.4,
++          ),
++        ),
++        const SizedBox(height: 10),
++        Wrap(
++          alignment: WrapAlignment.center,
++          spacing: 12,
++          runSpacing: 8,
++          children: [
++            _AuthInlineLink(
++              label: 'TERMS',
++              onTap: () => showAuthLegalDialog(
++                context,
++                title: 'TERMS OF USE',
++                body:
++                    'CEO OS provides productivity, planning, and focus tools. Premium subscriptions may renew automatically unless canceled in your Apple ID settings.',
++              ),
++            ),
++            _AuthInlineLink(
++              label: 'PRIVACY',
++              onTap: () => showAuthLegalDialog(
++                context,
++                title: 'PRIVACY POLICY',
++                body:
++                    'CEO OS uses Supabase for account and cloud sync infrastructure, Google Sign-In when selected by the user, RevenueCat and Apple for purchases, and Apple system APIs for Screen Time, notifications, widgets, and scheduling.',
++              ),
++            ),
++            _AuthInlineLink(
++              label: 'SUPPORT',
++              onTap: () => copySupportEmail(context),
++            ),
++          ],
++        ),
++      ],
++    );
++  }
++}
++
++class _AuthInlineLink extends StatelessWidget {
++  final String label;
++  final VoidCallback onTap;
++
++  const _AuthInlineLink({required this.label, required this.onTap});
++
++  @override
++  Widget build(BuildContext context) {
++    return CupertinoButton(
++      padding: EdgeInsets.zero,
++      minimumSize: Size.zero,
++      onPressed: onTap,
++      child: Text(
++        label,
++        style: AppTypography.mono.copyWith(
++          fontSize: 11,
++          color: AppColors.primaryOrange,
++          letterSpacing: 1.2,
++        ),
++      ),
++    );
++  }
++}
+*** Update File: /Users/timo/ceo_os/lib/features/auth/signup_screen.dart
+@@
+ import 'dart:ui';
+ import 'package:flutter/cupertino.dart';
+ import 'package:go_router/go_router.dart';
+ import 'package:provider/provider.dart';
+ import '../../components/components.dart';
+ import '../../core/models/onboarding_models.dart';
+ import '../../core/providers/auth_provider.dart';
+ import '../../core/providers/theme_provider.dart';
+ import '../../core/theme/app_colors.dart';
+ import '../../core/theme/app_typography.dart';
++import 'auth_support.dart';
+@@
+   final _nameCtrl = TextEditingController();
+   final _emailCtrl = TextEditingController();
+   final _passCtrl = TextEditingController();
++  final _confirmPassCtrl = TextEditingController();
+   bool _loading = false;
+   OnboardingSetupData? _setupData;
+   bool _didHydrateSetup = false;
+@@
+     _nameCtrl.dispose();
+     _emailCtrl.dispose();
+     _passCtrl.dispose();
++    _confirmPassCtrl.dispose();
+     super.dispose();
+   }
+@@
+   Future<void> _showError(dynamic error) async {
+     if (!mounted) return;
+-    showCupertinoDialog(
+-      context: context,
+-      builder: (context) => BackdropFilter(
+-        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+-        child: CupertinoAlertDialog(
+-          title: Text(
+-            'AUTH ERROR',
+-            style: AppTypography.mono.copyWith(fontSize: 16),
+-          ),
+-          content: Padding(
+-            padding: const EdgeInsets.only(top: 8.0),
+-            child: Text(error.toString(), style: AppTypography.caption1),
+-          ),
+-          actions: [
+-            CupertinoDialogAction(
+-              child: Text(
+-                'DISMISS',
+-                style: TextStyle(color: AppColors.primaryOrange),
+-              ),
+-              onPressed: () => Navigator.pop(context),
+-            ),
+-          ],
+-        ),
+-      ),
++    await showAuthDialog(
++      context,
++      title: 'AUTH ERROR',
++      message: humanizeAuthError(error),
+     );
+   }
+ 
+   Future<void> _signup() async {
+-    if (_nameCtrl.text.isEmpty ||
+-        _emailCtrl.text.isEmpty ||
+-        _passCtrl.text.isEmpty) {
++    final name = _nameCtrl.text.trim();
++    final email = _emailCtrl.text.trim();
++    final password = _passCtrl.text;
++    final confirmPassword = _confirmPassCtrl.text;
++
++    if (name.length < 2) {
++      await showAuthDialog(
++        context,
++        title: 'NAME REQUIRED',
++        message: 'Please enter your name to create the account.',
++      );
++      return;
++    }
++    if (!isValidEmail(email)) {
++      await showAuthDialog(
++        context,
++        title: 'INVALID EMAIL',
++        message: 'Please enter a valid email address.',
++      );
++      return;
++    }
++    if (password.length < 8) {
++      await showAuthDialog(
++        context,
++        title: 'WEAK PASSWORD',
++        message: 'Use at least 8 characters for your password.',
++      );
++      return;
++    }
++    if (password != confirmPassword) {
++      await showAuthDialog(
++        context,
++        title: 'PASSWORD MISMATCH',
++        message: 'The password confirmation does not match.',
++      );
+       return;
+     }
+     setState(() => _loading = true);
+     try {
+-      await context.read<AuthProvider>().signup(
+-        _nameCtrl.text,
+-        _emailCtrl.text,
+-        _passCtrl.text,
+-      );
++      final result = await context.read<AuthProvider>().signup(
++        name,
++        email,
++        password,
++      );
+       if (!mounted) return;
+       if (_setupData != null) {
+         context.read<ThemeProvider>().setPendingOnboardingSetup(_setupData!);
+       }
+       await context.read<ThemeProvider>().persistPendingOnboardingSetup();
++      if (!mounted) return;
++      if (result.requiresEmailConfirmation) {
++        await showAuthDialog(
++          context,
++          title: 'CHECK YOUR EMAIL',
++          message:
++              'Your account was created. Please confirm your email address before signing in.',
++        );
++      }
+     } catch (e) {
+-      _showError(e);
++      await _showError(e);
+     } finally {
+       if (mounted) setState(() => _loading = false);
+     }
+@@
+                           GlassInputField(
+                             placeholder: 'ACCESS_KEY',
+                             controller: _passCtrl,
+                             obscureText: true,
+@@
+                           ),
++                          const SizedBox(height: 16),
++                          GlassInputField(
++                            placeholder: 'CONFIRM_ACCESS_KEY',
++                            controller: _confirmPassCtrl,
++                            obscureText: true,
++                            prefix: Icon(
++                              CupertinoIcons.lock_shield,
++                              size: 16,
++                              color: AppColors.secondaryLabel,
++                            ),
++                          ),
+                           const SizedBox(height: 32),
+                           LiquidButton(
+                             label: 'CREATE_ACCOUNT',
+@@
+                     ),
+ 
+                     const SizedBox(height: 32),
++                    _AuthTrustFooter(),
++                    const SizedBox(height: 20),
+ 
+                     // Footer
+                     Row(
+*** End Patch

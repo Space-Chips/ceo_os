@@ -1,0 +1,52 @@
+*** Begin Patch
+*** Update File: lib/features/widget_configuration/widget_configuration_screen.dart
+@@
+ import '../../components/components.dart';
+ import '../../core/providers/ceo_mode_provider.dart';
++import '../../core/providers/focus_provider.dart';
+ import '../../core/providers/habit_provider.dart';
+ import '../../core/providers/language_provider.dart';
+ import '../../core/providers/task_provider.dart';
+@@
+     final tasks = context.read<TaskProvider>();
+     final habits = context.read<HabitProvider>();
+     final language = context.read<LanguageProvider>();
+     final ceoMode = context.read<CeoModeProvider>();
++    final focus = context.read<FocusProvider>();
+@@
+       await CeoHomeWidgetService.renderAndUpdateAll(
+         tasks: tasks,
+         habits: habits,
+         language: language,
+         ceoMode: ceoMode,
++        focus: focus,
+       );
+@@
+     final tasks = context.read<TaskProvider>();
+     final habitsProvider = context.read<HabitProvider>();
+     final language = context.read<LanguageProvider>();
+     final ceoMode = context.read<CeoModeProvider>();
++    final focus = context.read<FocusProvider>();
+@@
+       await CeoHomeWidgetService.renderAndUpdateAll(
+         tasks: tasks,
+         habits: habitsProvider,
+         language: language,
+         ceoMode: ceoMode,
++        focus: focus,
+       );
+@@
+     final tasks = context.read<TaskProvider>();
+     final habits = context.read<HabitProvider>();
+     final language = context.read<LanguageProvider>();
+     final ceoMode = context.read<CeoModeProvider>();
++    final focus = context.read<FocusProvider>();
+@@
+       await CeoHomeWidgetService.renderAndUpdateAll(
+         tasks: tasks,
+         habits: habits,
+         language: language,
+         ceoMode: ceoMode,
++        focus: focus,
+       );
+*** End Patch

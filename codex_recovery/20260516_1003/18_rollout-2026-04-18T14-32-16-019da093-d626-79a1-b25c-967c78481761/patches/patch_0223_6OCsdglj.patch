@@ -1,0 +1,178 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/tasks/add_task_sheet.dart
+@@
+ import 'dart:ui';
+ import 'package:flutter/cupertino.dart';
++import 'package:intl/intl.dart';
+ import 'package:provider/provider.dart';
+ import '../../components/components.dart';
++import '../../core/providers/language_provider.dart';
+ import '../../core/providers/task_provider.dart';
+ import '../../core/theme/app_colors.dart';
+ import '../../core/theme/app_typography.dart';
+ import 'task_importance_theme.dart';
+@@
+-  String _labelForImportance(String value) {
++  String _labelForImportance(String value, LanguageProvider language) {
+     switch (value) {
+       case 'crucial':
+-        return 'Crucial';
++        return language.t('tasks_importance_crucial');
+       case 'essential':
+-        return 'Essential';
++        return language.t('tasks_importance_essential');
+       case 'average':
+-        return 'Average';
++        return language.t('tasks_importance_average');
+       case 'low':
+-        return 'Low';
++        return language.t('tasks_importance_low');
+       default:
+         return value;
+     }
+   }
+@@
+-  String _labelForDuration(String value) {
++  String _labelForDuration(String value, LanguageProvider language) {
+     switch (value) {
+       case 'less_than_30min':
+-        return '< 30 min';
++        return language.t('tasks_duration_under_30min');
+       case '1_hour':
+-        return '1 hour';
++        return language.t('tasks_duration_1_hour');
+       case '2_hours':
+-        return '2 hours';
++        return language.t('tasks_duration_2_hours');
+       case 'half_day':
+-        return 'Half day';
++        return language.t('tasks_duration_half_day');
+       case '1_day':
+-        return '1 day';
++        return language.t('tasks_duration_1_day');
+       case 'several_days':
+-        return 'Several days';
++        return language.t('tasks_duration_several_days');
+       default:
+         return value;
+     }
+   }
+@@
+   void _showDeadlinePicker() {
++    final language = context.read<LanguageProvider>();
+     final initial = _deadline ?? DateTime.now().add(const Duration(days: 1));
+     showCupertinoModalPopup(
+       context: context,
+       builder: (_) => Container(
+@@
+                     child: Text(
+-                      'CLEAR',
++                      language.t('tasks_picker_clear'),
+                       style: AppTypography.mono.copyWith(
+                         fontSize: 12,
+                         color: AppColors.error,
+@@
+                     child: Text(
+-                      'DONE',
++                      language.t('tasks_picker_done'),
+                       style: AppTypography.mono.copyWith(
+                         fontSize: 12,
+                         color: AppColors.primaryOrange,
+@@
+   }
+ 
+-  String _formatDeadline(DateTime d) {
+-    const months = [
+-      'JAN',
+-      'FEB',
+-      'MAR',
+-      'APR',
+-      'MAY',
+-      'JUN',
+-      'JUL',
+-      'AUG',
+-      'SEP',
+-      'OCT',
+-      'NOV',
+-      'DEC',
+-    ];
+-    return '${months[d.month - 1]} ${d.day}, ${d.year}';
++  String _formatDeadline(DateTime d, LanguageProvider language) {
++    final locale = language.languageCode.toLowerCase();
++    return DateFormat('MMM d, y', locale).format(d);
+   }
+@@
+   @override
+   Widget build(BuildContext context) {
++    final language = context.watch<LanguageProvider>();
+     return BackdropFilter(
+       filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+@@
+                 Text(
+-                  'New task',
++                  language.t('tasks_new_task'),
+                   style: AppTypography.title1.copyWith(
+                     fontSize: 30,
+                     color: AppColors.label,
+@@
+                 GlassInputField(
+-                  placeholder: 'Task title',
++                  placeholder: language.t('tasks_task_title_placeholder'),
+                   controller: _titleCtrl,
+                   autofocus: true,
+                   textCapitalization: TextCapitalization.sentences,
+@@
+                           _deadline != null
+-                              ? _formatDeadline(_deadline!)
+-                              : 'Set deadline',
++                              ? _formatDeadline(_deadline!, language)
++                              : language.t('tasks_set_deadline'),
+                           style: AppTypography.callout.copyWith(
+                             fontSize: 14,
+                             color: _deadline != null
+@@
+                       Text(
+-                        'Sync deadline to Calendar',
++                        language.t('tasks_sync_deadline_to_calendar'),
+                         style: AppTypography.footnote.copyWith(
+                           fontSize: 12,
+                           color: AppColors.secondaryLabel,
+@@
+                         crossAxisAlignment: CrossAxisAlignment.start,
+                         children: [
+-                          _sectionLabel('Priority'),
++                          _sectionLabel(language.t('tasks_priority')),
+                           const SizedBox(height: 12),
+                           Container(
+@@
+                                     (e) => Center(
+                                       child: Text(
+-                                        _labelForImportance(e),
++                                        _labelForImportance(e, language),
+                                         style: AppTypography.callout.copyWith(
+                                           fontSize: 13,
+                                           color: _importanceColor(e),
+@@
+                         crossAxisAlignment: CrossAxisAlignment.start,
+                         children: [
+-                          _sectionLabel('Est. duration'),
++                          _sectionLabel(language.t('tasks_est_duration')),
+                           const SizedBox(height: 12),
+                           Container(
+@@
+                                     (e) => Center(
+                                       child: Text(
+-                                        _labelForDuration(e),
++                                        _labelForDuration(e, language),
+                                         style: AppTypography.callout.copyWith(
+                                           fontSize: 13,
+                                           color: AppColors.label,
+@@
+                 const SizedBox(height: 32),
+                 LiquidButton(
+-                  label: 'Initialize task',
++                  label: language.t('tasks_initialize_task'),
+                   fullWidth: true,
+                   onPressed: _addTask,
+                 ),
+*** End Patch

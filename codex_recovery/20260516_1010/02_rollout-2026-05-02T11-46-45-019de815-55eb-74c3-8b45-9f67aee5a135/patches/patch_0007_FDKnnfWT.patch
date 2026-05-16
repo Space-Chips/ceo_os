@@ -1,0 +1,324 @@
+*** Begin Patch
+*** Add File: lib/core/services/home_widget_service.dart
++import 'dart:async';
++import 'dart:io';
++
++import 'package:flutter/cupertino.dart';
++import 'package:home_widget/home_widget.dart';
++
++import '../providers/habit_provider.dart';
++import '../providers/language_provider.dart';
++import '../providers/task_provider.dart';
++import '../theme/app_colors.dart';
++import '../theme/app_typography.dart';
++
++enum CeoWidgetMode { todo, dashboard, habits }
++
++extension CeoWidgetModeParsing on CeoWidgetMode {
++  static CeoWidgetMode? tryParse(String? raw) {
++    if (raw == null) return null;
++    for (final mode in CeoWidgetMode.values) {
++      if (mode.name == raw) return mode;
++    }
++    return null;
++  }
++}
++
++class CeoHomeWidgetService {
++  static const String appGroupId = 'group.com.wakeapp.ceoos';
++
++  static const String androidQualifiedProvider =
++      'com.wakeapp.ceoos.CeoHomeWidgetProvider';
++  static const String iOSWidgetKind = 'com.wakeapp.ceoos.widget';
++
++  static const String keyDefaultMode = 'ceo_widget_default_mode';
++
++  static const String _keyTodoSmall = 'ceo_widget_todo_small';
++  static const String _keyTodoLarge = 'ceo_widget_todo_large';
++  static const String _keyDashboardSmall = 'ceo_widget_dashboard_small';
++  static const String _keyDashboardLarge = 'ceo_widget_dashboard_large';
++  static const String _keyHabitsSmall = 'ceo_widget_habits_small';
++  static const String _keyHabitsLarge = 'ceo_widget_habits_large';
++
++  static Future<void> ensureInitialized() async {
++    if (Platform.isIOS) {
++      await HomeWidget.setAppGroupId(appGroupId);
++    }
++  }
++
++  static Future<void> renderAndUpdateAll({
++    required TaskProvider tasks,
++    required HabitProvider habits,
++    required LanguageProvider language,
++  }) async {
++    await ensureInitialized();
++
++    final pendingTasks = tasks.tasks.where((t) => !t.completed).toList();
++    final completedTasks = tasks.tasks.where((t) => t.completed).toList();
++    final habitList = habits.habitsWithCompletedBottom;
++
++    final todoLines = pendingTasks.take(3).map((t) => t.title).toList();
++    final habitsLines = habitList
++        .take(3)
++        .map((h) {
++          final done = habits.isHabitCompletedToday(h.id);
++          return '${done ? '✓' : '•'} ${h.name}';
++        })
++        .toList();
++
++    await Future.wait([
++      HomeWidget.saveWidgetData<String>(
++        keyDefaultMode,
++        (await HomeWidget.getWidgetData<String>(
++              keyDefaultMode,
++              defaultValue: CeoWidgetMode.dashboard.name,
++            )) ??
++            CeoWidgetMode.dashboard.name,
++      ),
++      HomeWidget.renderFlutterWidget(
++        _CeoWidgetCard.smallTodo(
++          title: language.t('widget_mode_todo'),
++          lines: todoLines,
++        ),
++        key: _keyTodoSmall,
++        logicalSize: const Size(170, 170),
++        pixelRatio: 2,
++      ),
++      HomeWidget.renderFlutterWidget(
++        _CeoWidgetCard.largeTodo(
++          title: language.t('widget_mode_todo'),
++          lines: todoLines,
++        ),
++        key: _keyTodoLarge,
++        logicalSize: const Size(360, 180),
++        pixelRatio: 2,
++      ),
++      HomeWidget.renderFlutterWidget(
++        _CeoWidgetCard.smallDashboard(
++          title: language.t('widget_mode_dashboard'),
++          pendingTasks: pendingTasks.length,
++          completedTasks: completedTasks.length,
++          completedHabits: habits.completedToday,
++          totalHabits: habits.habits.length,
++        ),
++        key: _keyDashboardSmall,
++        logicalSize: const Size(170, 170),
++        pixelRatio: 2,
++      ),
++      HomeWidget.renderFlutterWidget(
++        _CeoWidgetCard.largeDashboard(
++          title: language.t('widget_mode_dashboard'),
++          pendingTasks: pendingTasks.length,
++          completedTasks: completedTasks.length,
++          completedHabits: habits.completedToday,
++          totalHabits: habits.habits.length,
++        ),
++        key: _keyDashboardLarge,
++        logicalSize: const Size(360, 180),
++        pixelRatio: 2,
++      ),
++      HomeWidget.renderFlutterWidget(
++        _CeoWidgetCard.smallHabits(
++          title: language.t('widget_mode_habits'),
++          lines: habitsLines,
++          completedHabits: habits.completedToday,
++          totalHabits: habits.habits.length,
++        ),
++        key: _keyHabitsSmall,
++        logicalSize: const Size(170, 170),
++        pixelRatio: 2,
++      ),
++      HomeWidget.renderFlutterWidget(
++        _CeoWidgetCard.largeHabits(
++          title: language.t('widget_mode_habits'),
++          lines: habitsLines,
++          completedHabits: habits.completedToday,
++          totalHabits: habits.habits.length,
++        ),
++        key: _keyHabitsLarge,
++        logicalSize: const Size(360, 180),
++        pixelRatio: 2,
++      ),
++    ]);
++
++    await HomeWidget.updateWidget(
++      qualifiedAndroidName: androidQualifiedProvider,
++      iOSName: iOSWidgetKind,
++      name: 'CeoHomeWidgetProvider',
++    );
++  }
++
++  static String imageKeyFor(CeoWidgetMode mode, {required bool large}) {
++    switch (mode) {
++      case CeoWidgetMode.todo:
++        return large ? _keyTodoLarge : _keyTodoSmall;
++      case CeoWidgetMode.dashboard:
++        return large ? _keyDashboardLarge : _keyDashboardSmall;
++      case CeoWidgetMode.habits:
++        return large ? _keyHabitsLarge : _keyHabitsSmall;
++    }
++  }
++}
++
++class _CeoWidgetCard extends StatelessWidget {
++  final String title;
++  final String subtitle;
++  final List<String> lines;
++
++  const _CeoWidgetCard({
++    required this.title,
++    required this.subtitle,
++    required this.lines,
++  });
++
++  factory _CeoWidgetCard.smallTodo({
++    required String title,
++    required List<String> lines,
++  }) {
++    return _CeoWidgetCard(
++      title: title,
++      subtitle: 'Today',
++      lines: lines,
++    );
++  }
++
++  factory _CeoWidgetCard.largeTodo({
++    required String title,
++    required List<String> lines,
++  }) {
++    return _CeoWidgetCard(
++      title: title,
++      subtitle: 'Today',
++      lines: lines,
++    );
++  }
++
++  factory _CeoWidgetCard.smallDashboard({
++    required String title,
++    required int pendingTasks,
++    required int completedTasks,
++    required int completedHabits,
++    required int totalHabits,
++  }) {
++    return _CeoWidgetCard(
++      title: title,
++      subtitle:
++          'Tasks $pendingTasks pending • $completedTasks done\nHabits $completedHabits/$totalHabits today',
++      lines: const [],
++    );
++  }
++
++  factory _CeoWidgetCard.largeDashboard({
++    required String title,
++    required int pendingTasks,
++    required int completedTasks,
++    required int completedHabits,
++    required int totalHabits,
++  }) {
++    return _CeoWidgetCard(
++      title: title,
++      subtitle:
++          'Tasks $pendingTasks pending • $completedTasks done\nHabits $completedHabits/$totalHabits today',
++      lines: const [],
++    );
++  }
++
++  factory _CeoWidgetCard.smallHabits({
++    required String title,
++    required List<String> lines,
++    required int completedHabits,
++    required int totalHabits,
++  }) {
++    return _CeoWidgetCard(
++      title: title,
++      subtitle: 'Completed $completedHabits/$totalHabits today',
++      lines: lines,
++    );
++  }
++
++  factory _CeoWidgetCard.largeHabits({
++    required String title,
++    required List<String> lines,
++    required int completedHabits,
++    required int totalHabits,
++  }) {
++    return _CeoWidgetCard(
++      title: title,
++      subtitle: 'Completed $completedHabits/$totalHabits today',
++      lines: lines,
++    );
++  }
++
++  @override
++  Widget build(BuildContext context) {
++    return Container(
++      decoration: BoxDecoration(
++        borderRadius: BorderRadius.circular(26),
++        gradient: LinearGradient(
++          begin: Alignment.topLeft,
++          end: Alignment.bottomRight,
++          colors: [
++            AppColors.sectionBackground.withValues(alpha: 0.95),
++            AppColors.background,
++          ],
++        ),
++        border: Border.all(color: AppColors.borderStrong, width: 1),
++        boxShadow: [
++          BoxShadow(
++            color: AppColors.glassShadow,
++            blurRadius: 42,
++            offset: Offset(0, 18),
++            spreadRadius: -18,
++          ),
++        ],
++      ),
++      padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
++      child: Column(
++        crossAxisAlignment: CrossAxisAlignment.start,
++        children: [
++          Text(
++            title,
++            maxLines: 1,
++            overflow: TextOverflow.ellipsis,
++            style: AppTypography.title3.copyWith(
++              fontSize: 18,
++              fontWeight: FontWeight.w800,
++              color: AppColors.label,
++            ),
++          ),
++          const SizedBox(height: 10),
++          Text(
++            subtitle,
++            maxLines: 2,
++            overflow: TextOverflow.ellipsis,
++            style: AppTypography.subhead.copyWith(
++              fontSize: 12,
++              height: 1.25,
++              color: AppColors.secondaryLabel.withValues(alpha: 0.72),
++            ),
++          ),
++          if (lines.isNotEmpty) ...[
++            const SizedBox(height: 12),
++            ...lines.map(
++              (line) => Padding(
++                padding: const EdgeInsets.only(bottom: 7),
++                child: Text(
++                  line,
++                  maxLines: 1,
++                  overflow: TextOverflow.ellipsis,
++                  style: AppTypography.callout.copyWith(
++                    fontSize: 13,
++                    fontWeight: FontWeight.w600,
++                    color: AppColors.label.withValues(alpha: 0.88),
++                  ),
++                ),
++              ),
++            ),
++          ],
++        ],
++      ),
++    );
++  }
++}
++
+*** End Patch

@@ -1,0 +1,56 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/screen_time_screen.dart
+@@
+     if (Platform.isIOS) {
+@@
+-      final selection = await _focusService.openFamilyActivityPicker();
+-      final payloads =
+-          (selection ?? []).where((item) => item.trim().isNotEmpty).toList();
+-      if (payloads.isEmpty) {
++      final selection = await _focusService.openFamilyActivityPickerWithMetadata();
++      final picked = (selection ?? [])
++          .where((item) => item.payload.trim().isNotEmpty)
++          .toList(growable: false);
++      if (picked.isEmpty) {
+         await _showNotice(
+           title: 'Selection canceled',
+           message:
+               'Select at least one app in the Apple picker, then tap Done to save your block.',
+         );
+@@
+       await _runMutation(() async {
+-        final existing = _blockedApps
++        final existingLabels = _blockedApps
+             .map((app) => (app.appName ?? '').trim())
+             .where((name) => name.isNotEmpty)
+             .toSet();
+-        for (final payload in payloads) {
+-          final label = _nextAppSelectionLabelFrom(existing);
+-          existing.add(label);
++        final existingPayloads = _blockedApps
++            .map((app) => _appBindings[app.id]?.nativePayload?.trim())
++            .whereType<String>()
++            .where((payload) => payload.isNotEmpty)
++            .toSet();
++
++        for (final selected in picked) {
++          final payload = selected.payload.trim();
++          if (payload.isEmpty || existingPayloads.contains(payload)) {
++            continue;
++          }
++
++          final label = _resolvedAppLabel(selected, existingLabels);
++          existingLabels.add(label);
+           final record = await _repo.createBlockedAppRecord(label);
+           if (record == null) continue;
+           await _classicLocalStore.saveAppBinding(
+             rowId: record.id,
++            nativeIdentifier: selected.bundleIdentifier,
+             nativePayload: payload,
+           );
++          existingPayloads.add(payload);
+         }
+       });
+       return;
+     }
+*** End Patch

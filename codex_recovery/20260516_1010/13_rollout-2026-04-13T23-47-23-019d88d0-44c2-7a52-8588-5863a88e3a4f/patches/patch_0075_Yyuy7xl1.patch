@@ -1,0 +1,6 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/auth/onboarding_screen.dart
+@@
+-        childAspectRatio: 0.94,
++        childAspectRatio: 0.86,
+*** End Patch

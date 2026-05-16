@@ -1,0 +1,42 @@
+*** Begin Patch
+*** Update File: android/app/src/main/kotlin/com/wakeapp/ceoos/ForegroundAppDetector.kt
+@@
+ class ForegroundAppDetector(
+     private val wakePackageName: String,
+ ) {
+@@
+     fun createSnapshot(
+         event: AccessibilityEvent,
+         root: AccessibilityNodeInfo?,
++        includeBrowserSignals: Boolean = true,
+     ): ForegroundSnapshot {
+         val packageName = root?.packageName?.toString()?.trim()?.ifEmpty { null }
+             ?: event.packageName?.toString()?.trim()?.ifEmpty { null }
+         val className = event.className?.toString()?.trim()?.ifEmpty { null }
+-        val isBrowser = isBrowserPackage(packageName)
+-        val detectedNow = if (isBrowser) detectBrowserUrl(event, root, packageName) else null
+-        val detectedUrl = if (isBrowser) resolveDetectedDomain(packageName, detectedNow) else null
+-        val toolbarBottomPx = if (isBrowser) detectBrowserToolbarBottom(root, packageName) else null
+-        val addressBarFocused = if (isBrowser) detectAddressBarFocused(event, root, packageName) else false
++        if (!includeBrowserSignals) {
++            return ForegroundSnapshot(
++                packageName = packageName,
++                className = className,
++                eventType = event.eventType,
++                detectedBrowserUrl = null,
++                isBrowser = false,
++                browserToolbarBottomPx = null,
++                browserAddressBarFocused = false,
++            )
++        }
++
++        val isBrowser = isBrowserPackage(packageName)
++        val detectedNow = if (isBrowser) detectBrowserUrl(event, root, packageName) else null
++        val detectedUrl = if (isBrowser) resolveDetectedDomain(packageName, detectedNow) else null
++        val toolbarBottomPx = if (isBrowser) detectBrowserToolbarBottom(root, packageName) else null
++        val addressBarFocused = if (isBrowser) detectAddressBarFocused(event, root, packageName) else false
+ 
+         return ForegroundSnapshot(
+             packageName = packageName,
+             className = className,
+*** End Patch

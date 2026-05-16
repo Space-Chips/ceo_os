@@ -1,0 +1,47 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/tasks/task_detail_sheet.dart
+@@
+ import '../../components/components.dart';
+ import '../../core/models/task_models.dart';
+ import '../../core/theme/app_colors.dart';
+ import '../../core/theme/app_typography.dart';
++import 'task_importance_theme.dart';
+@@
+   Color get _priorityColor {
+-    switch ((task.importanceLevel ?? '').toLowerCase()) {
+-      case 'critical':
+-      case 'crucial':
+-        return AppColors.error;
+-      case 'high':
+-      case 'essential':
+-        return AppColors.primaryOrange;
+-      case 'medium':
+-      case 'average':
+-        return AppColors.warning;
+-      case 'low':
+-        return AppColors.secondaryLabel;
+-      default:
+-        return AppColors.tertiaryLabel;
+-    }
++    return TaskImportanceTheme.accent(task.importanceLevel);
+   }
+@@
+   String _importanceLabel(String? raw) {
+-    switch ((raw ?? '').toLowerCase()) {
+-      case 'critical':
+-      case 'crucial':
+-        return 'Critical';
+-      case 'high':
+-      case 'essential':
+-        return 'High';
+-      case 'medium':
+-      case 'average':
+-        return 'Medium';
+-      case 'low':
+-        return 'Low';
+-      default:
+-        return 'None';
+-    }
++    return TaskImportanceTheme.detailLabel(raw);
+   }
+*** End Patch

@@ -1,0 +1,10 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/focus/focus_screen.dart
+@@
+-                                    color: AppColors.background.withValues(
+-                                      0.4,
+-                                    ),
++                                    color: AppColors.background.withValues(
++                                      alpha: 0.4,
++                                    ),
+*** End Patch

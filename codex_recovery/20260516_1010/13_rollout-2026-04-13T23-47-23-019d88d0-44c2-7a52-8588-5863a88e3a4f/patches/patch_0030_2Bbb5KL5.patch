@@ -1,0 +1,14 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/setup/setup_flow_screen.dart
+@@
+   SetupStep? _lastStep;
+   int _lastStepIndex = 0;
+   int _transitionDirection = 1;
+-  bool _isReturningFromSettings = false;
+@@
+-    _isReturningFromSettings = true;
+     _showReturnOverlay.value = true;
+@@
+-        _isReturningFromSettings = false;
+         await controller.advance();
+*** End Patch

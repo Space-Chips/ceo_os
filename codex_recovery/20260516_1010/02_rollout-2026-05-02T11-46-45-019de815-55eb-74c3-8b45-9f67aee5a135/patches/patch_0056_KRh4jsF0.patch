@@ -1,0 +1,556 @@
+*** Begin Patch
+*** Update File: lib/core/services/home_widget_service.dart
+@@
+ class CeoHomeWidgetService {
+@@
+   static const String keyEnabledTodo = 'ceo_widget_enabled_todo';
+   static const String keyEnabledDashboard = 'ceo_widget_enabled_dashboard';
+-  static const String keyEnabledHabits = 'ceo_widget_enabled_habits';
++  static const String keyEnabledHabitsToday = 'ceo_widget_enabled_habits_today';
++  static const String keyEnabledHabitsTable = 'ceo_widget_enabled_habits_table';
+@@
+   static const String _keyHabitsSmall = 'ceo_widget_habits_small';
+   static const String _keyHabitsLarge = 'ceo_widget_habits_large';
++  static const String _keyHabitsTableSmall = 'ceo_widget_habits_table_small';
++  static const String _keyHabitsTableLarge = 'ceo_widget_habits_table_large';
+@@
+     final enabledHabits =
+         await HomeWidget.getWidgetData<bool>(
+-          keyEnabledHabits,
++          keyEnabledHabitsToday,
+           defaultValue: false,
+         ) ??
+         false;
++    final enabledHabitsTable =
++        await HomeWidget.getWidgetData<bool>(
++          keyEnabledHabitsTable,
++          defaultValue: false,
++        ) ??
++        false;
+@@
+     final habitList = habits.habitsWithCompletedBottom;
++    final todayHabits = habits.habits;
++    final todayHabitsLines = todayHabits
++        .take(5)
++        .map((h) {
++          final done = habits.isHabitCompletedToday(h.id);
++          return '${done ? '✓' : '•'} ${h.title}';
++        })
++        .toList();
+@@
+-    final habitsLines = habitList.take(3).map((h) {
++    final habitsLines = habitList.take(3).map((h) {
+       final done = habits.isHabitCompletedToday(h.id);
+       return '${done ? '✓' : '•'} ${h.title}';
+     }).toList();
++
++    final eventsToday = _eventsToday(tasks);
++    final eventsCount = eventsToday.length;
++    final nextEventTitle =
++        eventsToday.isEmpty ? '' : (eventsToday.first.title);
++    final nextEventTime =
++        eventsToday.isEmpty ? '' : (eventsToday.first.eventTime ?? '');
+@@
+     if (enabledDashboard) {
+       futures.addAll([
+         HomeWidget.renderFlutterWidget(
+-          _CeoWidgetCard.smallDashboard(
+-            title: language.t('widget_mode_dashboard'),
+-            tasksLabel: language.t('tasks'),
+-            habitsLabel: language.t('habits'),
+-            pendingTasks: pendingTasks.length,
+-            completedTasks: completedTasks.length,
+-            completedHabits: habits.completedToday,
+-            totalHabits: habits.habits.length,
+-          ),
++          _CeoDashboardCard.small(
++            title: language.t('widget_mode_dashboard'),
++            tasksLabel: language.t('tasks'),
++            habitsLabel: language.t('habits'),
++            eventsLabel: language.t('events'),
++            pendingTasks: pendingTasks.length,
++            completedHabits: habits.completedToday,
++            totalHabits: habits.habits.length,
++            eventsCount: eventsCount,
++          ),
+           key: _keyDashboardSmall,
+           logicalSize: const Size(170, 170),
+           pixelRatio: 2,
+         ),
+         HomeWidget.renderFlutterWidget(
+-          _CeoWidgetCard.largeDashboard(
+-            title: language.t('widget_mode_dashboard'),
+-            tasksLabel: language.t('tasks'),
+-            habitsLabel: language.t('habits'),
+-            pendingTasks: pendingTasks.length,
+-            completedTasks: completedTasks.length,
+-            completedHabits: habits.completedToday,
+-            totalHabits: habits.habits.length,
+-          ),
++          _CeoDashboardCard.large(
++            title: language.t('widget_mode_dashboard'),
++            tasksLabel: language.t('tasks'),
++            habitsLabel: language.t('habits'),
++            eventsLabel: language.t('events'),
++            pendingTasks: pendingTasks.length,
++            completedTasks: completedTasks.length,
++            completedHabits: habits.completedToday,
++            totalHabits: habits.habits.length,
++            eventsCount: eventsCount,
++            nextEventTitle: nextEventTitle,
++            nextEventTime: nextEventTime,
++          ),
+           key: _keyDashboardLarge,
+           logicalSize: const Size(360, 180),
+           pixelRatio: 2,
+         ),
+       ]);
+     } else {
+@@
+-    if (enabledHabits) {
++    if (enabledHabits) {
+       futures.addAll([
+         HomeWidget.renderFlutterWidget(
+-          _CeoWidgetCard.smallHabits(
+-            title: language.t('widget_mode_habits'),
+-            subtitlePrefix: language.t('widget_completed'),
+-            lines: habitsLines,
+-            completedHabits: habits.completedToday,
+-            totalHabits: habits.habits.length,
+-          ),
++          _CeoHabitsTodayCard.small(
++            title: language.t('widget_mode_habits'),
++            subtitlePrefix: language.t('widget_completed'),
++            lines: todayHabitsLines,
++            completedHabits: habits.completedToday,
++            totalHabits: habits.habits.length,
++          ),
+           key: _keyHabitsSmall,
+           logicalSize: const Size(170, 170),
+           pixelRatio: 2,
+         ),
+         HomeWidget.renderFlutterWidget(
+-          _CeoWidgetCard.largeHabits(
+-            title: language.t('widget_mode_habits'),
+-            subtitlePrefix: language.t('widget_completed'),
+-            lines: habitsLines,
+-            completedHabits: habits.completedToday,
+-            totalHabits: habits.habits.length,
+-          ),
++          _CeoHabitsTodayCard.large(
++            title: language.t('widget_mode_habits'),
++            subtitlePrefix: language.t('widget_completed'),
++            lines: todayHabitsLines,
++            completedHabits: habits.completedToday,
++            totalHabits: habits.habits.length,
++          ),
+           key: _keyHabitsLarge,
+           logicalSize: const Size(360, 180),
+           pixelRatio: 2,
+         ),
+       ]);
+     } else {
+       futures.addAll([
+         HomeWidget.saveWidgetData<String>(_keyHabitsSmall, null),
+         HomeWidget.saveWidgetData<String>(_keyHabitsLarge, null),
+       ]);
+     }
++
++    if (enabledHabitsTable) {
++      futures.addAll([
++        HomeWidget.renderFlutterWidget(
++          _CeoHabitsTableCard.small(
++            title: language.t('widget_mode_habits'),
++            habits: habits.habitsWithCompletedBottom,
++            isDone: habits.isHabitCompletedToday,
++          ),
++          key: _keyHabitsTableSmall,
++          logicalSize: const Size(170, 170),
++          pixelRatio: 2,
++        ),
++        HomeWidget.renderFlutterWidget(
++          _CeoHabitsTableCard.large(
++            title: language.t('widget_mode_habits'),
++            habits: habits.habitsWithCompletedBottom,
++            isDone: habits.isHabitCompletedToday,
++          ),
++          key: _keyHabitsTableLarge,
++          logicalSize: const Size(360, 180),
++          pixelRatio: 2,
++        ),
++      ]);
++    } else {
++      futures.addAll([
++        HomeWidget.saveWidgetData<String>(_keyHabitsTableSmall, null),
++        HomeWidget.saveWidgetData<String>(_keyHabitsTableLarge, null),
++      ]);
++    }
+@@
+   static String imageKeyFor(CeoWidgetMode mode, {required bool large}) {
+     switch (mode) {
+       case CeoWidgetMode.todo:
+         return large ? _keyTodoLarge : _keyTodoSmall;
+       case CeoWidgetMode.dashboard:
+         return large ? _keyDashboardLarge : _keyDashboardSmall;
+       case CeoWidgetMode.habits:
+         return large ? _keyHabitsLarge : _keyHabitsSmall;
+     }
+   }
++
++  static String imageKeyForHabitsTable({required bool large}) =>
++      large ? _keyHabitsTableLarge : _keyHabitsTableSmall;
++
++  static List<CalendarEvent> _eventsToday(TaskProvider tasks) {
++    final now = DateTime.now();
++    final key =
++        '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
++    final events = tasks.events.where((e) => e.eventDate == key).toList();
++    events.sort((a, b) => (a.eventTime ?? '').compareTo(b.eventTime ?? ''));
++    return events;
++  }
+ }
+ 
+-class _CeoWidgetCard extends StatelessWidget {
++class _CeoWidgetCard extends StatelessWidget {
+@@
+ }
++
++class _CeoDashboardCard extends StatelessWidget {
++  final String title;
++  final String tasksLabel;
++  final String habitsLabel;
++  final String eventsLabel;
++  final int pendingTasks;
++  final int completedTasks;
++  final int completedHabits;
++  final int totalHabits;
++  final int eventsCount;
++  final String nextEventTitle;
++  final String nextEventTime;
++
++  const _CeoDashboardCard._({
++    required this.title,
++    required this.tasksLabel,
++    required this.habitsLabel,
++    required this.eventsLabel,
++    required this.pendingTasks,
++    required this.completedTasks,
++    required this.completedHabits,
++    required this.totalHabits,
++    required this.eventsCount,
++    required this.nextEventTitle,
++    required this.nextEventTime,
++  });
++
++  factory _CeoDashboardCard.small({
++    required String title,
++    required String tasksLabel,
++    required String habitsLabel,
++    required String eventsLabel,
++    required int pendingTasks,
++    required int completedHabits,
++    required int totalHabits,
++    required int eventsCount,
++  }) {
++    return _CeoDashboardCard._(
++      title: title,
++      tasksLabel: tasksLabel,
++      habitsLabel: habitsLabel,
++      eventsLabel: eventsLabel,
++      pendingTasks: pendingTasks,
++      completedTasks: 0,
++      completedHabits: completedHabits,
++      totalHabits: totalHabits,
++      eventsCount: eventsCount,
++      nextEventTitle: '',
++      nextEventTime: '',
++    );
++  }
++
++  factory _CeoDashboardCard.large({
++    required String title,
++    required String tasksLabel,
++    required String habitsLabel,
++    required String eventsLabel,
++    required int pendingTasks,
++    required int completedTasks,
++    required int completedHabits,
++    required int totalHabits,
++    required int eventsCount,
++    required String nextEventTitle,
++    required String nextEventTime,
++  }) {
++    return _CeoDashboardCard._(
++      title: title,
++      tasksLabel: tasksLabel,
++      habitsLabel: habitsLabel,
++      eventsLabel: eventsLabel,
++      pendingTasks: pendingTasks,
++      completedTasks: completedTasks,
++      completedHabits: completedHabits,
++      totalHabits: totalHabits,
++      eventsCount: eventsCount,
++      nextEventTitle: nextEventTitle,
++      nextEventTime: nextEventTime,
++    );
++  }
++
++  @override
++  Widget build(BuildContext context) {
++    return _CeoWidgetCard(
++      title: title,
++      subtitle: '',
++      lines: const [],
++      childOverride: Padding(
++        padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
++        child: Column(
++          crossAxisAlignment: CrossAxisAlignment.start,
++          children: [
++            Text(
++              title,
++              maxLines: 1,
++              overflow: TextOverflow.ellipsis,
++              style: AppTypography.title3.copyWith(
++                fontSize: 18,
++                fontWeight: FontWeight.w800,
++                color: AppColors.label,
++              ),
++            ),
++            const SizedBox(height: 14),
++            _metricRow(
++              label: tasksLabel,
++              value: '$pendingTasks',
++              suffix: 'pending',
++            ),
++            const SizedBox(height: 10),
++            _metricRow(
++              label: habitsLabel,
++              value: '$completedHabits/$totalHabits',
++              suffix: 'today',
++            ),
++            const SizedBox(height: 10),
++            _metricRow(label: eventsLabel, value: '$eventsCount', suffix: ''),
++            if (nextEventTitle.isNotEmpty) ...[
++              const SizedBox(height: 14),
++              Text(
++                nextEventTime.isEmpty
++                    ? nextEventTitle
++                    : '$nextEventTime — $nextEventTitle',
++                maxLines: 1,
++                overflow: TextOverflow.ellipsis,
++                style: AppTypography.callout.copyWith(
++                  fontSize: 13,
++                  fontWeight: FontWeight.w700,
++                  color: AppColors.label.withValues(alpha: 0.9),
++                ),
++              ),
++            ],
++          ],
++        ),
++      ),
++    );
++  }
++
++  Widget _metricRow({
++    required String label,
++    required String value,
++    required String suffix,
++  }) {
++    return Row(
++      children: [
++        Expanded(
++          child: Text(
++            label,
++            maxLines: 1,
++            overflow: TextOverflow.ellipsis,
++            style: AppTypography.subhead.copyWith(
++              fontSize: 12,
++              color: AppColors.secondaryLabel.withValues(alpha: 0.75),
++            ),
++          ),
++        ),
++        Text(
++          suffix.isEmpty ? value : '$value $suffix',
++          maxLines: 1,
++          overflow: TextOverflow.ellipsis,
++          style: AppTypography.callout.copyWith(
++            fontSize: 13,
++            fontWeight: FontWeight.w700,
++            color: AppColors.label.withValues(alpha: 0.9),
++          ),
++        ),
++      ],
++    );
++  }
++}
++
++class _CeoHabitsTodayCard extends StatelessWidget {
++  final String title;
++  final String subtitlePrefix;
++  final List<String> lines;
++  final int completedHabits;
++  final int totalHabits;
++  final bool large;
++
++  const _CeoHabitsTodayCard._({
++    required this.title,
++    required this.subtitlePrefix,
++    required this.lines,
++    required this.completedHabits,
++    required this.totalHabits,
++    required this.large,
++  });
++
++  factory _CeoHabitsTodayCard.small({
++    required String title,
++    required String subtitlePrefix,
++    required List<String> lines,
++    required int completedHabits,
++    required int totalHabits,
++  }) {
++    return _CeoHabitsTodayCard._(
++      title: title,
++      subtitlePrefix: subtitlePrefix,
++      lines: lines,
++      completedHabits: completedHabits,
++      totalHabits: totalHabits,
++      large: false,
++    );
++  }
++
++  factory _CeoHabitsTodayCard.large({
++    required String title,
++    required String subtitlePrefix,
++    required List<String> lines,
++    required int completedHabits,
++    required int totalHabits,
++  }) {
++    return _CeoHabitsTodayCard._(
++      title: title,
++      subtitlePrefix: subtitlePrefix,
++      lines: lines,
++      completedHabits: completedHabits,
++      totalHabits: totalHabits,
++      large: true,
++    );
++  }
++
++  @override
++  Widget build(BuildContext context) {
++    final maxLines = large ? 5 : 3;
++    return _CeoWidgetCard(
++      title: title,
++      subtitle: '$subtitlePrefix $completedHabits/$totalHabits',
++      lines: lines.take(maxLines).toList(),
++    );
++  }
++}
++
++class _CeoHabitsTableCard extends StatelessWidget {
++  final String title;
++  final List<dynamic> habits;
++  final bool Function(String habitId) isDone;
++  final bool large;
++
++  const _CeoHabitsTableCard._({
++    required this.title,
++    required this.habits,
++    required this.isDone,
++    required this.large,
++  });
++
++  factory _CeoHabitsTableCard.small({
++    required String title,
++    required List<dynamic> habits,
++    required bool Function(String habitId) isDone,
++  }) {
++    return _CeoHabitsTableCard._(
++      title: title,
++      habits: habits,
++      isDone: isDone,
++      large: false,
++    );
++  }
++
++  factory _CeoHabitsTableCard.large({
++    required String title,
++    required List<dynamic> habits,
++    required bool Function(String habitId) isDone,
++  }) {
++    return _CeoHabitsTableCard._(
++      title: title,
++      habits: habits,
++      isDone: isDone,
++      large: true,
++    );
++  }
++
++  @override
++  Widget build(BuildContext context) {
++    final items = habits.take(large ? 8 : 4).toList();
++    return _CeoWidgetCard(
++      title: title,
++      subtitle: 'Table',
++      lines: const [],
++      childOverride: Padding(
++        padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
++        child: Column(
++          crossAxisAlignment: CrossAxisAlignment.start,
++          children: [
++            Text(
++              '$title — Table',
++              maxLines: 1,
++              overflow: TextOverflow.ellipsis,
++              style: AppTypography.title3.copyWith(
++                fontSize: 18,
++                fontWeight: FontWeight.w800,
++                color: AppColors.label,
++              ),
++            ),
++            const SizedBox(height: 14),
++            Wrap(
++              spacing: 8,
++              runSpacing: 8,
++              children: [
++                for (final habit in items)
++                  _habitChip(
++                    (habit as dynamic).id as String,
++                    (habit as dynamic).title as String,
++                  ),
++              ],
++            ),
++          ],
++        ),
++      ),
++    );
++  }
++
++  Widget _habitChip(String id, String title) {
++    final done = isDone(id);
++    return Container(
++      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
++      decoration: BoxDecoration(
++        borderRadius: BorderRadius.circular(999),
++        color: done
++            ? AppColors.accent.withValues(alpha: 0.18)
++            : AppColors.pillBackground,
++        border: Border.all(
++          color: done
++              ? AppColors.accent.withValues(alpha: 0.5)
++              : AppColors.pillBorder,
++        ),
++      ),
++      child: Text(
++        title,
++        maxLines: 1,
++        overflow: TextOverflow.ellipsis,
++        style: AppTypography.caption1.copyWith(
++          fontSize: 12,
++          fontWeight: FontWeight.w700,
++          color: done ? AppColors.accent : AppColors.label.withValues(alpha: 0.9),
++        ),
++      ),
++    );
++  }
++}
+*** End Patch

@@ -1,0 +1,14 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/home/home_screen.dart
+@@
+ class _CeoModeCard extends StatelessWidget {
+-  final bool isActive;
+   final String statusLabel;
+   final VoidCallback onOpenCeoMode;
+ 
+   const _CeoModeCard({
+-    required this.isActive,
+     required this.statusLabel,
+     required this.onOpenCeoMode,
+   });
+*** End Patch

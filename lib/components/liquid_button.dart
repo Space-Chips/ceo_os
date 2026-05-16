@@ -10,6 +10,10 @@ class LiquidButton extends StatefulWidget {
   final IconData? icon;
   final bool fullWidth;
   final List<Color>? gradient;
+  final double? height;
+  final double? borderRadius;
+  final TextStyle? labelStyle;
+  final bool showTopHighlight;
 
   const LiquidButton({
     super.key,
@@ -19,6 +23,10 @@ class LiquidButton extends StatefulWidget {
     this.icon,
     this.fullWidth = false,
     this.gradient,
+    this.height,
+    this.borderRadius,
+    this.labelStyle,
+    this.showTopHighlight = true,
   });
 
   @override
@@ -29,6 +37,7 @@ class _LiquidButtonState extends State<LiquidButton>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
+  bool _isPressed = false;
 
   @override
   void initState() {
@@ -41,6 +50,13 @@ class _LiquidButtonState extends State<LiquidButton>
       begin: 1.0,
       end: 0.96,
     ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutBack));
+    _controller.addListener(() {
+      if (!mounted) return;
+      final pressed = _controller.value > 0.01;
+      if (_isPressed != pressed) {
+        setState(() => _isPressed = pressed);
+      }
+    });
   }
 
   @override
@@ -57,22 +73,19 @@ class _LiquidButtonState extends State<LiquidButton>
       onTapDown: isDisabled ? null : (_) => _controller.forward(),
       onTapUp: isDisabled ? null : (_) => _controller.reverse(),
       onTapCancel: isDisabled ? null : () => _controller.reverse(),
-      onTap: widget.onPressed,
+      onTap: isDisabled ? null : widget.onPressed,
       child: ScaleTransition(
         scale: _scaleAnimation,
         child: Container(
           width: widget.fullWidth ? double.infinity : null,
-          height: 60,
+          height: widget.height ?? 60,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(widget.borderRadius ?? 20),
             gradient: LinearGradient(
               colors: isDisabled
                   ? [AppColors.glassBase, AppColors.glassBase]
                   : (widget.gradient ??
-                        [
-                          AppColors.primaryOrange,
-                          AppColors.primaryOrange.withRed(200),
-                        ]),
+                        [AppColors.primaryOrange, AppColors.orangeDim]),
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -89,30 +102,31 @@ class _LiquidButtonState extends State<LiquidButton>
           child: Stack(
             children: [
               // Liquid reflection effect
-              Positioned(
-                top: 2,
-                left: 10,
-                right: 10,
-                child: Container(
-                  height: 20,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        AppColors.white.withValues(alpha: 0.15),
-                        AppColors.white.withValues(alpha: 0),
-                      ],
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                    ),
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(16),
+              if (widget.showTopHighlight)
+                Positioned(
+                  top: 2,
+                  left: 10,
+                  right: 10,
+                  child: Container(
+                    height: 20,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          AppColors.white.withValues(alpha: 0.15),
+                          AppColors.white.withValues(alpha: 0),
+                        ],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      ),
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(16),
+                      ),
                     ),
                   ),
                 ),
-              ),
               Center(
                 child: widget.isLoading
-                    ? const CupertinoActivityIndicator(color: AppColors.white)
+                    ? CupertinoActivityIndicator(color: AppColors.white)
                     : Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -122,11 +136,13 @@ class _LiquidButtonState extends State<LiquidButton>
                           ],
                           Text(
                             widget.label.toUpperCase(),
-                            style: AppTypography.headline.copyWith(
-                              color: AppColors.white,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: 1.2,
-                            ),
+                            style:
+                                widget.labelStyle ??
+                                AppTypography.headline.copyWith(
+                                  color: AppColors.white,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 1.2,
+                                ),
                           ),
                         ],
                       ),

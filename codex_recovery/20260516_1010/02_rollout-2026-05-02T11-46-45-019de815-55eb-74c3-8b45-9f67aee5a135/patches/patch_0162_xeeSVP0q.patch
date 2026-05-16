@@ -1,0 +1,64 @@
+*** Begin Patch
+*** Update File: lib/core/widgets/home_widgets/widget_views.dart
+@@
+ class HabitsTodayWidgetSquareView extends StatelessWidget {
+   final LanguageProvider language;
+   final List<Habit> habits;
++  final int completed;
++  final int total;
+ 
+   const HabitsTodayWidgetSquareView({
+     super.key,
+     required this.language,
+     required this.habits,
++    required this.completed,
++    required this.total,
+   });
+@@
+   Widget build(BuildContext context) {
+     final items = habits.take(3).toList();
+-    final total = habits.length;
+     final more = (habits.length - items.length).clamp(0, 999);
+ 
+     return WidgetRoot(
+       padding: WidgetDesignTokens.padSquare,
+       child: Column(
+         crossAxisAlignment: CrossAxisAlignment.start,
+         children: [
+           Row(
+             children: [
+               Expanded(
+                 child: Text(
+                   'Habits',
+                   style: WidgetDesignTokens.title.copyWith(fontSize: 22),
+                 ),
+               ),
+-              _WidgetCountPill(value: '${items.where((_) => false).length}', label: ''),
++              Column(
++                crossAxisAlignment: CrossAxisAlignment.end,
++                children: [
++                  Text(
++                    '$completed/$total',
++                    style: AppTypography.largeTitle.copyWith(
++                      fontSize: 26,
++                      fontWeight: FontWeight.w800,
++                      color: WidgetDesignTokens.primaryText,
++                      height: 1.0,
++                    ),
++                  ),
++                  const SizedBox(height: 2),
++                  Text(
++                    'completed',
++                    style: AppTypography.caption1.copyWith(
++                      fontSize: 13,
++                      fontWeight: FontWeight.w700,
++                      color: WidgetDesignTokens.secondaryText,
++                      height: 1,
++                    ),
++                  ),
++                ],
++              ),
+             ],
+           ),
+           const SizedBox(height: 10),
+*** End Patch

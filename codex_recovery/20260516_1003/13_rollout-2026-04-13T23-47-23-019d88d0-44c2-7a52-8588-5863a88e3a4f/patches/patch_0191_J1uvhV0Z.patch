@@ -1,0 +1,53 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/ios/Runner/AppDelegate.swift
+@@
+     private func encodeWebsiteDomainSelection(args: [String: Any]?, result: FlutterResult) {
+@@
+         result(encoded)
+     }
++
++    private func encodeApplicationBundleSelection(args: [String: Any]?, result: FlutterResult) {
++        guard let bundleIdentifier = (args?["bundleIdentifier"] as? String)?
++            .trimmingCharacters(in: .whitespacesAndNewlines),
++              !bundleIdentifier.isEmpty else {
++            result(
++                FlutterError(
++                    code: "INVALID_BUNDLE_ID",
++                    message: "A bundle identifier is required.",
++                    details: nil
++                )
++            )
++            return
++        }
++        guard let token = Application(bundleIdentifier: bundleIdentifier).token else {
++            result(
++                FlutterError(
++                    code: "APP_TOKEN_UNAVAILABLE",
++                    message: "This app cannot be converted to a Screen Time token on this iPhone.",
++                    details: nil
++                )
++            )
++            return
++        }
++        var selection = FamilyActivitySelection()
++        selection.applicationTokens = Set([token])
++        guard let encoded = encodeSelection(selection) else {
++            result(
++                FlutterError(
++                    code: "ENCODE_ERROR",
++                    message: "Failed to encode app selection.",
++                    details: nil
++                )
++            )
++            return
++        }
++        result(encoded)
++    }
+@@
+         case "encodeWebsiteDomainSelection":
+             encodeWebsiteDomainSelection(args: args, result: result)
++        case "encodeApplicationBundleSelection":
++            encodeApplicationBundleSelection(args: args, result: result)
+         case "describeAppSelectionPayload":
+             describeAppSelectionPayload(args: args, result: result)
+*** End Patch

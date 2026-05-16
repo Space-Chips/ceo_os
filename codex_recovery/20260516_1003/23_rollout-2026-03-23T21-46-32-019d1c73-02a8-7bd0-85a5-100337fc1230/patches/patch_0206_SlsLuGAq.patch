@@ -1,0 +1,28 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/screen_time_setup/screen_time_setup_screen.dart
+@@
+     return _SetupStepScaffold(
++      progressLabel: 'Step 2 of 2',
+       showBack: true,
+-      onBack: () => context.read<ScreenTimeSetupController>().jumpTo(
+-        ScreenTimeSetupStep.overview,
+-      ),
++      onBack: () => context.read<ScreenTimeSetupController>().jumpTo(
++        ScreenTimeSetupStep.intro,
++      ),
+       child: Column(
+         crossAxisAlignment: CrossAxisAlignment.start,
+         children: [
+-          const SizedBox(height: 6),
+-          Text(title, style: AppTypography.title1),
++          const SizedBox(height: 6),
++          Text(title, style: AppTypography.title1),
+           const SizedBox(height: 10),
+           Text(
+             subtitle,
+             style: AppTypography.body.copyWith(
+               color: AppColors.secondaryLabel,
+               height: 1.5,
+             ),
+           ),
+*** End Patch

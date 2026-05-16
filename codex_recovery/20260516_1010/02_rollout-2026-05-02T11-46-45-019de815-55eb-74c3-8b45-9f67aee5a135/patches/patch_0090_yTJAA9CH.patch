@@ -1,0 +1,23 @@
+*** Begin Patch
+*** Update File: lib/core/providers/language_provider.dart
+@@
+     'widget_open_blackout_to_start': 'Open Blackout to start',
++    'widget_metric_todo': 'To‑Do',
++    'widget_metric_habits': 'Habits',
++    'widget_metric_events': 'Events',
++    'widget_next': 'Next',
++    'widget_no_events_today': 'No events today',
++    'widget_today_focus': 'Today focus',
++    'widget_all_tasks_done': 'All tasks done',
+     'widget_default_none': 'None',
+@@
+     'widget_open_blackout_to_start': 'Ouvre Blackout pour démarrer',
++    'widget_metric_todo': 'To‑Do',
++    'widget_metric_habits': 'Habitudes',
++    'widget_metric_events': 'Événements',
++    'widget_next': 'Prochain',
++    'widget_no_events_today': "Aucun événement aujourd'hui",
++    'widget_today_focus': "Focus du jour",
++    'widget_all_tasks_done': 'Toutes les tâches sont faites',
+     'widget_default_none': 'Aucun',
+*** End Patch

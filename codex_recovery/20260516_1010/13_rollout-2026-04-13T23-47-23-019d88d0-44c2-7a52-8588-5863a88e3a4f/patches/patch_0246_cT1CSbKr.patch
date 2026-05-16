@@ -1,0 +1,10 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/providers/focus_provider.dart
+@@
+ import 'dart:async';
+-import 'dart:convert';
+ import 'dart:io';
+ import 'package:flutter/material.dart';
+-import 'package:shared_preferences/shared_preferences.dart';
+ import '../models/block_list_model.dart';
+*** End Patch

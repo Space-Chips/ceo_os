@@ -1,0 +1,8 @@
+*** Begin Patch
+*** Update File: lib/core/services/home_widget_service.dart
+@@
+     final pendingTasks = tasks.tasks.where((t) => !t.completed).toList();
+     final completedTasks = tasks.tasks.where((t) => t.completed).toList();
+-    final habitList = habits.habitsWithCompletedBottom;
+     final todayHabits = habits.habits;
+*** End Patch

@@ -1,0 +1,197 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/screen_time_screen.dart
+@@
+-  final TextEditingController _appCtrl = TextEditingController();
+   final TextEditingController _siteCtrl = TextEditingController();
+@@
+-  bool _showAddApp = false;
+   bool _showAddWebsite = false;
+@@
+   @override
+   void dispose() {
+-    _appCtrl.dispose();
+     _siteCtrl.dispose();
+     super.dispose();
+   }
++
++  String _nextAppSelectionLabel() {
++    const base = 'Selected apps';
++    final existing = _blockedApps
++        .map((app) => app.appName.trim())
++        .where((name) => name.isNotEmpty)
++        .toSet();
++    if (!existing.contains(base)) return base;
++    var index = 2;
++    while (existing.contains('$base $index')) {
++      index += 1;
++    }
++    return '$base $index';
++  }
+@@
+   Future<void> _addBlockedApp() async {
+     if (_saving) return;
+ 
+     if (Platform.isAndroid) {
+-      await _openAndroidBlockedAppsEditor(initialQuery: _appCtrl.text.trim());
+-      _appCtrl.clear();
++      await _openAndroidBlockedAppsEditor();
+       return;
+     }
+ 
+     if (Platform.isIOS) {
+-      final label = _appCtrl.text.trim();
+-      if (label.isEmpty) {
+-        await _showNotice(
+-          title: 'Name required',
+-          message: 'Enter a label for this blocked app before selecting it.',
+-        );
+-        return;
+-      }
+       final authorized = await _focusService.isAuthorized();
+       if (!authorized) {
+         final granted = await _focusService.requestPermissions();
+         if (!granted) {
+@@
+       final selection = await _focusService.openFamilyActivityPicker();
+       final payload = _firstNonEmpty(selection);
+-      if (payload == null) {
++      if (payload == null) {
+         await _showNotice(
+           title: 'Selection canceled',
+           message:
+               'Select at least one app or website, then tap Done to save your block.',
+         );
+         return;
+       }
+ 
+       await _runMutation(() async {
+-        final record = await _repo.createBlockedAppRecord(label);
++        final record = await _repo.createBlockedAppRecord(
++          _nextAppSelectionLabel(),
++        );
+         if (record == null) return;
+         await _classicLocalStore.saveAppBinding(
+           rowId: record.id,
+           nativePayload: payload,
+         );
+       });
+-      _appCtrl.clear();
+-      if (mounted) {
+-        setState(() => _showAddApp = false);
+-      }
+       return;
+     }
+ 
+-    final name = _appCtrl.text.trim();
+-    if (name.isEmpty) return;
+-    await _runMutation(() => _repo.createBlockedApp(name));
+-    _appCtrl.clear();
+-    if (mounted) {
+-      setState(() => _showAddApp = false);
+-    }
++    return;
+   }
+@@
+-      final selection = await _focusService.openFamilyActivityPicker();
++      final selection = await _focusService.openFamilyActivityWebsitePicker();
+       final payload = _firstNonEmpty(selection);
+       if (payload == null) {
+         await _showNotice(
+           title: 'Selection canceled',
+@@
+                         _sectionHeader(
+                           key: _appsSectionKey,
+                           title: 'Blocked apps',
+                           subtitle: '',
+                           trailing: Row(
+                             mainAxisSize: MainAxisSize.min,
+                             children: [
+                               _iconPill(
+-                                icon: _isAndroid
+-                                    ? CupertinoIcons.search
+-                                    : (_showAddApp
+-                                          ? CupertinoIcons.minus
+-                                          : CupertinoIcons.add),
+-                                onTap: _isAndroid
+-                                    ? _openAndroidBlockedAppsEditor
+-                                    : () {
+-                                        setState(
+-                                          () => _showAddApp = !_showAddApp,
+-                                        );
+-                                      },
++                                icon:
++                                    _isAndroid
++                                        ? CupertinoIcons.search
++                                        : CupertinoIcons.add,
++                                onTap:
++                                    _isAndroid
++                                        ? _openAndroidBlockedAppsEditor
++                                        : _addBlockedApp,
+                               ),
+                             ],
+                           ),
+                         ),
+-                        if (_isAndroid) ...[
+-                          _actionLauncherCard(
+-                            icon: CupertinoIcons.search,
+-                            title: 'Search installed apps',
+-                            subtitle: '',
+-                            actionLabel: 'Open app picker',
+-                            onTap: _openAndroidBlockedAppsEditor,
+-                          ),
+-                          const SizedBox(height: 8),
+-                        ],
+-                        if (!_isAndroid && _showAddApp) ...[
+-                          Container(
+-                            padding: const EdgeInsets.all(14),
+-                            decoration: _listPanelDecoration(),
+-                            child: Column(
+-                              crossAxisAlignment: CrossAxisAlignment.start,
+-                              children: [
+-                                CupertinoSearchTextField(
+-                                  controller: _appCtrl,
+-                                  placeholder: 'Instagram, TikTok, YouTube…',
+-                                  backgroundColor: AppColors.backgroundLight,
+-                                  borderRadius: BorderRadius.circular(14),
+-                                  style: AppTypography.body.copyWith(
+-                                    fontSize: 15,
+-                                    color: AppColors.label,
+-                                  ),
+-                                  placeholderStyle: AppTypography.body.copyWith(
+-                                    fontSize: 15,
+-                                    color: AppColors.tertiaryLabel,
+-                                  ),
+-                                ),
+-                                const SizedBox(height: 12),
+-                                LiquidButton(
+-                                  label: 'Choose apps',
+-                                  fullWidth: true,
+-                                  onPressed: _saving ? null : _addBlockedApp,
+-                                ),
+-                              ],
+-                            ),
+-                          ),
+-                          const SizedBox(height: 8),
+-                        ],
++                        _actionLauncherCard(
++                          icon:
++                              _isAndroid
++                                  ? CupertinoIcons.search
++                                  : CupertinoIcons.add_circled,
++                          title:
++                              _isAndroid
++                                  ? 'Search installed apps'
++                                  : 'Choose apps to block',
++                          subtitle: _isAndroid
++                              ? ''
++                              : 'Select one or more apps in the Apple picker.',
++                          actionLabel:
++                              _isAndroid
++                                  ? 'Open app picker'
++                                  : 'Choose apps',
++                          onTap: _isAndroid
++                              ? _openAndroidBlockedAppsEditor
++                              : _addBlockedApp,
++                        ),
++                        const SizedBox(height: 8),
+*** End Patch

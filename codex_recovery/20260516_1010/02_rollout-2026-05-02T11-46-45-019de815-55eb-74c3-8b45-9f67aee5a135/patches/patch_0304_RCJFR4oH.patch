@@ -1,0 +1,68 @@
+*** Begin Patch
+*** Update File: lib/core/providers/habit_provider.dart
+@@
+ class HabitProvider extends ChangeNotifier {
+@@
+   bool get isLoading => _isLoading;
++
++  String _pendingKey() {
++    final uid = Supabase.instance.client.auth.currentUser?.id ?? 'guest';
++    return 'pending::habits::$uid::v1';
++  }
++
++  Future<List<Map<String, dynamic>>> _loadPending() async {
++    try {
++      final prefs = await SharedPreferences.getInstance();
++      final raw = prefs.getStringList(_pendingKey()) ?? const <String>[];
++      return raw
++          .map((s) => Map<String, dynamic>.from(jsonDecode(s) as Map))
++          .toList(growable: true);
++    } catch (_) {
++      return <Map<String, dynamic>>[];
++    }
++  }
++
++  Future<void> _savePending(List<Map<String, dynamic>> items) async {
++    try {
++      final prefs = await SharedPreferences.getInstance();
++      await prefs.setStringList(
++        _pendingKey(),
++        items.map((m) => jsonEncode(m)).toList(growable: false),
++      );
++    } catch (_) {
++      // Best effort only.
++    }
++  }
++
++  Future<void> _flushPendingIfAny() async {
++    final pending = await _loadPending();
++    if (pending.isEmpty) return;
++
++    final remaining = <Map<String, dynamic>>[];
++    for (final item in pending) {
++      try {
++        await _repository.createHabit(
++          (item['title'] as String?) ?? '',
++          isDaily: (item['isDaily'] as bool?) ?? true,
++          icon: item['icon'] as String?,
++          category: item['category'] as String?,
++          quote: item['quote'] as String?,
++          frequencyType: item['frequencyType'] as String?,
++          intervalDays: item['intervalDays'] as int?,
++          targetType: item['targetType'] as String?,
++          targetValue: item['targetValue'] as int?,
++          targetUnit: item['targetUnit'] as String?,
++          reminderTime: item['reminderTime'] as String?,
++          autoPopup: (item['autoPopup'] as bool?) ?? false,
++          colorTheme: item['colorTheme'] as String?,
++          specificDays:
++              (item['specificDays'] as List?)?.map((e) => e as int).toList(),
++          syncToCalendar: (item['syncToCalendar'] as bool?) ?? false,
++        );
++      } catch (_) {
++        remaining.add(item);
++      }
++    }
++    await _savePending(remaining);
++  }
+*** End Patch

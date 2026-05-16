@@ -1,0 +1,40 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/screen_time_manager/screen_time_manager_screen.dart
+@@
+                         _actionCard(
+                           icon: CupertinoIcons.nosign,
+                           iconColor: const Color(0xFF3B82F6),
+                           title: 'Block Apps & Sites',
+                           subtitle:
+                               '$blockedTargets blocked • limits & planned pauses',
+-                          featured: true,
+                           onTap: () => context.push('/screen-time'),
+                         ),
+@@
+   Widget _actionCard({
+     required IconData icon,
+     required Color iconColor,
+     required String title,
+     required String subtitle,
+-    bool featured = false,
+     required VoidCallback onTap,
+   }) {
+     return _ScreenTimePressScale(
+       onTap: onTap,
+       child: Container(
+         padding: const EdgeInsets.all(18),
+-        decoration: _moduleDecoration(
+-          radius: 18,
+-          overlay: featured ? iconColor.withValues(alpha: 0.04) : null,
+-        ),
++        decoration: _moduleDecoration(radius: 18),
+         child: ConstrainedBox(
+           constraints: const BoxConstraints(minHeight: 84),
+@@
+               Icon(
+                 CupertinoIcons.arrow_right,
+                 color: AppColors.tertiaryLabel,
+-                size: featured ? 20 : 18,
++                size: 18,
+               ),
+*** End Patch

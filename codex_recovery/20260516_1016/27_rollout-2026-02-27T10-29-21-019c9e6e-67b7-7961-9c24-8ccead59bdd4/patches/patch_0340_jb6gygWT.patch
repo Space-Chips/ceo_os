@@ -1,0 +1,32 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/notes_screen.dart
+@@
+     final tagTree = _tagTree();
+     final selected = _selected;
+     final screenWidth = MediaQuery.sizeOf(context).width;
+-    final sidebarWidth = (screenWidth * 0.22).clamp(132.0, 168.0);
++    final sidebarWidth = (screenWidth * 0.16).clamp(92.0, 120.0);
+@@
+                           Expanded(
+                             child: Padding(
+-                              padding: const EdgeInsets.fromLTRB(
+-                                10,
+-                                10,
+-                                10,
+-                                10,
+-                              ),
++                              padding: const EdgeInsets.fromLTRB(6, 8, 8, 8),
+                               child: Stack(
+                                 children: [
+                                   Container(
+                                     padding: const EdgeInsets.fromLTRB(
+-                                      14,
+-                                      12,
+-                                      14,
+-                                      12,
++                                      16,
++                                      12,
++                                      16,
++                                      12,
+                                     ),
+*** End Patch

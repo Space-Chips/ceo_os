@@ -1,0 +1,11 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/ios/Runner/AppDelegate.swift
+@@
+     private func stopShield(result: FlutterResult) {
+         sharedDefaults()?.set(false, forKey: focusEnabledStorageKey)
++        sharedDefaults()?.set(false, forKey: scheduledFocusEnabledStorageKey)
+         sharedDefaults()?.set(false, forKey: ceoEnabledStorageKey)
+         applyEffectiveShield()
+         result(nil)
+     }
+*** End Patch

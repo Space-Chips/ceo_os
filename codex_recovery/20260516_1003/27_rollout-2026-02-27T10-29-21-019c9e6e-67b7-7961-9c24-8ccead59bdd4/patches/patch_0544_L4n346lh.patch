@@ -1,0 +1,503 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/profile/profile_screen.dart
+@@
+   Future<void> _showThemePicker() async {
+     final themeProvider = context.read<ThemeProvider>();
+-    final selected = await showCupertinoModalPopup<String>(
+-      context: context,
+-      builder: (context) {
+-        return CupertinoActionSheet(
+-          title: Text(
+-            'INTERFACE_APPEARANCE',
+-            style: AppTypography.mono.copyWith(fontSize: 12),
+-          ),
+-          message: Text(
+-            'Choose your color scheme and typography.',
+-            style: AppTypography.mono.copyWith(
+-              fontSize: 11,
+-              color: AppColors.secondaryLabel,
+-            ),
+-          ),
+-          actions: [
+-            for (final preset in themeProvider.presets)
+-              CupertinoActionSheetAction(
+-                onPressed: () => Navigator.of(context).pop(preset.id),
+-                child: Row(
+-                  mainAxisAlignment: MainAxisAlignment.center,
+-                  children: [
+-                    Text(
+-                      '${preset.name} (${preset.isDark ? 'Dark' : 'Light'})',
+-                      style: AppTypography.mono.copyWith(fontSize: 12),
+-                    ),
+-                    if (preset.id == themeProvider.currentPreset.id)
+-                      Padding(
+-                        padding: const EdgeInsets.only(left: 8),
+-                        child: Icon(
+-                          CupertinoIcons.check_mark_circled_solid,
+-                          size: 16,
+-                          color: AppColors.primaryOrange,
+-                        ),
+-                      ),
+-                  ],
+-                ),
+-              ),
+-          ],
+-          cancelButton: CupertinoActionSheetAction(
+-            onPressed: () => Navigator.of(context).pop(),
+-            child: Text(
+-              'CANCEL',
+-              style: AppTypography.mono.copyWith(fontWeight: FontWeight.bold),
+-            ),
+-          ),
+-        );
+-      },
++    final selected = await _showSelectionSheet(
++      title: 'INTERFACE_APPEARANCE',
++      subtitle: 'Choose your color scheme and typography.',
++      options: [
++        for (final preset in themeProvider.presets)
++          _SelectionOption(
++            id: preset.id,
++            title: preset.name,
++            subtitle: preset.isDark ? 'Dark theme' : 'Light theme',
++            selected: preset.id == themeProvider.currentPreset.id,
++          ),
++      ],
+     );
+@@
+   Future<void> _showLanguagePicker() async {
+     final current = (_appSettings?.languageCode ?? 'en').toLowerCase();
+-    final selected = await showCupertinoModalPopup<String>(
+-      context: context,
+-      builder: (context) => CupertinoActionSheet(
+-        title: Text(
+-          'LANGUAGE',
+-          style: AppTypography.mono.copyWith(fontSize: 12),
+-        ),
+-        message: Text(
+-          'Choose your preferred language.',
+-          style: AppTypography.mono.copyWith(
+-            fontSize: 11,
+-            color: AppColors.secondaryLabel,
+-          ),
+-        ),
+-        actions: [
+-          for (final language in _languages)
+-            CupertinoActionSheetAction(
+-              onPressed: () => Navigator.of(context).pop(language.code),
+-              child: Row(
+-                mainAxisAlignment: MainAxisAlignment.center,
+-                children: [
+-                  Text(
+-                    '${language.nativeLabel} (${language.label})',
+-                    style: AppTypography.mono.copyWith(fontSize: 12),
+-                  ),
+-                  if (language.code == current)
+-                    Padding(
+-                      padding: const EdgeInsets.only(left: 8),
+-                      child: Icon(
+-                        CupertinoIcons.check_mark_circled_solid,
+-                        size: 16,
+-                        color: AppColors.primaryOrange,
+-                      ),
+-                    ),
+-                ],
+-              ),
+-            ),
+-        ],
+-        cancelButton: CupertinoActionSheetAction(
+-          onPressed: () => Navigator.of(context).pop(),
+-          child: Text(
+-            'CANCEL',
+-            style: AppTypography.mono.copyWith(fontWeight: FontWeight.bold),
+-          ),
+-        ),
+-      ),
++    final selected = await _showSelectionSheet(
++      title: 'LANGUAGE',
++      subtitle: 'Choose your preferred language.',
++      options: [
++        for (final language in _languages)
++          _SelectionOption(
++            id: language.code,
++            title: language.nativeLabel,
++            subtitle: language.label,
++            selected: language.code == current,
++          ),
++      ],
+     );
+@@
+   Future<void> _showNotificationChannels() async {
+@@
+     await showCupertinoModalPopup<void>(
+       context: context,
+       builder: (popupContext) => StatefulBuilder(
+-        builder: (context, setPopupState) => SafeArea(
+-          top: false,
+-          child: Container(
+-            height: MediaQuery.of(context).size.height * 0.62,
+-            padding: const EdgeInsets.fromLTRB(16, 14, 16, 20),
+-            decoration: BoxDecoration(
+-              color: AppColors.background,
+-              borderRadius: const BorderRadius.vertical(
+-                top: Radius.circular(20),
+-              ),
+-              border: Border.all(
+-                color: AppColors.primaryOrange.withValues(alpha: 0.24),
+-                width: 0.7,
+-              ),
+-            ),
+-            child: Column(
+-              children: [
+-                Row(
+-                  children: [
+-                    Expanded(
+-                      child: Text(
+-                        'NOTIFICATION_CHANNELS',
+-                        style: AppTypography.mono.copyWith(
+-                          fontSize: 12,
+-                          fontWeight: FontWeight.bold,
+-                        ),
+-                      ),
+-                    ),
+-                    CupertinoButton(
+-                      padding: EdgeInsets.zero,
+-                      onPressed: () => Navigator.of(popupContext).pop(),
+-                      child: Icon(
+-                        CupertinoIcons.xmark_circle_fill,
+-                        color: AppColors.tertiaryLabel,
+-                      ),
+-                    ),
+-                  ],
+-                ),
+-                const SizedBox(height: 8),
+-                Expanded(
+-                  child: ListView(
+-                    children: [
+-                      _settingRow(
+-                        label: 'GLOBAL_NOTIFICATIONS',
+-                        trailing: CupertinoSwitch(
+-                          activeTrackColor: AppColors.primaryOrange,
+-                          value: globalEnabled,
+-                          onChanged: (value) {
+-                            setPopupState(() {
+-                              globalEnabled = value;
+-                              if (!globalEnabled) {
+-                                habitEnabled = false;
+-                                calendarEnabled = false;
+-                                focusEnabled = false;
+-                              }
+-                            });
+-                          },
+-                        ),
+-                      ),
+-                      _divider(),
+-                      _settingRow(
+-                        label: 'HABIT_REMINDERS',
+-                        trailing: CupertinoSwitch(
+-                          activeTrackColor: AppColors.primaryOrange,
+-                          value: habitEnabled,
+-                          onChanged: globalEnabled
+-                              ? (value) =>
+-                                    setPopupState(() => habitEnabled = value)
+-                              : null,
+-                        ),
+-                      ),
+-                      _divider(),
+-                      _settingRow(
+-                        label: 'CALENDAR_ALERTS',
+-                        trailing: CupertinoSwitch(
+-                          activeTrackColor: AppColors.primaryOrange,
+-                          value: calendarEnabled,
+-                          onChanged: globalEnabled
+-                              ? (value) =>
+-                                    setPopupState(() => calendarEnabled = value)
+-                              : null,
+-                        ),
+-                      ),
+-                      _divider(),
+-                      _settingRow(
+-                        label: 'FOCUS_SESSION_ALERTS',
+-                        trailing: CupertinoSwitch(
+-                          activeTrackColor: AppColors.primaryOrange,
+-                          value: focusEnabled,
+-                          onChanged: globalEnabled
+-                              ? (value) =>
+-                                    setPopupState(() => focusEnabled = value)
+-                              : null,
+-                        ),
+-                      ),
+-                    ],
+-                  ),
+-                ),
+-                const SizedBox(height: 8),
+-                LiquidButton(
+-                  label: _isSettingsSaving ? 'SAVING' : 'SAVE_CHANNELS',
+-                  fullWidth: true,
+-                  onPressed: _isSettingsSaving
+-                      ? null
+-                      : () async {
+-                          setState(() => _isSettingsSaving = true);
+-                          try {
+-                            await _settingsRepository
+-                                .updateNotificationChannels(
+-                                  notificationsEnabled: globalEnabled,
+-                                  habitNotificationsEnabled: habitEnabled,
+-                                  calendarNotificationsEnabled: calendarEnabled,
+-                                  focusNotificationsEnabled: focusEnabled,
+-                                );
+-                            await _refreshSettingsOnly();
+-                            if (popupContext.mounted) {
+-                              Navigator.of(popupContext).pop();
+-                            }
+-                          } catch (_) {
+-                            await _showNotice(
+-                              title: 'SAVE_FAILED',
+-                              message:
+-                                  'Unable to save notification channels right now.',
+-                            );
+-                          } finally {
+-                            if (mounted) {
+-                              setState(() => _isSettingsSaving = false);
+-                            }
+-                          }
+-                        },
+-                ),
+-              ],
+-            ),
+-          ),
+-        ),
++        builder: (context, setPopupState) => _buildBottomSheetShell(
++          context: context,
++          heightFactor: 0.64,
++          title: 'NOTIFICATION_CHANNELS',
++          subtitle: 'Manage reminders and alert channels for the operating system.',
++          onClose: () => Navigator.of(popupContext).pop(),
++          child: Column(
++            children: [
++              Expanded(
++                child: ListView(
++                  children: [
++                    _popupToggleRow(
++                      label: 'GLOBAL_NOTIFICATIONS',
++                      value: globalEnabled,
++                      onChanged: (value) {
++                        setPopupState(() {
++                          globalEnabled = value;
++                          if (!globalEnabled) {
++                            habitEnabled = false;
++                            calendarEnabled = false;
++                            focusEnabled = false;
++                          }
++                        });
++                      },
++                    ),
++                    const SizedBox(height: 12),
++                    _popupToggleRow(
++                      label: 'HABIT_REMINDERS',
++                      value: habitEnabled,
++                      onChanged: globalEnabled
++                          ? (value) => setPopupState(() => habitEnabled = value)
++                          : null,
++                    ),
++                    const SizedBox(height: 12),
++                    _popupToggleRow(
++                      label: 'CALENDAR_ALERTS',
++                      value: calendarEnabled,
++                      onChanged: globalEnabled
++                          ? (value) => setPopupState(() => calendarEnabled = value)
++                          : null,
++                    ),
++                    const SizedBox(height: 12),
++                    _popupToggleRow(
++                      label: 'FOCUS_SESSION_ALERTS',
++                      value: focusEnabled,
++                      onChanged: globalEnabled
++                          ? (value) => setPopupState(() => focusEnabled = value)
++                          : null,
++                    ),
++                  ],
++                ),
++              ),
++              const SizedBox(height: 10),
++              _actionButton(
++                label: _isSettingsSaving ? 'SAVING_CHANNELS' : 'SAVE_CHANNELS',
++                onPressed: _isSettingsSaving
++                    ? () {}
++                    : () async {
++                        setState(() => _isSettingsSaving = true);
++                        try {
++                          await _settingsRepository.updateNotificationChannels(
++                            notificationsEnabled: globalEnabled,
++                            habitNotificationsEnabled: habitEnabled,
++                            calendarNotificationsEnabled: calendarEnabled,
++                            focusNotificationsEnabled: focusEnabled,
++                          );
++                          await _refreshSettingsOnly();
++                          if (popupContext.mounted) {
++                            Navigator.of(popupContext).pop();
++                          }
++                        } catch (_) {
++                          await _showNotice(
++                            title: 'SAVE_FAILED',
++                            message:
++                                'Unable to save notification channels right now.',
++                          );
++                        } finally {
++                          if (mounted) {
++                            setState(() => _isSettingsSaving = false);
++                          }
++                        }
++                      },
++              ),
++            ],
++          ),
++        ),
+       ),
+     );
+   }
+@@
+   Future<void> _showDocumentSheet({
+@@
+     await showCupertinoModalPopup<void>(
+       context: context,
+-      builder: (popupContext) => SafeArea(
+-        top: false,
+-        child: Container(
+-          height: MediaQuery.of(context).size.height * 0.86,
+-          padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+-          decoration: BoxDecoration(
+-            color: AppColors.background,
+-            borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
+-            border: Border.all(
+-              color: AppColors.primaryOrange.withValues(alpha: 0.2),
+-              width: 0.7,
+-            ),
+-          ),
+-          child: Column(
+-            children: [
+-              Row(
+-                children: [
+-                  Expanded(
+-                    child: Text(
+-                      title,
+-                      style: AppTypography.mono.copyWith(
+-                        fontSize: 12,
+-                        fontWeight: FontWeight.bold,
+-                      ),
+-                    ),
+-                  ),
+-                  CupertinoButton(
+-                    padding: EdgeInsets.zero,
+-                    onPressed: () => Navigator.of(popupContext).pop(),
+-                    child: Icon(
+-                      CupertinoIcons.xmark_circle_fill,
+-                      color: AppColors.tertiaryLabel,
+-                    ),
+-                  ),
+-                ],
+-              ),
+-              const SizedBox(height: 6),
+-              Expanded(
+-                child: ListView.separated(
+-                  itemCount: sections.length + 1,
+-                  separatorBuilder: (_, __) => const SizedBox(height: 10),
+-                  itemBuilder: (context, index) {
+-                    if (index == sections.length) {
+-                      return Padding(
+-                        padding: const EdgeInsets.only(top: 6, bottom: 4),
+-                        child: Text(
+-                          footer,
+-                          textAlign: TextAlign.center,
+-                          style: AppTypography.mono.copyWith(
+-                            fontSize: 9,
+-                            color: AppColors.tertiaryLabel,
+-                          ),
+-                        ),
+-                      );
+-                    }
+-                    final section = sections[index];
+-                    return GlassCard(
+-                      padding: const EdgeInsets.all(14),
+-                      borderRadius: 14,
+-                      child: Column(
+-                        crossAxisAlignment: CrossAxisAlignment.start,
+-                        children: [
+-                          Text(
+-                            section.title,
+-                            style: AppTypography.mono.copyWith(
+-                              fontSize: 10,
+-                              color: AppColors.primaryOrange,
+-                              fontWeight: FontWeight.bold,
+-                            ),
+-                          ),
+-                          const SizedBox(height: 6),
+-                          Text(
+-                            section.body,
+-                            style: AppTypography.mono.copyWith(
+-                              fontSize: 10,
+-                              color: AppColors.secondaryLabel,
+-                              height: 1.35,
+-                            ),
+-                          ),
+-                        ],
+-                      ),
+-                    );
+-                  },
+-                ),
+-              ),
+-            ],
+-          ),
+-        ),
+-      ),
++      builder: (popupContext) => _buildBottomSheetShell(
++        context: context,
++        heightFactor: 0.86,
++        title: title,
++        subtitle: footer,
++        onClose: () => Navigator.of(popupContext).pop(),
++        child: Expanded(
++          child: ListView.separated(
++            itemCount: sections.length,
++            separatorBuilder: (_, __) => const SizedBox(height: 12),
++            itemBuilder: (context, index) {
++              final section = sections[index];
++              return Container(
++                padding: const EdgeInsets.all(16),
++                decoration: BoxDecoration(
++                  borderRadius: BorderRadius.circular(16),
++                  color: CupertinoColors.white.withValues(alpha: 0.04),
++                  border: Border.all(
++                    color: CupertinoColors.white.withValues(alpha: 0.06),
++                  ),
++                ),
++                child: Column(
++                  crossAxisAlignment: CrossAxisAlignment.start,
++                  children: [
++                    Text(
++                      section.title.toUpperCase(),
++                      style: AppTypography.overline.copyWith(
++                        fontSize: 11,
++                        color: AppColors.primaryOrange,
++                        letterSpacing: 1.6,
++                      ),
++                    ),
++                    const SizedBox(height: 8),
++                    Text(
++                      section.body,
++                      style: AppTypography.body.copyWith(
++                        fontSize: 13,
++                        height: 1.45,
++                        color: AppColors.secondaryLabel,
++                      ),
++                    ),
++                  ],
++                ),
++              );
++            },
++          ),
++        ),
++      ),
+     );
+   }
+*** End Patch

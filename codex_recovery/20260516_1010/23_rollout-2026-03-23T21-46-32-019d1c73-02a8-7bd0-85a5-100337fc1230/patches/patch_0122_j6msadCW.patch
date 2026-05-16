@@ -1,0 +1,83 @@
+*** Begin Patch
+*** Update File: lib/core/services/focus_service.dart
+@@
+   Future<AndroidProtectionStep> getNextAndroidProtectionStep() async {
+     const method = 'getNextProtectionStep';
+@@
+   }
+ 
++  Future<FocusPermissionState> getAccessibilityPermissionState() async {
++    const method = 'getAccessibilityStatus';
++    if (_shouldSkipMissingMethod(method)) {
++      final status = await getProtectionStatus();
++      return status.isAuthorized
++          ? FocusPermissionState.approved
++          : FocusPermissionState.denied;
++    }
++    try {
++      final String? result = await _channel.invokeMethod<String>(method);
++      return FocusProtectionStatus.fromNativeStatus(result).permissionState;
++    } on PlatformException catch (e) {
++      AppLogger.error("Failed to read accessibility status: '${e.message}'.");
++      return FocusPermissionState.denied;
++    } on MissingPluginException {
++      _markMissingMethod(method);
++      return FocusPermissionState.denied;
++    }
++  }
++
++  Future<FocusPermissionState> getUsageAccessPermissionState() async {
++    const method = 'getUsageAccessStatus';
++    if (_shouldSkipMissingMethod(method)) {
++      final status = await getProtectionStatus();
++      return status.isAuthorized
++          ? FocusPermissionState.approved
++          : FocusPermissionState.denied;
++    }
++    try {
++      final String? result = await _channel.invokeMethod<String>(method);
++      return FocusProtectionStatus.fromNativeStatus(result).permissionState;
++    } on PlatformException catch (e) {
++      AppLogger.error("Failed to read usage access status: '${e.message}'.");
++      return FocusPermissionState.denied;
++    } on MissingPluginException {
++      _markMissingMethod(method);
++      return FocusPermissionState.denied;
++    }
++  }
++
+   Future<bool> openSystemSettings() async {
+     const method = 'openSystemSettings';
+@@
+   }
++
++  Future<bool> openAccessibilitySettings() async {
++    const method = 'openAccessibilitySettings';
++    if (_shouldSkipMissingMethod(method)) return false;
++    try {
++      final bool? result = await _channel.invokeMethod<bool>(method);
++      return result ?? false;
++    } on PlatformException catch (e) {
++      AppLogger.error("Failed to open accessibility settings: '${e.message}'.");
++      return false;
++    } on MissingPluginException {
++      _markMissingMethod(method);
++      return false;
++    }
++  }
++
++  Future<bool> openUsageAccessSettings() async {
++    const method = 'openUsageAccessSettings';
++    if (_shouldSkipMissingMethod(method)) return false;
++    try {
++      final bool? result = await _channel.invokeMethod<bool>(method);
++      return result ?? false;
++    } on PlatformException catch (e) {
++      AppLogger.error("Failed to open usage access settings: '${e.message}'.");
++      return false;
++    } on MissingPluginException {
++      _markMissingMethod(method);
++      return false;
++    }
++  }
+*** End Patch

@@ -1,0 +1,15 @@
+*** Begin Patch
+*** Update File: lib/core/config/tester_config.dart
+@@
+ class TesterConfig {
+@@
+-  /// Grants premium automatically when the app is installed via TestFlight.
+-  /// (Implemented via an iOS receipt check.)
+-  /// In WakeApp this is used only as an eligibility signal (receipt-based) to
+-  /// grant a server-side Premium override for beta testers.
+-  static const bool testFlightPremiumEnabled = true;
++  /// Legacy toggle for older TestFlight-only premium flows.
++  /// WakeApp now uses a server-side email allowlist, independent of install channel.
++  static const bool testFlightPremiumEnabled = false;
+ }
+*** End Patch

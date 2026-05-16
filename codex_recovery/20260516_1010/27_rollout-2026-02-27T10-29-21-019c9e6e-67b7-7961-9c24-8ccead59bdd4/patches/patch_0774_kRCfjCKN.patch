@@ -1,0 +1,61 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/screen_time_screen.dart
+@@
+       final filteredWebsites = websites
+           .where(
+             (site) =>
+                 (site.urlDomain ?? '').trim() !=
+                 FeatureRepository.adultContentShieldMarker,
+           )
+           .toList(growable: false);
++      await _syncClassicNative(
++        apps: apps,
++        websites: filteredWebsites,
++        rests: rests,
++      );
+ 
+       if (!mounted) return;
+@@
+-                                        final name = _appCtrl.text.trim();
+-                                        if (name.isEmpty) return;
+-                                        _runMutation(() {
+-                                          return _repo.createBlockedApp(name);
+-                                        });
+-                                        _appCtrl.clear();
+-                                        setState(() => _showAddApp = false);
++                                        _addBlockedApp();
+                                       },
+                               ),
+@@
+-                                : () => _runMutation(
+-                                    () => _repo.deleteBlockedApp(app.id),
+-                                  ),
++                                : () => _runMutation(() async {
++                                    await _repo.deleteBlockedApp(app.id);
++                                    await _classicLocalStore.removeAppBinding(
++                                      app.id,
++                                    );
++                                  }),
+@@
+-                                        final domain = _siteCtrl.text.trim();
+-                                        if (domain.isEmpty) return;
+-                                        _runMutation(() {
+-                                          return _repo.createBlockedWebsite(
+-                                            domain,
+-                                          );
+-                                        });
+-                                        _siteCtrl.clear();
+-                                        setState(() => _showAddWebsite = false);
++                                        _addBlockedWebsite();
+                                       },
+                               ),
+@@
+-                                : () => _runMutation(
+-                                    () => _repo.deleteBlockedWebsite(site.id),
+-                                  ),
++                                : () => _runMutation(() async {
++                                    await _repo.deleteBlockedWebsite(site.id);
++                                    await _classicLocalStore
++                                        .removeWebsiteBinding(site.id);
++                                  }),
+*** End Patch

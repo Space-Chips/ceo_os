@@ -1,0 +1,12 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/scripts/ios_boot_simulator.sh
+@@
+ find_device_udid() {
+   xcrun simctl list devices available | awk -v target="$TARGET_NAME" '
+-    $0 ~ target " \(" {
++    index($0, target " (") > 0 {
+       if (match($0, /\(([0-9A-F-]+)\)/)) {
+         print substr($0, RSTART + 1, RLENGTH - 2)
+         exit
+       }
+*** End Patch

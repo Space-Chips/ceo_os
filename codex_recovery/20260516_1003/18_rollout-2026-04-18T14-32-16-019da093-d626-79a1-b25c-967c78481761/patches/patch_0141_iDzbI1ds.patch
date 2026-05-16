@@ -1,0 +1,15 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/focus/focus_preparation/focus_preparation_animation_view.dart
+@@
+                           Text(
+-                            'FOCUS ACTIVE',
++                            language.t('focus_active'),
+@@
+                     child: Text(
+-                      '+1 WIN STREAK',
++                      language.t('focus_plus_one_streak'),
+@@
+                 child: Text(
+-                  'Blocage actif jusqu’à la fin',
++                  language.t('focus_blocking_active_until_end'),
+*** End Patch

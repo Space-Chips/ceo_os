@@ -1,0 +1,13 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/setup/setup_flow_screen.dart
+@@
+                                           const SizedBox(height: 2),
+                                           Text(
+-                                            'Checking your permission…',
++                                            'Syncing your permission…',
+                                             style: AppTypography.caption1
+                                                 .copyWith(
+                                               color: AppColors.secondaryLabel,
+                                             ),
+                                           ),
+*** End Patch

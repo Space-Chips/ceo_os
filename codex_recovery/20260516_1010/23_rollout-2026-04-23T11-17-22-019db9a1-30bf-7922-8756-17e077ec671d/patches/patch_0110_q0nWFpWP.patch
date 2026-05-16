@@ -1,0 +1,12 @@
+*** Begin Patch
+*** Update File: lib/features/leaderboard/leaderboard_screen.dart
+@@
+   @override
+   Widget build(BuildContext context) {
++    context.watch<LanguageProvider>().languageCode;
+     return CupertinoPageScaffold(
+       backgroundColor: AppColors.background,
+       child: AmbientBackdrop(
+         child: _loading
+             ? Center(
+*** End Patch

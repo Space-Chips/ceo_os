@@ -1,0 +1,71 @@
+*** Begin Patch
+*** Update File: lib/features/widget_configuration/widget_configuration_screen.dart
+@@
+-  Future<void> _setMode(CeoWidgetMode mode) async {
++  Future<void> _setDefaultMode(CeoWidgetMode? mode) async {
+     if (_saving) return;
+     final tasks = context.read<TaskProvider>();
+     final habits = context.read<HabitProvider>();
+     final language = context.read<LanguageProvider>();
+     setState(() {
+       _saving = true;
+-      _mode = mode;
++      _defaultMode = mode;
+     });
+     try {
+       await HomeWidget.saveWidgetData<String>(
+         CeoHomeWidgetService.keyDefaultMode,
+-        mode.name,
++        mode?.name,
+       );
+       await CeoHomeWidgetService.renderAndUpdateAll(
+         tasks: tasks,
+         habits: habits,
+         language: language,
+       );
+@@
+   }
++
++  Future<void> _setEnabled({
++    bool? todo,
++    bool? dashboard,
++    bool? habits,
++  }) async {
++    if (_saving) return;
++    final tasks = context.read<TaskProvider>();
++    final habitsProvider = context.read<HabitProvider>();
++    final language = context.read<LanguageProvider>();
++    setState(() {
++      _saving = true;
++      if (todo != null) _enabledTodo = todo;
++      if (dashboard != null) _enabledDashboard = dashboard;
++      if (habits != null) _enabledHabits = habits;
++    });
++    try {
++      await Future.wait([
++        if (todo != null)
++          HomeWidget.saveWidgetData<bool>(
++            CeoHomeWidgetService.keyEnabledTodo,
++            todo,
++          ),
++        if (dashboard != null)
++          HomeWidget.saveWidgetData<bool>(
++            CeoHomeWidgetService.keyEnabledDashboard,
++            dashboard,
++          ),
++        if (habits != null)
++          HomeWidget.saveWidgetData<bool>(
++            CeoHomeWidgetService.keyEnabledHabits,
++            habits,
++          ),
++      ]);
++      await CeoHomeWidgetService.renderAndUpdateAll(
++        tasks: tasks,
++        habits: habitsProvider,
++        language: language,
++      );
++    } finally {
++      if (mounted) setState(() => _saving = false);
++    }
++  }
+*** End Patch

@@ -1,0 +1,54 @@
+*** Begin Patch
+*** Update File: lib/features/control_center_setup/widgets/dashboard_widgets_screen.dart
+@@
+           const SizedBox(height: 14),
+           Expanded(
+-            child: ListView(
+-              physics: const BouncingScrollPhysics(),
+-              padding: EdgeInsets.zero,
+-              children: [
+-                DashboardWidgetToggle(
+-                  label: 'Focus',
+-                  icon: CupertinoIcons.bolt_fill,
+-                  value: state.enabledDashboardWidgets.contains(
+-                    DashboardWidget.focus,
+-                  ),
+-                  onChanged: (_) => onToggle(DashboardWidget.focus),
+-                ),
+-                DashboardWidgetToggle(
+-                  label: 'Notes',
+-                  icon: CupertinoIcons.doc_text_fill,
+-                  value: state.enabledDashboardWidgets.contains(
+-                    DashboardWidget.notes,
+-                  ),
+-                  onChanged: (_) => onToggle(DashboardWidget.notes),
+-                ),
+-                DashboardWidgetToggle(
+-                  label: 'Win streak',
+-                  icon: CupertinoIcons.flame_fill,
+-                  value: state.enabledDashboardWidgets.contains(
+-                    DashboardWidget.winStreak,
+-                  ),
+-                  onChanged: (_) => onToggle(DashboardWidget.winStreak),
+-                ),
+-                DashboardWidgetToggle(
+-                  label: 'Rank',
+-                  icon: CupertinoIcons.star_fill,
+-                  value: state.enabledDashboardWidgets.contains(
+-                    DashboardWidget.rank,
+-                  ),
+-                  onChanged: (_) => onToggle(DashboardWidget.rank),
+-                ),
+-                DashboardWidgetToggle(
+-                  label: 'Blackout button',
+-                  icon: CupertinoIcons.moon_fill,
+-                  value: state.enabledDashboardWidgets.contains(
+-                    DashboardWidget.blackoutButton,
+-                  ),
+-                  onChanged: (_) => onToggle(DashboardWidget.blackoutButton),
+-                ),
+-              ],
+-            ),
++            child: DashboardWidgetSelector(state: state, onToggle: onToggle),
+           ),
+*** End Patch

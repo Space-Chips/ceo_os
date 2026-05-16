@@ -1,0 +1,137 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/components/ambient_backdrop.dart
+@@
+         Positioned.fill(
+           child: DecoratedBox(
+             decoration: BoxDecoration(
+               gradient: LinearGradient(
+                 begin: Alignment.topCenter,
+                 end: Alignment.bottomCenter,
+                 colors: AppColors.backdropGradient,
+               ),
+             ),
+           ),
+         ),
++        Positioned.fill(
++          child: DecoratedBox(
++            decoration: BoxDecoration(
++              gradient: LinearGradient(
++                begin: const Alignment(-1, -0.2),
++                end: const Alignment(1, 1),
++                colors: [
++                  AppColors.backgroundLight.withValues(
++                    alpha: AppColors.isDark ? 0.12 : 0.06,
++                  ),
++                  CupertinoColors.transparent,
++                  AppColors.background.withValues(
++                    alpha: AppColors.isDark ? 0.16 : 0.08,
++                  ),
++                ],
++                stops: const [0, 0.46, 1],
++              ),
++            ),
++          ),
++        ),
+@@
+         const _AmbientBlob(
+           bottom: 60,
+           right: -120,
+           size: 300,
+           tone: _BlobTone.secondary,
+           opacity: 0.09,
+         ),
++        const _AmbientBlob(
++          top: 180,
++          left: -90,
++          size: 260,
++          tone: _BlobTone.secondary,
++          opacity: 0.08,
++        ),
++        const _AmbientBlob(
++          bottom: -120,
++          right: 10,
++          size: 280,
++          tone: _BlobTone.primary,
++          opacity: 0.08,
++        ),
+         Positioned.fill(
+           child: IgnorePointer(
+             child: CustomPaint(
+               painter: _BackdropFilamentPainter(
+-                lineAlpha: AppColors.isDark ? 0.038 : 0.018,
++                lineAlpha: AppColors.isDark ? 0.048 : 0.022,
+               ),
+             ),
+           ),
+         ),
++        Positioned.fill(
++          child: IgnorePointer(
++            child: CustomPaint(
++              painter: _BackdropCausticPainter(
++                alpha: AppColors.isDark ? 0.055 : 0.03,
++              ),
++            ),
++          ),
++        ),
+         Positioned.fill(
+           child: IgnorePointer(
+             child: CustomPaint(
+               painter: _BackdropNoisePainter(
+-                strength: AppColors.isDark ? 0.018 : 0.013,
++                strength: AppColors.isDark ? 0.022 : 0.015,
+               ),
+             ),
+           ),
+         ),
+         Positioned.fill(
+@@
+                   colors: [
+                     CupertinoColors.black.withValues(
+-                      alpha: AppColors.isDark ? 0.09 : 0.02,
++                      alpha: AppColors.isDark ? 0.14 : 0.04,
+                     ),
+                     CupertinoColors.transparent,
+                     CupertinoColors.black.withValues(
+-                      alpha: AppColors.isDark ? 0.18 : 0.06,
++                      alpha: AppColors.isDark ? 0.26 : 0.1,
+                     ),
+                   ],
+                   stops: const [0, 0.4, 1],
+                 ),
+@@
+ class _BackdropNoisePainter extends CustomPainter {
+@@
+ }
++
++class _BackdropCausticPainter extends CustomPainter {
++  final double alpha;
++
++  const _BackdropCausticPainter({required this.alpha});
++
++  @override
++  void paint(Canvas canvas, Size size) {
++    final soft = Paint()
++      ..style = PaintingStyle.stroke
++      ..strokeWidth = 1.0
++      ..color = AppColors.accentSecondary.withValues(alpha: alpha * 0.42);
++    final warm = Paint()
++      ..style = PaintingStyle.stroke
++      ..strokeWidth = 1.2
++      ..color = AppColors.primaryOrange.withValues(alpha: alpha * 0.35);
++
++    final centerA = Offset(size.width * 0.18, size.height * 0.22);
++    final centerB = Offset(size.width * 0.84, size.height * 0.72);
++    for (var i = 0; i < 6; i++) {
++      final rectA = Rect.fromCircle(center: centerA, radius: 180 + (i * 48));
++      final rectB = Rect.fromCircle(center: centerB, radius: 150 + (i * 56));
++      canvas.drawArc(rectA, -0.6, 1.35, false, i.isEven ? soft : warm);
++      canvas.drawArc(rectB, 2.35, 1.1, false, i.isEven ? warm : soft);
++    }
++  }
++
++  @override
++  bool shouldRepaint(covariant _BackdropCausticPainter oldDelegate) {
++    return oldDelegate.alpha != alpha;
++  }
++}
+*** End Patch

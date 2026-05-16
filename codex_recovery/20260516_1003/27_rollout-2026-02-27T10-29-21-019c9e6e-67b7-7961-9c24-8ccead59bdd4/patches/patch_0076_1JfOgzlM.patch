@@ -1,0 +1,14 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/calendar/calendar_screen.dart
+@@
+   @override
+   Widget build(BuildContext context) {
+     final sourceColor = event.sourceType == 'task'
+-        ? const Color(0xFFFF6B00)
++        ? AppColors.primaryOrange
+         : event.sourceType == 'habit'
+-        ? const Color(0xFF10B981)
+-        : const Color(0xFF60A5FA);
++        ? AppColors.success
++        : AppColors.accentSecondary;
+*** End Patch

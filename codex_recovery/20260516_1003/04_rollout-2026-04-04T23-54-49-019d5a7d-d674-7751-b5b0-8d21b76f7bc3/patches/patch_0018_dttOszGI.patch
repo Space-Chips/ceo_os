@@ -1,0 +1,51 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/focus/focus_screen.dart
+@@
+ import '../../core/providers/focus_provider.dart';
+ import '../../core/repositories/feature_repository.dart';
+ import '../../core/theme/app_colors.dart';
+ import '../../core/theme/app_typography.dart';
++import '../../core/utils/android_protection_disclosure.dart';
+ import '../calendar/add_event_sheet.dart';
+@@
+   Future<void> _start(FocusProvider provider) async {
+     if (!provider.isAuthorized) {
++      if (_isAndroid) {
++        final confirmed = await showAndroidProtectionDisclosure(
++          context: context,
++          nextStep: provider.getNextAndroidProtectionStep,
++        );
++        if (!confirmed) return;
++      }
+       final granted = await provider.requestPermissions();
+       if (!mounted) return;
+       if (!granted) {
+@@
+   Future<void> _handleProtectionAction(FocusProvider provider) async {
++    if (_isAndroid) {
++      final confirmed = await showAndroidProtectionDisclosure(
++        context: context,
++        nextStep: provider.getNextAndroidProtectionStep,
++      );
++      if (!confirmed) return;
++    }
+     if (provider.protectionStatus.shouldOpenSettings) {
+       await provider.openSystemSettings();
+       if (!mounted) return;
+@@
+           if (status.shouldOpenSettings)
+             CupertinoDialogAction(
+               isDefaultAction: true,
+               onPressed: () async {
+                 Navigator.of(ctx).pop(false);
++                if (_isAndroid) {
++                  final confirmed = await showAndroidProtectionDisclosure(
++                    context: context,
++                    nextStep: provider.getNextAndroidProtectionStep,
++                  );
++                  if (!confirmed) return;
++                }
+                 await provider.openSystemSettings();
+               },
+               child: const Text('Open Settings'),
+*** End Patch

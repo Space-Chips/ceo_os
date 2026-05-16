@@ -1,0 +1,9 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/screen_time_screen.dart
+@@
+   Widget build(BuildContext context) {
+     final totalSeconds = _logTotalSeconds();
+     final totalHours = (totalSeconds / 3600).toStringAsFixed(1);
+     final activeRest = _activeRestPeriod();
++    final scheduledRests = _scheduledRestPeriods();
+*** End Patch

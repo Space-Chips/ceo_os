@@ -1,0 +1,19 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/screen_time_screen.dart
+@@
+   List<_IosAppSuggestion> _filteredAppSuggestions(String query) {
+@@
+     return ranked.take(20).toList(growable: false);
+   }
++
++  bool _canSubmitWebsiteInput() {
++    final normalized = normalizeDomainInput(
++      _siteCtrl.text,
++      allowedSpecialValues: {FeatureRepository.adultContentShieldMarker},
++    );
++    if (normalized == null) return false;
++    if (!Platform.isIOS) return true;
++    if (_iosWebsitePayloadByDomain.isEmpty) return true;
++    return _iosWebsitePayloadByDomain.containsKey(normalized);
++  }
+*** End Patch

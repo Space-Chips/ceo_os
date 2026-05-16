@@ -1,0 +1,27 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/screen_time_manager/screen_time_manager_screen.dart
+@@
+                         _actionCard(
+                           icon: CupertinoIcons.rosette,
+-                          iconColor: const Color(0xFF3B82F6),
++                          iconColor: AppColors.accentIcon,
+                           title: 'Leaderboard',
+                           subtitle: 'Global rankings',
+                           onTap: () => context.push('/leaderboard'),
+                         ),
+@@
+                         _actionCard(
+                           icon: CupertinoIcons.person_3_fill,
+-                          iconColor: const Color(0xFF8B5CF6),
++                          iconColor: AppColors.rankAccent,
+                           title: 'Family Time',
+                           subtitle: 'Shared no-phone sessions',
+                           onTap: () => context.push('/family-time'),
+                         ),
+@@
+                         _actionCard(
+                           icon: CupertinoIcons.nosign,
+-                          iconColor: const Color(0xFF3B82F6),
++                          iconColor: AppColors.accentDeep,
+                           title: 'Block Apps & Sites',
+*** End Patch

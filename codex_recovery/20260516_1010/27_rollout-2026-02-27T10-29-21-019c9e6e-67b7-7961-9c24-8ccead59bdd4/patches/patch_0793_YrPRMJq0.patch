@@ -1,0 +1,10 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/android/app/src/main/kotlin/com/example/ceo_os/ClassicPauseScheduler.kt
+@@
+     fun rescheduleFromPersisted(context: Context) {
+         val periods = readPersistedPeriods(context)
++        periods.forEach { cancelPeriodAlarms(context, it) }
+         periods.forEach { schedulePeriodAlarms(context, it) }
+         evaluateAndApplyNow(context)
+     }
+*** End Patch

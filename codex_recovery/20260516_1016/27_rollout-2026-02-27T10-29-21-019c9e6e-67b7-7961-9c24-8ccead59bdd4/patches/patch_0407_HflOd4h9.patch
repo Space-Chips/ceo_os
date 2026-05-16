@@ -1,0 +1,12 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/focus/focus_screen.dart
+@@
+                       Text(
+                         provider.timerDisplay,
+-                        style: AppTypography.mono.copyWith(
++                        style: AppTypography.timer.copyWith(
+                           fontSize: 68,
+                           color: AppColors.label,
+                           fontWeight: FontWeight.w900,
+                           height: 0.95,
+*** End Patch

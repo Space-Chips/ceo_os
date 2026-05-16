@@ -1,0 +1,131 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/repositories/advanced_stats_repository.dart
+@@
+   Future<void> logEvent(StatsEventInput input) async {
+     final uid = _currentUserId;
+     if (uid == null) return;
+     if (!StatsEventType.values.contains(input.eventType)) return;
+ 
+-    await _client.from('advanced_stats_events').insert({
++    final payload = {
+       'created_by': uid,
+       'event_type': input.eventType,
+       'event_time': input.eventTime.toUtc().toIso8601String(),
++      'source_key': input.sourceKey,
+       'payload': input.payload,
+-    });
++    };
++
++    if (input.sourceKey != null && input.sourceKey!.trim().isNotEmpty) {
++      await _client.from('advanced_stats_events').upsert(
++        payload,
++        onConflict: 'source_key',
++      );
++      return;
++    }
++
++    await _client.from('advanced_stats_events').insert(payload);
+   }
+@@
+     final rows = await _client
+         .from('advanced_stats_events')
+-        .select('id, created_by, event_type, event_time, payload, created_at')
++        .select(
++          'id, created_by, event_type, event_time, source_key, payload, created_at',
++        )
+         .eq('created_by', uid)
+         .gte('event_time', start.toUtc().toIso8601String())
+         .lte('event_time', end.toUtc().toIso8601String())
+         .order('event_time', ascending: true);
+@@
+   Future<List<DailyStats>> getRecentDailyStats({int days = 30}) async {
+     final end = DateTime.now();
+     final start = end.subtract(Duration(days: days - 1));
+     return getDailyStatsRange(start: start, end: end);
+   }
++
++  Future<List<Map<String, dynamic>>> getSourceFocusSessions({
++    required DateTime start,
++    required DateTime end,
++  }) async {
++    final uid = _currentUserId;
++    if (uid == null) return const [];
++
++    final rows = await _client
++        .from('focus_sessions')
++        .select('id, start_time, end_time, duration_minutes, completed, block_list_id')
++        .eq('created_by', uid)
++        .gte('start_time', start.toUtc().toIso8601String())
++        .lte('start_time', end.toUtc().toIso8601String())
++        .order('start_time', ascending: true);
++    return (rows as List).cast<Map<String, dynamic>>();
++  }
++
++  Future<List<Map<String, dynamic>>> getSourceCeoSessions({
++    required DateTime start,
++    required DateTime end,
++  }) async {
++    final uid = _currentUserId;
++    if (uid == null) return const [];
++
++    final rows = await _client
++        .from('ceo_mode_sessions')
++        .select('id, start_time, end_time, duration_minutes, active, approved_apps_count')
++        .eq('created_by', uid)
++        .gte('start_time', start.toUtc().toIso8601String())
++        .lte('start_time', end.toUtc().toIso8601String())
++        .order('start_time', ascending: true);
++    return (rows as List).cast<Map<String, dynamic>>();
++  }
++
++  Future<List<Map<String, dynamic>>> getSourceHabits() async {
++    final uid = _currentUserId;
++    if (uid == null) return const [];
++
++    final rows = await _client
++        .from('habits')
++        .select(
++          'id, title, created_at, is_daily, specific_days, frequency_type, interval_days, archived',
++        )
++        .eq('created_by', uid)
++        .eq('archived', false)
++        .order('created_at', ascending: true);
++    return (rows as List).cast<Map<String, dynamic>>();
++  }
++
++  Future<List<Map<String, dynamic>>> getSourceHabitCompletions({
++    required DateTime start,
++    required DateTime end,
++  }) async {
++    final uid = _currentUserId;
++    if (uid == null) return const [];
++
++    final rows = await _client
++        .from('habit_completions')
++        .select('id, habit_id, date, completed, checked_in_date, state, created_at')
++        .eq('created_by', uid)
++        .gte('date', _fmtDay(start))
++        .lte('date', _fmtDay(end))
++        .order('date', ascending: true);
++    return (rows as List).cast<Map<String, dynamic>>();
++  }
++
++  Future<List<Map<String, dynamic>>> getSourceScreenTimeLogs({
++    required DateTime start,
++    required DateTime end,
++  }) async {
++    final uid = _currentUserId;
++    if (uid == null) return const [];
++
++    final rows = await _client
++        .from('screen_time_logs')
++        .select(
++          'id, date, entity_type, entity_name, duration_seconds, start_time, end_time, awareness_notifications_shown',
++        )
++        .eq('created_by', uid)
++        .gte('date', _fmtDay(start))
++        .lte('date', _fmtDay(end))
++        .order('date', ascending: true);
++    return (rows as List).cast<Map<String, dynamic>>();
++  }
+*** End Patch

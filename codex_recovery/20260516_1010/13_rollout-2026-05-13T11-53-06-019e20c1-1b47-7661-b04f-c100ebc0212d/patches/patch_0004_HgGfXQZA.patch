@@ -1,0 +1,49 @@
+*** Begin Patch
+*** Update File: android/app/src/main/kotlin/com/wakeapp/ceoos/BrowserBlockCoordinator.kt
+@@
+ import java.util.Locale
+ 
+ class BrowserBlockCoordinator {
+-    fun evaluate(
+-        snapshot: ForegroundSnapshot,
+-        state: BlockPolicyState,
+-    ): BlockDecision {
+-        if (!snapshot.isBrowser) return BlockDecision.Allow
+-        if (snapshot.browserAddressBarFocused) return BlockDecision.Allow
+-        val browserPackage = snapshot.packageName?.trim().orEmpty()
+-        if (browserPackage.isEmpty()) return BlockDecision.IgnoreTransient
+-        val domain = snapshot.detectedBrowserUrl ?: return BlockDecision.IgnoreTransient
+-        if (state.blockedDomains.isEmpty()) return BlockDecision.Allow
+-        val blockedDomain = matchingConfiguredDomain(domain, state.blockedDomains) ?: return BlockDecision.Allow
+-        val reason = when {
+-            state.exceededDomains.contains(blockedDomain) -> "daily_limit"
+-            state.classicPauseEnabled && state.classicPauseBlockedDomains.contains(blockedDomain) -> "scheduled_pause"
+-            else -> "blocked_website"
+-        }
+-        return BlockDecision.BlockUrl(
+-            browserPackage = browserPackage,
+-            target = blockedDomain,
+-            reason = reason,
+-        )
+-    }
+-
+     companion object {
+         fun normalizeDomainToken(raw: String?): String? {
+             val value = raw?.trim()?.lowercase(Locale.US).orEmpty()
+             if (value.isEmpty() || value == "__adult_content__") return null
+@@
+             if (!normalized.contains('.')) return null
+             return normalized
+         }
+-
+-        private fun matchingConfiguredDomain(
+-            currentDomain: String,
+-            candidates: Set<String>,
+-        ): String? {
+-            return candidates
+-                .filter { currentDomain == it || currentDomain.endsWith(".$it") }
+-                .maxByOrNull { it.length }
+-        }
+     }
+ }
+*** End Patch

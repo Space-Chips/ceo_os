@@ -1,0 +1,10 @@
+*** Begin Patch
+*** Update File: lib/features/widget_configuration/widget_configuration_screen.dart
+@@
+           CupertinoSwitch(
+             value: value,
+             onChanged: _saving ? null : onChanged,
+-            activeColor: AppColors.accent,
++            activeTrackColor: AppColors.accent,
+           ),
+*** End Patch

@@ -1,0 +1,53 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/screen_time_screen.dart
+@@
+                                 CupertinoSearchTextField(
+                                   controller: _siteCtrl,
+                                   placeholder: 'Search or paste a domain',
+                                   backgroundColor: AppColors.backgroundLight,
+                                   borderRadius: BorderRadius.circular(14),
++                                  onChanged: (_) => setState(() {}),
+                                   style: AppTypography.body.copyWith(
+                                     fontSize: 15,
+                                     color: AppColors.label,
+                                   ),
+                                   placeholderStyle: AppTypography.body.copyWith(
+                                     fontSize: 15,
+                                     color: AppColors.tertiaryLabel,
+                                   ),
+                                 ),
+-                                const SizedBox(height: 12),
++                                const SizedBox(height: 10),
++                                if (_filteredWebsiteSuggestions(_siteCtrl.text)
++                                    .isNotEmpty) ...[
++                                  Column(
++                                    children: [
++                                      for (final domain
++                                          in _filteredWebsiteSuggestions(
++                                            _siteCtrl.text,
++                                          ).take(5))
++                                        Padding(
++                                          padding:
++                                              const EdgeInsets.only(bottom: 8),
++                                          child: _websiteSuggestionTile(domain),
++                                        ),
++                                    ],
++                                  ),
++                                ] else ...[
++                                  Text(
++                                    'Suggestions appear as you type.',
++                                    style: AppTypography.caption1.copyWith(
++                                      fontSize: 11,
++                                      color: AppColors.tertiaryLabel
++                                          .withValues(alpha: 0.75),
++                                    ),
++                                  ),
++                                ],
++                                const SizedBox(height: 12),
+                                 LiquidButton(
+                                   label: 'Add website',
+                                   fullWidth: true,
+                                   onPressed: _saving
+                                       ? null
+                                       : _addBlockedWebsite,
+*** End Patch

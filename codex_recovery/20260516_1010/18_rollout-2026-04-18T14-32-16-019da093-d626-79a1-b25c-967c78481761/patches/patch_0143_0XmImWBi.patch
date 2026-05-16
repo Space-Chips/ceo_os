@@ -1,0 +1,155 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/profile/profile_screen.dart
+@@
+ class _ProfileScreenState extends State<ProfileScreen> {
+@@
+   bool _isThemeSaving = false;
+@@
+   bool _isSettingsSaving = false;
++
++  String _t(String key) => context.read<LanguageProvider>().t(key);
+@@
+   Future<void> _showThemePicker() async {
+@@
+     final selected = await _showSelectionSheet(
+-      title: 'INTERFACE APPEARANCE',
+-      subtitle: 'Choose your color scheme and typography.',
++      title: _t('interface_appearance'),
++      subtitle: _t('profile_theme_picker_subtitle'),
+       options: [
+@@
+         builder: (context) => CupertinoAlertDialog(
+-          title: Text('THEME_SYNC_ERROR', style: AppTypography.mono),
++          title: Text(_t('theme_sync_error'), style: AppTypography.mono),
+           content: Padding(
+             padding: const EdgeInsets.only(top: 8),
+             child: Text(
+-              'Your appearance changed on this device, but we could not save it to your account right now. Please try again in a moment.',
++              _t('theme_sync_error_message'),
+@@
+               child: Text(
+-                'OK',
++                _t('ok'),
+@@
+   String _themeSubtitle(PremiumRuntime runtime, AppThemePreset preset) {
+     final isPremiumTheme = runtime.config.premiumThemes.contains(preset.id);
+     if (!isPremiumTheme) {
+-      return preset.isDark ? 'Dark theme' : 'Light theme';
++      return preset.isDark ? _t('dark_theme') : _t('light_theme');
+     }
+     if (runtime.config.launchPremiumLabelsEnabled &&
+         runtime.resolved.launchPremiumActive) {
+-      return 'Premium, unlocked during launch';
++      return _t('premium_unlocked_launch');
+     }
+-    return 'Premium theme';
++    return _t('premium_theme');
+   }
+@@
+   Future<void> _showLanguagePicker() async {
+@@
+     final selected = await _showSelectionSheet(
+-      title: 'LANGUAGE',
+-      subtitle: 'Choose your preferred language.',
++      title: _t('language'),
++      subtitle: _t('language_picker_subtitle'),
+       options: [
+@@
+       await _showNotice(
+-        title: 'SAVE_FAILED',
+-        message: 'Unable to update language preference right now.',
++        title: _t('save_failed'),
++        message: _t('language_save_failed'),
+       );
+@@
+           title: 'NOTIFICATION CHANNELS',
+-          subtitle:
+-              'Manage reminders and alert channels for the operating system.',
++          subtitle: _t('notification_channels_subtitle'),
+@@
+-                      label: 'GLOBAL_NOTIFICATIONS',
++                      label: _t('global_notifications'),
+@@
+-                      label: 'HABIT_REMINDERS',
++                      label: _t('habit_reminders'),
+@@
+-                      label: 'CALENDAR_ALERTS',
++                      label: _t('calendar_alerts'),
+@@
+-                      label: 'FOCUS_SESSION_ALERTS',
++                      label: _t('focus_session_alerts'),
+@@
+-                label: _isSettingsSaving ? 'SAVING_CHANNELS' : 'SAVE_CHANNELS',
++                label: _isSettingsSaving
++                    ? _t('saving_channels')
++                    : _t('save_channels'),
+@@
+                           await _showNotice(
+-                            title: 'SAVE_FAILED',
+-                            message:
+-                                'Unable to save notification channels right now.',
++                            title: _t('save_failed'),
++                            message: _t('notification_channels_save_failed'),
+                           );
+@@
+-    String footer = 'Last updated: December 2025',
++    String footer = '',
+   }) async {
++    final resolvedFooter = footer.isEmpty ? _t('last_updated_dec_2025') : footer;
+     await showCupertinoModalPopup<void>(
+       context: context,
+       builder: (popupContext) => _buildBottomSheetShell(
+         context: context,
+         heightFactor: 0.86,
+         title: title,
+-        subtitle: footer,
++        subtitle: resolvedFooter,
+@@
+     const supportEmail = 'timofrmac@gmail.com';
+@@
+       title: 'SUPPORT_CONTACT',
+-      message:
+-          'Support email copied: timofrmac@gmail.com. Include device, app version, and reproduction steps.',
++      message: _t('support_email_copied'),
+@@
+         title: Text('DATA_DELETION', style: AppTypography.mono),
+@@
+             Text(
+-              'Type DELETE to permanently remove your account and associated cloud data. This action cannot be undone.',
++              _t('data_deletion_type_delete_hint'),
+@@
+               placeholder: 'Type DELETE',
+@@
+           CupertinoDialogAction(
+             onPressed: () => Navigator.of(ctx).pop(false),
+-            child: const Text('Cancel'),
++            child: Text(_t('cancel')),
+           ),
+@@
+-            child: const Text('Delete'),
++            child: Text(_t('delete')),
+           ),
+@@
+       await _showNotice(
+-        title: 'DELETION_ABORTED',
+-        message: 'Confirmation token mismatch or flow canceled.',
++        title: _t('deletion_aborted'),
++        message: _t('deletion_aborted_message'),
+       );
+@@
+       await _showNotice(
+-        title: 'ACCOUNT_DATA_DELETED',
+-        message:
+-            'Your account and associated cloud data have been permanently deleted. You will now be signed out.',
++        title: _t('account_data_deleted'),
++        message: _t('account_data_deleted_message'),
+       );
+@@
+       await _showNotice(
+-        title: 'DELETION_FAILED',
+-        message:
+-            'We could not permanently delete your account right now. Please try again in a moment or contact support.',
++        title: _t('deletion_failed'),
++        message: _t('deletion_failed_message'),
+       );
+*** End Patch

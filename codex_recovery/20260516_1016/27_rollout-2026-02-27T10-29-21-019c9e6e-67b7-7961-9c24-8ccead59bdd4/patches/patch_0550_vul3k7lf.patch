@@ -1,0 +1,7 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/calendar/calendar_screen.dart
+@@
+   Widget _buildYearlyView(List<CalendarEvent> events) {
+-    final tasks = context.read<TaskProvider>().tasks;
+     return GridView.builder(
+*** End Patch

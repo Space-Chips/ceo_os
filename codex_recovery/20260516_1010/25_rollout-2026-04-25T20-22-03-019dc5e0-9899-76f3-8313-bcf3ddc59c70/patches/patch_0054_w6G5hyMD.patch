@@ -1,0 +1,7 @@
+*** Begin Patch
+*** Update File: lib/features/control_center_setup/widgets/dashboard_intro_screen.dart
+@@
+-              final slideUp = Tween<double>(begin: 0, end: -8)
++              final slideUp = Tween<double>(begin: 0.0, end: -8.0)
+                   .transform(Curves.easeOutCubic.transform(g));
+*** End Patch

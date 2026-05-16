@@ -1,0 +1,169 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/focus/focus_screen.dart
+@@
+   Widget _buildActive(FocusProvider provider) {
+-    final isFocusing = provider.state == FocusState.focusing;
+-    final isBreak =
+-        provider.state == FocusState.shortBreak ||
+-        provider.state == FocusState.longBreak;
+-    final accentColor = isBreak ? AppColors.success : AppColors.accent;
+-    final progressColor = isBreak
+-        ? AppColors.success.withValues(alpha: 0.6)
+-        : AppColors.focusPrimary.withValues(alpha: 0.6);
+-    final timerLabel = isFocusing ? 'DEEP WORK' : 'BREAK';
++    final isFocusing = provider.state == FocusState.focusing;
++    final isExitPending = provider.state == FocusState.exitPending;
++    final accentColor = isExitPending
++        ? AppColors.warning
++        : AppColors.accent;
++    final progressColor = isExitPending
++        ? AppColors.warning.withValues(alpha: 0.62)
++        : AppColors.focusPrimary.withValues(alpha: 0.6);
++    final timerLabel = isExitPending ? 'EXIT WINDOW' : 'DEEP WORK';
+     final controlTitle = switch (provider.state) {
+       FocusState.focusing => 'Focus Session',
+-      FocusState.shortBreak => 'Short Break',
+-      FocusState.longBreak => 'Long Break',
+-      FocusState.requestingBreak => 'Break Request Pending',
+-      FocusState.breakOptionsMenu => 'Break Selection',
++      FocusState.exitPending => 'Exit Request',
++      FocusState.shortBreak => 'Focus Session',
++      FocusState.longBreak => 'Focus Session',
++      FocusState.requestingBreak => 'Focus Session',
++      FocusState.breakOptionsMenu => 'Focus Session',
+       FocusState.idle => 'Focus Session',
+     };
+@@
+         children: [
+           _header(
+             title: 'Focus',
+-            trailingIcon: CupertinoIcons.stop_circle,
+-            trailingTap: provider.stopFocus,
+           ),
+@@
+                     AnimatedSwitcher(
+                       duration: const Duration(milliseconds: 220),
+                       transitionBuilder: (child, animation) =>
+                           FadeTransition(opacity: animation, child: child),
+                       child: Text(
+-                        provider.state == FocusState.requestingBreak
+-                            ? provider.waitTimerDisplay
+-                            : provider.timerDisplay,
++                        provider.timerDisplay,
+                         key: ValueKey(
+-                          '${provider.state.name}-${provider.state == FocusState.requestingBreak ? provider.waitTimerDisplay : provider.timerDisplay}',
++                          '${provider.state.name}-${provider.timerDisplay}-${provider.exitCountdownRemainingSeconds}',
+                         ),
+                         style: AppTypography.heroDisplay.copyWith(
+                           fontSize: 20,
+                           color: AppColors.label,
+@@
+                 ),
+                 const SizedBox(height: 14),
+-                if (provider.state == FocusState.focusing)
++                if (provider.state == FocusState.focusing)
+                   _FocusSecondaryButton(
+-                    label: 'REQUEST BREAK',
+-                    onTap: provider.requestBreak,
++                    label: 'REQUEST EXIT (100s)',
++                    onTap: provider.requestEarlyExit,
+                   )
+-                else if (provider.state == FocusState.requestingBreak)
+-                  _FocusSecondaryButton(
+-                    label: 'Cancel Break Request',
+-                    onTap: provider.cancelBreakRequest,
+-                  )
+-                else if (provider.state == FocusState.breakOptionsMenu)
+-                  Row(
+-                    children: [
+-                      Expanded(
+-                        child: _FocusSecondaryButton(
+-                          label: '5m break',
+-                          onTap: () => provider.takeCustomBreak(5),
+-                        ),
+-                      ),
+-                      const SizedBox(width: 10),
+-                      Expanded(
+-                        child: _FocusSecondaryButton(
+-                          label: '15m break',
+-                          onTap: () => provider.takeCustomBreak(15),
+-                        ),
+-                      ),
+-                    ],
+-                  )
+-                else
+-                  _FocusSecondaryButton(
+-                    label: 'Skip break',
+-                    onTap: provider.skip,
+-                  ),
++                else if (provider.state == FocusState.exitPending) ...[
++                  Container(
++                    width: double.infinity,
++                    padding: const EdgeInsets.all(12),
++                    decoration: BoxDecoration(
++                      color: AppColors.warning.withValues(alpha: 0.1),
++                      borderRadius: BorderRadius.circular(12),
++                      border: Border.all(
++                        color: AppColors.warning.withValues(alpha: 0.45),
++                        width: 1,
++                      ),
++                    ),
++                    child: Text(
++                      provider.canFinalizeEarlyExit
++                          ? 'You can now leave Focus Mode. This will break your streak.'
++                          : 'Hold for ${provider.exitCountdownLabel} before quitting. You can return anytime.',
++                      textAlign: TextAlign.center,
++                      style: AppTypography.callout.copyWith(
++                        fontSize: 13,
++                        color: AppColors.label.withValues(alpha: 0.9),
++                        fontWeight: FontWeight.w600,
++                      ),
++                    ),
++                  ),
++                  const SizedBox(height: 10),
++                  _FocusSecondaryButton(
++                    label: 'RETURN TO SESSION',
++                    onTap: provider.returnToSession,
++                  ),
++                  const SizedBox(height: 10),
++                  if (provider.canFinalizeEarlyExit)
++                    _FocusSecondaryButton(
++                      label: 'QUIT NOW (RESET STREAK)',
++                      onTap: provider.finalizeEarlyExit,
++                    )
++                  else
++                    Container(
++                      width: double.infinity,
++                      padding: const EdgeInsets.symmetric(
++                        horizontal: 18,
++                        vertical: 18,
++                      ),
++                      decoration: BoxDecoration(
++                        color: AppColors.white.withValues(alpha: 0.02),
++                        borderRadius: BorderRadius.circular(16),
++                        border: Border.all(
++                          color: AppColors.white.withValues(alpha: 0.06),
++                          width: 1,
++                        ),
++                      ),
++                      child: Text(
++                        'QUIT AVAILABLE IN ${provider.exitCountdownLabel}',
++                        textAlign: TextAlign.center,
++                        style: AppTypography.callout.copyWith(
++                          fontSize: 14,
++                          fontWeight: FontWeight.w600,
++                          color: AppColors.secondaryLabel.withValues(
++                            alpha: 0.84,
++                          ),
++                        ),
++                      ),
++                    ),
++                ] else
++                  _FocusSecondaryButton(
++                    label: 'RETURN TO HOME',
++                    onTap: () => context.go('/home'),
++                  ),
+               ],
+             ),
+           ),
+*** End Patch

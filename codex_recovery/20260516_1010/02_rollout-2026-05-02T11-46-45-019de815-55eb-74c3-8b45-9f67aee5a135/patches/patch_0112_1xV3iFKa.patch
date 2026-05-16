@@ -1,0 +1,84 @@
+*** Begin Patch
+*** Update File: lib/core/services/home_widget_service.dart
+@@
+     if (enabledHabits) {
+       futures.addAll([
+         HomeWidget.renderFlutterWidget(
+-          _CeoHabitsTodayCard.small(
+-            title: language.t('widget_mode_habits_today'),
+-            language: language,
+-            habits: todayHabits,
+-            isDone: habits.isHabitCompletedToday,
+-            completedHabits: doneHabits,
+-            totalHabits: totalHabits,
+-          ),
++          HabitsTodayWidgetSquareView(
++            language: language,
++            habits: todayHabits,
++            completed: doneHabits,
++            total: totalHabits,
++          ),
+           key: _keyHabitsSmall,
+           logicalSize: const Size(170, 170),
+           pixelRatio: 2,
+         ),
+-        HomeWidget.renderFlutterWidget(
+-          _CeoHabitsTodayCard.large(
+-            title: language.t('widget_mode_habits_today'),
+-            language: language,
+-            habits: todayHabits,
+-            isDone: habits.isHabitCompletedToday,
+-            completedHabits: doneHabits,
+-            totalHabits: totalHabits,
+-          ),
+-          key: _keyHabitsLarge,
+-          logicalSize: const Size(360, 180),
+-          pixelRatio: 2,
+-        ),
++        HomeWidget.saveWidgetData<String>(_keyHabitsLarge, null),
+       ]);
+     } else {
+       futures.addAll([
+         HomeWidget.saveWidgetData<String>(_keyHabitsSmall, null),
+         HomeWidget.saveWidgetData<String>(_keyHabitsLarge, null),
+       ]);
+     }
+ 
+     if (enabledHabitsTable) {
+       final tableDays = habits.widgetLast7Days;
+       final tableDone = habits.widgetCompletionMapLast7Days;
+       futures.addAll([
+-        HomeWidget.renderFlutterWidget(
+-          _CeoHabitsTableCard.small(
+-            title: language.t('widget_mode_habits_table'),
+-            language: language,
+-            habits: habits.habitsWithCompletedBottom,
+-            days: tableDays,
+-            completions: tableDone,
+-          ),
+-          key: _keyHabitsTableSmall,
+-          logicalSize: const Size(170, 170),
+-          pixelRatio: 2,
+-        ),
++        HomeWidget.saveWidgetData<String>(_keyHabitsTableSmall, null),
+         HomeWidget.renderFlutterWidget(
+-          _CeoHabitsTableCard.large(
+-            title: language.t('widget_mode_habits_table'),
++          HabitsTableWidgetRectangularView(
+             language: language,
+             habits: habits.habitsWithCompletedBottom,
+             days: tableDays,
+             completions: tableDone,
+           ),
+           key: _keyHabitsTableLarge,
+           logicalSize: const Size(360, 180),
+           pixelRatio: 2,
+         ),
+       ]);
+     } else {
+       futures.addAll([
+         HomeWidget.saveWidgetData<String>(_keyHabitsTableSmall, null),
+         HomeWidget.saveWidgetData<String>(_keyHabitsTableLarge, null),
+       ]);
+     }
+*** End Patch

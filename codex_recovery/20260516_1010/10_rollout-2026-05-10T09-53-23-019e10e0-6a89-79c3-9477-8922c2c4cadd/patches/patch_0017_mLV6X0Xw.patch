@@ -1,0 +1,43 @@
+*** Begin Patch
+*** Update File: lib/components/premium_paywall.dart
+@@
+ class PremiumPaywallSheet extends StatelessWidget {
+   final PremiumRuntime runtime;
+   final PremiumMessage message;
+   final String? reason;
+   final int? limit;
+   final int? current;
+   final bool isFr;
++  final bool showRestoreButton;
++  final bool manageOpensComparison;
+ 
+   const PremiumPaywallSheet({
+     super.key,
+     required this.runtime,
+     required this.message,
+     required this.isFr,
+     this.reason,
+     this.limit,
+     this.current,
++    this.showRestoreButton = true,
++    this.manageOpensComparison = false,
+   });
+@@
+               child: PremiumPaywallContent(
+                 runtime: runtime,
+                 message: message,
+                 reason: reason,
+                 limit: limit,
+                 current: current,
+                 isFr: isFr,
++                showRestoreButton: showRestoreButton,
++                manageOpensComparison: manageOpensComparison,
+               ),
+             ),
+           ),
+         ),
+       ),
+     );
+   }
+ }
+*** End Patch

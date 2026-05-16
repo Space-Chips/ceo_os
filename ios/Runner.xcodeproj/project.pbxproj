@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */ = {isa = PBXBuildFile; fileRef = 1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */; };
+		20C92EFE0F474936BC58C038 /* FocusActivityMonitorExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = E9A5CEDA2259476E98F0C12E /* FocusActivityMonitorExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		331C808B294A63AB00263BE5 /* RunnerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 331C807B294A618700263BE5 /* RunnerTests.swift */; };
 		3B3967161E833CAA004F5970 /* AppFrameworkInfo.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */; };
 		74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74858FAE1ED2DC5600515810 /* AppDelegate.swift */; };
@@ -22,6 +23,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		1EB7A90D866B4BBD97051971 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 97C146E61CF9000F007C117D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 84C0EEF5E0064471B8DD0227;
+			remoteInfo = FocusActivityMonitorExtension;
+		};
 		331C8085294A63A400263BE5 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 97C146E61CF9000F007C117D /* Project object */;
@@ -46,6 +54,7 @@
 			dstSubfolderSpec = 13;
 			files = (
 				8578F9892F4379B50038063F /* CeoWidgetsExtension.appex in Embed Foundation Extensions */,
+				20C92EFE0F474936BC58C038 /* FocusActivityMonitorExtension.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -77,6 +86,7 @@
 		8578F9752F4379B20038063F /* CeoWidgetsExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = CeoWidgetsExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		8578F9772F4379B20038063F /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		8578F9792F4379B20038063F /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		8A3B7C6D5E4F3210A1B2C3D4 /* Profile.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Profile.xcconfig; path = Flutter/Profile.xcconfig; sourceTree = "<group>"; };
 		902C98B510AB3CA3DB4A37F7 /* Pods-Runner.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.release.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.release.xcconfig"; sourceTree = "<group>"; };
 		90EACD8929BCE53E877F509E /* Pods-Runner.profile.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.profile.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.profile.xcconfig"; sourceTree = "<group>"; };
 		9740EEB21CF90195004384FC /* Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = Debug.xcconfig; path = Flutter/Debug.xcconfig; sourceTree = "<group>"; };
@@ -88,6 +98,7 @@
 		97C147021CF9000F007C117D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		B3B4ACEBE78D43AAC271FCB9 /* Pods-RunnerTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.debug.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.debug.xcconfig"; sourceTree = "<group>"; };
 		B6005BEB2B62CAC1D3F160D8 /* Pods_RunnerTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_RunnerTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		E9A5CEDA2259476E98F0C12E /* FocusActivityMonitorExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = FocusActivityMonitorExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		FCF2AFD1F69C1051EABA6A92 /* Pods-RunnerTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.release.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -98,6 +109,14 @@
 				Info.plist,
 			);
 			target = 8578F9742F4379B20038063F /* CeoWidgetsExtension */;
+		};
+		FA110C050000000000000001 /* Exceptions for "FocusActivityMonitor" folder in "FocusActivityMonitorExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				FocusActivityMonitor.entitlements,
+				Info.plist,
+			);
+			target = 84C0EEF5E0064471B8DD0227 /* FocusActivityMonitorExtension */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -112,6 +131,18 @@
 			explicitFolders = (
 			);
 			path = CeoWidgets;
+			sourceTree = "<group>";
+		};
+		ABFC1660CF1F4F18865A63F1 /* FocusActivityMonitor */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				FA110C050000000000000001 /* Exceptions for "FocusActivityMonitor" folder in "FocusActivityMonitorExtension" target */,
+			);
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = FocusActivityMonitor;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -139,6 +170,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				A25E9F24529AF68FE8021EF6 /* Pods_Runner.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B54B99B6B40443A1B202EDDD /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -183,6 +221,7 @@
 				3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */,
 				9740EEB21CF90195004384FC /* Debug.xcconfig */,
 				7AFA3C8E1D35360C0083082E /* Release.xcconfig */,
+				8A3B7C6D5E4F3210A1B2C3D4 /* Profile.xcconfig */,
 				9740EEB31CF90195004384FC /* Generated.xcconfig */,
 			);
 			name = Flutter;
@@ -194,6 +233,7 @@
 				9740EEB11CF90186004384FC /* Flutter */,
 				97C146F01CF9000F007C117D /* Runner */,
 				8578F97B2F4379B20038063F /* CeoWidgets */,
+				ABFC1660CF1F4F18865A63F1 /* FocusActivityMonitor */,
 				8578F9762F4379B20038063F /* Frameworks */,
 				97C146EF1CF9000F007C117D /* Products */,
 				331C8082294A63A400263BE5 /* RunnerTests */,
@@ -207,6 +247,7 @@
 				97C146EE1CF9000F007C117D /* Runner.app */,
 				331C8081294A63A400263BE5 /* RunnerTests.xctest */,
 				8578F9752F4379B20038063F /* CeoWidgetsExtension.appex */,
+				E9A5CEDA2259476E98F0C12E /* FocusActivityMonitorExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -248,6 +289,26 @@
 			productReference = 331C8081294A63A400263BE5 /* RunnerTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
+		84C0EEF5E0064471B8DD0227 /* FocusActivityMonitorExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 902D615C7F5841E4B0E9C9D2 /* Build configuration list for PBXNativeTarget "FocusActivityMonitorExtension" */;
+			buildPhases = (
+				A4A15E0529FC4AD188BBE9D5 /* Sources */,
+				B54B99B6B40443A1B202EDDD /* Frameworks */,
+				DE1D0EA69C5E4E159B4B4FFD /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				ABFC1660CF1F4F18865A63F1 /* FocusActivityMonitor */,
+			);
+			name = FocusActivityMonitorExtension;
+			productName = FocusActivityMonitorExtension;
+			productReference = E9A5CEDA2259476E98F0C12E /* FocusActivityMonitorExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		8578F9742F4379B20038063F /* CeoWidgetsExtension */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 8578F98F2F4379B50038063F /* Build configuration list for PBXNativeTarget "CeoWidgetsExtension" */;
@@ -279,6 +340,7 @@
 				97C146EC1CF9000F007C117D /* Resources */,
 				9705A1C41CF9048500538489 /* Embed Frameworks */,
 				8578F98A2F4379B50038063F /* Embed Foundation Extensions */,
+				A1B2C3D4E5F60718293A4B5C /* Embed ScreenTimeReportExtension (device only) */,
 				223D14C456615BC4CA4FB525 /* [CP] Embed Pods Frameworks */,
 				3B06AD1E1E4923F5004D2608 /* Thin Binary */,
 				639693E368918B242CACF454 /* [CP] Copy Pods Resources */,
@@ -287,6 +349,7 @@
 			);
 			dependencies = (
 				8578F9882F4379B50038063F /* PBXTargetDependency */,
+				61CBCB7B69E447D481CE0C9B /* PBXTargetDependency */,
 			);
 			name = Runner;
 			productName = Runner;
@@ -307,6 +370,9 @@
 					331C8080294A63A400263BE5 = {
 						CreatedOnToolsVersion = 14.0;
 						TestTargetID = 97C146ED1CF9000F007C117D;
+					};
+					84C0EEF5E0064471B8DD0227 = {
+						CreatedOnToolsVersion = 16.4;
 					};
 					8578F9742F4379B20038063F = {
 						CreatedOnToolsVersion = 16.4;
@@ -333,6 +399,7 @@
 				97C146ED1CF9000F007C117D /* Runner */,
 				331C8080294A63A400263BE5 /* RunnerTests */,
 				8578F9742F4379B20038063F /* CeoWidgetsExtension */,
+				84C0EEF5E0064471B8DD0227 /* FocusActivityMonitorExtension */,
 			);
 		};
 /* End PBXProject section */
@@ -360,6 +427,13 @@
 				3B3967161E833CAA004F5970 /* AppFrameworkInfo.plist in Resources */,
 				97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */,
 				97C146FC1CF9000F007C117D /* Main.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DE1D0EA69C5E4E159B4B4FFD /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -419,7 +493,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" embed_and_thin";
+			shellScript = "set -e\n\n# Ensure FLUTTER_ROOT and related vars are present even when Xcode build settings are stale.\nif [ -f \"${SRCROOT}/Flutter/flutter_export_environment.sh\" ]; then\n  . \"${SRCROOT}/Flutter/flutter_export_environment.sh\"\nfi\n\n/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" embed_and_thin\n";
 		};
 		639693E368918B242CACF454 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -473,7 +547,23 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" build";
+			shellScript = "set -e\n\n# Ensure FLUTTER_ROOT and related vars are present even when Xcode build settings are stale.\nif [ -f \"${SRCROOT}/Flutter/flutter_export_environment.sh\" ]; then\n  . \"${SRCROOT}/Flutter/flutter_export_environment.sh\"\nfi\n\n/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" build\n";
+		};
+		A1B2C3D4E5F60718293A4B5C /* Embed ScreenTimeReportExtension (device only) */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${BUILT_PRODUCTS_DIR}/ScreenTimeReportExtension.appex",
+			);
+			name = "Embed ScreenTimeReportExtension (device only)";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${WRAPPER_NAME}/Extensions/ScreenTimeReportExtension.appex",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "EXTENSION_IN_PLUGINS=\"${TARGET_BUILD_DIR}/${WRAPPER_NAME}/PlugIns/ScreenTimeReportExtension.appex\"\nEXTENSION_IN_EXTENSIONS=\"${TARGET_BUILD_DIR}/${WRAPPER_NAME}/Extensions/ScreenTimeReportExtension.appex\"\n\nif [ \"$PLATFORM_NAME\" = \"iphoneos\" ]; then\n  EXTENSION_SRC=\"${BUILT_PRODUCTS_DIR}/ScreenTimeReportExtension.appex\"\n\n  # When Runner overrides CONFIGURATION_BUILD_DIR (Flutter does this), extension\n  # products still land in the derived products folder. Fall back to it.\n  if [ ! -d \"$EXTENSION_SRC\" ]; then\n    ALT_SRC=\"${BUILD_DIR}/${CONFIGURATION}${EFFECTIVE_PLATFORM_NAME}/ScreenTimeReportExtension.appex\"\n    if [ -d \"$ALT_SRC\" ]; then\n      EXTENSION_SRC=\"$ALT_SRC\"\n    fi\n  fi\n\n  EXTENSION_DEST=\"${TARGET_BUILD_DIR}/${WRAPPER_NAME}/Extensions\"\n\n  # Ensure stale packaging layout does not leak into archives.\n  rm -rf \"$EXTENSION_IN_PLUGINS\"\n  mkdir -p \"$EXTENSION_DEST\"\n\n  if [ -d \"$EXTENSION_SRC\" ]; then\n    # Dereference symlinks from BUILT_PRODUCTS_DIR so archive contains a real .appex bundle.\n    rsync -aL --delete \"$EXTENSION_SRC\" \"$EXTENSION_DEST/\"\n  else\n    echo \"ScreenTimeReportExtension.appex not found at $EXTENSION_SRC\"\n    exit 1\n  fi\nelse\n  rm -rf \"$EXTENSION_IN_PLUGINS\" \"$EXTENSION_IN_EXTENSIONS\"\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -502,6 +592,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A4A15E0529FC4AD188BBE9D5 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -509,6 +606,11 @@
 			isa = PBXTargetDependency;
 			target = 97C146ED1CF9000F007C117D /* Runner */;
 			targetProxy = 331C8085294A63A400263BE5 /* PBXContainerItemProxy */;
+		};
+		61CBCB7B69E447D481CE0C9B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 84C0EEF5E0064471B8DD0227 /* FocusActivityMonitorExtension */;
+			targetProxy = 1EB7A90D866B4BBD97051971 /* PBXContainerItemProxy */;
 		};
 		8578F9882F4379B50038063F /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -537,6 +639,32 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		131E291FEE79432E894ACBB6 /* Profile */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = FocusActivityMonitor/FocusActivityMonitor.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = CGXFXXRW4Q;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = FocusActivityMonitor/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = FocusActivityMonitor;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.ceoCompass.FocusActivityMonitor;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Profile;
+		};
 		249021D3217E4FDB00AE95B9 /* Profile */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -583,7 +711,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
-				SUPPORTED_PLATFORMS = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
 			};
@@ -591,10 +719,11 @@
 		};
 		249021D4217E4FDB00AE95B9 /* Profile */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 7AFA3C8E1D35360C0083082E /* Release.xcconfig */;
+			baseConfigurationReference = 8A3B7C6D5E4F3210A1B2C3D4 /* Profile.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
 				DEVELOPMENT_TEAM = 3NF3Q47DHP;
 				ENABLE_BITCODE = NO;
@@ -780,6 +909,34 @@
 			};
 			name = Profile;
 		};
+		88D6050D4C554E189EB6AF6F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = FocusActivityMonitor/FocusActivityMonitor.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = CGXFXXRW4Q;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = FocusActivityMonitor/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = FocusActivityMonitor;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.ceoCompass.FocusActivityMonitor;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
 		97C147031CF9000F007C117D /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -883,7 +1040,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
-				SUPPORTED_PLATFORMS = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -897,6 +1054,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
 				DEVELOPMENT_TEAM = 3NF3Q47DHP;
 				ENABLE_BITCODE = NO;
@@ -918,10 +1076,11 @@
 		};
 		97C147071CF9000F007C117D /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 7AFA3C8E1D35360C0083082E /* Release.xcconfig */;
+			baseConfigurationReference = 8A3B7C6D5E4F3210A1B2C3D4 /* Profile.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
 				DEVELOPMENT_TEAM = 3NF3Q47DHP;
 				ENABLE_BITCODE = NO;
@@ -937,6 +1096,32 @@
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Release;
+		};
+		C39C6B8B1FE3487DA4527DA8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = FocusActivityMonitor/FocusActivityMonitor.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = CGXFXXRW4Q;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = FocusActivityMonitor/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = FocusActivityMonitor;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.ceoCompass.FocusActivityMonitor;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};
@@ -959,6 +1144,16 @@
 				8578F98B2F4379B50038063F /* Debug */,
 				8578F98C2F4379B50038063F /* Release */,
 				8578F98D2F4379B50038063F /* Profile */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		902D615C7F5841E4B0E9C9D2 /* Build configuration list for PBXNativeTarget "FocusActivityMonitorExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				88D6050D4C554E189EB6AF6F /* Debug */,
+				C39C6B8B1FE3487DA4527DA8 /* Release */,
+				131E291FEE79432E894ACBB6 /* Profile */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

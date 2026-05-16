@@ -1,0 +1,32 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/profile/profile_screen.dart
+@@
+   Future<void> _showThemePicker() async {
+     final themeProvider = context.read<ThemeProvider>();
+     final runtime = await _premiumRepository.getRuntime();
++    final premiumThemeIds = runtime.config.premiumThemes;
++    final orderedPresets = [...themeProvider.presets]..sort((a, b) {
++      final aPremium = premiumThemeIds.contains(a.id);
++      final bPremium = premiumThemeIds.contains(b.id);
++      if (aPremium == bPremium) {
++        return themeProvider.presets.indexOf(a) -
++            themeProvider.presets.indexOf(b);
++      }
++      return aPremium ? 1 : -1;
++    });
+     final selected = await _showSelectionSheet(
+       title: 'INTERFACE APPEARANCE',
+       subtitle: 'Choose your color scheme and typography.',
+       options: [
+-        for (final preset in themeProvider.presets)
++        for (final preset in orderedPresets)
+           _SelectionOption(
+             id: preset.id,
+             title: preset.name,
+             subtitle: _themeSubtitle(runtime, preset),
+             selected: preset.id == themeProvider.currentPreset.id,
++            isPremium: premiumThemeIds.contains(preset.id),
+           ),
+       ],
+     );
+*** End Patch

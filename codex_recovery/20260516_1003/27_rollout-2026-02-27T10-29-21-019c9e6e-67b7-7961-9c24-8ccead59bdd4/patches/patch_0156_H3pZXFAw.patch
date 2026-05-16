@@ -1,0 +1,70 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/calendar/calendar_screen.dart
+@@
+   _EventPriority _priority(CalendarEvent event) {
+@@
+     return _EventPriority.normal;
+   }
++
++  int _priorityWeight(_EventPriority priority) {
++    switch (priority) {
++      case _EventPriority.important:
++        return 0;
++      case _EventPriority.normal:
++        return 1;
++      case _EventPriority.secondary:
++        return 2;
++    }
++  }
++
++  int _timeToMinutes(String? rawTime) {
++    if (rawTime == null || rawTime.isEmpty) return 24 * 60;
++    final parts = rawTime.split(':');
++    if (parts.length < 2) return 24 * 60;
++    final hour = int.tryParse(parts[0]) ?? 24;
++    final minute = int.tryParse(parts[1]) ?? 0;
++    return (hour * 60) + minute;
++  }
++
++  List<CalendarEvent> _prioritizeEvents(List<CalendarEvent> events) {
++    final sorted = [...events];
++    sorted.sort((a, b) {
++      final byPriority = _priorityWeight(
++        _priority(a),
++      ).compareTo(_priorityWeight(_priority(b)));
++      if (byPriority != 0) return byPriority;
++      final byTime = _timeToMinutes(a.eventTime).compareTo(
++        _timeToMinutes(b.eventTime),
++      );
++      if (byTime != 0) return byTime;
++      final aDuration = _duration(a);
++      final bDuration = _duration(b);
++      if (aDuration != bDuration) return bDuration.compareTo(aDuration);
++      return a.title.compareTo(b.title);
++    });
++    return sorted;
++  }
+@@
+             final allEvents = provider.events;
+-            final dayEvents = _getEventsForDay(currentDay, allEvents);
++            final dayEvents = _prioritizeEvents(
++              _getEventsForDay(currentDay, allEvents),
++            );
+@@
+                   const SizedBox(height: 12),
++                  Text(
++                    (_activeTab == _CalendarTab.calendar
++                            ? 'SWIPE LEFT FOR INTELLIGENCE'
++                            : 'SWIPE RIGHT FOR CALENDAR')
++                        .toUpperCase(),
++                    textAlign: TextAlign.center,
++                    style: AppTypography.mono.copyWith(
++                      fontSize: 9,
++                      color: AppColors.tertiaryLabel,
++                    ),
++                  ),
++                  const SizedBox(height: 10),
+                   if (_activeTab == _CalendarTab.calendar) ...[
+                     _buildCalendarSection(provider, dayEvents),
+                   ] else ...[
+*** End Patch

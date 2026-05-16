@@ -1,0 +1,13 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/repositories/user_repository.dart
+@@
+   Future<Profile> upsertProfile({String? fullName, String? avatarUrl}) async {
+-    final user = _client.auth.currentUser!;
++    final user = _client.auth.currentUser;
++    if (user == null) {
++      throw StateError('Cannot upsert profile without an authenticated user.');
++    }
+     final payload = {
+       'id': _currentUserId,
+       'email': user.email,
+*** End Patch

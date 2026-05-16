@@ -1,0 +1,40 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/screen_time_screen.dart
+@@
+-    final encoded = await _focusService.encodeApplicationBundleSelection(
+-      suggestion.bundleIdentifier,
+-    );
++    var encoded = _iosAppSelectionByBundle[suggestion.bundleIdentifier];
++    encoded ??= await _focusService.encodeApplicationBundleSelection(
++      suggestion.bundleIdentifier,
++    );
+     final payload = encoded?.payload.trim();
+     if (payload == null || payload.isEmpty) {
+       await _showNotice(
+         title: 'App unavailable',
+         message:
+-            '${suggestion.label} could not be converted to a Screen Time token on this iPhone.',
++            '${suggestion.label} cannot be blocked on this iPhone by the current Screen Time API.',
+       );
+       return;
+     }
+@@
+-      final encodedPayload = await _focusService.encodeWebsiteDomainSelection(
+-        normalizedDomain,
+-      );
+-      final websitePayload = encodedPayload?.trim();
++      var websitePayload = _iosWebsitePayloadByDomain[normalizedDomain];
++      websitePayload ??= await _focusService.encodeWebsiteDomainSelection(
++        normalizedDomain,
++      );
++      websitePayload = websitePayload?.trim();
+       if (websitePayload == null || websitePayload.isEmpty) {
+         await _showNotice(
+           title: 'Website unavailable',
+           message:
+-              'This domain could not be converted to a Screen Time website token on this iPhone.',
++              '$normalizedDomain cannot be blocked on this iPhone by the current Screen Time API.',
+         );
+         return;
+       }
+*** End Patch

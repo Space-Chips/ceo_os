@@ -1,0 +1,328 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/tasks/tasks_screen.dart
+@@
+   _TaskPalette _paletteForImportance(String? importanceRaw) {
+     switch ((importanceRaw ?? '').toLowerCase()) {
+       case 'crucial':
+       case 'critical':
+-        return const _TaskPalette(
+-          border: Color(0x66FF5050),
+-          start: Color(0x1FFF5050),
+-          end: Color(0x0DFF5050),
+-          badgeBg: Color(0x1FFF3C3C),
+-          badgeBorder: Color(0x59FF3C3C),
+-          badgeText: Color(0xFFFF6B6B),
++        return _TaskPalette(
++          border: AppColors.error.withValues(alpha: 0.4),
++          start: AppColors.error.withValues(alpha: 0.12),
++          end: AppColors.error.withValues(alpha: 0.05),
++          badgeBg: AppColors.error.withValues(alpha: 0.12),
++          badgeBorder: AppColors.error.withValues(alpha: 0.35),
++          badgeText: AppColors.error,
+         );
+       case 'essential':
+       case 'high':
+-        return const _TaskPalette(
+-          border: Color(0x66D97706),
+-          start: Color(0x1FD97706),
+-          end: Color(0x0DD97706),
+-          badgeBg: Color(0x1FD97706),
+-          badgeBorder: Color(0x59D97706),
+-          badgeText: Color(0xFFFFC46B),
++        return _TaskPalette(
++          border: AppColors.warning.withValues(alpha: 0.4),
++          start: AppColors.warning.withValues(alpha: 0.12),
++          end: AppColors.warning.withValues(alpha: 0.05),
++          badgeBg: AppColors.warning.withValues(alpha: 0.12),
++          badgeBorder: AppColors.warning.withValues(alpha: 0.35),
++          badgeText: AppColors.warning,
+         );
+       case 'average':
+       case 'medium':
+-        return const _TaskPalette(
+-          border: Color(0x66508CFF),
+-          start: Color(0x1F508CFF),
+-          end: Color(0x0D508CFF),
+-          badgeBg: Color(0x1F508CFF),
+-          badgeBorder: Color(0x59508CFF),
+-          badgeText: Color(0xFF6FA3FF),
++        return _TaskPalette(
++          border: AppColors.activeBorder,
++          start: AppColors.accentSurfaceSoft,
++          end: AppColors.accentSurfaceSoft.withValues(alpha: 0.35),
++          badgeBg: AppColors.accentSurfaceSoft,
++          badgeBorder: AppColors.activeBorder,
++          badgeText: AppColors.accentText,
+         );
+       case 'low':
+       default:
+-        return const _TaskPalette(
+-          border: Color(0x4D787878),
+-          start: Color(0xFF1A1A1A),
+-          end: Color(0xFF111111),
+-          badgeBg: Color(0x1A787878),
+-          badgeBorder: Color(0x4D787878),
+-          badgeText: Color(0xFFA0A0A0),
++        return _TaskPalette(
++          border: AppColors.borderStrong,
++          start: AppColors.cardBackgroundAlt,
++          end: AppColors.cardBase,
++          badgeBg: AppColors.label.withValues(alpha: 0.08),
++          badgeBorder: AppColors.borderStrong,
++          badgeText: AppColors.secondaryLabel,
+         );
+     }
+   }
+@@
+-      return const _HistoryBadgeStyle(
+-        background: Color(0x1FFF3C3C),
+-        border: Color(0x59FF3C3C),
+-        text: Color(0xFFFF6B6B),
++      return _HistoryBadgeStyle(
++        background: AppColors.error.withValues(alpha: 0.12),
++        border: AppColors.error.withValues(alpha: 0.35),
++        text: AppColors.error,
+       );
+     case 'low':
+-      return const _HistoryBadgeStyle(
+-        background: Color(0x1F508CFF),
+-        border: Color(0x59508CFF),
+-        text: Color(0xFF6FA3FF),
++      return _HistoryBadgeStyle(
++        background: AppColors.accentSurfaceSoft,
++        border: AppColors.activeBorder,
++        text: AppColors.accentText,
+       );
+     case 'average':
+     case 'medium':
+-      return const _HistoryBadgeStyle(
+-        background: Color(0x1F787878),
+-        border: Color(0x59787878),
+-        text: Color(0xFFB8B8B8),
++      return _HistoryBadgeStyle(
++        background: AppColors.label.withValues(alpha: 0.08),
++        border: AppColors.borderStrong,
++        text: AppColors.secondaryLabel,
+       );
+     default:
+-      return const _HistoryBadgeStyle(
+-        background: Color(0x1F787878),
+-        border: Color(0x59787878),
+-        text: Color(0xFFB8B8B8),
++      return _HistoryBadgeStyle(
++        background: AppColors.label.withValues(alpha: 0.08),
++        border: AppColors.borderStrong,
++        text: AppColors.secondaryLabel,
+       );
+   }
+ }
+@@
+         decoration: BoxDecoration(
+-          color: Colors.white.withValues(alpha: 0.06),
++          color: AppColors.topBarControlBackground,
+           borderRadius: BorderRadius.circular(14),
+           border: Border.all(
+-            color: Colors.white.withValues(alpha: 0.08),
++            color: AppColors.topBarControlBorder,
+             width: 1,
+           ),
+         ),
+-        child: const Center(
+-          child: Icon(CupertinoIcons.add, color: CupertinoColors.white, size: 20),
++        child: Center(
++          child: Icon(CupertinoIcons.add, color: AppColors.label, size: 20),
+         ),
+       ),
+     );
+   }
+@@
+         decoration: BoxDecoration(
+-          gradient: const LinearGradient(
++          gradient: LinearGradient(
+             begin: Alignment.topCenter,
+             end: Alignment.bottomCenter,
+-            colors: [Color(0xFF2A2A2A), Color(0xFF1A1A1A)],
++            colors: [AppColors.sectionBackground, AppColors.cardBackgroundAlt],
+           ),
+           borderRadius: BorderRadius.circular(16),
+           border: Border.all(
+-            color: Colors.white.withValues(alpha: 0.08),
++            color: AppColors.borderStrong,
+             width: 1,
+           ),
+*** Update File: /Users/timo/ceo_os/lib/features/habits/habits_screen.dart
+@@
+               decoration: BoxDecoration(
+-                gradient: const LinearGradient(
++                gradient: LinearGradient(
+                   begin: Alignment.topCenter,
+                   end: Alignment.bottomCenter,
+-                  colors: [Color(0xFF2A2A2A), Color(0xFF1A1A1A)],
++                  colors: [AppColors.sectionBackground, AppColors.cardBackgroundAlt],
+                 ),
+                 borderRadius: BorderRadius.circular(18),
+                 border: Border.all(
+-                  color: AppColors.white.withValues(alpha: 0.08),
++                  color: AppColors.borderStrong,
+                   width: 1,
+                 ),
+               ),
+@@
+                       '$scorePercent%',
+                       style: AppTypography.heroNumber.copyWith(
+                         fontSize: 48,
+                         fontWeight: FontWeight.w700,
+-                        color: const Color(0xFF55D9A5),
++                        color: AppColors.scoreValue,
+                       ),
+                     ),
+@@
+                           return LinearProgressIndicator(
+                             value: value,
+                             backgroundColor: AppColors.white.withValues(alpha: 0.08),
+-                            valueColor: const AlwaysStoppedAnimation<Color>(
+-                              Color(0xFF55D9A5),
+-                            ),
++                            valueColor: AlwaysStoppedAnimation<Color>(
++                              AppColors.scoreValue,
++                            ),
+                           );
+                         },
+                       ),
+*** Update File: /Users/timo/ceo_os/lib/features/rank/rank_screen.dart
+@@
+-  static const List<_RankTierData> _tiers = [
+-    _RankTierData(
+-      name: 'CEO',
+-      requirements: ['500 day streak', '250h Focus', '250h CEO'],
+-      ring: [Color(0xFFFACC15), Color(0xFFFFFFFF), Color(0xFF111111)],
+-      glow: Color(0x66FACC15),
+-    ),
+-    _RankTierData(
+-      name: 'Batman',
+-      requirements: ['365 day streak', '200h Focus', '100h CEO'],
+-      ring: [Color(0xFF6B7280), Color(0xFF111827), Color(0xFF000000)],
+-      glow: Color(0x334B5563),
+-    ),
+-    _RankTierData(
+-      name: 'Diamond',
+-      requirements: ['180 day streak', '200h Focus'],
+-      ring: [Color(0xFF7DD3FC), Color(0xFF38BDF8), Color(0xFF0F172A)],
+-      glow: Color(0x3358C4FF),
+-    ),
+-    _RankTierData(
+-      name: 'Platinum',
+-      requirements: ['90 day streak', '60h Focus'],
+-      ring: [Color(0xFFE5E7EB), Color(0xFF9CA3AF), Color(0xFF0F172A)],
+-      glow: Color(0x33E5E7EB),
+-    ),
+-    _RankTierData(
+-      name: 'Gold',
+-      requirements: ['50 day streak'],
+-      ring: [Color(0xFFFDE047), Color(0xFFEAB308), Color(0xFF0F172A)],
+-      glow: Color(0x44FDE047),
+-    ),
+-    _RankTierData(
+-      name: 'Silver',
+-      requirements: ['15 days in app', '10 day streak'],
+-      ring: [Color(0xFFE5E7EB), Color(0xFF9CA3AF), Color(0xFF0F172A)],
+-      glow: Color(0x33E5E7EB),
+-    ),
+-    _RankTierData(
+-      name: 'Bronze',
+-      requirements: ['Starting rank'],
+-      ring: [Color(0xFFD4A574), Color(0xFFB87333), Color(0xFF0F172A)],
+-      glow: Color(0x44B87333),
+-    ),
+-  ];
++  List<_RankTierData> get _tiers => [
++    _RankTierData(
++      name: 'CEO',
++      requirements: ['500 day streak', '250h Focus', '250h CEO'],
++      ring: [AppColors.warning, AppColors.label, AppColors.background],
++      glow: AppColors.warning.withValues(alpha: 0.4),
++    ),
++    _RankTierData(
++      name: 'Batman',
++      requirements: ['365 day streak', '200h Focus', '100h CEO'],
++      ring: [
++        AppColors.secondaryLabel,
++        AppColors.surfaceMuted,
++        AppColors.background,
++      ],
++      glow: AppColors.secondaryLabel.withValues(alpha: 0.22),
++    ),
++    _RankTierData(
++      name: 'Diamond',
++      requirements: ['180 day streak', '200h Focus'],
++      ring: [AppColors.accentLight, AppColors.accent, AppColors.background],
++      glow: AppColors.themeGlow.withValues(alpha: 0.34),
++    ),
++    _RankTierData(
++      name: 'Platinum',
++      requirements: ['90 day streak', '60h Focus'],
++      ring: [AppColors.label, AppColors.secondaryLabel, AppColors.background],
++      glow: AppColors.label.withValues(alpha: 0.18),
++    ),
++    _RankTierData(
++      name: 'Gold',
++      requirements: ['50 day streak'],
++      ring: [AppColors.warning, AppColors.rankAccent, AppColors.background],
++      glow: AppColors.warning.withValues(alpha: 0.34),
++    ),
++    _RankTierData(
++      name: 'Silver',
++      requirements: ['15 days in app', '10 day streak'],
++      ring: [AppColors.label, AppColors.secondaryLabel, AppColors.background],
++      glow: AppColors.label.withValues(alpha: 0.18),
++    ),
++    _RankTierData(
++      name: 'Bronze',
++      requirements: ['Starting rank'],
++      ring: [AppColors.rankAccent, AppColors.warning, AppColors.background],
++      glow: AppColors.rankAccent.withValues(alpha: 0.28),
++    ),
++  ];
+@@
+       decoration: BoxDecoration(
+-        gradient: const LinearGradient(
++        gradient: LinearGradient(
+           begin: Alignment.topCenter,
+           end: Alignment.bottomCenter,
+-          colors: [Color(0xFF2A1A10), Color(0xFF1A120A)],
++          colors: [
++            Color.alphaBlend(
++              AppColors.accentSurfaceSoft.withValues(alpha: 0.8),
++              AppColors.cardBackgroundAlt,
++            ),
++            AppColors.cardBase,
++          ],
+         ),
+         borderRadius: BorderRadius.circular(24),
+         border: Border.all(
+-          color: const Color(0xFFFFAA50).withValues(alpha: 0.35),
++          color: AppColors.activeBorder,
+           width: 1,
+         ),
+@@
+               Icon(
+                 CupertinoIcons.arrow_up_right,
+                 size: 20,
+-                color: const Color(0xFFFACC15),
++                color: AppColors.rankAccent,
+               ),
+@@
+                 width: double.infinity,
+-                color: AppColors.white.withValues(alpha: 0.08),
++                color: AppColors.border,
+                 child: Align(
+@@
+                         widthFactor: value,
+                         child: Container(
+                           decoration: BoxDecoration(
+-                            color: const Color(0xFFFFB347),
++                            color: AppColors.rankAccent,
+                             borderRadius: BorderRadius.circular(6),
+                           ),
+                         ),
+*** End Patch

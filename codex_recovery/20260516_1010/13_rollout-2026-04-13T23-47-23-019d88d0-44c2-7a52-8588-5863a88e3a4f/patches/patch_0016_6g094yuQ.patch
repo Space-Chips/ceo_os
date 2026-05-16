@@ -1,0 +1,40 @@
+*** Begin Patch
+*** Update File: android/app/src/main/kotlin/com/wakeapp/ceoos/BlockingAccessibilityService.kt
+@@
+-        if (event.eventType == AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED) {
+-            if (!foregroundAppDetector.isBrowserPackage(eventPackage)) {
+-                return
+-            }
+-            if (now - lastEventAtMillis < 220L) {
+-                return
+-            }
+-        }
++        if (event.eventType == AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED) {
++            if (!foregroundAppDetector.isBrowserPackage(eventPackage)) {
++                return
++            }
++            if (now - lastEventAtMillis < 120L) {
++                return
++            }
++        }
+@@
+-            if (
+-                lastPackage == eventPackage &&
+-                event.eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED &&
+-                startedAt - lastAt < 220L
+-            ) {
+-                return
+-            }
++            if (lastPackage == eventPackage &&
++                event.eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED
++            ) {
++                val cooldown = if (event.eventType == AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED) {
++                    120L
++                } else {
++                    220L
++                }
++                if (startedAt - lastAt < cooldown) {
++                    return
++                }
++            }
+*** End Patch

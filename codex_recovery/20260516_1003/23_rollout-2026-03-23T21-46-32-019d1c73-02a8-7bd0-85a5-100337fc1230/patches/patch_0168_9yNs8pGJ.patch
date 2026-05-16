@@ -1,0 +1,20 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/setup/setup_flow_controller.dart
+@@
+   Future<void> markSetupComplete() async {
+@@
+     notifyListeners();
+   }
++
++  Future<void> openOverlaySettings() async {
++    await _focusService.openOverlaySettings();
++  }
++
++  Future<void> openUsageAccessSettings() async {
++    await _focusService.openUsageAccessSettings();
++  }
++
++  Future<void> openAccessibilitySettings() async {
++    await _focusService.openAccessibilitySettings();
++  }
+*** End Patch

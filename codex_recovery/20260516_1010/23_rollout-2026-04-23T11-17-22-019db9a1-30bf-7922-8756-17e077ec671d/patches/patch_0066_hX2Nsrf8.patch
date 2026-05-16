@@ -1,0 +1,32 @@
+*** Begin Patch
+*** Update File: lib/features/profile/profile_screen.dart
+@@
+ import '../../core/widgets/rank_art.dart';
+ import '../ceo_mode/blackout_preparation/blackout_preparation_flow_view.dart';
+ import '../ceo_mode/blackout_preparation/blackout_preparation_models.dart';
+ 
++String _localizedRankDisplay(LanguageProvider language, String rawRankName) {
++  switch (RankArt.canonicalKey(rawRankName)) {
++    case 'awakened':
++      return language.t('rank_awakened');
++    case 'immortal':
++      return language.t('rank_immortal');
++    case 'diamond':
++      return language.t('rank_diamond');
++    case 'platinum':
++      return language.t('rank_platinum');
++    case 'gold':
++      return language.t('rank_gold');
++    case 'silver':
++      return language.t('rank_silver');
++    case 'bronze':
++      return language.t('rank_bronze');
++    case 'sleeping':
++    default:
++      return language.t('rank_asleep');
++  }
++}
++
+ class ProfileScreen extends StatefulWidget {
+   const ProfileScreen({super.key});
+*** End Patch

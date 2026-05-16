@@ -1,0 +1,34 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/ceo_mode/ceo_mode_screen.dart
+@@
+     final success = await provider.startSession();
+     if (!mounted) return;
+     if (!success) {
+       final check = provider.lastPremiumCheck;
+       if (check != null && !check.allowed) {
+         await showPremiumGateDialog(context, check);
+         return;
+       }
++      final issue = provider.lastStartIssue;
++      final (title, message) = switch (issue) {
++        'block_list' => (
++          'Block List Required',
++          'Choose at least one blocked app or category before starting CEO Mode so the session can be enforced.'
++        ),
++        _ => (
++          'Setup Required',
++          'Enable Screen Time / Family Controls permissions to enforce CEO Mode protections.'
++        ),
++      };
+       await showCupertinoDialog<void>(
+         context: context,
+         builder: (ctx) => CupertinoAlertDialog(
+-          title: const Text('Setup Required'),
+-          content: const Text(
+-            'Enable Screen Time / Family Controls permissions to enforce CEO Mode protections.',
+-          ),
++          title: Text(title),
++          content: Text(message),
+           actions: [
+             CupertinoDialogAction(
+*** End Patch

@@ -1,0 +1,130 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/providers/focus_provider.dart
+@@
+-class FocusProvider extends ChangeNotifier {
++class FocusProvider extends ChangeNotifier with WidgetsBindingObserver {
++  FocusProvider() {
++    WidgetsBinding.instance.addObserver(this);
++  }
+@@
+   Timer? _timer;
+   DateTime? _sessionStartTime;
++  DateTime? _sessionEndTime;
+   DateTime? _focusExitReadyAt;
+@@
+-  int get remainingSeconds => _remainingSeconds;
++  int get remainingSeconds {
++    if ((_state == FocusState.focusing || _state == FocusState.exitPending) &&
++        _sessionEndTime != null) {
++      return _sessionEndTime!.difference(DateTime.now()).inSeconds.clamp(
++        0,
++        focusDurationMinutes * 60,
++      );
++    }
++    return _remainingSeconds;
++  }
+@@
+   double get progress {
+     final total = _totalDurationSeconds;
+     if (total == 0) return 0;
+-    return 1.0 - (_remainingSeconds / total);
++    return 1.0 - (remainingSeconds / total);
+   }
+@@
+   String get timerDisplay {
+-    final minutes = (_remainingSeconds ~/ 60).toString().padLeft(2, '0');
+-    final seconds = (_remainingSeconds % 60).toString().padLeft(2, '0');
++    final currentRemaining = remainingSeconds;
++    final minutes = (currentRemaining ~/ 60).toString().padLeft(2, '0');
++    final seconds = (currentRemaining % 60).toString().padLeft(2, '0');
+     return '$minutes:$seconds';
+   }
+@@
+     _state = FocusState.focusing;
+     _remainingSeconds = focusDurationMinutes * 60;
+-    _isFocusModeActive = true;
+-    _sessionStartTime = DateTime.now();
++    final now = DateTime.now();
++    _isFocusModeActive = true;
++    _sessionStartTime = now;
++    _sessionEndTime = now.add(Duration(minutes: focusDurationMinutes));
+     _focusExitReadyAt = null;
+@@
+       _isFocusModeActive = false;
+       _sessionStartTime = null;
++      _sessionEndTime = null;
+       _focusExitReadyAt = null;
+       _remainingSeconds = focusDurationMinutes * 60;
+       notifyListeners();
+@@
+     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+-      if (_remainingSeconds > 0) {
+-        _remainingSeconds--;
++      final currentRemaining = remainingSeconds;
++      if (currentRemaining > 0) {
++        _remainingSeconds = currentRemaining;
+         notifyListeners();
+       } else {
+         timer.cancel();
++        _timer = null;
+         unawaited(_onTimerComplete());
+       }
+     });
+   }
+@@
+   Future<void> _logSession({required bool completed}) async {
+     if (_sessionStartTime == null) return;
+-    final endTime = DateTime.now();
++    final now = DateTime.now();
++    final endTime = completed && _sessionEndTime != null
++        ? (_sessionEndTime!.isBefore(now) ? _sessionEndTime! : now)
++        : now;
+     final duration = endTime.difference(_sessionStartTime!).inMinutes;
+     if (duration < 1) return;
+@@
+     _sessionStartTime = null;
++    _sessionEndTime = null;
+   }
+@@
+   Future<void> _resetAfterSession() async {
+     _timer?.cancel();
++    _timer = null;
+     _state = FocusState.idle;
+     _isFocusModeActive = false;
+     _focusExitReadyAt = null;
++    _sessionEndTime = null;
+     _remainingSeconds = focusDurationMinutes * 60;
+@@
+   Future<void> syncPlannedFocusSessions(List<CalendarEvent> events) async {
+@@
+   }
++
++  @override
++  void didChangeAppLifecycleState(AppLifecycleState state) {
++    if (!isFocusModeActive) return;
++
++    if (state == AppLifecycleState.inactive ||
++        state == AppLifecycleState.paused) {
++      _timer?.cancel();
++      _timer = null;
++      return;
++    }
++
++    if (state == AppLifecycleState.resumed) {
++      if (remainingSeconds <= 0) {
++        unawaited(_onTimerComplete());
++      } else {
++        _startTimer();
++        notifyListeners();
++      }
++    }
++  }
+ 
+   @override
+   void dispose() {
++    WidgetsBinding.instance.removeObserver(this);
+     _timer?.cancel();
+     super.dispose();
+   }
+ }
+*** End Patch

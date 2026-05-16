@@ -1,0 +1,68 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/ios/Runner.xcodeproj/project.pbxproj
+@@
+ 		1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */ = {isa = PBXBuildFile; fileRef = 1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */; };
+ 		20C92EFE0F474936BC58C038 /* FocusActivityMonitorExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = E9A5CEDA2259476E98F0C12E /* FocusActivityMonitorExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
++		6A3F8A8E4D9C41A5B7C1D201 /* ScreenTimeReportExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 5D1E7B6C3A9F4D1E8C2B1001 /* ScreenTimeReportExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+@@
+ 		1EB7A90D866B4BBD97051971 /* PBXContainerItemProxy */ = {
+ 			isa = PBXContainerItemProxy;
+ 			containerPortal = 97C146E61CF9000F007C117D /* Project object */;
+ 			proxyType = 1;
+ 			remoteGlobalIDString = 84C0EEF5E0064471B8DD0227;
+ 			remoteInfo = FocusActivityMonitorExtension;
+ 		};
++		2C5E8F0A19C14A5CB6D32001 /* PBXContainerItemProxy */ = {
++			isa = PBXContainerItemProxy;
++			containerPortal = 97C146E61CF9000F007C117D /* Project object */;
++			proxyType = 1;
++			remoteGlobalIDString = 9D0E1F2A3B4C5D6E7F801234;
++			remoteInfo = ScreenTimeReportExtension;
++		};
+@@
+ 			files = (
+ 				8578F9892F4379B50038063F /* CeoWidgetsExtension.appex in Embed Foundation Extensions */,
+ 				20C92EFE0F474936BC58C038 /* FocusActivityMonitorExtension.appex in Embed Foundation Extensions */,
++				6A3F8A8E4D9C41A5B7C1D201 /* ScreenTimeReportExtension.appex in Embed Foundation Extensions */,
+ 			);
+@@
+ 		55435DBCBB13D8487FD5CA22 /* Pods-RunnerTests.profile.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.profile.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.profile.xcconfig"; sourceTree = "<group>"; };
++		5D1E7B6C3A9F4D1E8C2B1001 /* ScreenTimeReportExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ScreenTimeReportExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+@@
+ 		E750774FE82E43A5A8E0BB63 /* Exceptions for "FocusActivityMonitor" folder in "FocusActivityMonitorExtension" target */ = {
+ 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+ 			membershipExceptions = (
+ 				Info.plist,
+ 			);
+ 			target = 84C0EEF5E0064471B8DD0227 /* FocusActivityMonitorExtension */;
+ 		};
++		4F8C1E2D7A3B4C5D6E7F8001 /* Exceptions for "ScreenTimeReport" folder in "ScreenTimeReportExtension" target */ = {
++			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
++			membershipExceptions = (
++				Info.plist,
++			);
++			target = 9D0E1F2A3B4C5D6E7F801234 /* ScreenTimeReportExtension */;
++		};
+@@
+ 		ABFC1660CF1F4F18865A63F1 /* FocusActivityMonitor */ = {
+ 			isa = PBXFileSystemSynchronizedRootGroup;
+ 			exceptions = (
+ 				E750774FE82E43A5A8E0BB63 /* Exceptions for "FocusActivityMonitor" folder in "FocusActivityMonitorExtension" target */,
+ 			);
+@@
+ 			path = FocusActivityMonitor;
+ 			sourceTree = "<group>";
+ 		};
++		7B2C3D4E5F6A708192A3B401 /* ScreenTimeReport */ = {
++			isa = PBXFileSystemSynchronizedRootGroup;
++			exceptions = (
++				4F8C1E2D7A3B4C5D6E7F8001 /* Exceptions for "ScreenTimeReport" folder in "ScreenTimeReportExtension" target */,
++			);
++			explicitFileTypes = {
++			};
++			explicitFolders = (
++			);
++			path = ScreenTimeReport;
++			sourceTree = "<group>";
++		};
+*** End Patch

@@ -1,0 +1,80 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/setup/setup_flow_screen.dart
+@@
+-                  AnimatedSwitcher(
+-                    duration: const Duration(milliseconds: 320),
+-                    switchInCurve: Curves.easeOutCubic,
+-                    switchOutCurve: Curves.easeInCubic,
+-                    transitionBuilder: (child, animation) {
+-                      final fade = CurvedAnimation(
+-                        parent: animation,
+-                        curve: Curves.easeOutCubic,
+-                      );
+-                      return FadeTransition(
+-                        opacity: fade,
+-                        child: SlideTransition(
+-                          position: Tween<Offset>(
+-                            begin: const Offset(0, 0.02),
+-                            end: Offset.zero,
+-                          ).animate(fade),
+-                          child: child,
+-                        ),
+-                      );
+-                    },
+-                    child: _buildStep(
+-                      context,
+-                      controller,
+-                      controller.currentStep,
+-                    ),
+-                  ),
++                  ValueListenableBuilder<bool>(
++                    valueListenable: _showReturnOverlay,
++                    builder: (context, returning, child) {
++                      return AnimatedSlide(
++                        offset: returning ? const Offset(0, 0.02) : Offset.zero,
++                        duration: const Duration(milliseconds: 260),
++                        curve: Curves.easeOutCubic,
++                        child: child,
++                      );
++                    },
++                    child: AnimatedSwitcher(
++                      duration: const Duration(milliseconds: 460),
++                      switchInCurve: Curves.easeOutCubic,
++                      switchOutCurve: Curves.easeInCubic,
++                      layoutBuilder: (currentChild, previousChildren) {
++                        return Stack(
++                          children: [
++                            ...previousChildren,
++                            if (currentChild != null) currentChild,
++                          ],
++                        );
++                      },
++                      transitionBuilder: (child, animation) {
++                        final curve = CurvedAnimation(
++                          parent: animation,
++                          curve: Curves.easeOutCubic,
++                        );
++                        final direction = _transitionDirection.toDouble();
++                        final enteringOffset = Offset(0.12 * direction, 0);
++                        return FadeTransition(
++                          opacity: curve,
++                          child: SlideTransition(
++                            position: Tween<Offset>(
++                              begin: enteringOffset,
++                              end: Offset.zero,
++                            ).animate(curve),
++                            child: child,
++                          ),
++                        );
++                      },
++                      child: KeyedSubtree(
++                        key: ValueKey(controller.currentStep),
++                        child: _buildStep(
++                          context,
++                          controller,
++                          controller.currentStep,
++                        ),
++                      ),
++                    ),
++                  ),
+*** End Patch

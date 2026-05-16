@@ -1,0 +1,38 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/screen_time_screen.dart
+@@
+   List<String> _filteredWebsiteSuggestions(String query) {
+     final needle = query.trim().toLowerCase();
+-    if (needle.isEmpty) return const [];
+-    return _websiteSuggestions
++    final source = Platform.isIOS && _iosWebsitePayloadByDomain.isNotEmpty
++        ? _websiteSuggestions
++            .where((domain) => _iosWebsitePayloadByDomain.containsKey(domain))
++            .toList(growable: false)
++        : _websiteSuggestions;
++    if (needle.isEmpty) return source.take(8).toList(growable: false);
++    return source
+         .where((domain) => domain.contains(needle))
+         .toList(growable: false);
+   }
+ 
+   List<_IosAppSuggestion> _filteredAppSuggestions(String query) {
+     final needle = query.trim().toLowerCase();
++    final source = Platform.isIOS && _iosAppSelectionByBundle.isNotEmpty
++        ? _iosAppSuggestions
++            .where(
++              (item) =>
++                  _iosAppSelectionByBundle.containsKey(item.bundleIdentifier),
++            )
++            .toList(growable: false)
++        : _iosAppSuggestions;
+     if (needle.isEmpty) {
+-      return _iosAppSuggestions.take(12).toList(growable: false);
++      return source.take(16).toList(growable: false);
+     }
+-    final ranked = _iosAppSuggestions
++    final ranked = source
+         .where((item) {
+           final label = item.label.toLowerCase();
+           final bundle = item.bundleIdentifier.toLowerCase();
+*** End Patch

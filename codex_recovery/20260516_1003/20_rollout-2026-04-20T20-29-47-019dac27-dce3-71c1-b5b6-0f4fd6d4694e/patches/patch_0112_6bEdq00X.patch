@@ -1,0 +1,59 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/android/app/src/main/kotlin/com/wakeapp/ceoos/blocking/LauncherIconTracker.kt
+@@
+     fun findTargets(root: AccessibilityNodeInfo?): List<LauncherIconTarget> {
+         if (root == null) return emptyList()
+-        val bestByPackage = linkedMapOf<String, LauncherIconTarget>()
++        val targets = mutableListOf<LauncherIconTarget>()
++        val dedupe = mutableSetOf<OverlayKey>()
+         val visited = mutableSetOf<Int>()
+         val stack = ArrayDeque<Pair<AccessibilityNodeInfo, Int>>()
+         stack.add(root to 0)
+@@
+-            val label = extractLabel(node) ?: continue
++            val label = extractLabel(node) ?: continue
+             val packageName = appIndex.packageForLabel(label) ?: continue
+-            val current = bestByPackage[packageName]
+-            if (current == null || iconNodeScore(bounds) > iconNodeScore(current.bounds)) {
+-                bestByPackage[packageName] = LauncherIconTarget(
+-                    packageName = packageName,
+-                    label = label,
+-                    bounds = Rect(bounds),
+-                )
++            val target = LauncherIconTarget(
++                packageName = packageName,
++                label = label,
++                bounds = Rect(bounds),
++            )
++            val key = OverlayKey.from(target)
++            if (dedupe.add(key)) {
++                targets += target
+             }
+@@
+-        return bestByPackage.values.toList()
++        return targets
+     }
+@@
+         val direct = labelFromNode(node)
+         val candidate = direct
+             ?: labelFromChildren(node, maxDepth = 1)
+-            ?: labelFromParent(node.parent)
+             ?: return null
+@@
+-    private fun labelFromParent(parent: AccessibilityNodeInfo?): String? {
+-        if (parent == null) return null
+-        labelFromNode(parent)?.let { return it }
+-        return labelFromChildren(parent, maxDepth = 1)
+-    }
+-
+     private fun isLikelyIconNode(node: AccessibilityNodeInfo): Boolean {
+@@
+         val ratioDiff = abs(width - height)
+-        return ratioDiff <= (max(width, height) * 0.35f).toInt()
++        if (ratioDiff > (max(width, height) * 0.2f).toInt()) return false
++        val area = width * height
++        val expectedArea = expectedIconSizePx * expectedIconSizePx
++        if (area > expectedArea * 4) return false
++        return true
+     }
+*** End Patch

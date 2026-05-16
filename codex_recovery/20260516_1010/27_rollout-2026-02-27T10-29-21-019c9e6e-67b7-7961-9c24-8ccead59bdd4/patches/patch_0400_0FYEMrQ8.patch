@@ -1,0 +1,214 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/home/home_screen.dart
+@@
+ class _TopShortcutsBar extends StatelessWidget {
+@@
+   @override
+   Widget build(BuildContext context) {
+     return Row(
+       children: [
+-        GestureDetector(
++        _InteractiveLift(
+           onTap: onOpenMenu,
++          borderRadius: 27,
++          glowColor: AppColors.edgeGlowSoft,
+           child: ClipRRect(
+             borderRadius: BorderRadius.circular(27),
+             child: BackdropFilter(
+               filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+               child: Container(
+@@
+-        ),
++        ),
+         const SizedBox(width: 8),
+         Expanded(
+@@
+ class _ShortcutPill extends StatelessWidget {
+@@
+   @override
+   Widget build(BuildContext context) {
+-    return GestureDetector(
++    return _InteractiveLift(
+       onTap: onTap,
++      borderRadius: 22,
++      glowColor: labelColor.withValues(alpha: 0.68),
+       child: Container(
+         decoration: BoxDecoration(
+@@
+ class _ShortcutCircle extends StatelessWidget {
+@@
+   @override
+   Widget build(BuildContext context) {
+-    return GestureDetector(
++    return _InteractiveLift(
+       onTap: onTap,
++      borderRadius: 26,
++      glowColor: gradient.last.withValues(alpha: 0.7),
+       child: Container(
+         width: 52,
+         height: 52,
+@@
+ class _StreakPill extends StatelessWidget {
+@@
+   @override
+   Widget build(BuildContext context) {
+-    return GestureDetector(
++    return _InteractiveLift(
+       onTap: onTap,
++      borderRadius: 22,
++      glowColor: AppColors.primaryOrange.withValues(alpha: 0.72),
+       child: Container(
+         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+@@
+ class _DashboardMainCard extends StatelessWidget {
+@@
+   @override
+   Widget build(BuildContext context) {
+-    return GestureDetector(
++    return _InteractiveLift(
+       onTap: onOpenDashboard,
++      borderRadius: 36,
++      hoverScale: 1.016,
++      pressedScale: 1.026,
++      glowColor: AppColors.accentSecondary.withValues(alpha: 0.76),
+       child: GlassCard(
+@@
+ class _PrimaryAppCard extends StatelessWidget {
+@@
+     if (!data.active) {
+       return GestureDetector(
+         onTap: () {},
+         child: Opacity(opacity: 0.52, child: base),
+       );
+     }
+ 
+-    return GestureDetector(
++    return _InteractiveLift(
+       onTap: data.onTap,
++      borderRadius: 28,
++      hoverScale: 1.02,
++      pressedScale: 1.03,
++      glowColor: glowColor.withValues(alpha: 0.92),
+       child: Stack(
+         children: [
+           Positioned.fill(
+             child: IgnorePointer(
+               child: Container(
+                 margin: const EdgeInsets.all(8),
+                 decoration: BoxDecoration(
+                   borderRadius: BorderRadius.circular(28),
+                   boxShadow: [
+                     BoxShadow(
+                       color: glowColor,
+-                      blurRadius: 28,
+-                      spreadRadius: -4,
++                      blurRadius: 40,
++                      spreadRadius: -1,
+                     ),
+                   ],
+                 ),
+               ),
+@@
+   }
+ }
++
++class _InteractiveLift extends StatefulWidget {
++  final Widget child;
++  final VoidCallback? onTap;
++  final double borderRadius;
++  final double hoverScale;
++  final double pressedScale;
++  final Color glowColor;
++  final bool enabled;
++
++  const _InteractiveLift({
++    required this.child,
++    required this.onTap,
++    required this.borderRadius,
++    required this.glowColor,
++    this.hoverScale = 1.014,
++    this.pressedScale = 1.024,
++    this.enabled = true,
++  });
++
++  @override
++  State<_InteractiveLift> createState() => _InteractiveLiftState();
++}
++
++class _InteractiveLiftState extends State<_InteractiveLift> {
++  bool _isHovered = false;
++  bool _isPressed = false;
++
++  bool get _interactive => widget.enabled && widget.onTap != null;
++
++  @override
++  Widget build(BuildContext context) {
++    final scale = _isPressed
++        ? widget.pressedScale
++        : (_isHovered ? widget.hoverScale : 1.0);
++    final lift = _isPressed ? -1.0 : (_isHovered ? -4.0 : 0.0);
++
++    return MouseRegion(
++      cursor: _interactive
++          ? SystemMouseCursors.click
++          : SystemMouseCursors.basic,
++      onEnter: _interactive ? (_) => setState(() => _isHovered = true) : null,
++      onExit: _interactive
++          ? (_) {
++              if (!mounted) return;
++              setState(() {
++                _isHovered = false;
++                _isPressed = false;
++              });
++            }
++          : null,
++      child: GestureDetector(
++        onTap: _interactive ? widget.onTap : null,
++        onTapDown: _interactive
++            ? (_) => setState(() {
++                _isPressed = true;
++                _isHovered = true;
++              })
++            : null,
++        onTapUp: _interactive ? (_) => setState(() => _isPressed = false) : null,
++        onTapCancel: _interactive
++            ? () => setState(() => _isPressed = false)
++            : null,
++        behavior: HitTestBehavior.translucent,
++        child: AnimatedScale(
++          scale: scale,
++          duration: const Duration(milliseconds: 160),
++          curve: Curves.easeOutCubic,
++          child: AnimatedContainer(
++            duration: const Duration(milliseconds: 160),
++            curve: Curves.easeOutCubic,
++            transform: Matrix4.translationValues(0, lift, 0),
++            decoration: BoxDecoration(
++              borderRadius: BorderRadius.circular(widget.borderRadius),
++              boxShadow: [
++                BoxShadow(
++                  color: widget.glowColor.withValues(
++                    alpha: _isPressed ? 0.4 : (_isHovered ? 0.62 : 0.26),
++                  ),
++                  blurRadius: _isPressed ? 28 : (_isHovered ? 44 : 20),
++                  offset: Offset(0, _isPressed ? 8 : (_isHovered ? 14 : 8)),
++                  spreadRadius: _isPressed ? -6 : (_isHovered ? 0 : -10),
++                ),
++                BoxShadow(
++                  color: AppColors.glassShadow.withValues(
++                    alpha: _isPressed ? 0.2 : (_isHovered ? 0.34 : 0.18),
++                  ),
++                  blurRadius: _isPressed ? 10 : (_isHovered ? 18 : 12),
++                  offset: Offset(0, _isPressed ? 4 : (_isHovered ? 10 : 6)),
++                  spreadRadius: -8,
++                ),
++              ],
++            ),
++            child: widget.child,
++          ),
++        ),
++      ),
++    );
++  }
++}
+*** End Patch

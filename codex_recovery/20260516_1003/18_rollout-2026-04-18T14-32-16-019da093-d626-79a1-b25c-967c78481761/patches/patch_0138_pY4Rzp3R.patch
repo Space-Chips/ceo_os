@@ -1,0 +1,35 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/focus/focus_preparation/focus_preparation_intro_view.dart
+@@
+ import 'package:flutter/cupertino.dart';
++import 'package:provider/provider.dart';
+ 
++import '../../../core/providers/language_provider.dart';
+ import '../../../core/theme/app_colors.dart';
+ import '../../../core/theme/app_typography.dart';
+@@
+   @override
+   Widget build(BuildContext context) {
++    final language = context.watch<LanguageProvider>();
+     return Column(
+@@
+         Text(
+-          'Prépare ton mode Focus',
++          language.t('focus_prep_intro_title'),
+@@
+         Text(
+-          'Pendant une session, WakeApp bloque toutes les apps de ta liste, même celles pour lesquelles il restait du temps d’écran.',
++          language.t('focus_prep_intro_body'),
+@@
+                 child: Text(
+-                  'Objectif: un démarrage clair, en moins de 15 secondes.',
++                  language.t('focus_prep_intro_goal'),
+@@
+-        _PrimaryButton(label: 'Continuer', onTap: onContinue),
++        _PrimaryButton(label: language.t('focus_continue'), onTap: onContinue),
+@@
+             onPressed: onSkip,
+             child: Text(
+-              'Passer',
++              language.t('focus_skip'),
+*** End Patch

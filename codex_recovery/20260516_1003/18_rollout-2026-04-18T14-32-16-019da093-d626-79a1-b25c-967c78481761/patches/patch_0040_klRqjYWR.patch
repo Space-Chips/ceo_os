@@ -1,0 +1,20 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/focus/block_list_sheet.dart
+@@
+   @override
+   void initState() {
+     super.initState();
+-    if (widget.blockList != null) {
+-      _nameCtrl.text = widget.blockList!.name;
+-      _adultBlocking = widget.blockList!.adultBlocking;
+-      _blockedPackages = List.from(widget.blockList!.blockedPackageNames);
+-      _blockedCategories = List.from(widget.blockList!.blockedCategories);
++    final blockList = widget.blockList;
++    if (blockList != null) {
++      _nameCtrl.text = blockList.name;
++      _adultBlocking = blockList.adultBlocking;
++      _blockedPackages = List.from(blockList.blockedPackageNames);
++      _blockedCategories = List.from(blockList.blockedCategories);
+     }
+   }
+*** End Patch

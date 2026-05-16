@@ -1,0 +1,9 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/ios/ScreenTimeReport/ScreenTimeReport.entitlements
+@@
+ 	<key>com.apple.developer.family-controls</key>
+ 	<true/>
+-	<key>com.apple.developer.device-activity-reporting</key>
+-	<true/>
+ </dict>
+*** End Patch

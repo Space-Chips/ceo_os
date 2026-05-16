@@ -1,0 +1,56 @@
+*** Begin Patch
+*** Update File: lib/features/screen_time_manager/screen_time_manager_screen.dart
+@@
+                 Expanded(
+                   child: _statLargeTile(
+-                    label: 'PROTECTED',
++                    label: _t('screen_time_tile_protected'),
+                     value: '$blockedTargets',
+-                    unit: 'targets',
++                    unit: _t('screen_time_tile_targets'),
+                     accent: AppColors.scoreValue,
+                     highlighted: true,
+                     borderColor: AppColors.screenTimeDailyAccentBorder,
+                     onTap: () => context.push('/screen-time?section=apps'),
+@@
+                 Expanded(
+                   child: _statLargeTile(
+-                    label: 'PAUSES',
++                    label: _t('screen_time_tile_pauses'),
+                     value: '$plannedPauseCount',
+-                    unit: 'scheduled',
++                    unit: _t('screen_time_tile_scheduled'),
+                     accent: AppColors.secondaryLabel,
+                     onTap: () => context.push('/screen-time?section=pauses'),
+                   ),
+                 ),
+@@
+                 child: _statSmallTile(
+                   icon: CupertinoIcons.lock_shield_fill,
+                   iconColor: isAuthorized
+                       ? AppColors.success
+                       : AppColors.primaryOrange,
+-                  label: 'ACCESS',
+-                  value: isAuthorized ? 'APPROVED' : 'ALLOW',
++                  label: _t('screen_time_tile_access'),
++                  value: isAuthorized
++                      ? _t('screen_time_tile_approved')
++                      : _t('screen_time_tile_allow'),
+                   valueColor: isAuthorized
+                       ? AppColors.success
+                       : AppColors.primaryOrange,
+                   onTap: () => _handleAccessTap(setup),
+                 ),
+@@
+                 child: _statSmallTile(
+                   icon: CupertinoIcons.star_fill,
+                   iconColor: AppColors.rankAccent,
+-                  label: 'RANK',
+-                  value: privateRankLabel,
++                  label: _t('rank'),
++                  value: _localizedRankName(privateRankLabel),
+                   valueColor: AppColors.rankAccent,
+                   leading: RankArt(
+                     rankName: privateRankLabel,
+                     size: RankArtSize.xs,
+*** End Patch

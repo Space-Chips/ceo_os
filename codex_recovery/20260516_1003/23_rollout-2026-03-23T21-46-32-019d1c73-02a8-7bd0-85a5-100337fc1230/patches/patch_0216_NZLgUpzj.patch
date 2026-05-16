@@ -1,0 +1,22 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/setup/setup_flow_screen.dart
+@@
+       footer: Column(
+         children: [
+           LiquidButton(
+             label: isGranted ? 'Continue' : 'Open settings',
+             fullWidth: true,
+             onPressed: isGranted ? onContinue : () => onOpenSettings(),
+           ),
+-          const SizedBox(height: 10),
+-          Text(
+-            'You can return here anytime to continue setup.',
+-            style: AppTypography.caption1.copyWith(
+-              color: AppColors.tertiaryLabel,
+-            ),
+-          ),
+         ],
+       ),
+     );
+   }
+*** End Patch

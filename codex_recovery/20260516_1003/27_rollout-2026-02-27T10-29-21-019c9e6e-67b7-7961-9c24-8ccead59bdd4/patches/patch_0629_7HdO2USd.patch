@@ -1,0 +1,13 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/theme/app_theme.dart
+@@
+       brightness: isDark ? Brightness.dark : Brightness.light,
+       primaryColor: AppColors.accent,
+       scaffoldBackgroundColor: AppColors.background,
+       barBackgroundColor: Color.alphaBlend(
+-        isDark ? const Color(0xC60A1018) : const Color(0xD9FFFFFF),
+-        AppColors.background,
++        AppColors.overlayScrim.withValues(alpha: isDark ? 0.32 : 0.16),
++        AppColors.sectionBackground,
+       ),
+*** End Patch

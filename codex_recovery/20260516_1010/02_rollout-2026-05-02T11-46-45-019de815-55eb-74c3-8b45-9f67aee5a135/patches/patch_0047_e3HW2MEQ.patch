@@ -1,0 +1,7 @@
+*** Begin Patch
+*** Update File: lib/core/providers/language_provider.dart
+@@
+     'widget_configuration_hint':
+-        'On iOS, add the widget from your Home Screen and edit it to choose what it shows.',
++        'On iOS, you can add 1, 2, or 3 instances of the widget and set each one (To‑Do / Dashboard / Habits) in “Edit Widget”. Open this screen and tap “Refresh” after changes.',
+*** End Patch

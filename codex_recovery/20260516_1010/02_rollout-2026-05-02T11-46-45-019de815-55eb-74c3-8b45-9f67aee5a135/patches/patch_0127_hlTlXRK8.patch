@@ -1,0 +1,6 @@
+*** Begin Patch
+*** Update File: lib/core/widgets/home_widgets/widget_views.dart
+@@
+-    final label = hours >= 1 ? '${hours} h' : '$durationMinutes min';
++    final label = hours >= 1 ? '$hours h' : '$durationMinutes min';
+*** End Patch

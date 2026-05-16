@@ -1,0 +1,48 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/ios/Runner/AppDelegate.swift
+@@
+     private let ceoAlwaysAllowedBundleIds: Set<String> = [
+         "com.apple.mobilephone",
+         "com.apple.MobileSMS",
+         "com.apple.mobilecal"
+     ]
+-    private let ceoForceBlockedBundleIds: Set<String> = [
+-        "com.apple.Bridge",
+-        "com.apple.DocumentsApp",
+-        "com.apple.Home",
+-        "com.apple.Maps",
+-        "com.apple.facetime",
+-        "com.apple.findmy",
+-        "com.apple.measure",
+-        "com.apple.mobilesafari"
+-    ]
+@@
+     private func ceoAllowedApplicationTokens() -> Set<ApplicationToken> {
+         var tokens = selfExemptApplicationTokens()
+         tokens.formUnion(applicationTokens(for: ceoAlwaysAllowedBundleIds))
+         return tokens
+     }
+-
+-    private func ceoForceBlockedApplicationTokens() -> Set<ApplicationToken> {
+-        var tokens = applicationTokens(for: ceoForceBlockedBundleIds)
+-        tokens.subtract(ceoAllowedApplicationTokens())
+-        return tokens
+-    }
+@@
+         let hasPayloadSelection = hasSelection(merged)
+         let hasWebsiteSelection = !effectiveWebDomains.isEmpty
+ 
+         if ceoEnabled {
+             let ceoAllowedTokens = ceoAllowedApplicationTokens()
+-            var ceoBlockedTokens = ceoForceBlockedApplicationTokens()
+-            ceoBlockedTokens.formUnion(merged.applicationTokens)
+-            ceoBlockedTokens.subtract(ceoAllowedTokens)
+-
+-            store.shield.applications = ceoBlockedTokens.isEmpty ? nil : ceoBlockedTokens
++            store.shield.applications = nil
+             store.shield.applicationCategories = ShieldSettings.ActivityCategoryPolicy.all(
+                 except: ceoAllowedTokens
+             )
+             if #available(iOS 16.0, *) {
+                 store.shield.webDomainCategories = .all(except: Set())
+*** End Patch

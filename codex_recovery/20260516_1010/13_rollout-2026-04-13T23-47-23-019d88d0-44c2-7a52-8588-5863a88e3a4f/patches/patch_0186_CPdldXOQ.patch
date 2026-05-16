@@ -1,0 +1,26 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/ios/Runner/AppDelegate.swift
+@@
+ @available(iOS 16.0, *)
+ private struct NativeBlockedAppTokenLabelView: View {
+     let token: ApplicationToken
+ 
+     var body: some View {
+-        HStack(spacing: 10) {
+-            FamilyActivityIconView(token)
+-                .frame(width: 28, height: 28)
+-                .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+-            FamilyActivityTitleView(token)
+-                .font(.system(size: 16, weight: .semibold))
+-                .foregroundColor(.primary)
+-                .lineLimit(1)
+-        }
++        Label(token)
++            .labelStyle(.titleAndIcon)
++            .font(.system(size: 16, weight: .semibold))
++            .foregroundColor(.primary)
++            .lineLimit(1)
+         .frame(maxWidth: .infinity, alignment: .leading)
+     }
+ }
+*** End Patch

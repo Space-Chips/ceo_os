@@ -1,0 +1,75 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/screen_time_screen.dart
+@@
+                     ),
+                     const SizedBox(height: 8),
++                    if (scheduledRests.isNotEmpty) ...[
++                      ...scheduledRests.take(4).map(
++                        (period) => Padding(
++                          padding: const EdgeInsets.only(bottom: 8),
++                          child: GlassCard(
++                            padding: const EdgeInsets.symmetric(
++                              horizontal: 14,
++                              vertical: 10,
++                            ),
++                            borderRadius: 12,
++                            border: Border.all(
++                              color: AppColors.warning.withValues(alpha: 0.24),
++                              width: 0.5,
++                            ),
++                            child: Row(
++                              children: [
++                                Expanded(
++                                  child: Text(
++                                    'SCHEDULED ${_restLabel(period)}',
++                                    maxLines: 1,
++                                    overflow: TextOverflow.ellipsis,
++                                    style: AppTypography.mono.copyWith(
++                                      fontSize: 10,
++                                      color: AppColors.secondaryLabel,
++                                    ),
++                                  ),
++                                ),
++                                CupertinoButton(
++                                  padding: EdgeInsets.zero,
++                                  minimumSize: const Size(24, 24),
++                                  onPressed: _saving
++                                      ? null
++                                      : () => _activateScheduledRest(period),
++                                  child: Text(
++                                    'START',
++                                    style: AppTypography.mono.copyWith(
++                                      fontSize: 9,
++                                      color: AppColors.primaryOrange,
++                                      fontWeight: FontWeight.bold,
++                                    ),
++                                  ),
++                                ),
++                                const SizedBox(width: 6),
++                                CupertinoButton(
++                                  padding: EdgeInsets.zero,
++                                  minimumSize: const Size(24, 24),
++                                  onPressed: _saving
++                                      ? null
++                                      : () => _runMutation(
++                                            () => _repo.updateRestPeriodActive(
++                                              period.id,
++                                              false,
++                                            ),
++                                          ),
++                                  child: Icon(
++                                    CupertinoIcons.clear_circled,
++                                    size: 15,
++                                    color: AppColors.error,
++                                  ),
++                                ),
++                              ],
++                            ),
++                          ),
++                        ),
++                      ),
++                    ],
+                     if (_restPeriods.isEmpty)
+                       _emptyCard('No rest periods yet.')
+                     else
+*** End Patch

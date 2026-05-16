@@ -1,0 +1,11 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/ios/Runner.xcodeproj/project.pbxproj
+@@
+ 			inputPaths = (
++				"${BUILT_PRODUCTS_DIR}/ScreenTimeReportExtension.appex",
+ 			);
+ 			name = "Embed ScreenTimeReportExtension (device only)";
+ 			outputPaths = (
++				"${TARGET_BUILD_DIR}/${WRAPPER_NAME}/PlugIns/ScreenTimeReportExtension.appex",
+ 			);
+*** End Patch

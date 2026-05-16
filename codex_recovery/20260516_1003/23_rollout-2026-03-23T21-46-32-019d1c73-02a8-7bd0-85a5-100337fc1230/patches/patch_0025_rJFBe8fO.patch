@@ -1,0 +1,161 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/repositories/feature_repository.dart
+@@
+   Future<List<BlockedApp>> getBlockedApps() async {
++    if (_useLocalFamilyControlsStorage) {
++      return _familyControlsLocalStore.getBlockedApps();
++    }
+     final response = await _client
+         .from('blocked_apps')
+@@
+   Future<BlockedApp?> createBlockedAppRecord(String appName) async {
+     final trimmedName = appName.trim();
+     if (trimmedName.isEmpty) return null;
++    if (_useLocalFamilyControlsStorage) {
++      return _familyControlsLocalStore.createBlockedAppRecord(
++        createdBy: _currentUserId,
++        appName: trimmedName,
++      );
++    }
+     final response = await _client
+         .from('blocked_apps')
+@@
+   Future<void> deleteBlockedApp(String id) async {
++    if (_useLocalFamilyControlsStorage) {
++      await _familyControlsLocalStore.deleteBlockedApp(id);
++      return;
++    }
+     await _client
+         .from('blocked_apps')
+@@
+   Future<void> addBlockedAppTime(String id, int minutes) async {
++    if (_useLocalFamilyControlsStorage) {
++      await _familyControlsLocalStore.addBlockedAppTime(id, minutes);
++      return;
++    }
+     final row = await _client
+         .from('blocked_apps')
+@@
+   Future<void> setBlockedAppTime(String id, int minutes) async {
+     final safe = minutes < 0 ? 0 : minutes;
++    if (_useLocalFamilyControlsStorage) {
++      await _familyControlsLocalStore.setBlockedAppTime(id, safe);
++      return;
++    }
+     await _client
+         .from('blocked_apps')
+@@
+   Future<List<BlockedWebsite>> getBlockedWebsites() async {
++    if (_useLocalFamilyControlsStorage) {
++      return _familyControlsLocalStore.getBlockedWebsites();
++    }
+     final response = await _client
+         .from('blocked_websites')
+@@
+   Future<BlockedWebsite?> createBlockedWebsiteRecord(String urlDomain) async {
+     final trimmedDomain = normalizeDomainInput(
+       urlDomain,
+       allowedSpecialValues: {adultContentShieldMarker},
+     );
+     if (trimmedDomain == null || trimmedDomain.isEmpty) return null;
++    if (_useLocalFamilyControlsStorage) {
++      return _familyControlsLocalStore.createBlockedWebsiteRecord(
++        createdBy: _currentUserId,
++        urlDomain: trimmedDomain,
++      );
++    }
+     final response = await _client
+         .from('blocked_websites')
+@@
+   Future<void> deleteBlockedWebsite(String id) async {
++    if (_useLocalFamilyControlsStorage) {
++      await _familyControlsLocalStore.deleteBlockedWebsite(id);
++      return;
++    }
+     await _client
+         .from('blocked_websites')
+@@
+   Future<void> addBlockedWebsiteTime(String id, int minutes) async {
++    if (_useLocalFamilyControlsStorage) {
++      await _familyControlsLocalStore.addBlockedWebsiteTime(id, minutes);
++      return;
++    }
+     final row = await _client
+         .from('blocked_websites')
+@@
+   Future<void> setBlockedWebsiteTime(String id, int minutes) async {
+     final safe = minutes < 0 ? 0 : minutes;
++    if (_useLocalFamilyControlsStorage) {
++      await _familyControlsLocalStore.setBlockedWebsiteTime(id, safe);
++      return;
++    }
+     await _client
+         .from('blocked_websites')
+@@
+   Future<void> setAdultContentShieldEnabled(bool enabled) async {
++    if (_useLocalFamilyControlsStorage) {
++      await _familyControlsLocalStore.setAdultContentShieldEnabled(
++        enabled: enabled,
++        createdBy: _currentUserId,
++        marker: adultContentShieldMarker,
++      );
++      return;
++    }
+     if (enabled) {
+@@
+   Future<List<RestPeriod>> getRestPeriods() async {
++    if (_useLocalFamilyControlsStorage) {
++      return _familyControlsLocalStore.getRestPeriods();
++    }
+     final response = await _client
+         .from('rest_periods')
+@@
+   Future<void> createRestPeriod({
+     required DateTime startTime,
+     required DateTime endTime,
+     bool active = true,
+   }) async {
++    if (_useLocalFamilyControlsStorage) {
++      await _familyControlsLocalStore.createRestPeriod(
++        createdBy: _currentUserId,
++        startTime: startTime,
++        endTime: endTime,
++        active: active,
++      );
++      return;
++    }
+     await _client.from('rest_periods').insert({
+@@
+   Future<void> updateRestPeriodActive(String id, bool active) async {
++    if (_useLocalFamilyControlsStorage) {
++      await _familyControlsLocalStore.updateRestPeriodActive(id, active);
++      return;
++    }
+     await _client
+         .from('rest_periods')
+@@
+   Future<void> updateRestPeriod({
+     required String id,
+     DateTime? startTime,
+     DateTime? endTime,
+     bool? active,
+   }) async {
++    if (_useLocalFamilyControlsStorage) {
++      await _familyControlsLocalStore.updateRestPeriod(
++        id: id,
++        startTime: startTime,
++        endTime: endTime,
++        active: active,
++      );
++      return;
++    }
+     final payload = <String, dynamic>{};
+@@
+   Future<void> deleteRestPeriod(String id) async {
++    if (_useLocalFamilyControlsStorage) {
++      await _familyControlsLocalStore.deleteRestPeriod(id);
++      return;
++    }
+     await _client
+         .from('rest_periods')
+*** End Patch

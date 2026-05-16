@@ -1,0 +1,6 @@
+*** Begin Patch
+*** Update File: lib/features/control_center_setup/widgets/final_preview_screen.dart
+@@
+-          LiquidButton(text: 'Activer mon centre', onPressed: widget.onPrimary),
++          LiquidButton(label: 'Activer mon centre', onPressed: widget.onPrimary),
+*** End Patch

@@ -1,0 +1,30 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/repositories/focus_repository.dart
+@@
+   Future<List<Map<String, dynamic>>> getRecentSessions() async {
+     try {
+       return await _client
+           .from('focus_sessions')
+           .select()
+@@
+     } catch (e) {
+       return [];
+     }
+   }
++
++  Future<int> getCompletedSessionCount() async {
++    try {
++      final response = await _client
++          .from('focus_sessions')
++          .select('id')
++          .eq('created_by', _currentUserId)
++          .eq('completed', true);
++
++      return (response as List).length;
++    } catch (e) {
++      AppLogger.error('Error counting focus sessions.', e);
++      return 0;
++    }
++  }
+ }
+*** End Patch

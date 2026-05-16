@@ -1,0 +1,9 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/tasks/tasks_screen.dart
+@@
+                         _HistoryBadge(
+-                          label: _importanceLabel(task.importanceLevel),
++                          label: _importanceLabel(task.importanceLevel, language),
+                           style: badgeStyle,
+                         ),
+*** End Patch

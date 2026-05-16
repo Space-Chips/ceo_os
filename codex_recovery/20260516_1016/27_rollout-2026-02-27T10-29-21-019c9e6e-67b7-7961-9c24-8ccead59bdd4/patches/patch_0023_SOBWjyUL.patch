@@ -1,0 +1,20 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/repositories/settings_repository.dart
+@@
+   Future<void> _upsertSettingsFields(Map<String, dynamic> fields) async {
+-    final settings = await getAppSettings();
+-    if (settings != null) {
+-      await _client.from('app_settings').update(fields).eq('id', settings.id);
+-      return;
+-    }
+-
+-    await _client.from('app_settings').insert({
+-      'created_by': _currentUserId,
+-      ...fields,
+-    });
++    await _client.from('app_settings').upsert({
++      'created_by': _currentUserId,
++      ...fields,
++    }, onConflict: 'created_by');
+   }
+*** End Patch

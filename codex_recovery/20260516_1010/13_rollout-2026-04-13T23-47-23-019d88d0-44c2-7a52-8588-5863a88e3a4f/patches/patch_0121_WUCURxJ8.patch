@@ -1,0 +1,57 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/services/classic_blocking_coordinator.dart
+@@
+     var websiteBindings = await _localStore.loadWebsiteBindings();
+     websiteBindings = await _backfillAndroidWebsiteBindings(
+       websites: websites,
+       existingBindings: websiteBindings,
+     );
++    websiteBindings = await _backfillIosWebsiteBindings(
++      websites: websites,
++      existingBindings: websiteBindings,
++    );
+@@
+   Future<Map<String, ClassicBlockBinding>> _backfillAndroidWebsiteBindings({
+@@
+     }
+     return changed ? mutable : existingBindings;
+   }
++
++  Future<Map<String, ClassicBlockBinding>> _backfillIosWebsiteBindings({
++    required List<BlockedWebsite> websites,
++    required Map<String, ClassicBlockBinding> existingBindings,
++  }) async {
++    if (!Platform.isIOS) return existingBindings;
++
++    var changed = false;
++    final mutable = Map<String, ClassicBlockBinding>.from(existingBindings);
++    for (final website in websites) {
++      final existing = mutable[website.id];
++      if (existing?.nativePayload?.trim().isNotEmpty ?? false) {
++        continue;
++      }
++      final normalized = normalizeDomainInput(website.urlDomain);
++      if (normalized == null || normalized.isEmpty) continue;
++      final encoded = await _focusService.encodeWebsiteDomainSelection(
++        normalized,
++      );
++      if (encoded == null || encoded.trim().isEmpty) continue;
++
++      final binding = ClassicBlockBinding(
++        nativeIdentifier:
++            (existing?.nativeIdentifier?.trim().isNotEmpty ?? false)
++            ? existing!.nativeIdentifier!.trim()
++            : normalized,
++        nativePayload: encoded.trim(),
++      );
++      mutable[website.id] = binding;
++      await _localStore.saveWebsiteBinding(
++        rowId: website.id,
++        nativeIdentifier: binding.nativeIdentifier,
++        nativePayload: binding.nativePayload,
++      );
++      changed = true;
++    }
++    return changed ? mutable : existingBindings;
++  }
+*** End Patch

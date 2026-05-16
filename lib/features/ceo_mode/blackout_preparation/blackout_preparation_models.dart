@@ -1,0 +1,21 @@
+enum BlackoutPreparationStatus {
+  notSeen('not_seen'),
+  skipped('skipped'),
+  completed('completed');
+
+  const BlackoutPreparationStatus(this.storageValue);
+  final String storageValue;
+
+  static BlackoutPreparationStatus fromStorage(String? raw) {
+    for (final value in values) {
+      if (value.storageValue == raw) {
+        return value;
+      }
+    }
+    return BlackoutPreparationStatus.notSeen;
+  }
+}
+
+enum BlackoutPreparationLaunchContext { preBlackout, settings }
+
+enum BlackoutPreparationFlowOutcome { completed, skipped }

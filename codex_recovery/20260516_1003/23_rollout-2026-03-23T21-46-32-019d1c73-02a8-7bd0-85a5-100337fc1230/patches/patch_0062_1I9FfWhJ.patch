@@ -1,0 +1,38 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/screen_time_screen.dart
+@@
+-  bool get _isIOS => Platform.isIOS;
+-
+@@
+   Future<void> _showLocalLimitInfo({
+     required String title,
+     required int limitMinutes,
+   }) {
+     return _showNotice(
+       title: title,
+       message:
+-          'Daily limit: ${limitMinutes}m\nUsage for Screen Time protections stays on this device and is not synced, exported, or shared.',
++          _isAndroid
++              ? 'Daily limit: ${limitMinutes}m\nUsage data for Android daily limits stays on this device and is not used for ads or unrelated analytics.'
++              : 'Daily limit: ${limitMinutes}m\nUsage for Screen Time protections stays on this device and is not synced, exported, or shared.',
+     );
+   }
+@@
+-          'Screen Time Control',
++          _isAndroid ? 'Focus Protection' : 'Screen Time Control',
+*** Update File: /Users/timo/ceo_os/android/app/src/main/kotlin/com/wakeapp/ceoos/AppBlockingService.kt
+@@
+-            showBlockOverlay(candidatePackage)
++            showBlockOverlay()
+             return
+         }
+@@
+-                showBlockOverlay(blockedDomain)
++                showBlockOverlay()
+                 return
+             }
+         }
+@@
+-    private fun showBlockOverlay(target: String) {
++    private fun showBlockOverlay() {
+*** End Patch

@@ -1,0 +1,33 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/ceo_mode/blackout_preparation/blackout_preparation_animation_view.dart
+@@
+             for (final item in baseIcons)
+               if (!(item.col == 0 && item.row == 1))
+                 _mockIcon(
+                   item,
++                  width: width,
++                  height: height,
+                   iconSize: iconSize,
+                   jiggleAmp: jiggleAmp,
+                   time: progress,
+                   hidden: (item.col == 1 && item.row == 1) ||
+@@
+   Widget _mockIcon(
+     _MockIconData item, {
++    required double width,
++    required double height,
+     required double iconSize,
+     required double jiggleAmp,
+     required double time,
+     required bool hidden,
+   }) {
+@@
+     return Positioned(
+-      left: origin.dx * 1,
+-      top: origin.dy * 1,
++      left: origin.dx * width,
++      top: origin.dy * height,
+       child: Opacity(
+         opacity: hidden ? 0 : 1,
+         child: Transform.rotate(
+*** End Patch

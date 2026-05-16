@@ -1,0 +1,175 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/habits/habits_screen.dart
+@@
+ class _HoverDeleteRow extends StatefulWidget {
+   final Widget child;
+   final VoidCallback? onTap;
+   final VoidCallback onDelete;
+@@
+ }
+ 
+ class _HoverDeleteRowState extends State<_HoverDeleteRow> {
+-  bool _hovering = false;
+-  bool _touchRevealed = false;
+-  Timer? _hideTimer;
+-
+-  bool get _showDelete => _hovering || _touchRevealed;
+-
+-  void _revealDelete() {
+-    _hideTimer?.cancel();
+-    setState(() => _touchRevealed = true);
+-    _hideTimer = Timer(const Duration(seconds: 4), () {
+-      if (!mounted) return;
+-      setState(() => _touchRevealed = false);
+-    });
+-  }
+-
+-  @override
+-  void dispose() {
+-    _hideTimer?.cancel();
+-    super.dispose();
+-  }
+-
+   @override
+   Widget build(BuildContext context) {
+-    return MouseRegion(
+-      onEnter: (_) => setState(() => _hovering = true),
+-      onExit: (_) => setState(() => _hovering = false),
+-      child: GestureDetector(
+-        behavior: HitTestBehavior.translucent,
+-        onLongPress: _revealDelete,
+-        child: Row(
+-          children: [
+-            Expanded(
+-              child: _HabitPressScale(onTap: widget.onTap, child: widget.child),
+-            ),
+-            AnimatedOpacity(
+-              opacity: _showDelete ? 1 : 0,
+-              duration: const Duration(milliseconds: 140),
+-              curve: Curves.easeOutCubic,
+-              child: IgnorePointer(
+-                ignoring: !_showDelete,
+-                child: CupertinoButton(
+-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+-                  minimumSize: const Size(32, 32),
+-                  onPressed: widget.onDelete,
+-                  child: Icon(
+-                    CupertinoIcons.delete,
+-                    size: 18,
+-                    color: AppColors.error,
+-                  ),
+-                ),
+-              ),
+-            ),
+-          ],
++    return Row(
++      children: [
++        Expanded(
++          child: _HabitPressScale(onTap: widget.onTap, child: widget.child),
+         ),
+-      ),
++        CupertinoButton(
++          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
++          minimumSize: const Size(32, 32),
++          onPressed: widget.onDelete,
++          child: Icon(
++            CupertinoIcons.delete,
++            size: 18,
++            color: AppColors.error,
++          ),
++        ),
++      ],
+     );
+   }
+ }
+ 
+-class _HoverDeleteCard extends StatefulWidget {
++class _HoverDeleteCard extends StatelessWidget {
+   final Widget child;
+   final VoidCallback onDelete;
+ 
+   const _HoverDeleteCard({required this.child, required this.onDelete});
+-
+-  @override
+-  State<_HoverDeleteCard> createState() => _HoverDeleteCardState();
+-}
+-
+-class _HoverDeleteCardState extends State<_HoverDeleteCard> {
+-  bool _hovering = false;
+-  bool _touchRevealed = false;
+-  Timer? _hideTimer;
+-
+-  bool get _showDelete => _hovering || _touchRevealed;
+-
+-  void _revealDelete() {
+-    _hideTimer?.cancel();
+-    setState(() => _touchRevealed = true);
+-    _hideTimer = Timer(const Duration(seconds: 4), () {
+-      if (!mounted) return;
+-      setState(() => _touchRevealed = false);
+-    });
+-  }
+-
+-  @override
+-  void dispose() {
+-    _hideTimer?.cancel();
+-    super.dispose();
+-  }
+ 
+   @override
+   Widget build(BuildContext context) {
+-    return MouseRegion(
+-      onEnter: (_) => setState(() => _hovering = true),
+-      onExit: (_) => setState(() => _hovering = false),
+-      child: GestureDetector(
+-        behavior: HitTestBehavior.translucent,
+-        onLongPress: _revealDelete,
+-        child: Stack(
+-          children: [
+-            widget.child,
+-            Positioned(
+-              top: 10,
+-              right: 10,
+-              child: AnimatedOpacity(
+-                opacity: _showDelete ? 1 : 0,
+-                duration: const Duration(milliseconds: 140),
+-                curve: Curves.easeOutCubic,
+-                child: IgnorePointer(
+-                  ignoring: !_showDelete,
+-                  child: CupertinoButton(
+-                    padding: const EdgeInsets.all(6),
+-                    minimumSize: const Size(30, 30),
+-                    onPressed: widget.onDelete,
+-                    child: Icon(
+-                      CupertinoIcons.delete,
+-                      size: 18,
+-                      color: AppColors.error,
+-                    ),
+-                  ),
+-                ),
+-              ),
+-            ),
+-          ],
++    return Stack(
++      children: [
++        child,
++        Positioned(
++          top: 10,
++          right: 10,
++          child: CupertinoButton(
++            padding: const EdgeInsets.all(6),
++            minimumSize: const Size(30, 30),
++            onPressed: onDelete,
++            child: Icon(
++              CupertinoIcons.delete,
++              size: 18,
++              color: AppColors.error,
++            ),
++          ),
+         ),
+-      ),
++      ],
+     );
+   }
+ }
+*** End Patch

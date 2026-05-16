@@ -1,0 +1,14 @@
+*** Begin Patch
+*** Update File: ios/CeoWidgets/CeoHomeWidget.swift
+@@
++import AppIntents
+ import SwiftUI
++import UIKit
+ import WidgetKit
+@@
+ @available(iOSApplicationExtension 17.0, *)
+-import AppIntents
+-
+-@available(iOSApplicationExtension 17.0, *)
+ enum CeoWidgetMode: String, AppEnum {
+*** End Patch

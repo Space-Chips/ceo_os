@@ -1,0 +1,84 @@
+*** Begin Patch
+*** Update File: lib/features/home/home_screen.dart
+@@
+   @override
+   Widget build(BuildContext context) {
+     final glowColor = _moduleGlow(data.moduleId);
++    if (data.isPlaceholder) {
++      final placeholder = GlassCard(
++        padding: EdgeInsets.all(compact ? 12 : 14),
++        borderRadius: 24,
++        level: GlassCardLevel.subtle,
++        showEdgeGlow: false,
++        glowColor: glowColor,
++        gradientColors: [AppColors.cardBackgroundStrong, AppColors.cardBase],
++        border: Border.all(color: AppColors.border, width: 0.9),
++        child: Center(
++          child: Column(
++            mainAxisSize: MainAxisSize.min,
++            children: [
++              Container(
++                width: 56,
++                height: 56,
++                decoration: BoxDecoration(
++                  borderRadius: BorderRadius.circular(18),
++                  color: AppColors.white.withValues(alpha: 0.05),
++                  border: Border.all(
++                    color: AppColors.white.withValues(alpha: 0.08),
++                  ),
++                ),
++                child: Icon(
++                  CupertinoIcons.plus,
++                  color: AppColors.secondaryLabel.withValues(alpha: 0.8),
++                  size: 22,
++                ),
++              ),
++              const SizedBox(height: 10),
++              Text(
++                'Ajouter',
++                style: AppTypography.footnote.copyWith(
++                  color: AppColors.tertiaryLabel.withValues(alpha: 0.75),
++                  fontWeight: FontWeight.w700,
++                ),
++              ),
++            ],
++          ),
++        ),
++      );
++
++      return _InteractiveLift(
++        onTap: data.onTap,
++        borderRadius: 24,
++        hoverScale: 1.017,
++        pressedScale: 1.028,
++        glowColor: glowColor,
++        child: Stack(
++          children: [
++            Positioned.fill(
++              child: IgnorePointer(
++                child: Container(
++                  margin: const EdgeInsets.all(8),
++                  decoration: BoxDecoration(
++                    borderRadius: BorderRadius.circular(24),
++                    boxShadow: [
++                      BoxShadow(
++                        color: glowColor.withValues(alpha: 0.16),
++                        blurRadius: 18,
++                        spreadRadius: -12,
++                      ),
++                    ],
++                  ),
++                ),
++              ),
++            ),
++            placeholder,
++          ],
++        ),
++      );
++    }
++
+     final base = GlassCard(
+       padding: EdgeInsets.all(compact ? 12 : 14),
+       borderRadius: 24,
+       level: data.active ? GlassCardLevel.elevated : GlassCardLevel.subtle,
+*** End Patch

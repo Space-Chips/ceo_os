@@ -1,0 +1,74 @@
+*** Begin Patch
+*** Update File: lib/core/providers/theme_provider.dart
+@@
+ class ThemeProvider extends ChangeNotifier {
+   static final ThemeProvider _instance = ThemeProvider._internal();
+@@
+   SettingsRepository _settingsRepository = SettingsRepository();
+   final FocusService _focusService = FocusService();
+   final SupabaseClient _client = Supabase.instance.client;
+   StreamSubscription<AuthState>? _authSubscription;
+   static const _pendingOnboardingKey = 'pending_onboarding_setup_v1';
++  static const _themeCacheKey = 'theme_preset_cache_v1';
+@@
+   AppThemePreset _currentPreset = ThemeCatalog.resolveById(
+     ThemeCatalog.defaultPresetId,
+   );
+@@
+   void _init() {
+     unawaited(_hydratePendingOnboardingFromPrefs());
+     final user = _client.auth.currentUser;
+     if (user != null) {
+       unawaited(loadThemeFromSupabase());
+     }
+@@
+   Future<void> loadThemeFromSupabase() async {
+     if (_client.auth.currentUser == null) {
+       _setPreset(ThemeCatalog.defaultPresetId, notify: true);
+       _onboardingCurrentThemeId = ThemeCatalog.defaultPresetId;
+       return;
+     }
+@@
+   void _setPreset(String presetId, {required bool notify}) {
+     _currentPreset = ThemeCatalog.resolveById(presetId);
+     ThemeRuntime.setPreset(_currentPreset);
++    unawaited(_persistThemeCache(_currentPreset.id));
+     _syncScreenTimeTheme();
+     if (notify) {
+       notifyListeners();
+     }
+   }
+ 
++  static Future<void> bootstrapRuntimeFromPrefs() async {
++    try {
++      final prefs = await SharedPreferences.getInstance();
++      final cached = prefs.getString(_themeCacheKey);
++      if (cached == null || cached.isEmpty) return;
++      ThemeRuntime.setPreset(ThemeCatalog.resolveById(cached));
++    } catch (_) {
++      // Best effort only.
++    }
++  }
++
++  Future<void> _persistThemeCache(String presetId) async {
++    try {
++      final prefs = await SharedPreferences.getInstance();
++      await prefs.setString(_themeCacheKey, presetId);
++    } catch (_) {
++      // Best effort only.
++    }
++  }
++
+   void _syncScreenTimeTheme() {
+     if (kIsWeb || defaultTargetPlatform != TargetPlatform.iOS) return;
+     final tokens = <String, String>{
+       'card_bg': _hexColor(AppColors.cardBackgroundStrong),
+       'card_border': _hexColor(AppColors.border),
+       'title': _hexColor(AppColors.secondaryLabel),
+       'value': _hexColor(AppColors.label),
+       'subtitle': _hexColor(AppColors.tertiaryLabel),
+       'version': DateTime.now().millisecondsSinceEpoch.toString(),
+     };
+     unawaited(_focusService.syncScreenTimeTheme(tokens));
+   }
+*** End Patch

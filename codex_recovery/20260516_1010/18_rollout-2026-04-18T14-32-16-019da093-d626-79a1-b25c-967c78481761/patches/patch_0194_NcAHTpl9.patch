@@ -1,0 +1,60 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/setup/setup_flow_screen.dart
+@@
+   @override
+   Widget build(BuildContext context) {
++    final t = context.read<LanguageProvider>().t;
+     return _SetupStepScaffold(
+       progressStep: 3,
+       child: Column(
+@@
+-          Text('All set', style: AppTypography.largeTitle),
++          Text(t('setup_success_title'), style: AppTypography.largeTitle),
+           const SizedBox(height: 6),
+           Text(
+-            'Screen Time is configured and ready to protect your focus.',
++            t('setup_success_subtitle'),
+             textAlign: TextAlign.center,
+@@
+-                _BulletLine(text: 'Instant blocking on protected apps.'),
+-                _BulletLine(text: 'Usage limits enforced on-device.'),
+-                _BulletLine(text: 'Focus and blackout sessions ready.'),
++                _BulletLine(text: t('setup_success_instant_blocking')),
++                _BulletLine(text: t('setup_success_usage_limits')),
++                _BulletLine(text: t('setup_success_focus_blackout')),
+@@
+       footer: LiquidButton(
+-        label: 'Open Screen Time',
++        label: t('setup_open_screen_time'),
+         fullWidth: true,
+         height: 58,
+@@
+ class _StepProgressPill extends StatelessWidget {
+@@
+   @override
+   Widget build(BuildContext context) {
+-    final label = step <= 0 ? '$total steps' : '$step / $total';
++    final t = context.read<LanguageProvider>().t;
++    final label = step <= 0
++        ? t('setup_steps_label').replaceAll('{total}', '$total')
++        : '$step / $total';
+@@
+ class _SetupProgressBar extends StatelessWidget {
+@@
+   @override
+   Widget build(BuildContext context) {
++    final t = context.read<LanguageProvider>().t;
+     final clamped = step.clamp(0, total);
+     final progress = total == 0 ? 0.0 : clamped / total;
+@@
+             Text(
+-              'Step $clamped of $total',
++              t('setup_step_of')
++                  .replaceAll('{step}', '$clamped')
++                  .replaceAll('{total}', '$total'),
+@@
+ class _SuccessBanner extends StatelessWidget {
+@@
+   @override
+   Widget build(BuildContext context) {
+*** End Patch

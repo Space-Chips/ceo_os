@@ -1,0 +1,12 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/screen_time_manager/screen_time_manager_screen.dart
+@@
+                         _actionCard(
+                           icon: CupertinoIcons.rosette,
+                           iconColor: AppColors.accentIcon,
+-                          title: 'Leaderboard',
++                          title: 'Friends & Leaderboard',
+                           subtitle: 'Global rankings',
+                           onTap: () => context.push('/leaderboard'),
+                         ),
+*** End Patch

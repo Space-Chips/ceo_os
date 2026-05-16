@@ -1,0 +1,180 @@
+*** Begin Patch
+*** Update File: lib/core/services/home_widget_service.dart
+@@
+ class CeoHomeWidgetService {
+@@
+   static Future<void> renderAndUpdateAll({
+     required TaskProvider tasks,
+     required HabitProvider habits,
+     required LanguageProvider language,
+   }) async {
+@@
+     final pendingTasks = tasks.tasks.where((t) => !t.completed).toList();
+     final completedTasks = tasks.tasks.where((t) => t.completed).toList();
+@@
+     final todoLines = pendingTasks.take(3).map((t) => t.title).toList();
+@@
+     await Future.wait([
+@@
+       HomeWidget.renderFlutterWidget(
+         _CeoWidgetCard.smallTodo(
+           title: language.t('widget_mode_todo'),
++          subtitle: language.t('today'),
+           lines: todoLines,
+         ),
+         key: _keyTodoSmall,
+         logicalSize: const Size(170, 170),
+         pixelRatio: 2,
+       ),
+       HomeWidget.renderFlutterWidget(
+         _CeoWidgetCard.largeTodo(
+           title: language.t('widget_mode_todo'),
++          subtitle: language.t('today'),
+           lines: todoLines,
+         ),
+         key: _keyTodoLarge,
+         logicalSize: const Size(360, 180),
+         pixelRatio: 2,
+       ),
+       HomeWidget.renderFlutterWidget(
+         _CeoWidgetCard.smallDashboard(
+           title: language.t('widget_mode_dashboard'),
++          tasksLabel: language.t('tasks'),
++          habitsLabel: language.t('habits'),
+           pendingTasks: pendingTasks.length,
+           completedTasks: completedTasks.length,
+           completedHabits: habits.completedToday,
+           totalHabits: habits.habits.length,
+         ),
+@@
+       HomeWidget.renderFlutterWidget(
+         _CeoWidgetCard.largeDashboard(
+           title: language.t('widget_mode_dashboard'),
++          tasksLabel: language.t('tasks'),
++          habitsLabel: language.t('habits'),
+           pendingTasks: pendingTasks.length,
+           completedTasks: completedTasks.length,
+           completedHabits: habits.completedToday,
+           totalHabits: habits.habits.length,
+         ),
+@@
+       HomeWidget.renderFlutterWidget(
+         _CeoWidgetCard.smallHabits(
+           title: language.t('widget_mode_habits'),
++          subtitlePrefix: language.t('widget_completed'),
+           lines: habitsLines,
+           completedHabits: habits.completedToday,
+           totalHabits: habits.habits.length,
+         ),
+@@
+       HomeWidget.renderFlutterWidget(
+         _CeoWidgetCard.largeHabits(
+           title: language.t('widget_mode_habits'),
++          subtitlePrefix: language.t('widget_completed'),
+           lines: habitsLines,
+           completedHabits: habits.completedToday,
+           totalHabits: habits.habits.length,
+         ),
+         key: _keyHabitsLarge,
+         logicalSize: const Size(360, 180),
+         pixelRatio: 2,
+       ),
+     ]);
+@@
+ class _CeoWidgetCard extends StatelessWidget {
+   final String title;
+   final String subtitle;
+   final List<String> lines;
+@@
+   factory _CeoWidgetCard.smallTodo({
+     required String title,
++    required String subtitle,
+     required List<String> lines,
+   }) {
+     return _CeoWidgetCard(
+       title: title,
+-      subtitle: 'Today',
++      subtitle: subtitle,
+       lines: lines,
+     );
+   }
+@@
+   factory _CeoWidgetCard.largeTodo({
+     required String title,
++    required String subtitle,
+     required List<String> lines,
+   }) {
+     return _CeoWidgetCard(
+       title: title,
+-      subtitle: 'Today',
++      subtitle: subtitle,
+       lines: lines,
+     );
+   }
+@@
+   factory _CeoWidgetCard.smallDashboard({
+     required String title,
++    required String tasksLabel,
++    required String habitsLabel,
+     required int pendingTasks,
+     required int completedTasks,
+     required int completedHabits,
+     required int totalHabits,
+   }) {
+     return _CeoWidgetCard(
+       title: title,
+       subtitle:
+-          'Tasks $pendingTasks pending • $completedTasks done\nHabits $completedHabits/$totalHabits today',
++          '$tasksLabel $pendingTasks pending • $completedTasks done\n$habitsLabel $completedHabits/$totalHabits today',
+       lines: const [],
+     );
+   }
+@@
+   factory _CeoWidgetCard.largeDashboard({
+     required String title,
++    required String tasksLabel,
++    required String habitsLabel,
+     required int pendingTasks,
+     required int completedTasks,
+     required int completedHabits,
+     required int totalHabits,
+   }) {
+     return _CeoWidgetCard(
+       title: title,
+       subtitle:
+-          'Tasks $pendingTasks pending • $completedTasks done\nHabits $completedHabits/$totalHabits today',
++          '$tasksLabel $pendingTasks pending • $completedTasks done\n$habitsLabel $completedHabits/$totalHabits today',
+       lines: const [],
+     );
+   }
+@@
+   factory _CeoWidgetCard.smallHabits({
+     required String title,
++    required String subtitlePrefix,
+     required List<String> lines,
+     required int completedHabits,
+     required int totalHabits,
+   }) {
+     return _CeoWidgetCard(
+       title: title,
+-      subtitle: 'Completed $completedHabits/$totalHabits today',
++      subtitle: '$subtitlePrefix $completedHabits/$totalHabits today',
+       lines: lines,
+     );
+   }
+@@
+   factory _CeoWidgetCard.largeHabits({
+     required String title,
++    required String subtitlePrefix,
+     required List<String> lines,
+     required int completedHabits,
+     required int totalHabits,
+   }) {
+     return _CeoWidgetCard(
+       title: title,
+-      subtitle: 'Completed $completedHabits/$totalHabits today',
++      subtitle: '$subtitlePrefix $completedHabits/$totalHabits today',
+       lines: lines,
+     );
+   }
+*** End Patch

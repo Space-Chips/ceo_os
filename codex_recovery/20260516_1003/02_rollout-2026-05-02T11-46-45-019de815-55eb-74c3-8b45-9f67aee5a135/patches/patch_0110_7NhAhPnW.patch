@@ -1,0 +1,344 @@
+*** Begin Patch
+*** Update File: lib/core/widgets/home_widgets/widget_views.dart
+@@
+ import '../../providers/language_provider.dart';
+ import 'widget_design_tokens.dart';
+@@
+ class DashboardWidgetRectangularView extends StatelessWidget {
+@@
+ }
+ 
++class HabitsTodayWidgetSquareView extends StatelessWidget {
++  final LanguageProvider language;
++  final List<Habit> habits;
++  final int completed;
++  final int total;
++
++  const HabitsTodayWidgetSquareView({
++    super.key,
++    required this.language,
++    required this.habits,
++    required this.completed,
++    required this.total,
++  });
++
++  @override
++  Widget build(BuildContext context) {
++    final items = habits.take(3).toList();
++    final more = (habits.length - items.length).clamp(0, 999);
++    final title = language.t('widget_mode_habits_today').toUpperCase();
++
++    return WidgetRoot(
++      padding: WidgetDesignTokens.padSquare,
++      child: Column(
++        crossAxisAlignment: CrossAxisAlignment.start,
++        children: [
++          Row(
++            children: [
++              Expanded(child: Text(title, style: WidgetDesignTokens.section)),
++              Container(
++                width: 30,
++                height: 30,
++                decoration: BoxDecoration(
++                  borderRadius: BorderRadius.circular(12),
++                  color: AppColors.cardBackgroundAlt,
++                  border: Border.all(
++                    color: AppColors.border.withValues(alpha: 0.7),
++                  ),
++                ),
++                alignment: Alignment.center,
++                child: Icon(
++                  CupertinoIcons.add,
++                  size: 18,
++                  color: AppColors.secondaryLabel.withValues(alpha: 0.8),
++                ),
++              ),
++            ],
++          ),
++          const SizedBox(height: 8),
++          Text(
++            '${language.t('today')} · $completed/$total ${language.t('widget_completed')}',
++            style: WidgetDesignTokens.subtitle,
++          ),
++          const SizedBox(height: 12),
++          Expanded(
++            child: Container(
++              decoration: WidgetDesignTokens.innerSurface(
++                tint: const Color(0xFF191B20),
++              ),
++              child: ClipRRect(
++                borderRadius: BorderRadius.circular(WidgetDesignTokens.radiusInner),
++                child: Column(
++                  children: [
++                    for (var i = 0; i < items.length; i++) ...[
++                      _HabitsTodayRow(title: items[i].title, index: i + 1),
++                      if (i != items.length - 1)
++                        Container(
++                          height: 1,
++                          color: AppColors.border.withValues(alpha: 0.55),
++                        ),
++                    ],
++                    if (items.isEmpty)
++                      Expanded(
++                        child: Center(
++                          child: Text(
++                            language.t('widget_no_habits'),
++                            style: WidgetDesignTokens.subtitle,
++                          ),
++                        ),
++                      )
++                    else if (more > 0)
++                      Padding(
++                        padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
++                        child: Align(
++                          alignment: Alignment.centerLeft,
++                          child: Text(
++                            '+$more ${language.t('widget_more')}',
++                            style: WidgetDesignTokens.subtitle.copyWith(
++                              fontSize: 11,
++                              color: AppColors.secondaryLabel.withValues(alpha: 0.7),
++                            ),
++                          ),
++                        ),
++                      )
++                    else
++                      const SizedBox.shrink(),
++                  ],
++                ),
++              ),
++            ),
++          ),
++        ],
++      ),
++    );
++  }
++}
++
++class _HabitsTodayRow extends StatelessWidget {
++  final String title;
++  final int index;
++
++  const _HabitsTodayRow({required this.title, required this.index});
++
++  @override
++  Widget build(BuildContext context) {
++    return Expanded(
++      child: Padding(
++        padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
++        child: Row(
++          children: [
++            Expanded(
++              child: Text(
++                title,
++                maxLines: 1,
++                overflow: TextOverflow.ellipsis,
++                style: AppTypography.title3.copyWith(
++                  fontSize: 18,
++                  fontWeight: FontWeight.w700,
++                  color: AppColors.label.withValues(alpha: 0.95),
++                  height: 1,
++                ),
++              ),
++            ),
++            const SizedBox(width: 12),
++            Container(
++              width: 38,
++              height: 38,
++              decoration: BoxDecoration(
++                shape: BoxShape.circle,
++                color: AppColors.cardBackgroundAlt,
++                border: Border.all(
++                  color: AppColors.border.withValues(alpha: 0.7),
++                ),
++              ),
++              alignment: Alignment.center,
++              child: Text(
++                '$index',
++                style: AppTypography.callout.copyWith(
++                  fontSize: 16,
++                  fontWeight: FontWeight.w700,
++                  color: AppColors.secondaryLabel.withValues(alpha: 0.85),
++                  height: 1,
++                ),
++              ),
++            ),
++          ],
++        ),
++      ),
++    );
++  }
++}
++
++class HabitsTableWidgetRectangularView extends StatelessWidget {
++  final LanguageProvider language;
++  final List<Habit> habits;
++  final List<DateTime> days;
++  final Map<String, Set<String>> completions;
++
++  const HabitsTableWidgetRectangularView({
++    super.key,
++    required this.language,
++    required this.habits,
++    required this.days,
++    required this.completions,
++  });
++
++  @override
++  Widget build(BuildContext context) {
++    final isFr = language.languageCode.toLowerCase().trim() == 'fr';
++    final dayLabels = isFr
++        ? const ['L', 'M', 'M', 'J', 'V', 'S', 'D']
++        : const ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
++
++    final items = habits.take(3).toList();
++
++    return WidgetRoot(
++      padding: WidgetDesignTokens.padRect,
++      child: Container(
++        decoration: WidgetDesignTokens.innerSurface(
++          tint: const Color(0xFF191B20),
++        ),
++        child: Padding(
++          padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
++          child: Column(
++            crossAxisAlignment: CrossAxisAlignment.start,
++            children: [
++              Text('Habits Table', style: WidgetDesignTokens.title),
++              const SizedBox(height: 2),
++              Text(language.t('widget_last_7_days'), style: WidgetDesignTokens.subtitle),
++              const SizedBox(height: 10),
++              Row(
++                children: [
++                  SizedBox(
++                    width: 74,
++                    child: Text(
++                      'Habit',
++                      style: WidgetDesignTokens.subtitle.copyWith(fontSize: 11),
++                    ),
++                  ),
++                  for (final label in dayLabels)
++                    Expanded(
++                      child: Center(
++                        child: Text(
++                          label,
++                          style: WidgetDesignTokens.subtitle.copyWith(
++                            fontSize: 11,
++                            color: AppColors.secondaryLabel.withValues(alpha: 0.6),
++                          ),
++                        ),
++                      ),
++                    ),
++                ],
++              ),
++              const SizedBox(height: 10),
++              for (final habit in items) ...[
++                _HabitsTableRow(
++                  habit: habit,
++                  days: days,
++                  completions: completions,
++                ),
++                const SizedBox(height: 8),
++              ],
++            ],
++          ),
++        ),
++      ),
++    );
++  }
++}
++
++class _HabitsTableRow extends StatelessWidget {
++  final Habit habit;
++  final List<DateTime> days;
++  final Map<String, Set<String>> completions;
++
++  const _HabitsTableRow({
++    required this.habit,
++    required this.days,
++    required this.completions,
++  });
++
++  @override
++  Widget build(BuildContext context) {
++    final doneDates = completions[habit.id] ?? const <String>{};
++    final today = DateTime.now();
++    final todayKey =
++        '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
++
++    return Row(
++      children: [
++        SizedBox(
++          width: 74,
++          child: Text(
++            habit.title,
++            maxLines: 1,
++            overflow: TextOverflow.ellipsis,
++            style: AppTypography.callout.copyWith(
++              fontSize: 14,
++              fontWeight: FontWeight.w700,
++              color: AppColors.label.withValues(alpha: 0.92),
++              height: 1,
++            ),
++          ),
++        ),
++        for (final day in days)
++          Expanded(
++            child: Center(
++              child: _cellSymbol(
++                day: day,
++                doneDates: doneDates,
++                todayKey: todayKey,
++              ),
++            ),
++          ),
++      ],
++    );
++  }
++
++  Widget _cellSymbol({
++    required DateTime day,
++    required Set<String> doneDates,
++    required String todayKey,
++  }) {
++    final key =
++        '${day.year}-${day.month.toString().padLeft(2, '0')}-${day.day.toString().padLeft(2, '0')}';
++    final isDone = doneDates.contains(key);
++    if (isDone) {
++      return Text(
++        '✔',
++        style: AppTypography.callout.copyWith(
++          fontSize: 14,
++          fontWeight: FontWeight.w900,
++          color: AppColors.success,
++          height: 1,
++        ),
++      );
++    }
++    final isToday = key == todayKey;
++    if (isToday) {
++      return Text(
++        '○',
++        style: AppTypography.callout.copyWith(
++          fontSize: 14,
++          fontWeight: FontWeight.w900,
++          color: AppColors.error,
++          height: 1,
++        ),
++      );
++    }
++    return Text(
++      '✖',
++      style: AppTypography.callout.copyWith(
++        fontSize: 14,
++        fontWeight: FontWeight.w900,
++        color: AppColors.error,
++        height: 1,
++      ),
++    );
++  }
++}
++
+ class _StatRow extends StatelessWidget {
+   final String label;
+   final String value;
+*** End Patch

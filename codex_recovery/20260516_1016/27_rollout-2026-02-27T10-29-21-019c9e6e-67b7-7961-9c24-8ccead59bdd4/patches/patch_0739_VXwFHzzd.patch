@@ -1,0 +1,15 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/home/stats_screen.dart
+@@
+ class _StatsScreenState extends State<StatsScreen> {
+   final StatsEngine _engine = StatsEngine();
+   final InsightsRepository _insightsRepository = InsightsRepository();
++  final HabitRepository _habitRepository = HabitRepository();
+   final PageController _pageController = PageController();
+ 
+   AdvancedStatsSnapshot? _snapshot;
+   DashboardSnapshot? _dashboardSnapshot;
++  List<Habit> _habits = const [];
++  List<HabitCompletion> _habitYearCompletions = const [];
+   bool _loading = true;
+*** End Patch

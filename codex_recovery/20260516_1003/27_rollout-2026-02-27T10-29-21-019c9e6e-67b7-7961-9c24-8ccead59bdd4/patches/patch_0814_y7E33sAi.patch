@@ -1,0 +1,65 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/home/stats_screen.dart
+@@
+ import 'package:flutter/cupertino.dart';
+ import 'package:go_router/go_router.dart';
+ import 'package:intl/intl.dart';
++import 'package:provider/provider.dart';
+ 
+ import '../../components/components.dart';
+ import '../../core/models/advanced_stats_models.dart';
+ import '../../core/models/habit_models.dart';
+ import '../../core/models/insights_models.dart';
++import '../../core/providers/habit_provider.dart';
++import '../../core/providers/task_provider.dart';
+@@
+ class _StatsScreenState extends State<StatsScreen> {
+   final StatsEngine _engine = StatsEngine();
+   final InsightsRepository _insightsRepository = InsightsRepository();
+   final HabitRepository _habitRepository = HabitRepository();
+   final PageController _pageController = PageController();
++  HabitProvider? _habitProvider;
++  TaskProvider? _taskProvider;
++  Timer? _refreshDebounce;
+@@
+   void initState() {
+     super.initState();
+     _load();
+   }
++
++  @override
++  void didChangeDependencies() {
++    super.didChangeDependencies();
++    final habitProvider = context.read<HabitProvider>();
++    final taskProvider = context.read<TaskProvider>();
++
++    if (!identical(_habitProvider, habitProvider)) {
++      _habitProvider?.removeListener(_handleSourceDataChanged);
++      _habitProvider = habitProvider;
++      _habitProvider?.addListener(_handleSourceDataChanged);
++    }
++
++    if (!identical(_taskProvider, taskProvider)) {
++      _taskProvider?.removeListener(_handleSourceDataChanged);
++      _taskProvider = taskProvider;
++      _taskProvider?.addListener(_handleSourceDataChanged);
++    }
++  }
+ 
+   @override
+   void dispose() {
++    _refreshDebounce?.cancel();
++    _habitProvider?.removeListener(_handleSourceDataChanged);
++    _taskProvider?.removeListener(_handleSourceDataChanged);
+     _pageController.dispose();
+     super.dispose();
+   }
++
++  void _handleSourceDataChanged() {
++    _refreshDebounce?.cancel();
++    _refreshDebounce = Timer(const Duration(milliseconds: 280), () {
++      if (!mounted) return;
++      unawaited(_load());
++    });
++  }
+*** End Patch

@@ -1,0 +1,22 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/assets/marketing/play_icon_concept.svg
+@@
+ <svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+   <defs>
+-    <linearGradient id="bg" x1="70" y1="48" x2="444" y2="468" gradientUnits="userSpaceOnUse">
+-      <stop stop-color="#171B20"/>
+-      <stop offset="1" stop-color="#080A0D"/>
+-    </linearGradient>
+     <radialGradient id="coreGlow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(256 256) rotate(90) scale(144 144)">
+       <stop stop-color="#9EB8FF" stop-opacity="0.32"/>
+       <stop offset="1" stop-color="#9EB8FF" stop-opacity="0"/>
+@@
+       <stop offset="1" stop-color="#DEE7F8"/>
+     </linearGradient>
+   </defs>
+ 
+-  <rect x="16" y="16" width="480" height="480" rx="112" fill="url(#bg)"/>
+-  <rect x="16.5" y="16.5" width="479" height="479" rx="111.5" stroke="#2A313C"/>
++  <rect width="512" height="512" fill="#000000"/>
+   <circle cx="256" cy="256" r="144" fill="url(#coreGlow)"/>
+*** End Patch

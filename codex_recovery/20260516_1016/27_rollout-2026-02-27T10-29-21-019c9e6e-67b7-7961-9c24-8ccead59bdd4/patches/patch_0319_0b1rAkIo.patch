@@ -1,0 +1,168 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/screen_time_screen.dart
+@@
+   Widget _blockedItemCard({
+     required String title,
+     required String subtitle,
+     required VoidCallback? onAdd15,
+     required VoidCallback? onAdd30,
+     required VoidCallback? onDelete,
++    VoidCallback? onTap,
+   }) {
+-    return GlassCard(
+-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+-      borderRadius: 14,
+-      border: Border.all(color: AppColors.glassBorder, width: 0.5),
+-      child: Row(
+-        children: [
+-          Expanded(
+-            child: Column(
+-              crossAxisAlignment: CrossAxisAlignment.start,
+-              children: [
+-                Text(
+-                  title,
+-                  maxLines: 1,
+-                  overflow: TextOverflow.ellipsis,
+-                  style: AppTypography.mono.copyWith(
+-                    fontSize: 11,
+-                    fontWeight: FontWeight.bold,
+-                  ),
+-                ),
+-                const SizedBox(height: 2),
+-                Text(
+-                  subtitle,
+-                  style: AppTypography.mono.copyWith(
+-                    fontSize: 9,
+-                    color: AppColors.secondaryLabel,
+-                  ),
+-                ),
+-              ],
+-            ),
+-          ),
+-          const SizedBox(width: 8),
+-          _tinyAction(label: '+15', onTap: onAdd15),
+-          const SizedBox(width: 6),
+-          _tinyAction(label: '+30', onTap: onAdd30),
+-          const SizedBox(width: 6),
+-          CupertinoButton(
+-            padding: EdgeInsets.zero,
+-            minimumSize: const Size(26, 26),
+-            onPressed: onDelete,
+-            child: Icon(
+-              CupertinoIcons.delete,
+-              size: 16,
+-              color: AppColors.error,
++    return GestureDetector(
++      onTap: onTap,
++      child: GlassCard(
++        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
++        borderRadius: 14,
++        border: Border.all(color: AppColors.glassBorder, width: 0.5),
++        child: Row(
++          children: [
++            Expanded(
++              child: Column(
++                crossAxisAlignment: CrossAxisAlignment.start,
++                children: [
++                  Text(
++                    title,
++                    maxLines: 1,
++                    overflow: TextOverflow.ellipsis,
++                    style: AppTypography.mono.copyWith(
++                      fontSize: 11,
++                      fontWeight: FontWeight.bold,
++                    ),
++                  ),
++                  const SizedBox(height: 2),
++                  Text(
++                    subtitle,
++                    style: AppTypography.mono.copyWith(
++                      fontSize: 9,
++                      color: AppColors.secondaryLabel,
++                    ),
++                  ),
++                ],
++              ),
+             ),
+-          ),
+-        ],
++            const SizedBox(width: 8),
++            _tinyAction(label: '+15', onTap: onAdd15),
++            const SizedBox(width: 6),
++            _tinyAction(label: '+30', onTap: onAdd30),
++            const SizedBox(width: 6),
++            CupertinoButton(
++              padding: EdgeInsets.zero,
++              minimumSize: const Size(26, 26),
++              onPressed: onDelete,
++              child: Icon(
++                CupertinoIcons.delete,
++                size: 16,
++                color: AppColors.error,
++              ),
++            ),
++          ],
++        ),
+       ),
+     );
+   }
++
++  Widget _limitCard({
++    required String title,
++    required int limitMinutes,
++    required int usedMinutes,
++    required VoidCallback onTap,
++  }) {
++    final remaining = _remainingMinutes(
++      limitMinutes: limitMinutes,
++      usedMinutes: usedMinutes,
++    );
++    return CupertinoButton(
++      padding: EdgeInsets.zero,
++      onPressed: onTap,
++      child: GlassCard(
++        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
++        borderRadius: 12,
++        border: Border.all(
++          color: AppColors.glassBorder.withValues(alpha: 0.7),
++          width: 0.6,
++        ),
++        child: Row(
++          children: [
++            Expanded(
++              child: Column(
++                crossAxisAlignment: CrossAxisAlignment.start,
++                children: [
++                  Text(
++                    title,
++                    maxLines: 1,
++                    overflow: TextOverflow.ellipsis,
++                    style: AppTypography.mono.copyWith(
++                      fontSize: 11,
++                      color: AppColors.label,
++                      fontWeight: FontWeight.w800,
++                    ),
++                  ),
++                  const SizedBox(height: 3),
++                  Text(
++                    'Daily ${limitMinutes}m • Used ${usedMinutes}m • Remaining ${remaining}m',
++                    style: AppTypography.mono.copyWith(
++                      fontSize: 10,
++                      color: AppColors.secondaryLabel,
++                    ),
++                  ),
++                ],
++              ),
++            ),
++            const SizedBox(width: 8),
++            Icon(
++              CupertinoIcons.time_solid,
++              size: 16,
++              color: AppColors.primaryOrange,
++            ),
++          ],
++        ),
++      ),
++    );
++  }
+*** End Patch

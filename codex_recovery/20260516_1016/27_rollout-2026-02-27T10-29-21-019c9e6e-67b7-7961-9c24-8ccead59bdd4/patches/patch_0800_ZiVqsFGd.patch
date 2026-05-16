@@ -1,0 +1,19 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/ios/Runner/AppDelegate.swift
+@@
+         case "syncClassicPauseSchedule":
+             syncClassicPauseSchedule(args: args, result: result)
++        case "syncClassicDailyLimits":
++            syncClassicDailyLimits(args: args, result: result)
+         case "startCeoShield":
+             startCeoShield(result: result)
+@@
+             let active =
+                 (defaults?.bool(forKey: focusEnabledStorageKey) ?? false)
+                 || (defaults?.bool(forKey: scheduledFocusEnabledStorageKey) ?? false)
+                 || (defaults?.bool(forKey: classicEnabledStorageKey) ?? false)
+                 || (defaults?.bool(forKey: classicPauseEnabledStorageKey) ?? false)
++                || !(defaults?.stringArray(forKey: classicDailyLimitTriggeredIdsStorageKey)?.isEmpty ?? true)
+                 || (defaults?.bool(forKey: ceoEnabledStorageKey) ?? false)
+             result(active)
+*** End Patch

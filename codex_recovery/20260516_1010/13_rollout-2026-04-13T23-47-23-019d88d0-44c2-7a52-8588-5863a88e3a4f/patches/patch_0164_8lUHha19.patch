@@ -1,0 +1,14 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/ios/Runner/AppDelegate.swift
+@@
+                 let app = Application(token: token)
+                 let appName = app.localizedDisplayName?.trimmingCharacters(in: .whitespacesAndNewlines)
+                 let bundleIdentifier = app.bundleIdentifier?.trimmingCharacters(in: .whitespacesAndNewlines)
+                 payloads.append([
+                     "payload": encoded,
+-                    "appName": (appName?.isEmpty == false ? appName! : (bundleIdentifier?.isEmpty == false ? bundleIdentifier! : "Selected app")),
++                    "appName": (appName?.isEmpty == false ? appName! : (bundleIdentifier?.isEmpty == false ? bundleIdentifier! : "")),
+                     "bundleIdentifier": bundleIdentifier ?? ""
+                 ])
+             }
+*** End Patch

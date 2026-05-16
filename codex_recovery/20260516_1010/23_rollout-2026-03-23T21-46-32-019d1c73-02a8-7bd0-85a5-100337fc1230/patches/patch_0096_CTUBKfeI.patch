@@ -1,0 +1,28 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/ios/Runner.xcodeproj/project.pbxproj
+@@
+ 				PRODUCT_BUNDLE_IDENTIFIER = com.wakeapp.ceoos.screentimereport;
+ 				PRODUCT_NAME = "$(TARGET_NAME)";
+ 				SKIP_INSTALL = YES;
++				EXCLUDED_PLATFORMS = iphonesimulator;
+ 				SUPPORTED_PLATFORMS = iphoneos;
+ 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+ 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+ 				SWIFT_VERSION = 5.0;
+@@
+ 				PRODUCT_BUNDLE_IDENTIFIER = com.wakeapp.ceoos.screentimereport;
+ 				PRODUCT_NAME = "$(TARGET_NAME)";
+ 				SKIP_INSTALL = YES;
++				EXCLUDED_PLATFORMS = iphonesimulator;
+ 				SUPPORTED_PLATFORMS = iphoneos;
+ 				SWIFT_VERSION = 5.0;
+ 				TARGETED_DEVICE_FAMILY = "1,2";
+@@
+ 				PRODUCT_BUNDLE_IDENTIFIER = com.wakeapp.ceoos.screentimereport;
+ 				PRODUCT_NAME = "$(TARGET_NAME)";
+ 				SKIP_INSTALL = YES;
++				EXCLUDED_PLATFORMS = iphonesimulator;
+ 				SUPPORTED_PLATFORMS = iphoneos;
+ 				SWIFT_VERSION = 5.0;
+ 				TARGETED_DEVICE_FAMILY = "1,2";
+*** End Patch

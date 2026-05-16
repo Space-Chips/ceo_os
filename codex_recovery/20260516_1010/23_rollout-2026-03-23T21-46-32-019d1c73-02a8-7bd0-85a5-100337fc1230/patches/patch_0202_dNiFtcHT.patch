@@ -1,0 +1,52 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/screen_time_setup/screen_time_setup_controller.dart
+@@
+-enum ScreenTimeSetupStep { intro, value, overview, permission, success }
++enum ScreenTimeSetupStep { intro, permission, success }
+@@
+-  String? _valueSelection;
+@@
+-  String? get valueSelection => _valueSelection;
+@@
+-  void setValueSelection(String selection) {
+-    if (_valueSelection == selection) return;
+-    _valueSelection = selection;
+-    notifyListeners();
+-  }
+@@
+-    if (savedStep == ScreenTimeSetupStep.success && !_setupComplete) {
+-      return ScreenTimeSetupStep.permission;
+-    }
+-    if (savedStep == ScreenTimeSetupStep.permission && isAuthorized) {
+-      return ScreenTimeSetupStep.success;
+-    }
+-    return savedStep;
++    if (savedStep == ScreenTimeSetupStep.success && !_setupComplete) {
++      return ScreenTimeSetupStep.permission;
++    }
++    if (savedStep == ScreenTimeSetupStep.permission && isAuthorized) {
++      return ScreenTimeSetupStep.success;
++    }
++    return savedStep;
+   }
+@@
+   ScreenTimeSetupStep? _stepFromName(String? raw) {
+     if (raw == null || raw.isEmpty) return null;
++    if (raw == 'value' || raw == 'overview') {
++      return ScreenTimeSetupStep.intro;
++    }
+     for (final step in ScreenTimeSetupStep.values) {
+       if (step.name == raw) return step;
+     }
+     return null;
+   }
+ 
+   List<ScreenTimeSetupStep> get _orderedSteps => const [
+     ScreenTimeSetupStep.intro,
+-    ScreenTimeSetupStep.value,
+-    ScreenTimeSetupStep.overview,
+     ScreenTimeSetupStep.permission,
+     ScreenTimeSetupStep.success,
+   ];
+ }
+*** End Patch

@@ -1,0 +1,8 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/ios/Runner/Info.plist
+@@
+ 	<key>CFBundleVersion</key>
+ 	<string>$(FLUTTER_BUILD_NUMBER)</string>
++	<key>ITSAppUsesNonExemptEncryption</key>
++	<false/>
+*** End Patch

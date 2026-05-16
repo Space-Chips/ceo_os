@@ -1,0 +1,17 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/screen_time_screen.dart
+@@
+   @override
+   void dispose() {
+     _siteCtrl.dispose();
+     super.dispose();
+   }
++
++  List<String> _filteredWebsiteSuggestions(String query) {
++    final needle = query.trim().toLowerCase();
++    if (needle.isEmpty) return const [];
++    return _websiteSuggestions
++        .where((domain) => domain.contains(needle))
++        .toList(growable: false);
++  }
+*** End Patch

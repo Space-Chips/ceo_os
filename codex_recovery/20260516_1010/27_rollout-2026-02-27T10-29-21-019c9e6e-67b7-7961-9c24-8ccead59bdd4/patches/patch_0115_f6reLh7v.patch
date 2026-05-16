@@ -1,0 +1,60 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/repositories/user_repository.dart
+@@
+   Future<void> deleteFriendConnection(String id) async {
+     await _client
+         .from('friend_connections')
+         .delete()
+         .eq('created_by', _currentUserId)
+         .eq('id', id);
+   }
++
++  Future<Map<String, String>> getPublicIdentityLabelsByUserIds(
++    Iterable<String> userIds,
++  ) async {
++    final ids = userIds.where((id) => id.trim().isNotEmpty).toSet().toList();
++    if (ids.isEmpty) return {};
++
++    try {
++      final response = await _client
++          .from('profiles')
++          .select('id, full_name, email')
++          .inFilter('id', ids);
++
++      final map = <String, String>{};
++      for (final row in (response as List)) {
++        final id = (row['id'] as String?)?.trim();
++        if (id == null || id.isEmpty) continue;
++
++        final fullName = (row['full_name'] as String?)?.trim();
++        final email = (row['email'] as String?)?.trim();
++        if (fullName != null && fullName.isNotEmpty) {
++          map[id] = fullName;
++        } else if (email != null && email.isNotEmpty) {
++          map[id] = email.split('@').first;
++        }
++      }
++      return map;
++    } catch (e) {
++      print('Error getting public profile labels: $e');
++      return {};
++    }
++  }
++
++  Future<void> syncFriendConnections() async {
++    try {
++      final current = await getFriendConnections();
++      for (final friend in current) {
++        final email = (friend.friendEmail ?? '').trim();
++        if (email.isEmpty) continue;
++        await upsertFriendConnection(
++          friendEmail: email,
++          friendName: friend.friendName,
++        );
++      }
++    } catch (e) {
++      print('Error syncing friend connections: $e');
++    }
++  }
+ }
+*** End Patch

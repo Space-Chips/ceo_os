@@ -1,0 +1,50 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/ios/Runner/AppDelegate.swift
+@@
+     private let classicDailyLimitEventPrefix = "classic_daily_limit_event_"
++    private let screenTimeThemeKeyPrefix = "screen_time_theme_"
+@@
+     private func sharedDefaults() -> UserDefaults? {
+         guard hasAppGroupAccess() else {
+             return nil
+         }
+         return UserDefaults(suiteName: appGroupId)
+     }
++
++    private func saveScreenTimeTheme(tokens: [String: String]) {
++        guard let defaults = sharedDefaults() else { return }
++        for (key, value) in tokens {
++            defaults.set(value, forKey: "\(screenTimeThemeKeyPrefix)\(key)")
++        }
++    }
++
++    private func readScreenTimeThemeValue(_ key: String) -> UIColor? {
++        guard let defaults = sharedDefaults(),
++              let raw = defaults.string(forKey: "\(screenTimeThemeKeyPrefix)\(key)") else {
++            return nil
++        }
++        return UIColor(hexString: raw)
++    }
+@@
+         case "openSystemSettings":
+             DispatchQueue.main.async {
+                 guard let url = URL(string: UIApplication.openSettingsURLString),
+                       UIApplication.shared.canOpenURL(url) else {
+                     result(false)
+                     return
+                 }
+                 UIApplication.shared.open(url, options: [:]) { opened in
+                     result(opened)
+                 }
+             }
++        case "syncScreenTimeTheme":
++            if let tokens = args?["tokens"] as? [String: String] {
++                saveScreenTimeTheme(tokens: tokens)
++            }
++            result(true)
+         case "syncPlannedSessions":
+             syncPlannedSessions(args: args, result: result)
+         default:
+             result(FlutterMethodNotImplemented)
+         }
+*** End Patch

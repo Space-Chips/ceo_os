@@ -1,0 +1,36 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/focus/focus_screen.dart
+@@
+ class _FocusScreenState extends State<FocusScreen> {
+   final FeatureRepository _repo = FeatureRepository();
+   final TextEditingController _customDurationCtrl = TextEditingController();
+ 
+   WinStreak? _streak;
+   bool _loading = true;
++  bool _didPresentPreparationOnEntry = false;
+@@
+       await provider.loadInitialData();
+       _customDurationCtrl.text = provider.focusDurationMinutes.toString();
+       await _loadStreak();
++      await _presentPreparationIfNeeded(provider);
+     });
+   }
+@@
+   void _setDuration(int value) {
+@@
+   }
++
++  Future<void> _presentPreparationIfNeeded(FocusProvider provider) async {
++    if (_didPresentPreparationOnEntry) return;
++    if (!provider.shouldShowPreparationFlowBeforeFocus) return;
++    _didPresentPreparationOnEntry = true;
++    final outcome = await showFocusPreparationFlow(
++      context: context,
++      launchContext: FocusPreparationLaunchContext.preFocus,
++    );
++    if (!mounted) return;
++    await provider.persistPreparationOutcome(
++      outcome ?? FocusPreparationFlowOutcome.skipped,
++    );
++  }
+*** End Patch

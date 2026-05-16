@@ -1,0 +1,19 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/services/stats_engine.dart
+@@
+             case '7_day_streak':
+               return const MilestoneShareCard(
+                 milestoneType: 'streak',
+                 title: '7 Day Discipline Streak',
+-                subtitle: 'You protected your attention for a full week.',
++                subtitle: 'You protected your focus for a full week.',
+               );
+@@
+             case '200_hours_focus':
+               return const MilestoneShareCard(
+                 milestoneType: 'focus',
+                 title: '200 Hours of Focus',
+-                subtitle: 'This is elite attention capacity.',
++                subtitle: 'This is elite focus capacity.',
+               );
+*** End Patch

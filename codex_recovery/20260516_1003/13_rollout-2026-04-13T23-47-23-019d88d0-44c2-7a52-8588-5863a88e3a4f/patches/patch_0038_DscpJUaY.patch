@@ -1,0 +1,120 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/setup/setup_flow_screen.dart
+@@
+   @override
+   Widget build(BuildContext context) {
+     return _SetupStepScaffold(
++      progressStep: 3,
+       child: Column(
+-        crossAxisAlignment: CrossAxisAlignment.start,
++        crossAxisAlignment: CrossAxisAlignment.center,
+         children: [
+-          GlassCard(
+-            level: GlassCardLevel.elevated,
+-            showEdgeGlow: true,
+-            glowColor: AppColors.success,
+-            child: Row(
+-              crossAxisAlignment: CrossAxisAlignment.center,
+-              children: [
+-                _IconOrb(icon: CupertinoIcons.checkmark_seal_fill, accent: AppColors.success),
+-                const SizedBox(width: 14),
+-                Expanded(
+-                  child: Column(
+-                    crossAxisAlignment: CrossAxisAlignment.start,
+-                    children: [
+-                      Text('All set', style: AppTypography.title1),
+-                      const SizedBox(height: 6),
+-                      Text(
+-                        'Screen Time is configured and ready to protect your focus.',
+-                        style: AppTypography.body.copyWith(
+-                          color: AppColors.secondaryLabel,
+-                        ),
+-                      ),
+-                    ],
+-                  ),
+-                ),
+-              ],
+-            ),
+-          ),
++          const SizedBox(height: 8),
++          _SuccessHero(),
++          const SizedBox(height: 16),
++          Text('All set', style: AppTypography.largeTitle),
++          const SizedBox(height: 6),
++          Text(
++            'Screen Time is configured and ready to protect your focus.',
++            textAlign: TextAlign.center,
++            style: AppTypography.body.copyWith(
++              color: AppColors.secondaryLabel,
++              height: 1.35,
++            ),
++          ),
+           const SizedBox(height: 18),
+           GlassCard(
+             level: GlassCardLevel.standard,
+             showTopHighlight: false,
+             child: Column(
+@@
+       ),
+       footer: LiquidButton(
+         label: 'Open Screen Time',
+         fullWidth: true,
++        height: 58,
++        borderRadius: 16,
++        labelStyle: AppTypography.callout.copyWith(
++          fontWeight: FontWeight.w700,
++          fontSize: 16,
++        ),
+         onPressed: () async {
+           await onContinue();
+           if (context.mounted) context.go('/screen-time-manager');
+         },
+       ),
+     );
+   }
+ }
++
++class _SuccessHero extends StatelessWidget {
++  @override
++  Widget build(BuildContext context) {
++    return Container(
++      width: 92,
++      height: 92,
++      decoration: BoxDecoration(
++        shape: BoxShape.circle,
++        gradient: RadialGradient(
++          colors: [
++            AppColors.success.withValues(alpha: 0.36),
++            AppColors.success.withValues(alpha: 0.12),
++          ],
++        ),
++        boxShadow: [
++          BoxShadow(
++            color: AppColors.success.withValues(alpha: 0.35),
++            blurRadius: 28,
++            offset: const Offset(0, 12),
++          ),
++        ],
++      ),
++      child: Center(
++        child: Container(
++          width: 52,
++          height: 52,
++          decoration: BoxDecoration(
++            shape: BoxShape.circle,
++            color: AppColors.success.withValues(alpha: 0.18),
++            border: Border.all(
++              color: AppColors.success.withValues(alpha: 0.5),
++            ),
++          ),
++          child: Icon(
++            CupertinoIcons.checkmark_seal_fill,
++            color: AppColors.success,
++            size: 28,
++          ),
++        ),
++      ),
++    );
++  }
++}
+*** End Patch

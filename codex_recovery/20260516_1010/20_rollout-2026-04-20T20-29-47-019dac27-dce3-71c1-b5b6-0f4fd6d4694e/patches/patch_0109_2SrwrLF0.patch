@@ -1,0 +1,11 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/android/app/src/main/kotlin/com/wakeapp/ceoos/BrowserBlockingOverlay.kt
+@@
+         val root = FrameLayout(service).apply {
+-            setBackgroundColor(Color.parseColor("#F20A0B0F"))
++            setBackgroundColor(Color.parseColor("#FF0A0B0F"))
+             isClickable = true
+             isFocusable = false
+             importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_YES
+         }
+*** End Patch

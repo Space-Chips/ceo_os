@@ -1,0 +1,31 @@
+*** Begin Patch
+*** Update File: lib/features/home/home_screen.dart
+@@
+             onOpenWidgetConfiguration: () {
+               Navigator.of(sheetContext).pop();
+               unawaited(_pushAndRefresh('/widget-configuration'));
+             },
++            onOpenUpgrade: () {
++              Navigator.of(sheetContext).pop();
++              unawaited(_pushAndRefresh('/upgrade'));
++            },
+             onOpenAdvancedStats: () {
+               Navigator.of(sheetContext).pop();
+               unawaited(_pushAndRefresh('/stats'));
+             },
+@@
+ class _SecondaryMenuSheet extends StatefulWidget {
+@@
+   final VoidCallback onOpenProfileAndSettings;
+   final VoidCallback onOpenWidgetConfiguration;
++  final VoidCallback onOpenUpgrade;
+   final VoidCallback onOpenAdvancedStats;
+   final bool showAdvancedStats;
+@@
+     required this.onOpenProfileAndSettings,
+     required this.onOpenWidgetConfiguration,
++    required this.onOpenUpgrade,
+     required this.onOpenAdvancedStats,
+     required this.showAdvancedStats,
+   });
+*** End Patch

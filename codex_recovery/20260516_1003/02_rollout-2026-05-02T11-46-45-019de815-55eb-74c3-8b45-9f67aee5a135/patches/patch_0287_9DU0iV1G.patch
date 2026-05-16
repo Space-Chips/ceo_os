@@ -1,0 +1,13 @@
+*** Begin Patch
+*** Update File: lib/core/providers/habit_provider.dart
+@@
+       // Enforce limits using local state (fast + avoids schema/count drift).
+       final runtime = await _premiumRepository.getRuntime();
+       if (!runtime.resolved.canCreateUnlimitedHabits) {
+-        final activeCount = _habits.where((h) => !(h.archived ?? false)).length;
++        final activeCount = _habits.where((h) => !h.archived).length;
+         if (activeCount >= runtime.config.habitsFreeLimit) {
+           return PremiumCheckResult.blocked(
+             reason: 'habits',
+             limit: runtime.config.habitsFreeLimit,
+*** End Patch

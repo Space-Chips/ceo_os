@@ -73,12 +73,6 @@ extension CeoWidgetsAttributes.ContentState {
      }
 }
 
-@available(iOSApplicationExtension 17.0, *)
-#Preview("Notification", as: .content, using: CeoWidgetsAttributes.preview) {
-   CeoWidgetsLiveActivity()
-} contentStates: {
-    CeoWidgetsAttributes.ContentState.smiley
-    CeoWidgetsAttributes.ContentState.starEyes
-}
+// Previews removed to avoid build-time macro/plugin issues in CI/headless builds.
 
 

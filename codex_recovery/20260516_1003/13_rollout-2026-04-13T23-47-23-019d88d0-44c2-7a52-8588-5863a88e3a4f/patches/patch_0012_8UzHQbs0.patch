@@ -1,0 +1,8 @@
+*** Begin Patch
+*** Update File: android/app/src/main/res/anim/block_gate_exit.xml
+@@
+-<set xmlns:android="http://schemas.android.com/apk/res/android"
+-    android:interpolator="@android:interpolator/accelerate_interpolator">
++<set xmlns:android="http://schemas.android.com/apk/res/android"
++    android:interpolator="@interpolator/block_gate_accelerate">
+*** End Patch

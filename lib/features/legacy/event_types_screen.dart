@@ -1,11 +1,21 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart' show Colors, FontWeight;
 import 'package:go_router/go_router.dart';
 
 import '../../components/components.dart';
+import '../../core/models/premium_models.dart';
 import '../../core/models/task_models.dart';
 import '../../core/repositories/feature_repository.dart';
+import '../../core/repositories/premium_repository.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
+
+class _TypeColorOption {
+  final String value;
+  final Color color;
+
+  const _TypeColorOption(this.value, this.color);
+}
 
 class EventTypesScreen extends StatefulWidget {
   const EventTypesScreen({super.key});
@@ -16,8 +26,26 @@ class EventTypesScreen extends StatefulWidget {
 
 class _EventTypesScreenState extends State<EventTypesScreen> {
   final FeatureRepository _repo = FeatureRepository();
-  List<EventType> _types = [];
+  final PremiumRepository _premiumRepository = PremiumRepository();
+  final TextEditingController _nameController = TextEditingController();
+
+  static const List<_TypeColorOption> _colorOptions = [
+    _TypeColorOption('blue', Color(0xFF93C5FD)),
+    _TypeColorOption('green', Color(0xFF86EFAC)),
+    _TypeColorOption('purple', Color(0xFFC4B5FD)),
+    _TypeColorOption('pink', Color(0xFFF9A8D4)),
+    _TypeColorOption('orange', Color(0xFFFCD34D)),
+    _TypeColorOption('red', Color(0xFFFCA5A5)),
+    _TypeColorOption('yellow', Color(0xFFFDE68A)),
+    _TypeColorOption('teal', Color(0xFF99F6E4)),
+  ];
+
+  List<EventType> _types = const [];
   bool _loading = true;
+  bool _creating = false;
+  bool _showForm = false;
+  PremiumCheckResult? _premiumBlock;
+  String _selectedColor = 'blue';
 
   @override
   void initState() {
@@ -25,138 +53,416 @@ class _EventTypesScreenState extends State<EventTypesScreen> {
     _load();
   }
 
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
+
   Future<void> _load() async {
+    final premiumCheck = await _premiumRepository.canAccessAdvancedCalendar();
+    if (!premiumCheck.allowed) {
+      if (!mounted) return;
+      setState(() {
+        _premiumBlock = premiumCheck;
+        _loading = false;
+      });
+      return;
+    }
+
     final types = await _repo.getEventTypes();
     if (!mounted) return;
     setState(() {
+      _premiumBlock = null;
       _types = types;
       _loading = false;
     });
   }
 
-  Future<void> _create() async {
-    final name = TextEditingController();
-    final color = TextEditingController(text: '#3B82F6');
-    final icon = TextEditingController(text: 'calendar');
+  Future<void> _createType() async {
+    if (_nameController.text.trim().isEmpty || _creating) return;
+    setState(() => _creating = true);
+    try {
+      await _repo.createEventType(
+        _nameController.text.trim(),
+        _selectedColor,
+        'calendar',
+      );
+      _nameController.clear();
+      if (!mounted) return;
+      setState(() => _showForm = false);
+      await _load();
+    } finally {
+      if (mounted) {
+        setState(() => _creating = false);
+      }
+    }
+  }
 
-    await showCupertinoDialog(
-      context: context,
-      builder: (ctx) => CupertinoAlertDialog(
-        title: const Text('New Event Type'),
-        content: Column(
-          children: [
-            const SizedBox(height: 8),
-            CupertinoTextField(controller: name, placeholder: 'Name'),
-            const SizedBox(height: 8),
-            CupertinoTextField(controller: color, placeholder: 'Color hex'),
-            const SizedBox(height: 8),
-            CupertinoTextField(controller: icon, placeholder: 'Icon name'),
-          ],
-        ),
-        actions: [
-          CupertinoDialogAction(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
-          ),
-          CupertinoDialogAction(
-            isDefaultAction: true,
-            onPressed: () async {
-              Navigator.pop(ctx);
-              await _repo.createEventType(
-                name.text.trim(),
-                color.text.trim(),
-                icon.text.trim(),
-              );
-            },
-            child: const Text('Create'),
-          ),
-        ],
-      ),
-    );
-
+  Future<void> _deleteType(EventType type) async {
+    await _repo.deleteEventType(type.id);
     await _load();
+  }
+
+  Color _colorForType(EventType type) {
+    final raw = (type.color ?? '').trim();
+    for (final option in _colorOptions) {
+      if (option.value == raw.toLowerCase()) return option.color;
+    }
+
+    var value = raw.replaceAll('#', '');
+    if (value.length == 3) {
+      value = value.split('').map((c) => '$c$c').join();
+    }
+    if (value.length == 6) {
+      value = 'FF$value';
+    }
+    final parsed = int.tryParse(value, radix: 16);
+    if (parsed == null) return AppColors.primaryOrange;
+    return Color(parsed);
   }
 
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
       backgroundColor: AppColors.background,
-      navigationBar: CupertinoNavigationBar(
-        leading: CupertinoButton(
-          padding: EdgeInsets.zero,
-          onPressed: () => context.go('/home'),
-          child: const Icon(
-            CupertinoIcons.back,
-            color: AppColors.primaryOrange,
-          ),
+      child: AmbientBackdrop(
+        child: SafeArea(
+          child: _loading
+              ? Center(
+                  child: CupertinoActivityIndicator(color: AppColors.primaryOrange),
+                )
+              : _premiumBlock != null
+              ? ListView(
+                  padding: const EdgeInsets.all(20),
+                  children: [_buildPremiumLockedCard(_premiumBlock!)],
+                )
+              : ListView(
+                  padding: const EdgeInsets.fromLTRB(18, 8, 18, 18),
+                  children: [
+                    _buildHeader(),
+                    const SizedBox(height: 20),
+                    _buildAddButton(),
+                    const SizedBox(height: 14),
+                    if (_showForm) ...[
+                      _buildFormCard(),
+                      const SizedBox(height: 14),
+                    ],
+                    _buildTypesList(),
+                  ],
+                ),
         ),
-        middle: const NeoMonoText(
-          'EVENT_TYPES',
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-        ),
-        trailing: CupertinoButton(
-          padding: EdgeInsets.zero,
-          onPressed: _create,
-          child: const Icon(CupertinoIcons.add, color: AppColors.primaryOrange),
-        ),
-        backgroundColor: AppColors.background,
-        border: null,
       ),
-      child: _loading
-          ? const Center(
-              child: CupertinoActivityIndicator(color: AppColors.primaryOrange),
-            )
-          : SafeArea(
-              child: ListView.builder(
-                padding: const EdgeInsets.all(20),
-                itemCount: _types.length,
-                itemBuilder: (context, index) {
-                  final t = _types[index];
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: GlassCard(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 12,
-                      ),
-                      borderRadius: 14,
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 10,
-                            height: 10,
-                            decoration: BoxDecoration(
-                              color: AppColors.primaryOrange,
-                              borderRadius: BorderRadius.circular(5),
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Text(
-                              (t.name ?? 'UNTITLED').toUpperCase(),
-                              style: AppTypography.mono.copyWith(fontSize: 11),
-                            ),
-                          ),
-                          CupertinoButton(
-                            padding: EdgeInsets.zero,
-                            onPressed: () async {
-                              await _repo.deleteEventType(t.id);
-                              await _load();
-                            },
-                            child: const Icon(
-                              CupertinoIcons.delete,
-                              size: 16,
-                              color: AppColors.error,
-                            ),
-                          ),
-                        ],
-                      ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return SizedBox(
+      height: 46,
+      child: Stack(
+        children: [
+          Align(
+            alignment: Alignment.centerLeft,
+            child: CupertinoButton(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              minimumSize: Size.zero,
+              onPressed: () => context.go('/calendar'),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(CupertinoIcons.arrow_left, color: AppColors.secondaryLabel, size: 18),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Back',
+                    style: AppTypography.mono.copyWith(
+                      fontSize: 15,
+                      color: AppColors.secondaryLabel,
+                      fontWeight: FontWeight.w600,
                     ),
-                  );
-                },
+                  ),
+                ],
               ),
             ),
+          ),
+          Align(
+            alignment: Alignment.center,
+            child: Text(
+              'Event Types',
+              style: AppTypography.mono.copyWith(
+                fontSize: 22,
+                fontWeight: FontWeight.w900,
+                color: AppColors.label,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAddButton() {
+    return GestureDetector(
+      onTap: () => setState(() => _showForm = !_showForm),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(30),
+          color: Colors.white.withValues(alpha: 0.92),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.95), width: 1.1),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.white.withValues(alpha: 0.22),
+              blurRadius: 24,
+              spreadRadius: -8,
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(CupertinoIcons.add, size: 28, color: Colors.black),
+            const SizedBox(width: 10),
+            Text(
+              'Add Event Type',
+              style: AppTypography.mono.copyWith(
+                fontSize: 22,
+                fontWeight: FontWeight.w900,
+                color: Colors.black,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFormCard() {
+    return GlassCard(
+      padding: const EdgeInsets.all(16),
+      borderRadius: 22,
+      border: Border.all(color: AppColors.glassBorder, width: 0.7),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Type Name',
+            style: AppTypography.mono.copyWith(
+              fontSize: 13,
+              color: AppColors.secondaryLabel,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 8),
+          GlassInputField(
+            placeholder: 'e.g., Work, Sport, Personal',
+            controller: _nameController,
+          ),
+          const SizedBox(height: 14),
+          Text(
+            'Color',
+            style: AppTypography.mono.copyWith(
+              fontSize: 13,
+              color: AppColors.secondaryLabel,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 10),
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: _colorOptions.length,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 4,
+              mainAxisSpacing: 8,
+              crossAxisSpacing: 8,
+              childAspectRatio: 1.0,
+            ),
+            itemBuilder: (context, index) {
+              final option = _colorOptions[index];
+              final selected = _selectedColor == option.value;
+              return GestureDetector(
+                onTap: () => setState(() => _selectedColor = option.value),
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    color: AppColors.backgroundLight.withValues(alpha: 0.68),
+                    border: Border.all(
+                      color: selected
+                          ? option.color.withValues(alpha: 0.95)
+                          : AppColors.glassBorder.withValues(alpha: 0.45),
+                      width: selected ? 1.4 : 0.7,
+                    ),
+                  ),
+                  child: Center(
+                    child: Container(
+                      width: 54,
+                      height: 54,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(14),
+                        color: option.color.withValues(alpha: selected ? 0.95 : 0.62),
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              Expanded(
+                child: CupertinoButton(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  color: AppColors.backgroundLight.withValues(alpha: 0.62),
+                  borderRadius: BorderRadius.circular(12),
+                  onPressed: () => setState(() => _showForm = false),
+                  child: Text(
+                    'Cancel',
+                    style: AppTypography.mono.copyWith(
+                      fontSize: 13,
+                      color: AppColors.label,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: CupertinoButton(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  onPressed: _createType,
+                  child: Text(
+                    _creating ? 'Adding…' : 'Add',
+                    style: AppTypography.mono.copyWith(
+                      fontSize: 13,
+                      color: Colors.black,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTypesList() {
+    if (_types.isEmpty) {
+      return GlassCard(
+        padding: const EdgeInsets.all(18),
+        borderRadius: 16,
+        child: Text(
+          'No event types yet.',
+          style: AppTypography.mono.copyWith(
+            fontSize: 12,
+            color: AppColors.tertiaryLabel,
+          ),
+        ),
+      );
+    }
+
+    return Column(
+      children: _types.map((type) {
+        final color = _colorForType(type);
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 10),
+          child: GlassCard(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            borderRadius: 16,
+            border: Border.all(color: AppColors.glassBorder, width: 0.65),
+            child: Row(
+              children: [
+                Container(
+                  width: 14,
+                  height: 14,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(7),
+                    color: color,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        (type.name ?? 'UNTITLED'),
+                        style: AppTypography.mono.copyWith(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.label,
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        (type.color ?? 'blue').toUpperCase(),
+                        style: AppTypography.mono.copyWith(
+                          fontSize: 10,
+                          color: AppColors.tertiaryLabel,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                CupertinoButton(
+                  padding: EdgeInsets.zero,
+                  minimumSize: Size.zero,
+                  onPressed: () => _deleteType(type),
+                  child: Icon(
+                    CupertinoIcons.delete,
+                    color: const Color(0xFFEF4444),
+                    size: 18,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildPremiumLockedCard(PremiumCheckResult check) {
+    final message = premiumMessageForReason(check.reason);
+    return GlassCard(
+      padding: const EdgeInsets.all(16),
+      borderRadius: 16,
+      border: Border.all(color: AppColors.primaryOrange.withValues(alpha: 0.28), width: 0.7),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(CupertinoIcons.lock_shield_fill, size: 16, color: AppColors.primaryOrange),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  message.title,
+                  style: AppTypography.mono.copyWith(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.label,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            message.description,
+            style: AppTypography.mono.copyWith(
+              fontSize: 11,
+              color: AppColors.secondaryLabel,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

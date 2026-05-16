@@ -1,0 +1,10 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/pubspec.yaml
+@@
+   shared_preferences_foundation:
+     path: ./packages/shared_preferences_foundation
++  workmanager_apple:
++    path: ./packages/workmanager_apple
+   url_launcher_ios:
+     path: ./packages/url_launcher_ios
+*** End Patch

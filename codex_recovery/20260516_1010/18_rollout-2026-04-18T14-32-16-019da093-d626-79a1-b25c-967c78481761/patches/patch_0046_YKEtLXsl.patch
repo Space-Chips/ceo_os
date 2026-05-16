@@ -1,0 +1,31 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/leaderboard/leaderboard_screen.dart
+@@
+     if (index == 1) {
+-      return Color.lerp(
++      return (Color.lerp(
+         AppColors.warning,
+         AppColors.rankAccent,
+         0.3,
+-      )!.withValues(alpha: 0.35);
++      ) ?? AppColors.rankAccent).withValues(alpha: 0.35);
+     }
+     if (index == 2) {
+-      return Color.lerp(
++      return (Color.lerp(
+         AppColors.label,
+         AppColors.secondaryLabel,
+         0.55,
+-      )!.withValues(alpha: 0.28);
++      ) ?? AppColors.secondaryLabel).withValues(alpha: 0.28);
+     }
+     if (index == 3) {
+-      return Color.lerp(
++      return (Color.lerp(
+         AppColors.rankAccent,
+         AppColors.warning,
+         0.62,
+-      )!.withValues(alpha: 0.35);
++      ) ?? AppColors.warning).withValues(alpha: 0.35);
+     }
+*** End Patch

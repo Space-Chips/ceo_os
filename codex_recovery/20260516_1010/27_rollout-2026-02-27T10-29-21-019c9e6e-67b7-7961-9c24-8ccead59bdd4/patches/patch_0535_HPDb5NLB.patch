@@ -1,0 +1,23 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/supabase_theme_onboarding_update.sql
+@@
+-update public.app_settings
+-set theme_preset = 'obsidian_dark'
++update public.app_settings
++set theme_preset = 'midnight_blue'
+ where theme_preset is null;
+ 
+ alter table public.app_settings
+-  alter column theme_preset set default 'obsidian_dark';
++  alter column theme_preset set default 'midnight_blue';
+@@
+         theme_preset in (
++          'midnight_blue',
++          'graphite',
++          'sandstone',
++          'deep_forest',
++          'light_premium',
+           'obsidian_dark',
+           'nebula_dark',
+           'ember_dark',
+*** End Patch

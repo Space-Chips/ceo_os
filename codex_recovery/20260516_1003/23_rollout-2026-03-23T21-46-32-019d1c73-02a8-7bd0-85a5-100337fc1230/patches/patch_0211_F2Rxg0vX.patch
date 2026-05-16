@@ -1,0 +1,6 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/screen_time_manager/screen_time_manager_screen.dart
+@@
+-            context.push('/setup');
++            context.push('/setup?origin=screen-time');
+*** End Patch

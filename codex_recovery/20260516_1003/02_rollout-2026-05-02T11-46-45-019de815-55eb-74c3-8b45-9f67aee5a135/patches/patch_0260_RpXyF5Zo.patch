@@ -1,0 +1,13 @@
+*** Begin Patch
+*** Update File: lib/core/models/premium_models.dart
+@@
+     case 'onboarding':
+       return PremiumMessage(
+         title: isFr ? 'Passe en Premium' : 'Go Premium',
+         description: isFr
+-            ? 'Débloque WakeApp en illimité pour 2,99€ / mois. Tu peux annuler à tout moment dans les réglages Apple ID.'
+-            : 'Unlock WakeApp without limits for €2.99 / month. You can cancel anytime in your Apple ID settings.',
++            ? 'Débloque WakeApp en illimité. Abonnement annulable à tout moment dans les réglages Apple ID.'
++            : 'Unlock WakeApp without limits. Cancel anytime in your Apple ID subscription settings.',
+       );
+*** End Patch

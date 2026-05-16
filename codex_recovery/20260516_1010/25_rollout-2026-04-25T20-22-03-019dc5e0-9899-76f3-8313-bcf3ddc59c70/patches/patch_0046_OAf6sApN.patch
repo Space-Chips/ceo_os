@@ -1,0 +1,6 @@
+*** Begin Patch
+*** Update File: lib/features/control_center_setup/widgets/control_center_empty_state.dart
+@@
+-          LiquidButton(text: 'Choisir mes apps', onPressed: widget.onPrimary),
++          LiquidButton(label: 'Choisir mes apps', onPressed: widget.onPrimary),
+*** End Patch

@@ -1,0 +1,34 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/ios/FocusActivityMonitor/FocusActivityMonitorExtension.swift
+@@
+ private enum FocusMonitorShared {
+     static let appGroupId = "group.com.wakeapp.ceoos"
++    static let hostAppBundleId = "com.wakeapp.ceoos"
+@@
+     private func webDomainTokens(from domains: [String]) -> Set<WebDomainToken> {
+         var tokens = Set<WebDomainToken>()
+         for domain in normalizedDomains(domains) {
+             if let token = WebDomain(domain: domain).token {
+                 tokens.insert(token)
+@@
+         return tokens
+     }
++
++    private func selfApplicationToken() -> ApplicationToken? {
++        Application(bundleIdentifier: FocusMonitorShared.hostAppBundleId).token
++    }
+@@
+         if defaults?.bool(forKey: FocusMonitorShared.classicPauseEnabledStorageKey) ?? false {
+             selection.webDomainTokens.formUnion(
+                 webDomainTokens(
+                     from: defaults?.stringArray(forKey: FocusMonitorShared.classicPauseWebsiteDomainsStorageKey) ?? []
+                 )
+             )
+         }
++        if let selfToken = selfApplicationToken() {
++            selection.applicationTokens.remove(selfToken)
++        }
+         let hasSelection = !selection.applicationTokens.isEmpty
+             || !selection.categoryTokens.isEmpty
+             || !selection.webDomainTokens.isEmpty
+*** End Patch

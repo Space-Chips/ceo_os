@@ -1,0 +1,27 @@
+*** Begin Patch
+*** Update File: lib/features/home/home_screen.dart
+@@
+-              Future<void> openCustomizer() async {
+-                await context.push('/control-center-setup?edit=true');
+-                if (!mounted) return;
+-                await _loadControlCenterConfiguration();
+-                if (!mounted) return;
+-                _handleSourceDataChanged();
+-              }
+-
+               final controlSlots = _normalizeControlCenterSlots(
+                 _controlCenterConfiguration.slotItems,
+               );
+@@
+               _PrimaryAppCardData placeholderCard(int index) {
+                 return _PrimaryAppCardData(
+                   moduleId: 'empty_slot_$index',
+                   title: 'Ajouter',
+                   icon: CupertinoIcons.plus,
+                   active: false,
+-                  onTap: openCustomizer,
++                  onTap: () => unawaited(_openControlCenterCustomizer()),
+                   isPlaceholder: true,
+                 );
+               }
+*** End Patch

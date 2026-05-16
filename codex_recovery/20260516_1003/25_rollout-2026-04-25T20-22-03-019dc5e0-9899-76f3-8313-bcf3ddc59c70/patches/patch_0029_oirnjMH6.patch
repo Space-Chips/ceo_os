@@ -1,0 +1,23 @@
+*** Begin Patch
+*** Update File: lib/features/home/home_screen.dart
+@@
+     if (!mounted) return;
+     setState(() {
+       _enabledShortcuts = normalizedShortcuts;
+       _hideNoModulesMessage = hideNoModules;
+     });
+   }
++
++  Future<void> _loadControlCenterConfiguration() async {
++    final store = await ControlCenterSetupStore.create();
++    final config = await store.load();
++    final parsed = config.toState();
++    if (!mounted) return;
++    setState(() {
++      _controlCenterConfiguration = config;
++      _enabledDashboardWidgets = parsed.enabledDashboardWidgets;
++    });
++  }
+ 
+   void _openScreenTimeEntry() {
+*** End Patch

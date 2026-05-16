@@ -1,0 +1,9 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/home/stats_screen.dart
+@@
+-                  minSize: 0,
++                  minimumSize: Size.zero,
+@@
+-                      minSize: 0,
++                      minimumSize: Size.zero,
+*** End Patch

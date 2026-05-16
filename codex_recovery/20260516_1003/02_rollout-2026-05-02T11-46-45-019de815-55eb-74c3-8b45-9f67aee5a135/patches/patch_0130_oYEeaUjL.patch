@@ -1,0 +1,183 @@
+*** Begin Patch
+*** Update File: lib/core/widgets/home_widgets/widget_views.dart
+@@
+ class WidgetActionButton extends StatelessWidget {
+@@
+   @override
+   Widget build(BuildContext context) {
+@@
+     return Container(
+-      height: 86,
+-      padding: const EdgeInsets.fromLTRB(14, 14, 14, 12),
++      height: double.infinity,
++      padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
+       decoration: BoxDecoration(
+         borderRadius: BorderRadius.circular(22),
+         color: Color.alphaBlend(
+           accent.withValues(alpha: 0.14),
+           const Color(0xFF12141A),
+@@
+       child: Row(
+         children: [
+           Container(
+             width: 42,
+             height: 42,
+@@
+           const SizedBox(width: 12),
+           Expanded(
+             child: Column(
+               crossAxisAlignment: CrossAxisAlignment.start,
+               mainAxisAlignment: MainAxisAlignment.center,
+               children: [
+                 Text(
+                   title,
+                   maxLines: 1,
+                   overflow: TextOverflow.ellipsis,
+                   style: AppTypography.title3.copyWith(
+-                    fontSize: 16,
++                    fontSize: 16,
+                     fontWeight: FontWeight.w800,
+                     color: AppColors.label.withValues(alpha: 0.96),
+                     height: 1.05,
+                   ),
+                 ),
+                 const SizedBox(height: 6),
+                 Text(
+                   subtitle,
+                   maxLines: 1,
+                   overflow: TextOverflow.ellipsis,
+                   style: AppTypography.caption1.copyWith(
+                     fontSize: 12,
+                     fontWeight: FontWeight.w700,
+                     color: AppColors.secondaryLabel.withValues(alpha: 0.72),
+                     height: 1,
+                   ),
+                 ),
+               ],
+             ),
+           ),
+         ],
+       ),
+     );
+   }
+ }
+@@
+ class FocusWidgetSquareView extends StatelessWidget {
+@@
+   @override
+   Widget build(BuildContext context) {
+     return WidgetRoot(
+       padding: WidgetDesignTokens.padSquare,
+       decorationOverride: BoxDecoration(
+         borderRadius: BorderRadius.circular(WidgetDesignTokens.radiusOuter),
+         gradient: WidgetDesignTokens.focusGradient,
+         border: Border.all(
+           color: AppColors.borderStrong.withValues(alpha: 0.85),
+           width: 1,
+         ),
+       ),
+       child: Column(
+         crossAxisAlignment: CrossAxisAlignment.start,
+         children: [
+-          Text('Focus', style: WidgetDesignTokens.title),
+-          const Spacer(),
+-          WidgetActionButton(
+-            icon: CupertinoIcons.play_fill,
+-            title: language.t('widget_start_focus'),
+-            subtitle: '$durationMinutes min',
+-            variant: WidgetActionVariant.focus,
+-          ),
+-          const Spacer(),
+-          Text(
+-            language.t('widget_tap_to_open'),
+-            style: WidgetDesignTokens.subtitle.copyWith(
+-              color: AppColors.secondaryLabel.withValues(alpha: 0.65),
+-            ),
+-          ),
++          // Equal spacing: top edge == (title->button) == bottom edge.
++          Expanded(
++            child: Padding(
++              padding: const EdgeInsets.symmetric(vertical: 2),
++              child: Column(
++                crossAxisAlignment: CrossAxisAlignment.start,
++                children: [
++                  Text('Focus', style: WidgetDesignTokens.title),
++                  const SizedBox(height: 12),
++                  Expanded(
++                    child: WidgetActionButton(
++                      icon: CupertinoIcons.play_fill,
++                      title: language.t('widget_start_focus'),
++                      subtitle: '$durationMinutes min',
++                      variant: WidgetActionVariant.focus,
++                    ),
++                  ),
++                ],
++              ),
++            ),
++          ),
+         ],
+       ),
+     );
+   }
+ }
+@@
+ class BlackoutWidgetSquareView extends StatelessWidget {
+@@
+   @override
+   Widget build(BuildContext context) {
+     final hours = durationMinutes ~/ 60;
+     final label = hours >= 1 ? '$hours h' : '$durationMinutes min';
+     return WidgetRoot(
+       padding: WidgetDesignTokens.padSquare,
+       decorationOverride: BoxDecoration(
+         borderRadius: BorderRadius.circular(WidgetDesignTokens.radiusOuter),
+         gradient: WidgetDesignTokens.blackoutGradient,
+         border: Border.all(
+           color: AppColors.borderStrong.withValues(alpha: 0.85),
+           width: 1,
+         ),
+       ),
+       child: Column(
+         crossAxisAlignment: CrossAxisAlignment.start,
+         children: [
+-          Text('Blackout', style: WidgetDesignTokens.title),
+-          const Spacer(),
+-          WidgetActionButton(
+-            icon: CupertinoIcons.lock_fill,
+-            title: language.t('widget_start_blackout'),
+-            subtitle: label,
+-            variant: WidgetActionVariant.blackout,
+-          ),
+-          const Spacer(),
+-          Text(
+-            language.t('widget_tap_to_open'),
+-            style: WidgetDesignTokens.subtitle.copyWith(
+-              color: AppColors.secondaryLabel.withValues(alpha: 0.65),
+-            ),
+-          ),
++          Expanded(
++            child: Padding(
++              padding: const EdgeInsets.symmetric(vertical: 2),
++              child: Column(
++                crossAxisAlignment: CrossAxisAlignment.start,
++                children: [
++                  Text('Blackout', style: WidgetDesignTokens.title),
++                  const SizedBox(height: 12),
++                  Expanded(
++                    child: WidgetActionButton(
++                      icon: CupertinoIcons.lock_fill,
++                      title: language.t('widget_start_blackout'),
++                      subtitle: label,
++                      variant: WidgetActionVariant.blackout,
++                    ),
++                  ),
++                ],
++              ),
++            ),
++          ),
+         ],
+       ),
+     );
+   }
+ }
+*** End Patch

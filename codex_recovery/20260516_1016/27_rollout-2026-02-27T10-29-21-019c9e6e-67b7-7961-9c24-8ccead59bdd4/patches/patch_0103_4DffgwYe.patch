@@ -1,0 +1,227 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/event_types_screen.dart
+@@
+ class _EventTypesScreenState extends State<EventTypesScreen> {
+   final FeatureRepository _repo = FeatureRepository();
+   List<EventType> _types = [];
+   bool _loading = true;
+@@
+     await _load();
+   }
++
++  Color _colorFromHex(String? raw) {
++    if (raw == null || raw.isEmpty) return AppColors.primaryOrange;
++    var value = raw.trim().replaceAll('#', '');
++    if (value.length == 3) {
++      value = value.split('').map((c) => '$c$c').join();
++    }
++    if (value.length == 6) {
++      value = 'FF$value';
++    }
++    final parsed = int.tryParse(value, radix: 16);
++    if (parsed == null) return AppColors.primaryOrange;
++    return Color(parsed);
++  }
+@@
+           : SafeArea(
+-              child: ListView.builder(
+-                padding: const EdgeInsets.all(20),
+-                itemCount: _types.length,
+-                itemBuilder: (context, index) {
+-                  final t = _types[index];
+-                  return Padding(
+-                    padding: const EdgeInsets.only(bottom: 8),
+-                    child: GlassCard(
+-                      padding: const EdgeInsets.symmetric(
+-                        horizontal: 14,
+-                        vertical: 12,
+-                      ),
+-                      borderRadius: 14,
+-                      child: Row(
+-                        children: [
+-                          Container(
+-                            width: 10,
+-                            height: 10,
+-                            decoration: BoxDecoration(
+-                              color: AppColors.primaryOrange,
+-                              borderRadius: BorderRadius.circular(5),
+-                            ),
+-                          ),
+-                          const SizedBox(width: 10),
+-                          Expanded(
+-                            child: Text(
+-                              (t.name ?? 'UNTITLED').toUpperCase(),
+-                              style: AppTypography.mono.copyWith(fontSize: 11),
+-                            ),
+-                          ),
+-                          CupertinoButton(
+-                            padding: EdgeInsets.zero,
+-                            onPressed: () async {
+-                              await _repo.deleteEventType(t.id);
+-                              await _load();
+-                            },
+-                            child: Icon(
+-                              CupertinoIcons.delete,
+-                              size: 16,
+-                              color: AppColors.error,
++              child: ListView(
++                padding: const EdgeInsets.all(20),
++                children: [
++                  _glowSurface(
++                    glowColor: AppColors.primaryOrange.withValues(alpha: 0.14),
++                    borderRadius: 16,
++                    child: GlassCard(
++                      padding: const EdgeInsets.all(14),
++                      borderRadius: 16,
++                      border: Border.all(
++                        color: AppColors.primaryOrange.withValues(alpha: 0.22),
++                        width: 0.7,
++                      ),
++                      child: Row(
++                        children: [
++                          Icon(
++                            CupertinoIcons.square_grid_2x2_fill,
++                            size: 16,
++                            color: AppColors.primaryOrange,
++                          ),
++                          const SizedBox(width: 8),
++                          Expanded(
++                            child: Text(
++                              'Manage taxonomy for calendar event classification.',
++                              style: AppTypography.mono.copyWith(
++                                fontSize: 10,
++                                color: AppColors.secondaryLabel,
++                              ),
++                            ),
++                          ),
++                          Container(
++                            padding: const EdgeInsets.symmetric(
++                              horizontal: 7,
++                              vertical: 3,
++                            ),
++                            decoration: BoxDecoration(
++                              borderRadius: BorderRadius.circular(8),
++                              color: AppColors.primaryOrange.withValues(
++                                alpha: 0.12,
++                              ),
++                            ),
++                            child: Text(
++                              '${_types.length}',
++                              style: AppTypography.mono.copyWith(
++                                fontSize: 9,
++                                color: AppColors.primaryOrange,
++                                fontWeight: FontWeight.bold,
++                              ),
+                             ),
+                           ),
+                         ],
+                       ),
+                     ),
+-                  );
+-                },
++                  ),
++                  const SizedBox(height: 12),
++                  if (_types.isEmpty)
++                    GlassCard(
++                      padding: const EdgeInsets.all(16),
++                      borderRadius: 14,
++                      child: Text(
++                        'No event type configured yet.',
++                        style: AppTypography.mono.copyWith(
++                          fontSize: 11,
++                          color: AppColors.tertiaryLabel,
++                        ),
++                      ),
++                    )
++                  else
++                    ..._types.map(
++                      (t) => Padding(
++                        padding: const EdgeInsets.only(bottom: 8),
++                        child: GlassCard(
++                          padding: const EdgeInsets.symmetric(
++                            horizontal: 14,
++                            vertical: 12,
++                          ),
++                          borderRadius: 14,
++                          child: Row(
++                            children: [
++                              Container(
++                                width: 10,
++                                height: 10,
++                                decoration: BoxDecoration(
++                                  color: _colorFromHex(t.color),
++                                  borderRadius: BorderRadius.circular(5),
++                                ),
++                              ),
++                              const SizedBox(width: 10),
++                              Expanded(
++                                child: Column(
++                                  crossAxisAlignment: CrossAxisAlignment.start,
++                                  children: [
++                                    Text(
++                                      (t.name ?? 'UNTITLED').toUpperCase(),
++                                      style: AppTypography.mono.copyWith(
++                                        fontSize: 11,
++                                        fontWeight: FontWeight.bold,
++                                      ),
++                                    ),
++                                    const SizedBox(height: 4),
++                                    Text(
++                                      '${(t.icon ?? 'calendar').toUpperCase()} • ${(t.color ?? '#FF5500').toUpperCase()}',
++                                      style: AppTypography.mono.copyWith(
++                                        fontSize: 9,
++                                        color: AppColors.tertiaryLabel,
++                                      ),
++                                    ),
++                                  ],
++                                ),
++                              ),
++                              CupertinoButton(
++                                padding: EdgeInsets.zero,
++                                onPressed: () async {
++                                  await _repo.deleteEventType(t.id);
++                                  await _load();
++                                },
++                                child: Icon(
++                                  CupertinoIcons.delete,
++                                  size: 16,
++                                  color: AppColors.error,
++                                ),
++                              ),
++                            ],
++                          ),
++                        ),
++                      ),
++                    ),
++                ],
+               ),
+             ),
+     );
+   }
++
++  Widget _glowSurface({
++    required Widget child,
++    required Color glowColor,
++    double borderRadius = 16,
++  }) {
++    return Stack(
++      children: [
++        Positioned.fill(
++          child: IgnorePointer(
++            child: Container(
++              margin: const EdgeInsets.all(8),
++              decoration: BoxDecoration(
++                borderRadius: BorderRadius.circular(borderRadius),
++                boxShadow: [
++                  BoxShadow(color: glowColor, blurRadius: 28, spreadRadius: 1),
++                ],
++              ),
++            ),
++          ),
++        ),
++        child,
++      ],
++    );
++  }
+ }
+*** End Patch

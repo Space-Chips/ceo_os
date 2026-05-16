@@ -1,0 +1,106 @@
+*** Begin Patch
+*** Update File: lib/features/home/home_screen.dart
+@@
+               final habitsCount =
+                   data?.totalHabits ?? habitProvider.habits.length;
+               final scoreBundle = data == null
+                   ? null
+                   : PerformanceScoreService.build(dashboard: data);
+-              final appCards = <_PrimaryAppCardData>[
+-                _PrimaryAppCardData(
+-                  moduleId: 'Pareto',
+-                  title: language.t('tasks'),
+-                  icon: CupertinoIcons.check_mark_circled,
+-                  active: _isEnabled('Pareto'),
+-                  badgeValue: pendingTasks,
+-                  onTap: () => unawaited(_pushAndRefresh('/tasks')),
+-                  onQuickAdd: _openQuickAddTask,
+-                ),
+-                _PrimaryAppCardData(
+-                  moduleId: 'Habits',
+-                  title: language.t('habits'),
+-                  icon: CupertinoIcons.checkmark_circle,
+-                  active: _isEnabled('Habits'),
+-                  badgeValue: habitsCount,
+-                  onTap: () => unawaited(_pushAndRefresh('/habits')),
+-                  onQuickAdd: _openQuickAddHabit,
+-                ),
+-                _PrimaryAppCardData(
+-                  moduleId: 'Calendar',
+-                  title: language.t('calendar'),
+-                  icon: CupertinoIcons.calendar,
+-                  active: _isEnabled('Calendar'),
+-                  onTap: () => unawaited(_pushAndRefresh('/calendar')),
+-                  onQuickAdd: _openQuickAddEvent,
+-                ),
+-                _PrimaryAppCardData(
+-                  moduleId: 'ScreenTimeManager',
+-                  title: language.t('screen_time_manager'),
+-                  icon: CupertinoIcons.shield,
+-                  active: _isEnabled('ScreenTimeManager'),
+-                  onTap: _openScreenTimeEntry,
+-                ),
+-              ];
+-              final visibleAppCards = appCards
+-                  .where((card) => card.active)
+-                  .toList(growable: false);
+-              final shortcutCards = <_PrimaryAppCardData>[
+-                _PrimaryAppCardData(
+-                  moduleId: 'rank',
+-                  title: language.t('rank'),
+-                  icon: CupertinoIcons.star_fill,
+-                  active: true,
+-                  onTap: () => unawaited(_pushAndRefresh('/rank')),
+-                ),
+-                if (_showSocialScreenTimeSurfaces)
+-                  _PrimaryAppCardData(
+-                    moduleId: 'leaderboard',
+-                    title: language.t('leaderboard'),
+-                    icon: CupertinoIcons.rosette,
+-                    active: true,
+-                    onTap: () => unawaited(_pushAndRefresh('/leaderboard')),
+-                  ),
+-                _PrimaryAppCardData(
+-                  moduleId: 'focus',
+-                  title: language.t('focus_mode'),
+-                  icon: CupertinoIcons.bolt_fill,
+-                  active: true,
+-                  onTap: () => unawaited(_pushAndRefresh('/focus')),
+-                ),
+-                if (_showSocialScreenTimeSurfaces)
+-                  _PrimaryAppCardData(
+-                    moduleId: 'family_time',
+-                    title: language.t('family_time'),
+-                    icon: CupertinoIcons.person_2_fill,
+-                    active: true,
+-                    onTap: () => unawaited(_pushAndRefresh('/family-time')),
+-                  ),
+-                _PrimaryAppCardData(
+-                  moduleId: 'block_apps',
+-                  title: language.t('block_apps_sites'),
+-                  icon: CupertinoIcons.shield_fill,
+-                  active: true,
+-                  onTap: _openScreenTimeEntry,
+-                ),
+-                _PrimaryAppCardData(
+-                  moduleId: 'streak',
+-                  title: language.t('streak'),
+-                  icon: CupertinoIcons.flame_fill,
+-                  active: true,
+-                  onTap: () => unawaited(_pushAndRefresh('/win-streak')),
+-                ),
+-                _PrimaryAppCardData(
+-                  moduleId: 'notes',
+-                  title: language.t('notes'),
+-                  icon: CupertinoIcons.doc_text_fill,
+-                  active: true,
+-                  onTap: () => unawaited(_pushAndRefresh('/notes')),
+-                ),
+-              ];
+-              final visibleShortcutCards = shortcutCards
+-                  .where((card) => _enabledShortcuts.contains(card.moduleId))
+-                  .toList(growable: false);
+               final controlSlots = _normalizeControlCenterSlots(
+                 _controlCenterConfiguration.slotItems,
+               );
+*** End Patch

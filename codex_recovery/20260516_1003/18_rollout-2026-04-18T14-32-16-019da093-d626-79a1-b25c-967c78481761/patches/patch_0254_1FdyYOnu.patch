@@ -1,0 +1,62 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/calendar/calendar_screen.dart
+@@
+   String _t(String key) => context.read<LanguageProvider>().t(key);
+   String _localeCode() => context.read<LanguageProvider>().languageCode;
++
++  String _safeDateFormat(
++    String pattern,
++    DateTime date, {
++    String? fallbackPattern,
++  }) {
++    try {
++      return DateFormat(pattern, _localeCode()).format(date);
++    } catch (_) {
++      final candidate = fallbackPattern ?? pattern;
++      try {
++        return DateFormat(candidate, 'en').format(date);
++      } catch (_) {
++        return DateFormat('yMMMd', 'en').format(date);
++      }
++    }
++  }
+@@
+   String _headerLabel() {
+     if (_displayMode == _CalendarDisplayMode.yearly) {
+       return '${_currentDate.year}';
+     }
+     if (_displayMode == _CalendarDisplayMode.monthly) {
+-      return DateFormat('MMMM yyyy', _localeCode()).format(_currentDate);
++      return _safeDateFormat('MMMM yyyy', _currentDate);
+     }
+-    return DateFormat('MMMM d, yyyy', _localeCode()).format(_currentDate);
++    return _safeDateFormat(
++      'MMMM d, yyyy',
++      _currentDate,
++      fallbackPattern: 'MMM d, yyyy',
++    );
+   }
+@@
+                         Text(
+-                          DateFormat('MMM', _localeCode()).format(monthDate),
++                          _safeDateFormat(
++                            'MMM',
++                            monthDate,
++                            fallbackPattern: 'LLL',
++                          ),
+                           style: AppTypography.body.copyWith(
+                             fontSize: 16,
+                             fontWeight: FontWeight.w600,
+                             color: AppColors.label,
+@@
+   Widget _buildDailyView(List<CalendarEvent> events) {
+-    final dayLabel = DateFormat(
+-      'EEEE, MMM d',
+-      _localeCode(),
+-    ).format(_currentDate);
++    final dayLabel = _safeDateFormat(
++      'EEEE, MMM d',
++      _currentDate,
++      fallbackPattern: 'EEE, MMM d',
++    );
+*** End Patch

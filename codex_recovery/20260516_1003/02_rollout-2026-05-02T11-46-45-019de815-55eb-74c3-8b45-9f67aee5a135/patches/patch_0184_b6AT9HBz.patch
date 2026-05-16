@@ -1,0 +1,45 @@
+*** Begin Patch
+*** Update File: ios/CeoWidgets/CeoHomeWidget.swift
+@@
+   @ViewBuilder
+   private func contentView(defaults: UserDefaults) -> some View {
+     switch entry.mode {
+     case .dashboard:
+-      DashboardSmallNativeView(
+-        todoDone: defaults.integer(forKey: keyDashboardTodoDone),
+-        todoTotal: max(0, defaults.integer(forKey: keyDashboardTodoTotal)),
+-        habitsDone: defaults.integer(forKey: keyDashboardHabitsDone),
+-        habitsTotal: max(0, defaults.integer(forKey: keyDashboardHabitsTotal)),
+-        events: defaults.integer(forKey: keyDashboardEventsCount),
+-        progress: min(100, max(0, defaults.integer(forKey: keyDashboardProgress))),
+-        message: defaults.string(forKey: keyDashboardMessage) ?? "Keep going",
+-      )
++      let todoDone = defaults.integer(forKey: keyDashboardTodoDone)
++      let todoTotal = max(0, defaults.integer(forKey: keyDashboardTodoTotal))
++      let habitsDone = defaults.integer(forKey: keyDashboardHabitsDone)
++      let habitsTotal = max(0, defaults.integer(forKey: keyDashboardHabitsTotal))
++      let events = defaults.integer(forKey: keyDashboardEventsCount)
++      let progress = min(100, max(0, defaults.integer(forKey: keyDashboardProgress)))
++      let message = defaults.string(forKey: keyDashboardMessage) ?? "Keep going"
++      if entry.family == .systemMedium {
++        DashboardMediumNativeView(
++          todoDone: todoDone,
++          todoTotal: todoTotal,
++          habitsDone: habitsDone,
++          habitsTotal: habitsTotal,
++          events: events,
++          progress: progress,
++          nextText: message,
++        )
++      } else {
++        DashboardSmallNativeView(
++          todoDone: todoDone,
++          todoTotal: todoTotal,
++          habitsDone: habitsDone,
++          habitsTotal: habitsTotal,
++          events: events,
++          progress: progress,
++          message: message,
++        )
++      }
+*** End Patch

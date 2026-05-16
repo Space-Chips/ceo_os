@@ -1,0 +1,24 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/focus/focus_screen.dart
+@@
+         if (!provider.isAuthorized) ...[
+           const SizedBox(height: 8),
+           Text(
+             'Native blocking permissions are not enabled.\nFocus timer still works.',
+@@
+               ),
+             ),
+           ),
++        ] else if (provider.blockLists.isEmpty ||
++            provider.activeBlockListId == null) ...[
++          const SizedBox(height: 8),
++          Text(
++            'No block list is active yet.\nFocus will run, but nothing will be blocked until you choose apps or categories.',
++            textAlign: TextAlign.center,
++            style: AppTypography.mono.copyWith(
++              fontSize: 11,
++              color: AppColors.warning,
++            ),
++          ),
+         ],
+*** End Patch

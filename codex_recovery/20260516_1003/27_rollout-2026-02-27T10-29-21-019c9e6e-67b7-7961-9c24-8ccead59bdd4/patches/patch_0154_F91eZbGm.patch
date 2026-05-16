@@ -1,0 +1,13 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/screen_time_manager/screen_time_manager_screen.dart
+@@
+                                   child: _clusterTile(
+                                     label: language.t('rank'),
+-                                    value: (_rank?.rankName ?? 'Starter')
++                                    value: (_rank?.rankName ?? language.t(
++                                      'starter',
++                                    ))
+                                         .toUpperCase(),
+                                     tone: AppColors.warning,
+                                   ),
+*** End Patch

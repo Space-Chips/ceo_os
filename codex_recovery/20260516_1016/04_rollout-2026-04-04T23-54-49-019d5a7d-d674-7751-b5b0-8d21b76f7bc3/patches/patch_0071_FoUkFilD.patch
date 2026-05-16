@@ -1,0 +1,59 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/providers/ceo_mode_provider.dart
+@@
+-import '../models/block_list_model.dart';
+ import '../models/premium_models.dart';
+ import '../repositories/ceo_mode_repository.dart';
+-import '../repositories/focus_repository.dart';
+ import '../repositories/premium_repository.dart';
+ import '../services/focus_service.dart';
+ import '../services/stats_engine.dart';
+ import 'package:flutter/widgets.dart';
+@@
+   CeoModeProvider({
+     CeoModeRepository? ceoModeRepository,
+-    FocusRepository? focusRepository,
+     FocusService? focusService,
+     PremiumRepository? premiumRepository,
+   }) : _ceoModeRepository = ceoModeRepository ?? CeoModeRepository(),
+-       _focusRepository = focusRepository ?? FocusRepository(),
+        _focusService = focusService ?? FocusService(),
+        _premiumRepository = premiumRepository ?? PremiumRepository() {
+     Future.microtask(initialize);
+   }
+ 
+   final CeoModeRepository _ceoModeRepository;
+-  final FocusRepository _focusRepository;
+   final FocusService _focusService;
+   final PremiumRepository _premiumRepository;
+@@
+   Future<bool> _activateShielding() async {
+-    final fallbackList = await _resolveFallbackBlockList();
+-    if (fallbackList == null ||
+-        (fallbackList.blockedPackageNames.isEmpty &&
+-            fallbackList.blockedCategories.isEmpty)) {
+-      return false;
+-    }
+-
+-    final strictApplied = await _focusService.startCeoShield(
+-      packageNames: fallbackList.blockedPackageNames,
+-      categories: fallbackList.blockedCategories,
+-    );
+-    if (strictApplied) return true;
+-
+-    await _focusService.startShield(
+-      fallbackList.blockedPackageNames,
+-      fallbackList.blockedCategories,
+-    );
+-    return true;
+-  }
+-
+-  Future<BlockList?> _resolveFallbackBlockList() async {
+-    final lists = await _focusRepository.getBlockLists();
+-    if (lists.isEmpty) return null;
+-    final active = lists.where((l) => l.isActive).toList();
+-    if (active.isNotEmpty) return active.first;
+-    return lists.first;
++    return _focusService.startCeoShield();
+   }
+*** End Patch

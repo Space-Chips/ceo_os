@@ -1,0 +1,36 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/repositories/feature_repository.dart
+@@
+   Future<void> setAdultContentShieldEnabled(bool enabled) async {
+     if (enabled) {
+       final existing = await _client
+           .from('blocked_websites')
+@@
+           'time_limit_minutes': 0,
+         });
+       }
+-      return;
++    } else {
++      await _client
++          .from('blocked_websites')
++          .delete()
++          .eq('created_by', _currentUserId)
++          .eq('url_domain', adultContentShieldMarker);
+     }
+ 
+-    await _client
+-        .from('blocked_websites')
+-        .delete()
+-        .eq('created_by', _currentUserId)
+-        .eq('url_domain', adultContentShieldMarker);
++    // Keep the native focus blocker in sync so this toggle has direct effect.
++    try {
++      await _client
++          .from('block_lists')
++          .update({'adult_blocking': enabled})
++          .eq('created_by', _currentUserId);
++    } catch (_) {
++      // Ignore if block_lists is not available in this environment.
++    }
+   }
+*** End Patch

@@ -1,0 +1,35 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/components/liquid_button.dart
+@@
+   void initState() {
+     super.initState();
+     _controller = AnimationController(
+       vsync: this,
+       duration: const Duration(milliseconds: 150),
+@@
+     _scaleAnimation = Tween<double>(
+       begin: 1.0,
+       end: 0.96,
+     ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutBack));
++    _controller.addListener(() {
++      if (!mounted) return;
++      final pressed = _controller.value > 0.01;
++      if (_isPressed != pressed) {
++        setState(() => _isPressed = pressed);
++      }
++    });
+   }
+@@
+-  @override
+-  void didChangeDependencies() {
+-    super.didChangeDependencies();
+-    _controller.addStatusListener((status) {
+-      if (!mounted) return;
+-      final pressed = status == AnimationStatus.forward;
+-      if (_isPressed != pressed) {
+-        setState(() => _isPressed = pressed);
+-      }
+-    });
+-  }
+ }
+*** End Patch

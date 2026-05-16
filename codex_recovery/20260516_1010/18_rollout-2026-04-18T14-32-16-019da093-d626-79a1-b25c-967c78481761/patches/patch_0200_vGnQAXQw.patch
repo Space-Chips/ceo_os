@@ -1,0 +1,71 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/providers/language_provider.dart
+@@
+ import '../repositories/settings_repository.dart';
+ import '../utils/app_logger.dart';
++import 'language_overrides.dart';
+@@
+   String t(String key) {
+-    final table =
+-        _translations[_languageCode] ?? _translations[_defaultLanguage]!;
+-    final raw = table[key] ?? (_translations[_defaultLanguage]?[key] ?? key);
+-    return raw.replaceAll('_', ' ').replaceAll(RegExp(r'\s+'), ' ').trim();
++    final raw = _resolveRawTranslation(key);
++    final normalized = raw
++        .replaceAll('_', ' ')
++        .replaceAll(RegExp(r'\s+'), ' ')
++        .trim();
++    return _normalizeLegacyCase(normalized);
++  }
++
++  String _resolveRawTranslation(String key) {
++    final localeOverride = kTranslationOverrides[_languageCode];
++    if (localeOverride != null && localeOverride.containsKey(key)) {
++      return localeOverride[key]!;
++    }
++
++    final localeTable = _translations[_languageCode];
++    if (localeTable != null && localeTable.containsKey(key)) {
++      return localeTable[key]!;
++    }
++
++    final defaultOverride = kTranslationOverrides[_defaultLanguage];
++    if (defaultOverride != null && defaultOverride.containsKey(key)) {
++      return defaultOverride[key]!;
++    }
++
++    final defaultTable = _translations[_defaultLanguage];
++    if (defaultTable != null && defaultTable.containsKey(key)) {
++      return defaultTable[key]!;
++    }
++
++    return key;
++  }
++
++  String _normalizeLegacyCase(String value) {
++    final hasLowercase = RegExp(r'[a-zà-öø-ÿа-я]').hasMatch(value);
++    final hasUppercase = RegExp(r'[A-ZÀ-ÖØ-ÞА-Я]').hasMatch(value);
++    if (hasLowercase || !hasUppercase) return value;
++
++    final words = value.split(' ');
++    if (words.isEmpty) return value;
++    final normalizedWords = <String>[];
++    for (final word in words) {
++      if (word.isEmpty) continue;
++      if (word.contains('{') || word.contains('}')) {
++        normalizedWords.add(word);
++        continue;
++      }
++      final compact = word.replaceAll(RegExp(r'[^A-Za-zÀ-ÖØ-ÞА-Я0-9]'), '');
++      if (compact.length <= 2 && RegExp(r'^[A-Z0-9]+$').hasMatch(compact)) {
++        normalizedWords.add(word);
++        continue;
++      }
++      final lower = word.toLowerCase();
++      final lead = lower[0].toUpperCase();
++      normalizedWords.add('$lead${lower.substring(1)}');
++    }
++
++    return normalizedWords.join(' ');
+   }
+*** End Patch

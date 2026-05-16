@@ -1,0 +1,8 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/pubspec.yaml
+@@
+   installed_apps: ^2.1.1
+   workmanager: ^0.9.0+3
+   icons_launcher: ^3.0.3
++  purchases_flutter: ^9.3.0
+*** End Patch

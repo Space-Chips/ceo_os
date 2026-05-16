@@ -1,0 +1,11 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/theme/app_colors.dart
+@@
+   static Color get accent => ThemeRuntime.preset.colors.accent;
+   static Color get accentSoft => ThemeRuntime.preset.colors.accentSoft;
++  static Color get accentSecondary => Color.lerp(accent, backgroundLight, isDark ? 0.22 : 0.32)!;
+@@
+   static Color get primaryOrange => accent;
+   static Color get orangeDim => accentSoft;
+-  static Color get accentSecondary => accentSoft;
+*** End Patch

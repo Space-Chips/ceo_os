@@ -1,0 +1,49 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/components/ambient_backdrop.dart
+@@
+                 colors: [
+                   AppColors.ambientTint.withValues(
+-                    alpha: AppColors.isDark ? 0.09 : 0.05,
++                    alpha: AppColors.isDark ? 0.09 : 0.02,
+                   ),
+                   AppColors.overlayScrim.withValues(alpha: 0),
+                   AppColors.sectionBackground.withValues(
+-                    alpha: AppColors.isDark ? 0.22 : 0.08,
++                    alpha: AppColors.isDark ? 0.22 : 0.05,
+                   ),
+                 ],
+@@
+             size: 320,
+             color: AppColors.ambientTint.withValues(
+-              alpha: AppColors.isDark ? 0.1 : 0.08,
++              alpha: AppColors.isDark ? 0.1 : 0.032,
+             ),
+           ),
+         ),
+@@
+             size: 280,
+             color: AppColors.cardBackgroundAlt.withValues(
+-              alpha: AppColors.isDark ? 0.08 : 0.05,
++              alpha: AppColors.isDark ? 0.08 : 0.035,
+             ),
+           ),
+         ),
+@@
+                 strength: AppColors.isDark ? 0.013 : 0.009,
++                strength: AppColors.isDark ? 0.013 : 0.007,
+               ),
+             ),
+           ),
+@@
+                   colors: [
+                     AppColors.overlayScrim.withValues(
+-                      alpha: AppColors.isDark ? 0.16 : 0.08,
++                      alpha: AppColors.isDark ? 0.16 : 0.05,
+                     ),
+                     AppColors.overlayScrim.withValues(alpha: 0),
+                     AppColors.overlayScrim.withValues(
+-                      alpha: AppColors.isDark ? 0.36 : 0.14,
++                      alpha: AppColors.isDark ? 0.36 : 0.09,
+                     ),
+                   ],
+*** End Patch

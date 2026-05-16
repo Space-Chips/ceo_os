@@ -1,0 +1,9 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/focus/focus_screen.dart
+@@
+ import '../../components/components.dart';
+ import '../../core/models/user_models.dart';
+ import '../../core/providers/focus_provider.dart';
++import '../../core/providers/language_provider.dart';
+ import '../../core/repositories/feature_repository.dart';
+*** End Patch

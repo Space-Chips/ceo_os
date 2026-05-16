@@ -1,0 +1,58 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/auth/signup_screen.dart
+@@
+ import 'package:flutter/cupertino.dart';
+ import 'package:flutter/material.dart';
+ import 'package:go_router/go_router.dart';
+ import 'package:provider/provider.dart';
+ import '../../components/components.dart';
++import '../../core/models/onboarding_models.dart';
+ import '../../core/providers/auth_provider.dart';
++import '../../core/providers/theme_provider.dart';
+ import '../../core/theme/app_colors.dart';
+ import '../../core/theme/app_typography.dart';
+@@
+ class _SignupScreenState extends State<SignupScreen> {
+   final _nameCtrl = TextEditingController();
+   final _emailCtrl = TextEditingController();
+   final _passCtrl = TextEditingController();
+   bool _loading = false;
++  OnboardingSetupData? _setupData;
++  bool _didHydrateSetup = false;
+@@
+   @override
+   void dispose() {
+@@
+     super.dispose();
+   }
++
++  @override
++  void didChangeDependencies() {
++    super.didChangeDependencies();
++    if (_didHydrateSetup) return;
++    final state = GoRouterState.of(context);
++    final extra = state.extra;
++    if (extra is OnboardingSetupData) {
++      _setupData = extra;
++      context.read<ThemeProvider>().setPendingOnboardingSetup(extra);
++    }
++    _didHydrateSetup = true;
++  }
+@@
+   Future<void> _signup() async {
+@@
+     setState(() => _loading = true);
+     try {
+       await context.read<AuthProvider>().signup(
+             _nameCtrl.text,
+             _emailCtrl.text,
+             _passCtrl.text,
+           );
++      if (_setupData != null) {
++        context.read<ThemeProvider>().setPendingOnboardingSetup(_setupData!);
++      }
++      await context.read<ThemeProvider>().persistPendingOnboardingSetup();
+     } catch (e) {
+       _showError(e);
+     } finally {
+*** End Patch

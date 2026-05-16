@@ -1,0 +1,9 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/screen_time_screen.dart
+@@
+-  Future<void> _openAndroidBlockedAppsEditor({String initialQuery = ''}) async {
++  Future<void> _openAndroidBlockedAppsEditor() async {
+@@
+-        initialQuery: initialQuery,
++        initialQuery: '',
+*** End Patch

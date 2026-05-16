@@ -1,0 +1,54 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/android/app/src/main/kotlin/com/wakeapp/ceoos/BrowserBlockingOverlay.kt
+@@
+     private var attached = false
+     private var lastTop = -1
+     private var lastHeight = -1
+     private var lastDomain: String? = null
+     private var lastReason: String? = null
++    private var lastResolvedTopInset = -1
+@@
+                 windowManager.addView(view, layout)
+                 attached = true
+                 lastTop = layout.y
+                 lastHeight = layout.height
++                lastResolvedTopInset = layout.y
+                 return
+@@
+         val geometryChanged = layout.y != lastTop || layout.height != lastHeight
+         if (geometryChanged) {
+             try {
+                 windowManager.updateViewLayout(view, layout)
+                 lastTop = layout.y
+                 lastHeight = layout.height
++                lastResolvedTopInset = layout.y
+             } catch (_: Exception) {
+             }
+         }
+@@
+             lastTop = -1
+             lastHeight = -1
++            lastResolvedTopInset = -1
+             lastDomain = null
+             lastReason = null
+         }
+@@
+     private fun resolveTopInset(snapshot: ForegroundSnapshot, screenHeight: Int): Int {
+         val toolbarBottom = snapshot.browserToolbarBottomPx ?: -1
+-        val explicit = if (toolbarBottom in 1 until (screenHeight / 2)) {
++        var explicit = if (toolbarBottom in 1 until (screenHeight / 2)) {
+             toolbarBottom + dp(4)
+         } else {
+             -1
+         }
+-        if (explicit > 0) return explicit
++        if (explicit > 0) {
++            if (lastResolvedTopInset > 0 && kotlin.math.abs(explicit - lastResolvedTopInset) <= dp(6)) {
++                explicit = lastResolvedTopInset
++            }
++            return explicit
++        }
++        if (lastResolvedTopInset > 0) return lastResolvedTopInset
+         return dp(116) + statusBarHeight()
+     }
+*** End Patch

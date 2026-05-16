@@ -1,0 +1,183 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/debug/theme_preview_screen.dart
+@@
+   @override
+   Widget build(BuildContext context) {
+     return GlassCard(
+       borderRadius: 24,
+       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+       gradientColors: [AppColors.sectionBackground, AppColors.background],
+-      child: Row(
+-        children: [
+-          _CircleControl(
+-            child: Icon(
+-              CupertinoIcons.person_fill,
+-              size: 16,
+-              color: AppColors.secondaryLabel,
+-            ),
+-          ),
+-          const SizedBox(width: 10),
+-          Expanded(
+-            child: Container(
+-              height: 42,
+-              padding: const EdgeInsets.symmetric(horizontal: 14),
+-              decoration: BoxDecoration(
+-                borderRadius: BorderRadius.circular(16),
+-                color: AppColors.accentSurfaceSoft,
+-                border: Border.all(color: AppColors.activeBorder, width: 1),
+-              ),
+-              child: Row(
+-                children: [
+-                  Container(
+-                    width: 9,
+-                    height: 9,
+-                    decoration: BoxDecoration(
+-                      shape: BoxShape.circle,
+-                      color: AppColors.rankAccent,
+-                    ),
+-                  ),
+-                  const SizedBox(width: 8),
+-                  Text(
+-                    'STARTER',
+-                    style: AppTypography.callout.copyWith(
+-                      fontSize: 14,
+-                      fontWeight: FontWeight.w600,
+-                      color: AppColors.label,
+-                    ),
+-                  ),
+-                ],
+-              ),
+-            ),
+-          ),
+-          const SizedBox(width: 10),
+-          const _SquareControl(icon: CupertinoIcons.bolt_fill),
+-          const SizedBox(width: 8),
+-          const _SquareControl(icon: CupertinoIcons.doc_text_fill),
+-          const SizedBox(width: 8),
+-          Container(
+-            height: 40,
+-            padding: const EdgeInsets.symmetric(horizontal: 12),
+-            decoration: BoxDecoration(
+-              borderRadius: BorderRadius.circular(999),
+-              color: AppColors.topBarControlBackground,
+-              border: Border.all(color: AppColors.topBarControlBorder, width: 1),
+-            ),
+-            child: Row(
+-              children: [
+-                Icon(
+-                  CupertinoIcons.flame_fill,
+-                  size: 14,
+-                  color: AppColors.rankAccent,
+-                ),
+-                const SizedBox(width: 8),
+-                Text(
+-                  '7',
+-                  style: AppTypography.callout.copyWith(
+-                    fontSize: 13,
+-                    fontWeight: FontWeight.w700,
+-                    color: AppColors.label,
+-                  ),
+-                ),
+-              ],
+-            ),
+-          ),
+-        ],
+-      ),
++      child: Row(
++        children: [
++          _CircleControl(
++            child: Icon(
++              CupertinoIcons.person_fill,
++              size: 16,
++              color: AppColors.secondaryLabel,
++            ),
++          ),
++          const SizedBox(width: 10),
++          Expanded(
++            child: Container(
++              height: 42,
++              padding: const EdgeInsets.symmetric(horizontal: 12),
++              decoration: BoxDecoration(
++                borderRadius: BorderRadius.circular(16),
++                color: AppColors.accentSurfaceSoft,
++                border: Border.all(color: AppColors.activeBorder, width: 1),
++              ),
++              child: Row(
++                children: [
++                  Container(
++                    width: 9,
++                    height: 9,
++                    decoration: BoxDecoration(
++                      shape: BoxShape.circle,
++                      color: AppColors.rankAccent,
++                    ),
++                  ),
++                  const SizedBox(width: 8),
++                  Expanded(
++                    child: Text(
++                      'STARTER',
++                      maxLines: 1,
++                      overflow: TextOverflow.ellipsis,
++                      style: AppTypography.callout.copyWith(
++                        fontSize: 14,
++                        fontWeight: FontWeight.w600,
++                        color: AppColors.label,
++                      ),
++                    ),
++                  ),
++                ],
++              ),
++            ),
++          ),
++          const SizedBox(width: 10),
++          Flexible(
++            child: SingleChildScrollView(
++              scrollDirection: Axis.horizontal,
++              physics: const BouncingScrollPhysics(),
++              child: Row(
++                mainAxisSize: MainAxisSize.min,
++                children: [
++                  const _SquareControl(icon: CupertinoIcons.bolt_fill),
++                  const SizedBox(width: 8),
++                  const _SquareControl(icon: CupertinoIcons.doc_text_fill),
++                  const SizedBox(width: 8),
++                  Container(
++                    height: 40,
++                    padding: const EdgeInsets.symmetric(horizontal: 12),
++                    decoration: BoxDecoration(
++                      borderRadius: BorderRadius.circular(999),
++                      color: AppColors.topBarControlBackground,
++                      border: Border.all(
++                        color: AppColors.topBarControlBorder,
++                        width: 1,
++                      ),
++                    ),
++                    child: Row(
++                      children: [
++                        Icon(
++                          CupertinoIcons.flame_fill,
++                          size: 14,
++                          color: AppColors.rankAccent,
++                        ),
++                        const SizedBox(width: 8),
++                        Text(
++                          '7',
++                          style: AppTypography.callout.copyWith(
++                            fontSize: 13,
++                            fontWeight: FontWeight.w700,
++                            color: AppColors.label,
++                          ),
++                        ),
++                      ],
++                    ),
++                  ),
++                ],
++              ),
++            ),
++          ),
++        ],
++      ),
+     );
+   }
+ }
+*** End Patch

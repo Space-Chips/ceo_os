@@ -1,0 +1,16 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/providers/ceo_mode_provider.dart
+@@
+   Future<void> refreshProtectionStatus() async {
+     await _refreshProtectionStatus();
+     notifyListeners();
+   }
++
++  Future<AndroidProtectionStep> getNextAndroidProtectionStep() {
++    return _focusService.getNextAndroidProtectionStep();
++  }
+ 
+   Future<bool> openSystemSettings() async {
+     return _focusService.openSystemSettings();
+   }
+*** End Patch

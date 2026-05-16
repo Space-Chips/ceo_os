@@ -1,0 +1,8 @@
+*** Begin Patch
+*** Update File: android/app/src/main/kotlin/com/wakeapp/ceoos/GateLauncher.kt
+@@
+-        if (signature == lastLaunchSignature && now - lastLaunchAtMillis < 700L) {
++        if (signature == lastLaunchSignature && now - lastLaunchAtMillis < 240L) {
+             return false
+         }
+*** End Patch

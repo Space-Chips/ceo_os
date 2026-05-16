@@ -1,0 +1,12 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/android/app/src/main/kotlin/com/wakeapp/ceoos/BlockingAccessibilityService.kt
+@@
+     private fun handleSnapshot(snapshot: ForegroundSnapshot, startedAt: Long) {
+-        if (foregroundAppDetector.isGateSnapshot(snapshot)) {
++        if (foregroundAppDetector.isGateSnapshot(snapshot)) {
+             return
+         }
++        if (BlockGateActivity.isVisible && snapshot.packageName == packageName) {
++            return
++        }
+*** End Patch

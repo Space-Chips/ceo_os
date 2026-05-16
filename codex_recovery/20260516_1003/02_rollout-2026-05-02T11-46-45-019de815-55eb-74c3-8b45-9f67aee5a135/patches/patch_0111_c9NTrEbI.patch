@@ -1,0 +1,99 @@
+*** Begin Patch
+*** Update File: lib/core/widgets/home_widgets/widget_views.dart
+@@
+ import '../../../features/tasks/task_importance_theme.dart';
++import '../../models/habit_models.dart';
+ import '../../models/task_models.dart';
+@@
+ class _HabitsTodayRow extends StatelessWidget {
+@@
+   @override
+   Widget build(BuildContext context) {
+-    return Expanded(
+-      child: Padding(
+-        padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+-        child: Row(
+-          children: [
+-            Expanded(
+-              child: Text(
+-                title,
+-                maxLines: 1,
+-                overflow: TextOverflow.ellipsis,
+-                style: AppTypography.title3.copyWith(
+-                  fontSize: 18,
+-                  fontWeight: FontWeight.w700,
+-                  color: AppColors.label.withValues(alpha: 0.95),
+-                  height: 1,
+-                ),
+-              ),
+-            ),
+-            const SizedBox(width: 12),
+-            Container(
+-              width: 38,
+-              height: 38,
+-              decoration: BoxDecoration(
+-                shape: BoxShape.circle,
+-                color: AppColors.cardBackgroundAlt,
+-                border: Border.all(
+-                  color: AppColors.border.withValues(alpha: 0.7),
+-                ),
+-              ),
+-              alignment: Alignment.center,
+-              child: Text(
+-                '$index',
+-                style: AppTypography.callout.copyWith(
+-                  fontSize: 16,
+-                  fontWeight: FontWeight.w700,
+-                  color: AppColors.secondaryLabel.withValues(alpha: 0.85),
+-                  height: 1,
+-                ),
+-              ),
+-            ),
+-          ],
+-        ),
+-      ),
++    return Padding(
++      padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
++      child: Row(
++        children: [
++          Expanded(
++            child: Text(
++              title,
++              maxLines: 1,
++              overflow: TextOverflow.ellipsis,
++              style: AppTypography.title3.copyWith(
++                fontSize: 18,
++                fontWeight: FontWeight.w700,
++                color: AppColors.label.withValues(alpha: 0.95),
++                height: 1,
++              ),
++            ),
++          ),
++          const SizedBox(width: 12),
++          Container(
++            width: 38,
++            height: 38,
++            decoration: BoxDecoration(
++              shape: BoxShape.circle,
++              color: AppColors.cardBackgroundAlt,
++              border: Border.all(
++                color: AppColors.border.withValues(alpha: 0.7),
++              ),
++            ),
++            alignment: Alignment.center,
++            child: Text(
++              '$index',
++              style: AppTypography.callout.copyWith(
++                fontSize: 16,
++                fontWeight: FontWeight.w700,
++                color: AppColors.secondaryLabel.withValues(alpha: 0.85),
++                height: 1,
++              ),
++            ),
++          ),
++        ],
++      ),
+     );
+   }
+ }
+*** End Patch

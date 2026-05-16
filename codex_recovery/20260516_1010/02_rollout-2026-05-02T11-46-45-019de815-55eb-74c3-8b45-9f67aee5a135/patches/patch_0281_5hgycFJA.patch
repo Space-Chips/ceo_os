@@ -1,0 +1,72 @@
+*** Begin Patch
+*** Update File: supabase/functions/grant-beta-premium/index.ts
+@@
+ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+ 
+ const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+ const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+ const anonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
+-
+-// Secret gate to avoid turning this into a public premium toggle.
+-// Set in Supabase Function env vars.
+-const betaKey = Deno.env.get('TESTFLIGHT_BETA_PREMIUM_KEY') ?? '';
+ 
+ if (!supabaseUrl || !serviceRoleKey || !anonKey) {
+   throw new Error('Supabase environment is missing required keys.');
+ }
+@@
+ Deno.serve(async (request) => {
+   if (request.method !== 'POST') {
+     return new Response('Method not allowed', { status: 405 });
+   }
+-
+-  if (!betaKey) {
+-    return new Response('Beta key missing', { status: 403 });
+-  }
+-
+-  const provided = request.headers.get('x-beta-premium-key') ?? '';
+-  if (provided !== betaKey) {
+-    return new Response('Unauthorized', { status: 401 });
+-  }
+ 
+   const authorization = request.headers.get('authorization');
+   if (!authorization) {
+     return new Response('Missing authorization header', { status: 401 });
+@@
+   if (userError || !user) {
+     return new Response('Unauthorized', { status: 401 });
+   }
+ 
++  const email = (user.email ?? '').trim().toLowerCase();
++  if (!email) {
++    return new Response('Missing email', { status: 400 });
++  }
++
++  const { data: allowlisted, error: allowlistError } = await admin
++    .from('beta_premium_allowlist')
++    .select('email')
++    .eq('email', email)
++    .maybeSingle();
++
++  if (allowlistError) {
++    return Response.json(
++      { ok: false, error: allowlistError.message },
++      { status: 500 },
++    );
++  }
++
++  if (!allowlisted) {
++    return new Response('Not allowlisted', { status: 403 });
++  }
++
+   const { error } = await admin.from('user_entitlements').upsert(
+     {
+       created_by: user.id,
+       premium_override: true,
+-      premium_override_reason: 'testflight_account',
++      premium_override_reason: 'beta_allowlist',
+       premium_override_expires_at: null,
+     },
+     { onConflict: 'created_by' },
+   );
+*** End Patch

@@ -1,0 +1,33 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/auth/onboarding_screen.dart
+@@
+   String _localizedConstraint(LanguageProvider language, String challenge) {
+@@
+       default:
+         return challenge;
+     }
+   }
++
++  String _localizedThemeName(LanguageProvider language, AppThemePreset preset) {
++    switch (preset.id) {
++      case 'carbon_system':
++        return language.t('theme_carbon_system');
++      case 'ember_protocol':
++        return language.t('theme_ember_protocol');
++      case 'royal_violet':
++        return language.t('theme_royal_violet');
++      case 'modern_desert':
++        return language.t('theme_modern_desert');
++      case 'cloud_studio':
++        return language.t('theme_cloud_studio');
++      default:
++        return preset.name;
++    }
++  }
+@@
+-              _summaryRow(language.t('onboarding_theme'), selectedTheme.name),
++              _summaryRow(
++                language.t('onboarding_theme'),
++                _localizedThemeName(language, selectedTheme),
++              ),
+*** End Patch

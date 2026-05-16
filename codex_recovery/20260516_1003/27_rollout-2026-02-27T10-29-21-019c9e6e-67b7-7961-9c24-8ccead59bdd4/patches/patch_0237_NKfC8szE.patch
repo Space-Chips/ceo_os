@@ -1,0 +1,23 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/home/home_screen.dart
+@@
+ class _CeoModeCard extends StatelessWidget {
+   final bool isActive;
+-  final String timer;
++  final String statusLabel;
+   final VoidCallback onOpenCeoMode;
+ 
+   const _CeoModeCard({
+     required this.isActive,
+-    required this.timer,
++    required this.statusLabel,
+     required this.onOpenCeoMode,
+   });
+@@
+                 child: Text(
+-                  isActive ? 'IN SESSION $timer' : 'MAXIMUM FOCUS',
++                  statusLabel,
+                   style: AppTypography.mono.copyWith(
+                     fontSize: 11,
+                     fontWeight: FontWeight.bold,
+*** End Patch

@@ -1,0 +1,65 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/calendar/calendar_screen.dart
+@@
+       child: GlassCard(
+         padding: const EdgeInsets.all(14),
+         borderRadius: 14,
+         border: Border.all(color: color.withValues(alpha: 0.3), width: 0.6),
++        gradientColors: [
++          color.withValues(alpha: 0.12),
++          AppColors.background.withValues(alpha: 0.82),
++        ],
+         child: Column(
+@@
+     final priorityText = priority == _EventPriority.important
+         ? 'IMPORTANT'
+         : priority == _EventPriority.secondary
+         ? 'SECONDARY'
+         : 'NORMAL';
++    final priorityColor = priority == _EventPriority.important
++        ? AppColors.error
++        : priority == _EventPriority.secondary
++        ? AppColors.warning
++        : AppColors.tertiaryLabel;
+ 
+     return GlassCard(
+       padding: const EdgeInsets.all(16),
+       borderRadius: 18,
+       border: Border.all(
+@@
+           Wrap(
+             spacing: 8,
+             runSpacing: 6,
+             children: [
+-              Text(
+-                (event.sourceType ?? 'manual').toUpperCase(),
+-                style: AppTypography.mono.copyWith(
+-                  fontSize: 9,
+-                  color: sourceColor,
+-                ),
+-              ),
+-              Text(
+-                priorityText,
+-                style: AppTypography.mono.copyWith(
+-                  fontSize: 9,
+-                  color: AppColors.tertiaryLabel,
+-                ),
+-              ),
+-              Text(
+-                '${event.durationMinutes ?? 60}MIN',
+-                style: AppTypography.mono.copyWith(
+-                  fontSize: 9,
+-                  color: AppColors.tertiaryLabel,
+-                ),
++              _EventBadge(
++                label: (event.sourceType ?? 'manual').toUpperCase(),
++                color: sourceColor,
++              ),
++              _EventBadge(label: priorityText, color: priorityColor),
++              _EventBadge(
++                label: '${event.durationMinutes ?? 60}MIN',
++                color: AppColors.secondaryLabel,
+               ),
+             ],
+           ),
+*** End Patch

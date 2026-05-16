@@ -1,0 +1,42 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/router/app_router.dart
+@@
+ class _AppShellState extends State<_AppShell> {
+   Timer? _focusPlanTimer;
+   DateTime _lastEventsRefresh = DateTime.fromMillisecondsSinceEpoch(0);
+   bool _focusPlanTickRunning = false;
+   final Set<String> _warnedPlanKeys = <String>{};
+   final Set<String> _startedPlanKeys = <String>{};
++  String _lastNativeScheduleSignature = '';
+@@
+       if (now.difference(_lastEventsRefresh) > const Duration(minutes: 5)) {
+         await taskProvider.loadEvents();
+         _lastEventsRefresh = now;
+       }
++
++      await _syncNativePlannedSessionsIfNeeded(focusProvider, taskProvider.events);
+@@
+   }
++
++  Future<void> _syncNativePlannedSessionsIfNeeded(
++    FocusProvider focusProvider,
++    List<dynamic> events,
++  ) async {
++    final focusEvents = events
++        .whereType()
++        .where((event) => (event.sourceType ?? '').toLowerCase() == 'focus_plan')
++        .where((event) => event.eventDate != null && event.eventTime != null)
++        .toList();
++
++    final signature = focusEvents
++        .map(
++          (event) =>
++              '${event.id}|${event.eventDate}|${event.eventTime}|${event.durationMinutes}|${event.recurrenceRule}',
++        )
++        .join('||');
++
++    if (signature == _lastNativeScheduleSignature) return;
++    _lastNativeScheduleSignature = signature;
++    await focusProvider.syncPlannedFocusSessions(focusEvents);
++  }
+*** End Patch

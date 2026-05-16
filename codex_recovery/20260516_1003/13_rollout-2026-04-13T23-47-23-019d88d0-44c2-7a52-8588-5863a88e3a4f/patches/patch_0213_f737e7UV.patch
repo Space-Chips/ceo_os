@@ -1,0 +1,14 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/screen_time_screen.dart
+@@
+-  String _colorToArgbHex(Color color) {
+-    final a = (color.a * 255).round().clamp(0, 255);
+-    final r = (color.r * 255).round().clamp(0, 255);
+-    final g = (color.g * 255).round().clamp(0, 255);
+-    final b = (color.b * 255).round().clamp(0, 255);
+-    String two(int v) => v.toRadixString(16).padLeft(2, '0').toUpperCase();
+-    return '#${two(a)}${two(r)}${two(g)}${two(b)}';
+-  }
+-
+   Future<void> _syncClassicNative({
+*** End Patch

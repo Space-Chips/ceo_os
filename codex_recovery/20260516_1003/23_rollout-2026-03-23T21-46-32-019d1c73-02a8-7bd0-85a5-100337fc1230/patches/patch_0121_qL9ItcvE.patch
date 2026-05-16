@@ -1,0 +1,19 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/config/supabase_config.dart
+@@
+   static String get url {
+     const env = String.fromEnvironment('SUPABASE_URL');
+     if (env.isNotEmpty) return env;
+-    if (kDebugMode) return _debugUrl;
+-    return '';
++    return _debugUrl;
+   }
+ 
+   static String get anonKey {
+     const env = String.fromEnvironment('SUPABASE_ANON_KEY');
+     if (env.isNotEmpty) return env;
+-    if (kDebugMode) return _debugAnonKey;
+-    return '';
++    return _debugAnonKey;
+   }
+*** End Patch

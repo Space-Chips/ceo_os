@@ -1,0 +1,21 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/android/app/src/main/kotlin/com/wakeapp/ceoos/ForegroundAppDetector.kt
+@@
+-    private fun extractFromAddressNode(
+-        node: AccessibilityNodeInfo,
+-        profile: BrowserProfile,
+-    ): String? {
+-        if (!isAddressBarNode(node, profile)) return null
+-        BrowserBlockCoordinator.normalizeDomainToken(node.text?.toString())?.let { return it }
+-        BrowserBlockCoordinator.normalizeDomainToken(node.contentDescription?.toString())?.let { return it }
+-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+-            BrowserBlockCoordinator.normalizeDomainToken(node.hintText?.toString())?.let { return it }
+-        }
+-        return null
+-    }
+-
+     private fun isAddressBarNode(
+         node: AccessibilityNodeInfo,
+         profile: BrowserProfile,
+     ): Boolean {
+*** End Patch

@@ -1,0 +1,162 @@
+*** Begin Patch
+*** Update File: lib/core/services/home_widget_service.dart
+@@
+ import 'package:flutter/cupertino.dart';
+ import 'package:home_widget/home_widget.dart';
+ 
+ import '../providers/habit_provider.dart';
+ import '../providers/language_provider.dart';
+ import '../providers/task_provider.dart';
++import '../models/habit_models.dart';
++import '../models/task_models.dart';
+ import '../theme/app_colors.dart';
+ import '../theme/app_typography.dart';
+@@
+ class _CeoWidgetCard extends StatelessWidget {
+   final String title;
+   final String subtitle;
+   final List<String> lines;
++  final Widget? childOverride;
+ 
+   const _CeoWidgetCard({
+     required this.title,
+     required this.subtitle,
+     required this.lines,
++    this.childOverride,
+   });
+@@
+   @override
+   Widget build(BuildContext context) {
+     return Container(
+@@
+       padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
+-      child: Column(
+-        crossAxisAlignment: CrossAxisAlignment.start,
+-        children: [
+-          Text(
+-            title,
+-            maxLines: 1,
+-            overflow: TextOverflow.ellipsis,
+-            style: AppTypography.title3.copyWith(
+-              fontSize: 18,
+-              fontWeight: FontWeight.w800,
+-              color: AppColors.label,
+-            ),
+-          ),
+-          const SizedBox(height: 10),
+-          Text(
+-            subtitle,
+-            maxLines: 2,
+-            overflow: TextOverflow.ellipsis,
+-            style: AppTypography.subhead.copyWith(
+-              fontSize: 12,
+-              height: 1.25,
+-              color: AppColors.secondaryLabel.withValues(alpha: 0.72),
+-            ),
+-          ),
+-          if (lines.isNotEmpty) ...[
+-            const SizedBox(height: 12),
+-            ...lines.map(
+-              (line) => Padding(
+-                padding: const EdgeInsets.only(bottom: 7),
+-                child: Text(
+-                  line,
+-                  maxLines: 1,
+-                  overflow: TextOverflow.ellipsis,
+-                  style: AppTypography.callout.copyWith(
+-                    fontSize: 13,
+-                    fontWeight: FontWeight.w600,
+-                    color: AppColors.label.withValues(alpha: 0.88),
+-                  ),
+-                ),
+-              ),
+-            ),
+-          ],
+-        ],
+-      ),
++      child:
++          childOverride ??
++          Column(
++            crossAxisAlignment: CrossAxisAlignment.start,
++            children: [
++              Text(
++                title,
++                maxLines: 1,
++                overflow: TextOverflow.ellipsis,
++                style: AppTypography.title3.copyWith(
++                  fontSize: 18,
++                  fontWeight: FontWeight.w800,
++                  color: AppColors.label,
++                ),
++              ),
++              const SizedBox(height: 10),
++              Text(
++                subtitle,
++                maxLines: 2,
++                overflow: TextOverflow.ellipsis,
++                style: AppTypography.subhead.copyWith(
++                  fontSize: 12,
++                  height: 1.25,
++                  color: AppColors.secondaryLabel.withValues(alpha: 0.72),
++                ),
++              ),
++              if (lines.isNotEmpty) ...[
++                const SizedBox(height: 12),
++                ...lines.map(
++                  (line) => Padding(
++                    padding: const EdgeInsets.only(bottom: 7),
++                    child: Text(
++                      line,
++                      maxLines: 1,
++                      overflow: TextOverflow.ellipsis,
++                      style: AppTypography.callout.copyWith(
++                        fontSize: 13,
++                        fontWeight: FontWeight.w600,
++                        color: AppColors.label.withValues(alpha: 0.88),
++                      ),
++                    ),
++                  ),
++                ),
++              ],
++            ],
++          ),
+     );
+   }
+ }
+@@
+ class _CeoHabitsTableCard extends StatelessWidget {
+   final String title;
+-  final List<dynamic> habits;
++  final List<Habit> habits;
+   final bool Function(String habitId) isDone;
+   final bool large;
+@@
+   factory _CeoHabitsTableCard.small({
+     required String title,
+-    required List<dynamic> habits,
++    required List<Habit> habits,
+     required bool Function(String habitId) isDone,
+   }) {
+@@
+   factory _CeoHabitsTableCard.large({
+     required String title,
+-    required List<dynamic> habits,
++    required List<Habit> habits,
+     required bool Function(String habitId) isDone,
+   }) {
+@@
+     final items = habits.take(large ? 8 : 4).toList();
+@@
+             Wrap(
+               spacing: 8,
+               runSpacing: 8,
+               children: [
+                 for (final habit in items)
+-                  _habitChip(
+-                    (habit as dynamic).id as String,
+-                    (habit as dynamic).title as String,
+-                  ),
++                  _habitChip(habit.id, habit.title),
+               ],
+             ),
+*** End Patch

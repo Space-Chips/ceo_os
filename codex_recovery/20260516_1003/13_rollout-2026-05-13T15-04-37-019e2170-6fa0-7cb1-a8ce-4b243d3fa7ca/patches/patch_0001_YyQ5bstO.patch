@@ -1,0 +1,6 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/android/app/build.gradle.kts
+@@
+-        minSdk = flutter.minSdkVersion
++        minSdk = 26
+*** End Patch

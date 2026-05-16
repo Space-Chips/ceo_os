@@ -1,0 +1,302 @@
+*** Begin Patch
+*** Update File: lib/core/widgets/home_widgets/widget_views.dart
+@@
+ class HabitsTodayWidgetSquareView extends StatelessWidget {
+   final LanguageProvider language;
+   final List<Habit> habits;
+   final int completed;
+   final int total;
++  final Set<String> completedHabitIds;
+ 
+   const HabitsTodayWidgetSquareView({
+     super.key,
+     required this.language,
+     required this.habits,
+     required this.completed,
+     required this.total,
++    required this.completedHabitIds,
+   });
+ 
+   @override
+   Widget build(BuildContext context) {
+-    final items = habits.take(3).toList();
++    final items = habits.take(2).toList();
+     final more = (habits.length - items.length).clamp(0, 999);
+ 
+     return WidgetRoot(
+       padding: WidgetDesignTokens.padSquare,
+       child: Column(
+         crossAxisAlignment: CrossAxisAlignment.start,
+         children: [
+-          Row(
+-            children: [
+-              Expanded(
+-                child: Text(
+-                  'Habits',
+-                  style: WidgetDesignTokens.title.copyWith(fontSize: 22),
+-                ),
+-              ),
+-              Column(
+-                crossAxisAlignment: CrossAxisAlignment.end,
+-                children: [
+-                  Text(
+-                    '$completed/$total',
+-                    style: AppTypography.largeTitle.copyWith(
+-                      fontSize: 26,
+-                      fontWeight: FontWeight.w800,
+-                      color: WidgetDesignTokens.primaryText,
+-                      height: 1.0,
+-                    ),
+-                  ),
+-                  const SizedBox(height: 2),
+-                  Text(
+-                    'completed',
+-                    style: AppTypography.caption1.copyWith(
+-                      fontSize: 13,
+-                      fontWeight: FontWeight.w700,
+-                      color: WidgetDesignTokens.secondaryText,
+-                      height: 1,
+-                    ),
+-                  ),
+-                ],
+-              ),
+-            ],
+-          ),
++          Row(
++            children: [
++              Expanded(
++                child: Text(
++                  'Habits',
++                  maxLines: 1,
++                  overflow: TextOverflow.ellipsis,
++                  style: WidgetDesignTokens.title.copyWith(fontSize: 22),
++                ),
++              ),
++              Text(
++                '$completed/$total',
++                maxLines: 1,
++                overflow: TextOverflow.ellipsis,
++                style: AppTypography.title2.copyWith(
++                  fontSize: 22,
++                  fontWeight: FontWeight.w800,
++                  color: WidgetDesignTokens.primaryText,
++                  height: 1,
++                ),
++              ),
++            ],
++          ),
++          const SizedBox(height: 4),
++          Text(
++            'completed',
++            maxLines: 1,
++            overflow: TextOverflow.ellipsis,
++            style: WidgetDesignTokens.subtitle.copyWith(
++              fontSize: 14,
++              color: WidgetDesignTokens.secondaryText,
++            ),
++          ),
+           const SizedBox(height: 10),
+-          Expanded(
+-            child: Container(
+-              decoration: WidgetDesignTokens.innerSurface(
+-                tint: const Color(0xFF191B20),
+-              ),
+-              child: ClipRRect(
+-                borderRadius: BorderRadius.circular(
+-                  WidgetDesignTokens.radiusInner,
+-                ),
+-                child: items.isEmpty
+-                    ? Center(
+-                        child: Text(
+-                          'No habits today',
+-                          style: AppTypography.title3.copyWith(
+-                            fontSize: 18,
+-                            fontWeight: FontWeight.w800,
+-                            color: WidgetDesignTokens.primaryText,
+-                            height: 1.05,
+-                          ),
+-                        ),
+-                      )
+-                    : Column(
+-                        children: [
+-                          for (var i = 0; i < items.length; i++) ...[
+-                            Expanded(
+-                              child: _HabitsTodayRow(
+-                                title: items[i].title,
+-                                index: i + 1,
+-                              ),
+-                            ),
+-                            if (i != items.length - 1)
+-                              Container(
+-                                height: 0.8,
+-                                margin: const EdgeInsets.symmetric(
+-                                  horizontal: 12,
+-                                ),
+-                                color: AppColors.border.withValues(alpha: 0.4),
+-                              ),
+-                          ],
+-                          if (more > 0)
+-                            Padding(
+-                              padding: const EdgeInsets.fromLTRB(12, 6, 12, 10),
+-                              child: Align(
+-                                alignment: Alignment.centerLeft,
+-                                child: Text(
+-                                  '+$more more',
+-                                  style: WidgetDesignTokens.subtitle.copyWith(
+-                                    fontSize: 13,
+-                                    color: WidgetDesignTokens.secondaryText,
+-                                  ),
+-                                ),
+-                              ),
+-                            )
+-                          else
+-                            const SizedBox.shrink(),
+-                        ],
+-                      ),
+-              ),
+-            ),
+-          ),
++          Expanded(
++            child: items.isEmpty
++                ? _WidgetEmptyState(
++                    title: 'No habits',
++                    subtitle: 'No habits today',
++                  )
++                : Column(
++                    crossAxisAlignment: CrossAxisAlignment.start,
++                    children: [
++                      Container(
++                        decoration: WidgetDesignTokens.innerSurface(
++                          tint: const Color(0xFF191B20),
++                        ),
++                        child: ClipRRect(
++                          borderRadius: BorderRadius.circular(
++                            WidgetDesignTokens.radiusInner,
++                          ),
++                          child: Column(
++                            children: [
++                              for (var i = 0; i < items.length; i++) ...[
++                                _HabitRow(
++                                  title: items[i].title,
++                                  done: completedHabitIds.contains(items[i].id),
++                                ),
++                                if (i != items.length - 1)
++                                  Container(
++                                    height: 0.8,
++                                    margin: const EdgeInsets.symmetric(
++                                      horizontal: 12,
++                                    ),
++                                    color: AppColors.border.withValues(
++                                      alpha: 0.4,
++                                    ),
++                                  ),
++                              ],
++                            ],
++                          ),
++                        ),
++                      ),
++                      if (more > 0) ...[
++                        const SizedBox(height: 10),
++                        Text(
++                          '+$more more',
++                          maxLines: 1,
++                          overflow: TextOverflow.ellipsis,
++                          style: WidgetDesignTokens.subtitle.copyWith(
++                            fontSize: 14,
++                            color: WidgetDesignTokens.secondaryText,
++                          ),
++                        ),
++                      ],
++                    ],
++                  ),
++          ),
+         ],
+       ),
+     );
+   }
+ }
+ 
+-class _HabitsTodayRow extends StatelessWidget {
++class _HabitRow extends StatelessWidget {
+   final String title;
+-  final int index;
++  final bool done;
+ 
+-  const _HabitsTodayRow({required this.title, required this.index});
++  const _HabitRow({required this.title, required this.done});
+ 
+   @override
+   Widget build(BuildContext context) {
+     return Padding(
+-      padding: const EdgeInsets.fromLTRB(12, 4, 12, 4),
++      padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+       child: Row(
+         children: [
+-          Expanded(
+-            child: Text(
+-              title,
+-              maxLines: 1,
+-              overflow: TextOverflow.ellipsis,
+-              style: AppTypography.title3.copyWith(
+-                fontSize: 16,
+-                fontWeight: FontWeight.w800,
+-                color: WidgetDesignTokens.primaryText,
+-                height: 1.05,
+-              ),
+-            ),
+-          ),
+-          const SizedBox(width: 12),
+           Container(
+             width: 24,
+             height: 24,
+             decoration: BoxDecoration(
+-              shape: BoxShape.circle,
+-              color: AppColors.cardBackgroundAlt,
++              shape: BoxShape.circle,
++              color: done
++                  ? AppColors.success.withValues(alpha: 0.18)
++                  : AppColors.cardBackgroundAlt,
+               border: Border.all(
+-                color: AppColors.border.withValues(alpha: 0.65),
++                color: (done ? AppColors.success : AppColors.border).withValues(
++                  alpha: 0.65,
++                ),
+               ),
+             ),
+             alignment: Alignment.center,
+-            child: Text(
+-              '$index',
+-              style: AppTypography.callout.copyWith(
+-                fontSize: 12,
+-                fontWeight: FontWeight.w800,
+-                color: WidgetDesignTokens.secondaryText,
+-                height: 1,
+-              ),
++            child: done
++                ? Icon(
++                    CupertinoIcons.checkmark,
++                    size: 14,
++                    color: AppColors.success.withValues(alpha: 0.95),
++                  )
++                : const SizedBox.shrink(),
++          ),
++          const SizedBox(width: 10),
++          Expanded(
++            child: Text(
++              title,
++              maxLines: 1,
++              overflow: TextOverflow.ellipsis,
++              style: AppTypography.callout.copyWith(
++                fontSize: 16,
++                fontWeight: FontWeight.w800,
++                color: WidgetDesignTokens.primaryText,
++                height: 1.05,
++              ),
+             ),
+           ),
+         ],
+       ),
+     );
+   }
+ }
+*** End Patch

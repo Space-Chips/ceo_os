@@ -1,0 +1,12 @@
+*** Begin Patch
+*** Update File: lib/features/calendar/calendar_screen.dart
+@@
+                                     child: Text(
+-                                      DateFormat('HH:mm').format(now),
++                                      DateFormat('HH:mm', 'en').format(now),
+                                       textAlign: TextAlign.right,
+                                       style: AppTypography.mono.copyWith(
+                                         fontSize: 11,
+                                         fontWeight: FontWeight.w700,
+                                         color: AppColors.accent,
+*** End Patch

@@ -1,0 +1,47 @@
+*** Begin Patch
+*** Update File: lib/features/widget_configuration/widget_configuration_screen.dart
+@@
+   Future<void> _setMode(CeoWidgetMode mode) async {
+     if (_saving) return;
++    final tasks = context.read<TaskProvider>();
++    final habits = context.read<HabitProvider>();
++    final language = context.read<LanguageProvider>();
+     setState(() {
+       _saving = true;
+       _mode = mode;
+     });
+     try {
+       await HomeWidget.saveWidgetData<String>(
+         CeoHomeWidgetService.keyDefaultMode,
+         mode.name,
+       );
+-      final tasks = context.read<TaskProvider>();
+-      final habits = context.read<HabitProvider>();
+-      final language = context.read<LanguageProvider>();
+       await CeoHomeWidgetService.renderAndUpdateAll(
+         tasks: tasks,
+         habits: habits,
+         language: language,
+       );
+     } finally {
+       if (mounted) setState(() => _saving = false);
+     }
+   }
+ 
+   Future<void> _renderNow() async {
+     if (_saving) return;
++    final tasks = context.read<TaskProvider>();
++    final habits = context.read<HabitProvider>();
++    final language = context.read<LanguageProvider>();
+     setState(() => _saving = true);
+     try {
+-      final tasks = context.read<TaskProvider>();
+-      final habits = context.read<HabitProvider>();
+-      final language = context.read<LanguageProvider>();
+       await CeoHomeWidgetService.renderAndUpdateAll(
+         tasks: tasks,
+         habits: habits,
+         language: language,
+       );
+     } finally {
+*** End Patch

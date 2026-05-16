@@ -1,0 +1,11 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/dashboard/dashboard_screen.dart
+@@
+     return CupertinoPageScaffold(
+       backgroundColor: AppColors.background,
+@@
+-      child: body,
++      child: AmbientBackdrop(child: body),
+     );
+   }
+*** End Patch

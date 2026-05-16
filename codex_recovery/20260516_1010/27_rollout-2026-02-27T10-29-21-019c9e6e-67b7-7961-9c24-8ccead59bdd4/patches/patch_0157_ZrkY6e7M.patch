@@ -1,0 +1,119 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/habits/habits_screen.dart
+@@
+         final scorePercent = totalExpected > 0
+             ? ((totalCompleted / totalExpected) * 100).round()
+             : 0;
+         final isOnTrack = scorePercent >= 90;
+         final isAtRisk = scorePercent >= 70 && !isOnTrack;
++        final completedToday = sortedHabits
++            .where((habit) => prov.isHabitCompletedToday(habit.id))
++            .length;
++        final weeklyMomentum = isOnTrack
++            ? 'ON_TRACK'
++            : isAtRisk
++            ? 'RECOVERABLE'
++            : 'CRITICAL';
++        final weeklyTone = isOnTrack
++            ? AppColors.success
++            : isAtRisk
++            ? AppColors.primaryOrange
++            : AppColors.error;
+ 
+         return ListView(
+           padding: const EdgeInsets.symmetric(
+             horizontal: 20,
+           ).copyWith(bottom: 100),
+           children: [
++            Stack(
++              children: [
++                Positioned.fill(
++                  child: IgnorePointer(
++                    child: Container(
++                      margin: const EdgeInsets.all(8),
++                      decoration: BoxDecoration(
++                        borderRadius: BorderRadius.circular(18),
++                        boxShadow: [
++                          BoxShadow(
++                            color: weeklyTone.withValues(alpha: 0.14),
++                            blurRadius: 26,
++                            spreadRadius: 1,
++                          ),
++                        ],
++                      ),
++                    ),
++                  ),
++                ),
++                GlassCard(
++                  padding: const EdgeInsets.all(14),
++                  borderRadius: 18,
++                  border: Border.all(
++                    color: weeklyTone.withValues(alpha: 0.28),
++                    width: 0.55,
++                  ),
++                  child: Row(
++                    children: [
++                      Expanded(
++                        child: Column(
++                          crossAxisAlignment: CrossAxisAlignment.start,
++                          children: [
++                            Text(
++                              'WEEKLY_MOMENTUM',
++                              style: AppTypography.mono.copyWith(
++                                fontSize: 9,
++                                color: AppColors.tertiaryLabel,
++                                letterSpacing: 1.1,
++                              ),
++                            ),
++                            const SizedBox(height: 5),
++                            Text(
++                              weeklyMomentum,
++                              style: AppTypography.mono.copyWith(
++                                fontSize: 13,
++                                fontWeight: FontWeight.bold,
++                                color: weeklyTone,
++                              ),
++                            ),
++                            const SizedBox(height: 4),
++                            Text(
++                              '$completedToday/${sortedHabits.length} habits done today',
++                              style: AppTypography.mono.copyWith(
++                                fontSize: 10,
++                                color: AppColors.secondaryLabel,
++                              ),
++                            ),
++                          ],
++                        ),
++                      ),
++                      Container(
++                        padding: const EdgeInsets.symmetric(
++                          horizontal: 10,
++                          vertical: 8,
++                        ),
++                        decoration: BoxDecoration(
++                          borderRadius: BorderRadius.circular(10),
++                          color: weeklyTone.withValues(alpha: 0.14),
++                          border: Border.all(
++                            color: weeklyTone.withValues(alpha: 0.28),
++                            width: 0.5,
++                          ),
++                        ),
++                        child: Text(
++                          '$scorePercent%',
++                          style: AppTypography.mono.copyWith(
++                            fontSize: 18,
++                            fontWeight: FontWeight.bold,
++                            color: weeklyTone,
++                          ),
++                        ),
++                      ),
++                    ],
++                  ),
++                ),
++              ],
++            ),
++            const SizedBox(height: 14),
+             // ── Weekly Grid ──
+             GlassCard(
+               padding: const EdgeInsets.all(12),
+*** End Patch

@@ -1,0 +1,10 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/ios/Runner/AppDelegate.swift
+@@
+-    private static func decodeApplicationToken(from payload: String) -> ApplicationToken? {
++    static func decodeApplicationToken(from payload: String) -> ApplicationToken? {
+         guard let selection = decodeFamilyActivitySelectionPayload(payload) else { return nil }
+         return selection.applicationTokens.first
+     }
+ }
+*** End Patch

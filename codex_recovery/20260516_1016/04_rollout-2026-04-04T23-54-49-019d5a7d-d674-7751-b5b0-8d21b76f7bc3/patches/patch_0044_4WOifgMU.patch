@@ -1,0 +1,105 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/screen_time_screen.dart
+@@
+-  Widget _countPill(String label) {
+-    return Container(
+-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+-      decoration: BoxDecoration(
+-        color: AppColors.white.withValues(alpha: 0.04),
+-        borderRadius: BorderRadius.circular(999),
+-        border: Border.all(color: AppColors.border.withValues(alpha: 0.7)),
+-      ),
+-      child: Text(
+-        label,
+-        style: AppTypography.caption1.copyWith(
+-          fontSize: 11,
+-          color: AppColors.secondaryLabel,
+-          fontWeight: FontWeight.w700,
+-        ),
+-      ),
+-    );
+-  }
+-
+   Widget _iconPill({required IconData icon, required VoidCallback? onTap}) {
+     return _pressScale(
+       onPressed: onTap,
+       child: Container(
+         width: 38,
+         height: 38,
+         decoration: BoxDecoration(
+           color: AppColors.cardRaised,
+           borderRadius: BorderRadius.circular(14),
+-          border: Border.all(color: AppColors.border.withValues(alpha: 0.8)),
++          border: Border.all(color: AppColors.border.withValues(alpha: 0.42)),
+         ),
+         alignment: Alignment.center,
+         child: Icon(
+@@
+       onPressed: onTap,
+       child: Container(
+         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+         decoration: _listPanelDecoration(radius: 20),
+@@
+   Widget _emptyStateCard({
+     required IconData icon,
+     required String title,
+     required String message,
+@@
+     );
+   }
+ 
+   Widget _tinyAction({required String label, required VoidCallback? onTap}) {
+@@
+         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+         decoration: BoxDecoration(
+           color: AppColors.cardRaised,
+           borderRadius: BorderRadius.circular(14),
+           border: Border.all(
+-            color: AppColors.border.withValues(alpha: 0.82),
++            color: AppColors.border.withValues(alpha: 0.46),
+             width: 1,
+           ),
+         ),
+@@
+       child: Container(
+         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+         decoration: BoxDecoration(
+           color: AppColors.cardRaised,
+           borderRadius: BorderRadius.circular(12),
+-          border: Border.all(color: AppColors.border.withValues(alpha: 0.82)),
++          border: Border.all(color: AppColors.border.withValues(alpha: 0.44)),
+         ),
+         child: Text(
+@@
+   Widget _emptyCard(String text) {
+     return Container(
+       padding: const EdgeInsets.all(14),
+       decoration: _moduleDecoration(radius: 12),
+@@
+     );
+   }
+@@
+   BoxDecoration _listPanelDecoration({double radius = 18}) {
+     return BoxDecoration(
+       color: AppColors.cardRaised.withValues(alpha: 0.96),
+       borderRadius: BorderRadius.circular(radius),
+-      border: Border.all(color: AppColors.border.withValues(alpha: 0.88)),
++      border: Border.all(
++        color: AppColors.borderStrong.withValues(alpha: 0.3),
++        width: 0.8,
++      ),
+       boxShadow: [
+         BoxShadow(
+-          color: AppColors.glassShadowSoft.withValues(alpha: 0.22),
+-          blurRadius: 18,
+-          offset: const Offset(0, 6),
+-          spreadRadius: -10,
++          color: AppColors.glassShadowSoft.withValues(alpha: 0.12),
++          blurRadius: 14,
++          offset: const Offset(0, 4),
++          spreadRadius: -10,
+         ),
+       ],
+     );
+   }
+*** End Patch

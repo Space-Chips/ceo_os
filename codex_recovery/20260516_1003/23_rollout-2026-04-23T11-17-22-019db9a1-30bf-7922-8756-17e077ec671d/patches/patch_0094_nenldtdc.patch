@@ -1,0 +1,61 @@
+*** Begin Patch
+*** Update File: lib/core/providers/language_overrides.dart
+@@
+     'onboarding_constraint_overload': 'Sobrecarga',
+     'onboarding_constraint_inconsistency': 'Inconstancia',
+     'onboarding_theme_premium_badge': 'Premium',
++    'setup_back_in_wakeapp': 'De vuelta en WakeApp',
++    'setup_syncing_permission': 'Sincronizando tus permisos…',
++    'setup_welcome_title': 'Configuración de Tiempo en pantalla',
++    'setup_welcome_subtitle':
++        'Una configuración rápida y tranquila para que la protección sea sin esfuerzo.',
++    'setup_what_unlocks': 'Qué desbloquea esto',
++    'setup_unlock_instant_blocking':
++        'Bloqueo instantáneo cuando se abre una app.',
++    'setup_unlock_usage_limits': 'Límites de uso fiables en segundo plano.',
++    'setup_unlock_focus_blackout': 'Sesiones de Focus y Blackout que se mantienen.',
++    'setup_takes_45s':
++        'Tarda unos 45 segundos. Puedes repetirlo en cualquier momento desde los ajustes de Tiempo en pantalla.',
++    'setup_return_auto':
++        'Volveremos a WakeApp automáticamente tras cada permiso.',
++    'setup_accessibility_title': 'Desbloquea protección instantánea',
++    'setup_accessibility_subtitle':
++        'WakeApp solo detecta la app activa para poder reaccionar al instante.',
++    'setup_accessibility_reassurance':
++        'No se leen mensajes, contenido ni pantallas. Todo se queda en el dispositivo.',
++    'setup_usage_title': 'Mantén los límites exactos',
++    'setup_usage_subtitle':
++        'El acceso de uso mantiene fiables los límites y las sesiones en segundo plano.',
++    'setup_overlay_title': 'Muestra una pantalla de bloqueo suave',
++    'setup_overlay_subtitle':
++        'Esto permite a WakeApp mostrar una pantalla de bloqueo limpia cuando sea necesario.',
++    'setup_step_tap_open_settings': 'Toca “Abrir ajustes”.',
++    'setup_step_enable_service':
++        'Activa Screen Time en Servicios instalados.',
++    'setup_step_allow_service': 'Permite Screen Time en la lista.',
++    'setup_step_allow_overlay': 'Permite “Mostrar sobre otras apps”.',
++    'setup_step_return_auto': 'Te traeremos de vuelta automáticamente.',
++    'setup_if_switch_disabled':
++        'Si el interruptor está desactivado, abre Info de la app → Permitir ajustes restringidos.',
++    'setup_if_missing_service':
++        'Si Screen Time no aparece, desplázate hasta Servicios descargados.',
++    'setup_if_missing_open_app':
++        'Si Screen Time no aparece, abre Ajustes → Apps → Screen Time.',
++    'setup_then_open_usage_access':
++        'Luego abre Acceso de uso y concédelo.',
++    'setup_if_cant_toggle_overlay':
++        'Si no puedes activarlo, abre Acceso especial a apps → Mostrar sobre otras apps.',
++    'setup_enable_wakeapp_and_return': 'Luego activa WakeApp y vuelve.',
++    'setup_enabled': 'Activado',
++    'setup_not_enabled': 'No activado',
++    'setup_quick_steps': 'Pasos rápidos',
++    'setup_switch_locked': 'Si el interruptor está bloqueado',
++    'setup_permission_granted': 'Permiso concedido',
++    'setup_success_subtitle':
++        'Tiempo en pantalla está configurado y listo para proteger tu Focus.',
++    'setup_success_instant_blocking':
++        'Bloqueo instantáneo en apps protegidas.',
++    'setup_success_usage_limits': 'Límites de uso aplicados en el dispositivo.',
++    'setup_success_focus_blackout': 'Sesiones de Focus y Blackout listas.',
+     'setup_preparing': 'Preparando configuración…',
+*** End Patch

@@ -1,0 +1,94 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/ceo_mode/ceo_mode_screen.dart
+@@
+                 Text(
+                   'Home',
+-                  style: AppTypography.mono.copyWith(
++                  style: AppTypography.callout.copyWith(
+                     fontSize: 16,
+                     color: ceo.isSessionActive
+                         ? AppColors.tertiaryLabel
+                         : AppColors.secondaryLabel,
+                     fontWeight: FontWeight.w600,
+@@
+               child: Text(
+                 'LOCKED',
+-                style: AppTypography.mono.copyWith(
++                style: AppTypography.caption1.copyWith(
+                   fontSize: 10,
+                   color: AppColors.primaryOrange,
+                   fontWeight: FontWeight.bold,
+@@
+                 Text(
+-                  'DURATION',
+-                  style: AppTypography.mono.copyWith(
+-                    fontSize: 12,
+-                    color: AppColors.accent,
+-                    fontWeight: FontWeight.w800,
+-                    letterSpacing: 2,
++                  'Duration',
++                  style: AppTypography.overline.copyWith(
++                    fontSize: 12,
++                    color: AppColors.accent,
++                    fontWeight: FontWeight.w700,
++                    letterSpacing: 1.2,
+                   ),
+                 ),
+@@
+                                     _durationLabel(minutes),
+-                                    style: AppTypography.timer.copyWith(
+-                                      fontSize: 28,
+-                                      fontWeight: FontWeight.w700,
++                                    style: AppTypography.heroDisplay.copyWith(
++                                      fontSize: 27,
++                                      fontWeight: FontWeight.w600,
+                                       color: minutes == ceo.selectedDurationMinutes
+                                           ? AppColors.label
+                                           : AppColors.label.withValues(
+@@
+               Text(
+-                'ESSENTIAL APPS (3)',
+-                style: AppTypography.mono.copyWith(
++                'Essential Apps (3)',
++                style: AppTypography.overline.copyWith(
+                   fontSize: 12,
+                   color: AppColors.secondaryLabel.withValues(alpha: 0.7),
+                   fontWeight: FontWeight.w700,
+-                  letterSpacing: 1.5,
++                  letterSpacing: 1.1,
+                 ),
+               ),
+@@
+                 child: Text(
+                   ceo.isAuthorized
+                       ? 'Protection access granted'
+                       : 'Grant Screen Time permissions for stronger enforcement',
+-                  style: AppTypography.mono.copyWith(
+-                    fontSize: 11,
++                  style: AppTypography.footnote.copyWith(
++                    fontSize: 12,
+                     color: AppColors.secondaryLabel,
+                   ),
+                 ),
+@@
+                 child: Text(
+                   ceo.isAuthorized ? 'Refresh' : 'Enable',
+-                  style: AppTypography.mono.copyWith(
+-                    fontSize: 11,
++                  style: AppTypography.callout.copyWith(
++                    fontSize: 12,
+                     color: AppColors.accent,
+                     fontWeight: FontWeight.w600,
+                   ),
+@@
+                     : Text(
+-                        'START CEO SESSION',
++                        'Start CEO Session',
+                         style: AppTypography.callout.copyWith(
+                           fontSize: 16,
+                           fontWeight: FontWeight.w700,
+-                          letterSpacing: 0.5,
+                           color: AppColors.onAccent,
+                         ),
+                       ),
+*** End Patch

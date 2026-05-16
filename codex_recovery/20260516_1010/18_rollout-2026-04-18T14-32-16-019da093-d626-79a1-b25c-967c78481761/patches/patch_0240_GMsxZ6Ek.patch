@@ -1,0 +1,29 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/auth/onboarding_screen.dart
+@@
+     final showLaunchLabel =
+         isPremiumTheme &&
+         (runtime?.config.launchPremiumLabelsEnabled ?? false) &&
+         (runtime?.resolved.launchPremiumActive ?? false);
++    final localizedThemeName = switch (preset.id) {
++      'carbon_system' => language.t('theme_carbon_system'),
++      'ember_protocol' => language.t('theme_ember_protocol'),
++      'royal_violet' => language.t('theme_royal_violet'),
++      'modern_desert' => language.t('theme_modern_desert'),
++      'cloud_studio' => language.t('theme_cloud_studio'),
++      _ => preset.name,
++    };
+     final themeCaption = showLaunchLabel
+         ? language.t('premium_unlocked_launch')
+         : isPremiumTheme
+         ? language.t('premium_theme')
+-        : preset.subtitle;
++        : (preset.isDark ? language.t('dark_theme') : language.t('light_theme'));
+@@
+                   child: Text(
+-                    preset.name,
++                    localizedThemeName,
+                     maxLines: 1,
+                     overflow: TextOverflow.ellipsis,
+                     style: AppTypography.footnote.copyWith(
+*** End Patch

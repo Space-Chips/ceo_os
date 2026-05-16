@@ -1,0 +1,21 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/habits/habits_screen.dart
+@@
+     style: AppTypography.callout.copyWith(
+       fontSize: 14,
+       color: AppColors.label,
+     ),
+     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+     decoration: BoxDecoration(
+-      color: AppColors.white.withValues(alpha: 0.04),
++      color: AppColors.inputBackground,
+       borderRadius: BorderRadius.circular(14),
+       border: Border.all(
+-        color: AppColors.white.withValues(alpha: 0.08),
++        color: AppColors.inputBorder,
+         width: 1,
+       ),
+     ),
+   );
+ }
+*** End Patch

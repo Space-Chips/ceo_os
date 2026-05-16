@@ -1,0 +1,20 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/packages/workmanager_apple/ios/Sources/workmanager_apple/WorkmanagerPlugin.swift
+@@
+ extension WorkmanagerPlugin {
+     public static func register(with registrar: FlutterPluginRegistrar) {
++        #if DEBUG
++            if #available(iOS 26.0, *) {
++                NSLog(
++                    "[workmanager_apple] Registration skipped on iOS 26 in DEBUG to avoid startup crash."
++                )
++                return
++            }
++        #endif
++
+         let instance = WorkmanagerPlugin()
+         WorkmanagerHostApiSetup.setUp(binaryMessenger: registrar.messenger(), api: instance)
+         registrar.addApplicationDelegate(instance)
+     }
+ }
+*** End Patch

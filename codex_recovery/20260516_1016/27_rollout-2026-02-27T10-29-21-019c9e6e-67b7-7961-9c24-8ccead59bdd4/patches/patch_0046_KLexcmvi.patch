@@ -1,0 +1,23 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/providers/task_provider.dart
+@@
+   Future<void> addCalendarEvent({
+     required String title,
+     required String date,
+     String? time,
++    int? durationMinutes,
+     String? description,
+     String? sourceType,
+     String? sourceId,
+     String? recurrenceRule,
+   }) async {
+@@
+         title,
+         date,
+         time: time,
++        durationMinutes: durationMinutes,
+         description: description,
+         sourceType: sourceType,
+         sourceId: sourceId,
+         recurrenceRule: recurrenceRule,
+*** End Patch

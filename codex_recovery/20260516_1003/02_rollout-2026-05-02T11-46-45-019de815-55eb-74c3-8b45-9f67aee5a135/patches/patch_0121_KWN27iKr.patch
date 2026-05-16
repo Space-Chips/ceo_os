@@ -1,0 +1,31 @@
+*** Begin Patch
+*** Update File: lib/features/ceo_mode/ceo_mode_screen.dart
+@@
+ import 'package:flutter/foundation.dart';
+ import 'package:flutter/cupertino.dart';
+ import 'package:flutter/services.dart';
+ import 'package:go_router/go_router.dart';
++import 'package:home_widget/home_widget.dart';
+ import 'package:provider/provider.dart';
+ 
+ import '../../components/components.dart';
+ import '../../core/providers/ceo_mode_provider.dart';
+ import '../../core/providers/language_provider.dart';
++import '../../core/services/home_widget_service.dart';
+ import '../../core/theme/app_colors.dart';
+ import '../../core/theme/app_typography.dart';
+ import '../../core/utils/android_protection_disclosure.dart';
+ import 'blackout_preparation/blackout_preparation_flow_view.dart';
+ import 'blackout_preparation/blackout_preparation_models.dart';
+@@
+   String _durationLabel(int minutes) {
+@@
+   }
++
++  Future<void> _persistWidgetDuration(int minutes) async {
++    await HomeWidget.saveWidgetData<int>(
++      CeoHomeWidgetService.keyBlackoutDurationMinutes,
++      minutes,
++    );
++  }
+*** End Patch

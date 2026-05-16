@@ -1,0 +1,28 @@
+*** Begin Patch
+*** Update File: android/app/src/main/AndroidManifest.xml
+@@
+         <activity
+             android:name=".MainActivity"
+             android:exported="true"
+@@
+                 <category android:name="android.intent.category.LAUNCHER"/>
+             </intent-filter>
+         </activity>
++        <activity
++            android:name=".presentation.launcher.HomeActivity"
++            android:exported="true"
++            android:launchMode="singleTask"
++            android:stateNotNeeded="true"
++            android:taskAffinity=""
++            android:theme="@style/HomeTheme"
++            android:configChanges="orientation|screenSize|smallestScreenSize|keyboardHidden|uiMode">
++            <intent-filter>
++                <action android:name="android.intent.action.MAIN" />
++                <category android:name="android.intent.category.HOME" />
++                <category android:name="android.intent.category.DEFAULT" />
++            </intent-filter>
++        </activity>
+         <activity
+             android:name=".BlockGateActivity"
+             android:exported="false"
+*** End Patch

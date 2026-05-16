@@ -1,0 +1,54 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/focus/app_selection_sheet.dart
+@@
+ import 'package:installed_apps/installed_apps.dart';
+ import '../../core/theme/app_colors.dart';
+ import '../../core/theme/app_typography.dart';
++import '../../core/utils/app_logger.dart';
+ import '../../components/components.dart';
+@@
+       try {
+         List<AppInfo> apps = await InstalledApps.getInstalledApps(
+           excludeSystemApps: true,
+           withIcon: true,
+         );
+         _allApps.addAll(apps);
+         _filteredApps.addAll(apps);
+       } catch (e) {
+-        print("Error loading apps: $e");
++        AppLogger.error('Error loading apps.', e);
+       }
+     }
+@@
+         _filteredApps.addAll(_allApps.where((app) => 
+-          app.name!.toLowerCase().contains(query.toLowerCase()) || 
+-          app.packageName!.toLowerCase().contains(query.toLowerCase())
++          app.name.toLowerCase().contains(query.toLowerCase()) || 
++          app.packageName.toLowerCase().contains(query.toLowerCase())
+         ));
+       }
+     });
+@@
+       decoration: BoxDecoration(
+-        color: AppColors.background.withOpacity(0.95),
++        color: AppColors.background.withValues(alpha: 0.95),
+         borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+       ),
+@@
+                               if (isSelected) {
+                                 _selectedPackages.remove(app.packageName);
+                               } else {
+-                                _selectedPackages.add(app.packageName!);
++                                _selectedPackages.add(app.packageName);
+                               }
+                             });
+                           },
+@@
+                                 Expanded(
+                                   child: Text(
+-                                    app.name ?? 'Unknown', 
++                                    app.name, 
+                                     style: AppTypography.mono.copyWith(color: AppColors.label, fontSize: 12),
+                                     overflow: TextOverflow.ellipsis,
+                                   ),
+*** End Patch

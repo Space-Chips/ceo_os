@@ -1,0 +1,83 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/screen_time_screen.dart
+@@
+   Widget _tinyAction({required String label, required VoidCallback? onTap}) {
+     return _pressScale(
+       onPressed: onTap,
+       child: Container(
+@@
+       ),
+     );
+   }
++
++  Widget _secondaryAction({
++    required String label,
++    required VoidCallback? onTap,
++  }) {
++    return _pressScale(
++      onPressed: onTap,
++      child: Container(
++        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
++        decoration: BoxDecoration(
++          color: AppColors.cardRaised,
++          borderRadius: BorderRadius.circular(12),
++          border: Border.all(color: AppColors.border.withValues(alpha: 0.82)),
++        ),
++        child: Text(
++          label,
++          style: AppTypography.footnote.copyWith(
++            fontSize: 12,
++            color: AppColors.label,
++            fontWeight: FontWeight.w700,
++          ),
++        ),
++      ),
++    );
++  }
++
++  Widget _deleteChip({required VoidCallback? onTap}) {
++    return _pressScale(
++      onPressed: onTap,
++      child: Container(
++        width: 34,
++        height: 34,
++        decoration: BoxDecoration(
++          color: AppColors.error.withValues(alpha: 0.08),
++          borderRadius: BorderRadius.circular(12),
++          border: Border.all(color: AppColors.error.withValues(alpha: 0.18)),
++        ),
++        alignment: Alignment.center,
++        child: Icon(
++          CupertinoIcons.delete,
++          size: 16,
++          color: AppColors.error,
++        ),
++      ),
++    );
++  }
+@@
+   BoxDecoration _moduleDecoration({double radius = 18}) {
+     return BoxDecoration(
+       gradient: LinearGradient(
+         begin: Alignment.topCenter,
+@@
+       ],
+     );
+   }
++
++  BoxDecoration _listPanelDecoration({double radius = 18}) {
++    return BoxDecoration(
++      color: AppColors.cardRaised.withValues(alpha: 0.96),
++      borderRadius: BorderRadius.circular(radius),
++      border: Border.all(color: AppColors.border.withValues(alpha: 0.88)),
++      boxShadow: [
++        BoxShadow(
++          color: AppColors.glassShadowSoft.withValues(alpha: 0.22),
++          blurRadius: 18,
++          offset: const Offset(0, 6),
++          spreadRadius: -10,
++        ),
++      ],
++    );
++  }
+*** End Patch

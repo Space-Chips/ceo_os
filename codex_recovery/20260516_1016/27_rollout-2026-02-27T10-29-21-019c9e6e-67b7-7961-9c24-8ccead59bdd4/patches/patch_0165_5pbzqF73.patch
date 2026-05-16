@@ -1,0 +1,44 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/rank/rank_screen.dart
+@@
+       ),
+-      child: _loading
+-          ? Center(
+-              child: CupertinoActivityIndicator(color: AppColors.primaryOrange),
+-            )
+-          : SafeArea(
+-              child: ListView(
+-                padding: const EdgeInsets.all(20),
+-                children: [
++      child: AmbientBackdrop(
++        child: _loading
++            ? Center(
++                child: CupertinoActivityIndicator(
++                  color: AppColors.primaryOrange,
++                ),
++              )
++            : SafeArea(
++                child: ListView(
++                  padding: const EdgeInsets.all(20),
++                  children: [
+@@
+-                  ..._tiers.map(
+-                    (tier) => Padding(
+-                      padding: const EdgeInsets.only(bottom: 8),
+-                      child: _tierRow(tier, currentLevel: level),
++                    ..._tiers.map(
++                      (tier) => Padding(
++                        padding: const EdgeInsets.only(bottom: 8),
++                        child: _tierRow(tier, currentLevel: level),
++                      ),
+                     ),
+-                  ),
+-                ],
++                  ],
++                ),
+               ),
+-            ),
++      ),
+     );
+   }
+*** End Patch

@@ -1,0 +1,28 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/tasks/add_task_sheet.dart
+@@
+         decoration: BoxDecoration(
+-          color: AppColors.background.withOpacity(0.8),
++          color: AppColors.background.withValues(alpha: 0.8),
+@@
+                     color: AppColors.backgroundLight.withOpacity(0.5),
+@@
+                       color: _deadline != null
+-                          ? AppColors.primaryOrange.withOpacity(0.1)
+-                          : AppColors.backgroundLight.withOpacity(0.5),
++                          ? AppColors.primaryOrange.withValues(alpha: 0.1)
++                          : AppColors.backgroundLight.withValues(alpha: 0.5),
+@@
+                         color: _deadline != null
+-                            ? AppColors.primaryOrange.withOpacity(0.4)
++                            ? AppColors.primaryOrange.withValues(alpha: 0.4)
+                             : AppColors.glassBorder,
+@@
+                     CupertinoSwitch(
+                       value: _syncToCalendar,
+-                      activeColor: AppColors.primaryOrange,
++                      activeTrackColor: AppColors.primaryOrange,
+                       onChanged: (value) =>
+                           setState(() => _syncToCalendar = value),
+                     ),
+*** End Patch

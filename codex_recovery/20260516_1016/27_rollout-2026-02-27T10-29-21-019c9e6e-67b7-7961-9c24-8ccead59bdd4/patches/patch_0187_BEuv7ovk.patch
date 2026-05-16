@@ -1,0 +1,35 @@
+*** Begin Patch
+*** Update File: lib/core/providers/focus_provider.dart
+@@
+ import 'package:screen_time/screen_time.dart';
+ import 'package:shared_preferences/shared_preferences.dart';
+ import '../models/block_list_model.dart';
++import '../models/premium_models.dart';
++import '../repositories/premium_repository.dart';
+ import '../services/focus_service.dart';
+ import '../repositories/focus_repository.dart';
+@@
+   final FocusService _focusService = FocusService();
+   final FocusRepository _repository = FocusRepository();
++  final PremiumRepository _premiumRepository = PremiumRepository();
+   final ScreenTime _screenTime = ScreenTime();
+@@
+   List<double> _hourlyUsage = List.filled(24, 0);
++  PremiumCheckResult? _lastPremiumCheck;
+@@
+   List<double> get hourlyUsage => List.unmodifiable(_hourlyUsage);
++  PremiumCheckResult? get lastPremiumCheck => _lastPremiumCheck;
+@@
+   Future<bool> startFocus() async {
++    final premiumCheck = await _premiumRepository.canStartFocusSession(
++      focusDurationMinutes,
++    );
++    _lastPremiumCheck = premiumCheck;
++    if (!premiumCheck.allowed) {
++      notifyListeners();
++      return false;
++    }
++
+     // Check for authorization first
+     _isAuthorized = await _focusService.isAuthorized();
+*** End Patch

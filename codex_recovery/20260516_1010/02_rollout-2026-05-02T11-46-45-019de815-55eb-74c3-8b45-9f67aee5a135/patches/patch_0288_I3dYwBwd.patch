@@ -1,0 +1,66 @@
+*** Begin Patch
+*** Update File: lib/core/repositories/premium_repository.dart
+@@
+ import '../config/tester_config.dart';
+ import '../models/premium_models.dart';
+ import 'feature_repository.dart';
+ import '../services/supabase_service.dart';
+-import '../services/app_environment_service.dart';
+ import '../services/billing_diagnostics_service.dart';
+@@
+   Future<PremiumRuntime> getRuntime() async {
+     final config = await getConfig();
+     await _syncLaunchEntitlementsIfNeeded();
+-    final isTestFlight = await AppEnvironmentService.isTestFlight();
+     final subscriptionStatus = await _getSubscriptionStatus();
+     final entitlements = await getUserEntitlements();
+     final graceActive = await _isClientGraceActive();
+     final resolved = _resolveEntitlements(
+       config: config,
+       entitlements: entitlements,
+       subscriptionStatus: subscriptionStatus,
+-      isTestFlight: isTestFlight,
+       clientGraceActive: graceActive,
+     );
+@@
+-  /// Grant Premium permanently to accounts created from a TestFlight install.
+-  /// This is the ONLY automatic premium condition requested: if the account
+-  /// is created via TestFlight, it becomes premium and stays premium.
+-  Future<void> grantPremiumForTestFlightAccountIfEligible() async {
++  /// Grant Premium permanently to allowlisted accounts.
++  ///
++  /// The server-side Edge Function enforces the allowlist; the client only
++  /// triggers a best-effort request during signup.
++  Future<void> grantPremiumForAllowlistedAccountIfEligible() async {
+     final uid = _currentUserId;
+     if (uid == null) return;
+ 
+-    final isTestFlight = await AppEnvironmentService.isTestFlight();
+-    if (!TesterConfig.testFlightPremiumEnabled || !isTestFlight) return;
+-
+     try {
+-      await _diag.log('testflight_account_grant_start');
++      await _diag.log('beta_allowlist_grant_start');
+       final response = await _client.functions.invoke('grant-beta-premium');
+       await _diag.log(
+-        'testflight_account_grant_done',
++        'beta_allowlist_grant_done',
+         data: {'status': response.status},
+       );
+     } catch (e) {
+       await _diag.log(
+-        'testflight_account_grant_failed',
++        'beta_allowlist_grant_failed',
+         data: {'error': e.toString()},
+       );
+     }
+   }
+@@
+   ResolvedEntitlements _resolveEntitlements({
+     required PremiumConfig config,
+     required UserEntitlements entitlements,
+     required String subscriptionStatus,
+-    required bool isTestFlight,
+     required bool clientGraceActive,
+   }) {
+*** End Patch

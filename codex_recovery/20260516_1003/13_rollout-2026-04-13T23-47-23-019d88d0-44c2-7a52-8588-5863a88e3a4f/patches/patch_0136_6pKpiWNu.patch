@@ -1,0 +1,103 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/screen_time_screen.dart
+@@
+   List<String> _filteredWebsiteSuggestions(String query) {
+     final needle = query.trim().toLowerCase();
+     if (needle.isEmpty) return const [];
+     return _websiteSuggestions
+         .where((domain) => domain.contains(needle))
+         .toList(growable: false);
+   }
++
++  List<_IosAppSuggestion> _filteredAppSuggestions(String query) {
++    final needle = query.trim().toLowerCase();
++    if (needle.isEmpty) {
++      return _iosAppSuggestions.take(12).toList(growable: false);
++    }
++    final ranked = _iosAppSuggestions.where((item) {
++      final label = item.label.toLowerCase();
++      final bundle = item.bundleIdentifier.toLowerCase();
++      if (label.contains(needle) || bundle.contains(needle)) return true;
++      return item.keywords.any(
++        (keyword) => keyword.toLowerCase().contains(needle),
++      );
++    }).toList(growable: false);
++    ranked.sort((a, b) {
++      final aStarts = a.label.toLowerCase().startsWith(needle) ? 0 : 1;
++      final bStarts = b.label.toLowerCase().startsWith(needle) ? 0 : 1;
++      if (aStarts != bStarts) return aStarts - bStarts;
++      return a.label.compareTo(b.label);
++    });
++    return ranked.take(20).toList(growable: false);
++  }
+@@
+   Widget _websiteSuggestionTile(String domain) {
+@@
+   }
++
++  Widget _appSuggestionTile(_IosAppSuggestion app) {
++    return GestureDetector(
++      onTap: _saving ? null : () => _addBlockedIosAppSuggestion(app),
++      child: Container(
++        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
++        decoration: BoxDecoration(
++          color: AppColors.pillBackground,
++          borderRadius: BorderRadius.circular(12),
++          border: Border.all(color: AppColors.pillBorder, width: 1),
++        ),
++        child: Row(
++          children: [
++            Container(
++              width: 24,
++              height: 24,
++              alignment: Alignment.center,
++              decoration: BoxDecoration(
++                color: AppColors.primaryOrange.withValues(alpha: 0.12),
++                borderRadius: BorderRadius.circular(7),
++              ),
++              child: Text(
++                app.label.characters.first.toUpperCase(),
++                style: AppTypography.caption1.copyWith(
++                  fontSize: 11,
++                  color: AppColors.primaryOrange,
++                  fontWeight: FontWeight.w800,
++                ),
++              ),
++            ),
++            const SizedBox(width: 8),
++            Expanded(
++              child: Column(
++                crossAxisAlignment: CrossAxisAlignment.start,
++                children: [
++                  Text(
++                    app.label,
++                    style: AppTypography.callout.copyWith(
++                      fontSize: 14,
++                      color: AppColors.label,
++                      fontWeight: FontWeight.w600,
++                    ),
++                  ),
++                  const SizedBox(height: 1),
++                  Text(
++                    app.bundleIdentifier,
++                    maxLines: 1,
++                    overflow: TextOverflow.ellipsis,
++                    style: AppTypography.caption1.copyWith(
++                      fontSize: 10,
++                      color: AppColors.tertiaryLabel,
++                    ),
++                  ),
++                ],
++              ),
++            ),
++            Icon(
++              CupertinoIcons.add,
++              size: 14,
++              color: AppColors.secondaryLabel.withValues(alpha: 0.8),
++            ),
++          ],
++        ),
++      ),
++    );
++  }
+*** End Patch

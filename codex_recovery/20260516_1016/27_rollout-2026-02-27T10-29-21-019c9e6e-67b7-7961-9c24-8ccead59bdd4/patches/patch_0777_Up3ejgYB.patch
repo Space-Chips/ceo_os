@@ -1,0 +1,45 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/screen_time_screen.dart
+@@
+     if (Platform.isIOS) {
+       final label = _appCtrl.text.trim();
+       if (label.isEmpty) {
+         await _showNotice(
+           title: 'Name required',
+           message: 'Enter a label for this blocked app before selecting it.',
+         );
+         return;
+       }
++      final authorized = await _focusService.isAuthorized();
++      if (!authorized) {
++        final granted = await _focusService.requestPermissions();
++        if (!granted) {
++          await _showNotice(
++            title: 'Permissions required',
++            message:
++                'Allow Family Controls first so blocked apps can be enforced on device.',
++          );
++          return;
++        }
++      }
+       final selection = await _focusService.openFamilyActivityPicker();
+       final payload = _firstNonEmpty(selection);
+       if (payload == null) return;
+@@
+     if (Platform.isIOS) {
++      final authorized = await _focusService.isAuthorized();
++      if (!authorized) {
++        final granted = await _focusService.requestPermissions();
++        if (!granted) {
++          await _showNotice(
++            title: 'Permissions required',
++            message:
++                'Allow Family Controls first so blocked websites can be enforced on device.',
++          );
++          return;
++        }
++      }
+       final selection = await _focusService.openFamilyActivityPicker();
+       final payload = _firstNonEmpty(selection);
+       if (payload == null) return;
+*** End Patch

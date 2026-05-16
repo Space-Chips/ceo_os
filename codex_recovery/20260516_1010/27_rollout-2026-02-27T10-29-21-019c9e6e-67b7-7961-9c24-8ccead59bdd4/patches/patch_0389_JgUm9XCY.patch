@@ -1,0 +1,396 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/home/home_screen.dart
+@@
+               final visibleCards = allCards
+                   .where((card) => card.active)
+                   .toList(growable: false);
+ 
+-              return ListView(
+-                padding: const EdgeInsets.fromLTRB(20, 10, 20, 120),
+-                children: [
+-                  _TopShortcutsBar(
+-                    rankName: rankName,
+-                    winStreak: _winStreak,
+-                    onOpenMenu: _openSecondaryMenu,
+-                    onOpenRank: () => context.push('/rank'),
+-                    onOpenFocus: () => context.push('/focus'),
+-                    onOpenNotes: () => context.push('/notes'),
+-                    onOpenStreak: () => context.push('/win-streak'),
+-                  ),
+-                  const SizedBox(height: 14),
+-                  _DashboardMainCard(
+-                    userLabel: _userLabel,
+-                    habitsCount: habitsCount,
+-                    onOpenDashboard: () => context.push('/dashboard'),
+-                  ),
+-                  const SizedBox(height: 16),
+-                  if (visibleCards.isEmpty)
+-                    GlassCard(
+-                      padding: const EdgeInsets.all(14),
+-                      borderRadius: 18,
+-                      border: Border.all(
+-                        color: AppColors.glassBorder.withValues(alpha: 0.64),
+-                        width: 0.65,
+-                      ),
+-                      child: Text(
+-                        'No mini-app enabled. Use profile menu to activate at least one.',
+-                        style: AppTypography.mono.copyWith(
+-                          fontSize: 11,
+-                          color: AppColors.secondaryLabel,
+-                        ),
+-                      ),
+-                    )
+-                  else
+-                    _PrimaryAppsGrid(cards: visibleCards),
+-                  const SizedBox(height: 16),
+-                  _CeoModeCard(
+-                    statusLabel: ceoProvider.homeCardLabel,
+-                    onOpenCeoMode: () => context.push('/ceo-mode'),
+-                  ),
+-                  if (snapshot.hasError) ...[
+-                    const SizedBox(height: 12),
+-                    GestureDetector(
+-                      onTap: _reloadSnapshot,
+-                      child: GlassCard(
+-                        padding: const EdgeInsets.all(12),
+-                        borderRadius: 12,
+-                        border: Border.all(
+-                          color: AppColors.primaryOrange.withValues(
+-                            alpha: 0.28,
+-                          ),
+-                          width: 0.6,
+-                        ),
+-                        child: Text(
+-                          'Dashboard data unavailable. Tap to retry.',
+-                          style: AppTypography.mono.copyWith(
+-                            fontSize: 10,
+-                            color: AppColors.secondaryLabel,
+-                          ),
+-                        ),
+-                      ),
+-                    ),
+-                  ],
+-                ],
++              return Stack(
++                children: [
++                  ListView(
++                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
++                    children: [
++                      const SizedBox(height: 70),
++                      _DashboardMainCard(
++                        userLabel: _userLabel,
++                        habitsCount: habitsCount,
++                        onOpenDashboard: () => context.push('/dashboard'),
++                      ),
++                      const SizedBox(height: 12),
++                      if (visibleCards.isEmpty)
++                        GlassCard(
++                          padding: const EdgeInsets.all(14),
++                          borderRadius: 18,
++                          border: Border.all(
++                            color: AppColors.glassBorder.withValues(alpha: 0.64),
++                            width: 0.65,
++                          ),
++                          child: Text(
++                            'No mini-app enabled. Use profile menu to activate at least one.',
++                            style: AppTypography.mono.copyWith(
++                              fontSize: 11,
++                              color: AppColors.secondaryLabel,
++                            ),
++                          ),
++                        )
++                      else
++                        _PrimaryAppsGrid(cards: visibleCards),
++                      const SizedBox(height: 12),
++                      _CeoModeCard(
++                        statusLabel: ceoProvider.homeCardLabel,
++                        onOpenCeoMode: () => context.push('/ceo-mode'),
++                      ),
++                      if (snapshot.hasError) ...[
++                        const SizedBox(height: 10),
++                        GestureDetector(
++                          onTap: _reloadSnapshot,
++                          child: GlassCard(
++                            padding: const EdgeInsets.all(12),
++                            borderRadius: 12,
++                            border: Border.all(
++                              color: AppColors.primaryOrange.withValues(
++                                alpha: 0.28,
++                              ),
++                              width: 0.6,
++                            ),
++                            child: Text(
++                              'Dashboard data unavailable. Tap to retry.',
++                              style: AppTypography.mono.copyWith(
++                                fontSize: 10,
++                                color: AppColors.secondaryLabel,
++                              ),
++                            ),
++                          ),
++                        ),
++                      ],
++                    ],
++                  ),
++                  Positioned(
++                    left: 20,
++                    right: 20,
++                    top: 8,
++                    child: _TopShortcutsBar(
++                      rankName: rankName,
++                      winStreak: _winStreak,
++                      onOpenMenu: _openSecondaryMenu,
++                      onOpenRank: () => context.push('/rank'),
++                      onOpenFocus: () => context.push('/focus'),
++                      onOpenNotes: () => context.push('/notes'),
++                      onOpenStreak: () => context.push('/win-streak'),
++                    ),
++                  ),
++                ],
+               );
+             },
+           ),
+         ),
+@@
+   const _PrimaryAppsGrid({required this.cards});
++
++  Widget _squareCard(_PrimaryAppCardData data) {
++    return AspectRatio(aspectRatio: 1, child: _PrimaryAppCard(data: data, compact: true));
++  }
+ 
+   @override
+   Widget build(BuildContext context) {
+     if (cards.length == 1) {
+-      return _PrimaryAppCard(data: cards.first);
++      return _PrimaryAppCard(data: cards.first, compact: false);
+     }
+ 
+     if (cards.length == 2) {
+       return Row(
+         children: [
+-          Expanded(child: _PrimaryAppCard(data: cards[0])),
+-          const SizedBox(width: 12),
+-          Expanded(child: _PrimaryAppCard(data: cards[1])),
++          Expanded(child: _squareCard(cards[0])),
++          const SizedBox(width: 10),
++          Expanded(child: _squareCard(cards[1])),
+         ],
+       );
+     }
+@@
+       final enabled = row.whereType<_PrimaryAppCardData>().toList();
+       if (enabled.isEmpty) return const SizedBox.shrink();
+-      if (enabled.length == 1) return _PrimaryAppCard(data: enabled.first);
++      if (enabled.length == 1) {
++        return Align(
++          alignment: Alignment.centerLeft,
++          child: SizedBox(
++            width: MediaQuery.sizeOf(context).width * 0.44,
++            child: AspectRatio(aspectRatio: 1, child: _PrimaryAppCard(data: enabled.first, compact: true)),
++          ),
++        );
++      }
+       return Row(
+         children: [
+-          Expanded(child: _PrimaryAppCard(data: enabled[0])),
+-          const SizedBox(width: 12),
+-          Expanded(child: _PrimaryAppCard(data: enabled[1])),
++          Expanded(child: _squareCard(enabled[0])),
++          const SizedBox(width: 10),
++          Expanded(child: _squareCard(enabled[1])),
+         ],
+       );
+     }
+@@
+       children: [
+         buildRow(rowA),
+         if (rowA.whereType<_PrimaryAppCardData>().isNotEmpty &&
+             rowB.whereType<_PrimaryAppCardData>().isNotEmpty)
+-          const SizedBox(height: 12),
++          const SizedBox(height: 10),
+         buildRow(rowB),
+       ],
+     );
+   }
+ }
+ 
+ class _PrimaryAppCard extends StatelessWidget {
+   final _PrimaryAppCardData data;
++  final bool compact;
+ 
+-  const _PrimaryAppCard({required this.data});
++  const _PrimaryAppCard({required this.data, required this.compact});
++
++  Color _moduleGlow(String moduleId) {
++    switch (moduleId) {
++      case 'Pareto':
++        return const Color(0x334F84FF);
++      case 'Habits':
++        return const Color(0x334476FF);
++      case 'Calendar':
++        return const Color(0x333970FF);
++      case 'ScreenTimeManager':
++        return const Color(0x335F56FF);
++      default:
++        return AppColors.edgeGlowSoft;
++    }
++  }
+ 
+   @override
+   Widget build(BuildContext context) {
+-    final base = GlassCard(
+-      padding: const EdgeInsets.all(16),
++    final glowColor = _moduleGlow(data.moduleId);
++    final base = GlassCard(
++      padding: EdgeInsets.all(compact ? 14 : 16),
+       borderRadius: 28,
+-      level: data.active ? GlassCardLevel.standard : GlassCardLevel.subtle,
++      level: data.active ? GlassCardLevel.elevated : GlassCardLevel.subtle,
+       showEdgeGlow: data.active,
++      glowColor: glowColor,
+       gradientColors: [
+         AppColors.floatingGlassGradient.first.withValues(alpha: 0.92),
+         AppColors.floatingGlassGradient.last.withValues(alpha: 0.88),
+       ],
+       border: Border.all(
+-        color: AppColors.glassBorder.withValues(alpha: 0.7),
+-        width: 0.68,
++        color: data.active
++            ? AppColors.glassBorder.withValues(alpha: 0.86)
++            : AppColors.glassBorder.withValues(alpha: 0.62),
++        width: data.active ? 0.82 : 0.66,
+       ),
+-      child: SizedBox(
+-        height: 180,
++      child: SizedBox.expand(
+         child: Column(
+           crossAxisAlignment: CrossAxisAlignment.start,
+           children: [
+             Row(
+               children: [
+                 Container(
+-                  width: 66,
+-                  height: 66,
++                  width: compact ? 58 : 66,
++                  height: compact ? 58 : 66,
+                   decoration: BoxDecoration(
+                     borderRadius: BorderRadius.circular(20),
+                     gradient: LinearGradient(
+@@
+                     ),
+                   ),
+                   child: Icon(
+                     data.icon,
+                     color: AppColors.accentSecondary,
+-                    size: 30,
++                    size: compact ? 27 : 30,
+                   ),
+                 ),
+                 const Spacer(),
+                 if (data.onQuickAdd != null)
+@@
+             const Spacer(),
+-            Row(
+-              crossAxisAlignment: CrossAxisAlignment.end,
+-              children: [
+-                Expanded(
+-                  child: Text(
+-                    data.title,
+-                    maxLines: 1,
+-                    overflow: TextOverflow.ellipsis,
+-                    style: AppTypography.mono.copyWith(
+-                      fontSize: 18,
+-                      fontWeight: FontWeight.w800,
+-                      color: data.active
+-                          ? AppColors.label
+-                          : AppColors.tertiaryLabel,
+-                    ),
+-                  ),
+-                ),
+-                if (data.badgeValue != null)
+-                  Container(
+-                    padding: const EdgeInsets.symmetric(
+-                      horizontal: 8,
+-                      vertical: 4,
+-                    ),
+-                    decoration: BoxDecoration(
+-                      borderRadius: BorderRadius.circular(10),
+-                      color: AppColors.accentSecondary.withValues(alpha: 0.12),
+-                      border: Border.all(
+-                        color: AppColors.accentSecondary.withValues(
+-                          alpha: 0.35,
+-                        ),
+-                        width: 0.5,
+-                      ),
+-                    ),
+-                    child: Text(
+-                      '${data.badgeValue}',
+-                      style: AppTypography.mono.copyWith(
+-                        fontSize: 10,
+-                        color: AppColors.accentSecondary,
+-                        fontWeight: FontWeight.bold,
+-                      ),
+-                    ),
+-                  ),
+-              ],
++            Text(
++              data.title,
++              maxLines: 1,
++              overflow: TextOverflow.ellipsis,
++              style: AppTypography.mono.copyWith(
++                fontSize: compact ? 21 : 19,
++                fontWeight: FontWeight.w800,
++                color: data.active ? AppColors.label : AppColors.tertiaryLabel,
++              ),
+             ),
+-            const SizedBox(height: 3),
+-            Text(
+-              data.active ? 'ACTIVE' : 'DISABLED',
+-              style: AppTypography.mono.copyWith(
+-                fontSize: 8,
+-                color: data.active ? AppColors.tertiaryLabel : AppColors.error,
+-                letterSpacing: 1.1,
+-                fontWeight: FontWeight.bold,
+-              ),
+-            ),
+           ],
+         ),
+       ),
+     );
+ 
+     if (!data.active) {
+       return GestureDetector(
+         onTap: () {},
+-        child: Opacity(opacity: 0.58, child: base),
++        child: Opacity(opacity: 0.52, child: base),
+       );
+     }
+ 
+-    return GestureDetector(onTap: data.onTap, child: base);
++    return GestureDetector(
++      onTap: data.onTap,
++      child: Stack(
++        children: [
++          Positioned.fill(
++            child: IgnorePointer(
++              child: Container(
++                margin: const EdgeInsets.all(8),
++                decoration: BoxDecoration(
++                  borderRadius: BorderRadius.circular(28),
++                  boxShadow: [
++                    BoxShadow(
++                      color: glowColor,
++                      blurRadius: 28,
++                      spreadRadius: -4,
++                    ),
++                  ],
++                ),
++              ),
++            ),
++          ),
++          base,
++        ],
++      ),
++    );
+   }
+ }
+*** End Patch

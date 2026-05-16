@@ -1,0 +1,24 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/rank/rank_screen.dart
+@@
+-          _rankIconContainer(tier, iconSize: 96),
++          _rankIconContainer(tier, iconSize: 120),
+@@
+-              _rankIconContainer(tier, iconSize: 54),
++              _rankIconContainer(tier, iconSize: 76),
+@@
+   Widget _rankIconContainer(_RankTierData tier, {required double iconSize}) {
+-    final artSize = iconSize >= 72
+-        ? RankArtSize.hero
+-        : iconSize >= 48
+-        ? RankArtSize.md
+-        : RankArtSize.sm;
+-    final containerSize = iconSize + 2;
+-    final artDimension = iconSize + 24;
++    final artSize = iconSize >= 64 ? RankArtSize.hero : RankArtSize.md;
++    final containerSize = iconSize + 2;
++    final artDimension = iconSize + 34;
+     return Container(
+       width: containerSize,
+       height: containerSize,
+*** End Patch

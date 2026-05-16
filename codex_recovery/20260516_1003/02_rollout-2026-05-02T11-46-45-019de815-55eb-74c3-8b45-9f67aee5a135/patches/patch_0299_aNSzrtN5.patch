@@ -1,0 +1,26 @@
+*** Begin Patch
+*** Update File: lib/features/home/home_screen.dart
+@@
+   Future<void> _toggleShortcut(String shortcutId, bool enabled) async {
+     final previous = Set<String>.from(_enabledShortcuts);
+     final next = Set<String>.from(_enabledShortcuts);
+     if (enabled) {
+@@
+     setState(() => _enabledShortcuts = next);
+ 
+     final prefs = await SharedPreferences.getInstance();
+     try {
+       await prefs.setStringList(
+         _prefsKey('enabled_shortcuts_v2'),
+         next.toList(growable: false),
+       );
+-      unawaited(
+-        _syncToggleToConfig(id: shortcutId, enabled: enabled, isModule: false),
+-      );
++      await _syncToggleToConfig(id: shortcutId, enabled: enabled, isModule: false);
+     } catch (_) {
+       if (!mounted) return;
+       setState(() => _enabledShortcuts = previous);
+     }
+   }
+*** End Patch

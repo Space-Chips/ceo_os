@@ -1,0 +1,70 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/win_streak_screen.dart
+@@
+ import '../../components/components.dart';
+ import '../../core/models/user_models.dart';
++import '../../core/providers/language_provider.dart';
+ import '../../core/repositories/feature_repository.dart';
+@@
+ class _WinStreakScreenState extends State<WinStreakScreen> {
+@@
++  String _t(String key) => context.read<LanguageProvider>().t(key);
++
+@@
+   String _sessionLine(Map<String, dynamic> row) {
+     final duration = (row['duration_minutes'] as num?)?.toInt() ?? 0;
+     final completed = row['completed'] == true;
+-    return '${completed ? 'Completed' : 'Stopped early'} • ${duration}m';
++    return '${completed ? _t('win_streak_completed') : _t('win_streak_stopped_early')} • ${duration}m';
+   }
+@@
+   Widget build(BuildContext context) {
++    context.watch<LanguageProvider>().languageCode;
+     return CupertinoPageScaffold(
+@@
+                             value: '${_streak?.longestStreak ?? 0}',
+-                            label: 'RECORD',
++                            label: _t('focus_record'),
+@@
+                             value: '$_successRate%',
+-                            label: 'SUCCESS',
++                            label: _t('focus_success'),
+@@
+                             value: '${_streak?.totalCompletedSessions ?? 0}',
+-                            label: 'COMPLETE',
++                            label: _t('focus_complete'),
+@@
+                           Text(
+-                            'RECENT SESSIONS',
++                            _t('win_streak_recent_sessions'),
+@@
+                                 child: Text(
+-                                  'No sessions yet. Start your first focus session!',
++                                  _t('win_streak_no_sessions_yet'),
+@@
+                   Text(
+-                  'Screen Time',
++                  _t('screen_time'),
+@@
+                   Text(
+-                  'Home',
++                  _t('home'),
+@@
+           Text(
+-            'CURRENT STREAK',
++            _t('win_streak_current_streak'),
+@@
+               children: [
+-                const TextSpan(text: 'Best Streak: '),
++                TextSpan(text: '${_t('win_streak_best_streak')}: '),
+                 TextSpan(
+-                  text: '$bestStreak days',
++                  text:
++                      '$bestStreak ${_t('win_streak_days_suffix')}',
+@@
+           Text(
+-            streak == 0 ? 'Start your first session' : 'Keep the momentum',
++            streak == 0
++                ? _t('win_streak_start_first_session')
++                : _t('win_streak_keep_momentum'),
+*** End Patch

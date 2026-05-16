@@ -1,0 +1,242 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/config/supabase_config.dart
+@@
+ class SupabaseConfig {
+   static String get url =>
+       const String.fromEnvironment('SUPABASE_URL');
+   static String get anonKey =>
+       const String.fromEnvironment('SUPABASE_ANON_KEY');
+@@
+   static bool get hasGoogleAndroidMobileClientConfig =>
+       googleWebClientId.isNotEmpty;
++
++  static List<String> get missingRequiredKeys {
++    final missing = <String>[];
++    if (url.trim().isEmpty) {
++      missing.add('SUPABASE_URL');
++    }
++    if (anonKey.trim().isEmpty) {
++      missing.add('SUPABASE_ANON_KEY');
++    }
++    return missing;
++  }
++
++  static bool get hasRequiredConfiguration =>
++      missingRequiredKeys.isEmpty;
++
++  static String get missingConfigurationMessage {
++    final missing = missingRequiredKeys;
++    if (missing.isEmpty) {
++      return '';
++    }
++    if (missing.length == 1) {
++      return 'Supabase configuration is missing. Provide ${missing.first}.';
++    }
++    return 'Supabase configuration is missing. Provide ${missing.join(' and ')}.';
++  }
+ 
+   static void validateConfiguration() {
+-    if (url.trim().isEmpty || anonKey.trim().isEmpty) {
+-      throw StateError(
+-        'Supabase configuration is missing. Provide SUPABASE_URL and SUPABASE_ANON_KEY.',
+-      );
++    if (!hasRequiredConfiguration) {
++      throw StateError(missingConfigurationMessage);
+     }
+   }
+ }
+*** Update File: /Users/timo/ceo_os/lib/main.dart
+@@
+ void main() async {
+   WidgetsFlutterBinding.ensureInitialized();
+   SystemChrome.setSystemUIOverlayStyle(
+@@
+       systemNavigationBarColor: AppColors.systemBackground,
+     ),
+   );
+ 
+-  // Initialize Supabase
+-  SupabaseConfig.validateConfiguration();
+-  await Supabase.initialize(
+-    url: SupabaseConfig.url,
+-    anonKey: SupabaseConfig.anonKey,
+-  );
+-  await BillingService().initialize();
++  if (!SupabaseConfig.hasRequiredConfiguration) {
++    runApp(
++      StartupConfigurationErrorApp(
++        missingKeys: SupabaseConfig.missingRequiredKeys,
++      ),
++    );
++    return;
++  }
++
++  await Supabase.initialize(
++    url: SupabaseConfig.url,
++    anonKey: SupabaseConfig.anonKey,
++  );
++  await BillingService().initialize();
+@@
+   }
+ }
++
++class StartupConfigurationErrorApp extends StatelessWidget {
++  final List<String> missingKeys;
++
++  const StartupConfigurationErrorApp({
++    super.key,
++    required this.missingKeys,
++  });
++
++  @override
++  Widget build(BuildContext context) {
++    const background = Color(0xFF09111A);
++    const panel = Color(0xFF101B28);
++    const border = Color(0xFF223246);
++    const accent = Color(0xFF7DD3FC);
++    const textPrimary = Color(0xFFF4F8FC);
++    const textSecondary = Color(0xFF9CB3C9);
++    const codeBackground = Color(0xFF0B1420);
++
++    return MaterialApp(
++      debugShowCheckedModeBanner: false,
++      home: Scaffold(
++        backgroundColor: background,
++        body: SafeArea(
++          child: Center(
++            child: Padding(
++              padding: const EdgeInsets.all(24),
++              child: ConstrainedBox(
++                constraints: const BoxConstraints(maxWidth: 560),
++                child: Container(
++                  padding: const EdgeInsets.all(24),
++                  decoration: BoxDecoration(
++                    color: panel,
++                    borderRadius: BorderRadius.circular(24),
++                    border: Border.all(color: border),
++                    boxShadow: const [
++                      BoxShadow(
++                        color: Color(0x33000000),
++                        blurRadius: 28,
++                        offset: Offset(0, 14),
++                      ),
++                    ],
++                  ),
++                  child: Column(
++                    mainAxisSize: MainAxisSize.min,
++                    crossAxisAlignment: CrossAxisAlignment.start,
++                    children: [
++                      Container(
++                        padding: const EdgeInsets.symmetric(
++                          horizontal: 12,
++                          vertical: 8,
++                        ),
++                        decoration: BoxDecoration(
++                          color: accent.withValues(alpha: 0.14),
++                          borderRadius: BorderRadius.circular(999),
++                        ),
++                        child: const Text(
++                          'Startup blocked',
++                          style: TextStyle(
++                            color: accent,
++                            fontSize: 12,
++                            fontWeight: FontWeight.w700,
++                            letterSpacing: 0.4,
++                          ),
++                        ),
++                      ),
++                      const SizedBox(height: 18),
++                      const Text(
++                        'WakeApp needs Supabase credentials before it can start.',
++                        style: TextStyle(
++                          color: textPrimary,
++                          fontSize: 28,
++                          fontWeight: FontWeight.w700,
++                          height: 1.15,
++                        ),
++                      ),
++                      const SizedBox(height: 12),
++                      Text(
++                        'Missing values: ${missingKeys.join(', ')}',
++                        style: const TextStyle(
++                          color: textSecondary,
++                          fontSize: 15,
++                          height: 1.4,
++                        ),
++                      ),
++                      const SizedBox(height: 20),
++                      Container(
++                        width: double.infinity,
++                        padding: const EdgeInsets.all(16),
++                        decoration: BoxDecoration(
++                          color: codeBackground,
++                          borderRadius: BorderRadius.circular(18),
++                          border: Border.all(color: border.withValues(alpha: 0.9)),
++                        ),
++                        child: const SelectableText(
++                          'flutter run \\\n'
++                          '  --dart-define=SUPABASE_URL=https://your-project.supabase.co \\\n'
++                          '  --dart-define=SUPABASE_ANON_KEY=your-anon-key',
++                          style: TextStyle(
++                            color: textPrimary,
++                            fontSize: 13,
++                            height: 1.45,
++                            fontFamily: 'monospace',
++                          ),
++                        ),
++                      ),
++                      const SizedBox(height: 16),
++                      const Text(
++                        'If you launch from VS Code, the workspace now prompts for these values automatically on the next run.',
++                        style: TextStyle(
++                          color: textSecondary,
++                          fontSize: 14,
++                          height: 1.45,
++                        ),
++                      ),
++                    ],
++                  ),
++                ),
++              ),
++            ),
++          ),
++        ),
++      ),
++    );
++  }
++}
+*** Update File: /Users/timo/ceo_os/.vscode/launch.json
+@@
+ {
+   "version": "0.2.0",
+   "configurations": [
+     {
+       "name": "Flutter iOS (iPhone 16e)",
+@@
+       "type": "dart",
+       "flutterMode": "debug",
+       "program": "lib/main.dart",
+       "deviceId": "iPhone 16e",
+-      "preLaunchTask": "Boot iPhone 16e Simulator"
++      "preLaunchTask": "Boot iPhone 16e Simulator",
++      "toolArgs": [
++        "--dart-define=SUPABASE_URL=${input:supabaseUrl}",
++        "--dart-define=SUPABASE_ANON_KEY=${input:supabaseAnonKey}"
++      ]
+     }
++  ],
++  "inputs": [
++    {
++      "id": "supabaseUrl",
++      "type": "promptString",
++      "description": "Supabase URL (https://<project>.supabase.co)"
++    },
++    {
++      "id": "supabaseAnonKey",
++      "type": "promptString",
++      "description": "Supabase anon key",
++      "password": true
++    }
+   ]
+ }
+*** End Patch

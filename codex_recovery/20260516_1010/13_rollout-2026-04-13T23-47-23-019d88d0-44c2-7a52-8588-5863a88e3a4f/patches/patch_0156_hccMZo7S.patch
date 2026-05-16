@@ -1,0 +1,109 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/screen_time_screen.dart
+@@
+                         _sectionHeader(
+                           key: _appsSectionKey,
+                           title: 'Blocked apps',
+                           subtitle: '',
+                           trailing: Row(
+                             mainAxisSize: MainAxisSize.min,
+                             children: [
+                               _iconPill(
+-                                icon: _isAndroid
+-                                    ? CupertinoIcons.search
+-                                    : (_showAddApp
+-                                          ? CupertinoIcons.minus
+-                                          : CupertinoIcons.add),
++                                icon: _isAndroid
++                                    ? CupertinoIcons.search
++                                    : CupertinoIcons.add,
+                                 onTap: _isAndroid
+                                     ? _openAndroidBlockedAppsEditor
+-                                    : () => setState(
+-                                        () => _showAddApp = !_showAddApp,
+-                                      ),
++                                    : _addBlockedIosAppsFromPicker,
+                               ),
+                             ],
+                           ),
+                         ),
+                         _actionLauncherCard(
+                           icon: _isAndroid
+                               ? CupertinoIcons.search
+-                              : CupertinoIcons.search,
++                              : CupertinoIcons.add_circled,
+                           title: _isAndroid
+                               ? 'Search installed apps'
+-                              : 'Search apps to block',
++                              : 'Choose apps to block',
+                           subtitle: _isAndroid
+                               ? ''
+-                              : 'Type to find apps, then add them one by one.',
++                              : 'Open the Apple app picker and select one or multiple apps.',
+                           actionLabel: _isAndroid
+                               ? 'Open app picker'
+-                              : 'Search apps',
++                              : 'Choose apps',
+                           onTap: _isAndroid
+                               ? _openAndroidBlockedAppsEditor
+-                              : () => setState(() => _showAddApp = true),
++                              : _addBlockedIosAppsFromPicker,
+                         ),
+                         const SizedBox(height: 8),
+-                        if (_showAddApp && Platform.isIOS) ...[
+-                          Container(
+-                            padding: const EdgeInsets.all(14),
+-                            decoration: _listPanelDecoration(),
+-                            child: Column(
+-                              crossAxisAlignment: CrossAxisAlignment.start,
+-                              children: [
+-                                CupertinoSearchTextField(
+-                                  controller: _appCtrl,
+-                                  placeholder: 'Search apps',
+-                                  backgroundColor: AppColors.backgroundLight,
+-                                  borderRadius: BorderRadius.circular(14),
+-                                  onChanged: (_) => setState(() {}),
+-                                  style: AppTypography.body.copyWith(
+-                                    fontSize: 15,
+-                                    color: AppColors.label,
+-                                  ),
+-                                  placeholderStyle: AppTypography.body.copyWith(
+-                                    fontSize: 15,
+-                                    color: AppColors.tertiaryLabel,
+-                                  ),
+-                                ),
+-                                const SizedBox(height: 10),
+-                                if (_filteredAppSuggestions(
+-                                  _appCtrl.text,
+-                                ).isNotEmpty) ...[
+-                                  Column(
+-                                    children: [
+-                                      for (final app in _filteredAppSuggestions(
+-                                        _appCtrl.text,
+-                                      ).take(20))
+-                                        Padding(
+-                                          padding: const EdgeInsets.only(
+-                                            bottom: 8,
+-                                          ),
+-                                          child: _appSuggestionTile(app),
+-                                        ),
+-                                    ],
+-                                  ),
+-                                ] else ...[
+-                                  Text(
+-                                    'No suggestion for "${_appCtrl.text.trim()}". Try another app name.',
+-                                    style: AppTypography.caption1.copyWith(
+-                                      fontSize: 11,
+-                                      color: AppColors.tertiaryLabel.withValues(
+-                                        alpha: 0.75,
+-                                      ),
+-                                    ),
+-                                  ),
+-                                ],
+-                              ],
+-                            ),
+-                          ),
+-                          const SizedBox(height: 8),
+-                        ],
+                         if (_blockedApps.isNotEmpty)
+*** End Patch

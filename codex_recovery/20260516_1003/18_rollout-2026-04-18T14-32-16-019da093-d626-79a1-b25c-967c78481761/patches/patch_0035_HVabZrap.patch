@@ -1,0 +1,80 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/services/classic_blocking_coordinator.dart
+@@
+   String? _clean(String? value) {
+     final trimmed = value?.trim();
+     return (trimmed == null || trimmed.isEmpty) ? null : trimmed;
+   }
++
++  List<String> _collectNonEmpty(Iterable<String?> values) {
++    final out = <String>{};
++    for (final value in values) {
++      final cleaned = _clean(value);
++      if (cleaned != null) {
++        out.add(cleaned);
++      }
++    }
++    return out.toList(growable: false);
++  }
+@@
+-    final basePackageIdentifiers = <String>{
+-      for (final binding in baseAppBindings.values)
+-        if (_clean(binding.nativeIdentifier) != null) _clean(binding.nativeIdentifier)!,
+-    }.toList(growable: false);
+-
+-    final basePayloads = <String>{
+-      for (final binding in [
+-        ...baseAppBindings.values,
+-        ...baseWebsiteBindings.values,
+-      ])
+-        if (_clean(binding.nativePayload) != null) _clean(binding.nativePayload)!,
+-    }.toList(growable: false);
+-
+-    final baseWebsiteDomains = <String>{
+-      for (final binding in baseWebsiteBindings.values)
+-        if (_clean(binding.nativeIdentifier) != null) _clean(binding.nativeIdentifier)!,
+-    }.toList(growable: false);
+-
+-    final pausePackageIdentifiers = <String>{
+-      for (final binding in pauseAppBindings.values)
+-        if (_clean(binding.nativeIdentifier) != null) _clean(binding.nativeIdentifier)!,
+-    }.toList(growable: false);
+-
+-    final pausePayloads = <String>{
+-      for (final binding in [
+-        ...pauseAppBindings.values,
+-        ...pauseWebsiteBindings.values,
+-      ])
+-        if (_clean(binding.nativePayload) != null) _clean(binding.nativePayload)!,
+-    }.toList(growable: false);
+-
+-    final pauseWebsiteDomains = <String>{
+-      for (final binding in pauseWebsiteBindings.values)
+-        if (_clean(binding.nativeIdentifier) != null) _clean(binding.nativeIdentifier)!,
+-    }.toList(growable: false);
++    final basePackageIdentifiers = _collectNonEmpty(
++      baseAppBindings.values.map((binding) => binding.nativeIdentifier),
++    );
++
++    final basePayloads = _collectNonEmpty([
++      ...baseAppBindings.values.map((binding) => binding.nativePayload),
++      ...baseWebsiteBindings.values.map((binding) => binding.nativePayload),
++    ]);
++
++    final baseWebsiteDomains = _collectNonEmpty(
++      baseWebsiteBindings.values.map((binding) => binding.nativeIdentifier),
++    );
++
++    final pausePackageIdentifiers = _collectNonEmpty(
++      pauseAppBindings.values.map((binding) => binding.nativeIdentifier),
++    );
++
++    final pausePayloads = _collectNonEmpty([
++      ...pauseAppBindings.values.map((binding) => binding.nativePayload),
++      ...pauseWebsiteBindings.values.map((binding) => binding.nativePayload),
++    ]);
++
++    final pauseWebsiteDomains = _collectNonEmpty(
++      pauseWebsiteBindings.values.map((binding) => binding.nativeIdentifier),
++    );
+*** End Patch

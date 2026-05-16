@@ -1,0 +1,146 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/focus/focus_screen.dart
+@@
+         Row(
+           children: presets
+               .map(
+                 (preset) => Expanded(
+                   child: Padding(
+@@
+                       child: AnimatedContainer(
+                         duration: const Duration(milliseconds: 160),
+                         height: 160,
+                         decoration: BoxDecoration(
+                           borderRadius: BorderRadius.circular(20),
+@@
+                           border: Border.all(
+                             color: provider.focusDurationMinutes == preset
+                                 ? const Color(0xFFBC8CFF)
+                                 : AppColors.glassBorder.withValues(alpha: 0.7),
+                             width: 0.8,
+                           ),
++                          boxShadow: [
++                            BoxShadow(
++                              color: (provider.focusDurationMinutes == preset
++                                      ? const Color(0xFF9D45F4)
++                                      : AppColors.glassShadow)
++                                  .withValues(alpha: 0.24),
++                              blurRadius: 16,
++                              offset: const Offset(0, 8),
++                              spreadRadius: -8,
++                            ),
++                          ],
+                         ),
+                         child: Column(
+@@
+         const SizedBox(height: 8),
+-        Container(
+-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+-          decoration: BoxDecoration(
+-            borderRadius: BorderRadius.circular(16),
+-            color: const Color(0xFF0D1B3A).withValues(alpha: 0.92),
+-            border: Border.all(
+-              color: AppColors.glassBorder.withValues(alpha: 0.7),
+-              width: 0.8,
+-            ),
+-          ),
++        GlassCard(
++          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
++          borderRadius: 16,
++          level: GlassCardLevel.standard,
++          showEdgeGlow: true,
++          border: Border.all(
++            color: AppColors.glassBorder.withValues(alpha: 0.7),
++            width: 0.8,
++          ),
+           child: Row(
+             children: [
+               Expanded(
+                 child: CupertinoTextField(
+@@
+             ],
+           ),
+         ),
+         const SizedBox(height: 14),
+-        Container(
++        GlassCard(
+           padding: const EdgeInsets.all(14),
+-          decoration: BoxDecoration(
+-            borderRadius: BorderRadius.circular(18),
+-            color: const Color(0xFF640A0A).withValues(alpha: 0.86),
+-            border: Border.all(
+-              color: const Color(0xFFEF4444).withValues(alpha: 0.8),
+-              width: 0.8,
+-            ),
+-          ),
++          borderRadius: 18,
++          level: GlassCardLevel.elevated,
++          showEdgeGlow: true,
++          border: Border.all(
++            color: const Color(0xFFEF4444).withValues(alpha: 0.8),
++            width: 0.8,
++          ),
++          gradientColors: [
++            const Color(0xFF640A0A).withValues(alpha: 0.86),
++            AppColors.backgroundLight.withValues(alpha: 0.84),
++          ],
+           child: Row(
+             crossAxisAlignment: CrossAxisAlignment.start,
+             children: [
+@@
+         LiquidButton(
+           label: 'BEGIN FOCUS MODE',
+           fullWidth: true,
+           gradient: const [Color(0xFF8A31F4), Color(0xFF9D45F4)],
+           onPressed: () => _start(provider),
+         ),
+         const SizedBox(height: 10),
+-        CupertinoButton(
+-          padding: const EdgeInsets.symmetric(vertical: 12),
+-          color: AppColors.backgroundLight.withValues(alpha: 0.74),
+-          borderRadius: BorderRadius.circular(14),
+-          onPressed: () => _openPlanSheet(provider),
+-          child: Text(
+-            'PLAN',
+-            style: AppTypography.mono.copyWith(
+-              fontSize: 13,
+-              color: AppColors.label,
+-              fontWeight: FontWeight.w800,
+-              letterSpacing: 1.2,
+-            ),
+-          ),
++        LiquidButton(
++          label: 'PLAN',
++          fullWidth: true,
++          gradient: [
++            AppColors.floatingGlassGradient.first.withValues(alpha: 0.92),
++            AppColors.floatingGlassGradient.last.withValues(alpha: 0.82),
++          ],
++          onPressed: () => _openPlanSheet(provider),
+         ),
+@@
+         GlassCard(
+           padding: const EdgeInsets.all(18),
+           borderRadius: 18,
++          level: GlassCardLevel.standard,
++          showEdgeGlow: true,
+           border: Border.all(
+             color: AppColors.glassBorder.withValues(alpha: 0.7),
+             width: 0.7,
+@@
+     return Container(
+       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+       decoration: BoxDecoration(
+         borderRadius: BorderRadius.circular(14),
+-        color: AppColors.backgroundLight.withValues(alpha: 0.62),
++        gradient: LinearGradient(
++          begin: Alignment.topLeft,
++          end: Alignment.bottomRight,
++          colors: [
++            AppColors.floatingGlassGradient.first.withValues(alpha: 0.84),
++            AppColors.floatingGlassGradient.last.withValues(alpha: 0.72),
++          ],
++        ),
+         border: Border.all(color: color.withValues(alpha: 0.5), width: 0.7),
+       ),
+*** End Patch

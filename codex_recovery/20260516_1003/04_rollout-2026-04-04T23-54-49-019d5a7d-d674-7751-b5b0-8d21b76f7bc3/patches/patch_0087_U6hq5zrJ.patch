@@ -1,0 +1,43 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/router/app_router.dart
+@@
+ import '../../features/auth/onboarding_screen.dart';
+ import '../../features/home/home_screen.dart';
+ import '../../features/home/stats_screen.dart';
++import '../../features/launcher/launcher_screen.dart';
+ import '../../features/debug/database_debug_screen.dart';
+@@
+         GoRoute(
+           path: '/onboarding',
+           builder: (context, state) => const OnboardingScreen(),
+         ),
++        GoRoute(
++          path: '/launcher',
++          builder: (context, state) => const LauncherScreen(),
++        ),
++        GoRoute(
++          path: '/launcher/block',
++          builder: (context, state) {
++            final payload = state.extra as LauncherBlockPayload;
++            return LauncherBlockScreen(payload: payload);
++          },
++        ),
+@@
+         final auth = context.read<AuthProvider>();
+         final loggingIn =
+             state.matchedLocation == '/login' ||
+             state.matchedLocation == '/signup';
+         final onboarding = state.matchedLocation == '/onboarding';
++        final launcherMode =
++            state.matchedLocation == '/launcher' ||
++            state.matchedLocation == '/launcher/block';
+ 
+         // 1. If not logged in and not on auth/onboarding pages, go to onboarding
+         if (!auth.isAuthenticated) {
+-          if (!loggingIn && !onboarding) {
++          if (!loggingIn && !onboarding && !launcherMode) {
+             return '/onboarding';
+           }
+           return null;
+         }
+*** End Patch

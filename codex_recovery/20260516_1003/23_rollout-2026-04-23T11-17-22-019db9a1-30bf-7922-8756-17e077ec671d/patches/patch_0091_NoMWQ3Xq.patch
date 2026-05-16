@@ -1,0 +1,27 @@
+*** Begin Patch
+*** Update File: lib/core/providers/language_overrides.dart
+@@
+-    'habits_no_attached_habits': 'No habits attached yet.',
+-    'habits_reward': 'Reward',
+-    'habits_reward_placeholder': 'Reward if successful',
+-    'habits_sanction': 'Sanction',
+-    'habits_sanction_placeholder': 'Sanction if failed',
+-    'habits_swipe_left_grid': '← Swipe left for Habits Grid',
+-    'habits_swipe_right_goals': 'Swipe right for Goals & Contract →',
+-    'habits_target_90': 'TARGET 90%',
+-    'habits_threshold': 'THRESHOLD',
+-    'habits_threshold_locked':
+-        'Threshold {threshold}% • Locked until next week',
+-    'habits_unlock_edit': 'UNLOCK_EDIT',
++    'habits_no_attached_habits': 'अभी कोई आदत जुड़ी नहीं है।',
++    'habits_reward': 'इनाम',
++    'habits_reward_placeholder': 'सफल होने पर इनाम',
++    'habits_sanction': 'दंड',
++    'habits_sanction_placeholder': 'असफल होने पर दंड',
++    'habits_swipe_left_grid': '← आदत ग्रिड के लिए बाएँ स्वाइप करें',
++    'habits_swipe_right_goals': 'लक्ष्य और अनुबंध के लिए दाएँ स्वाइप करें →',
++    'habits_target_90': 'लक्ष्य 90%',
++    'habits_threshold': 'सीमा',
++    'habits_threshold_locked': 'सीमा {threshold}% • अगले सप्ताह तक लॉक',
++    'habits_unlock_edit': 'संपादन अनलॉक करें',
+*** End Patch

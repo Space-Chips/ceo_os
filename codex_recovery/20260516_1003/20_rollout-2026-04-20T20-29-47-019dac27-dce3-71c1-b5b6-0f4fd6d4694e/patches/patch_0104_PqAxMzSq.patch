@@ -1,0 +1,87 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/android/app/src/main/kotlin/com/wakeapp/ceoos/ForegroundAppDetector.kt
+@@
+ data class ForegroundSnapshot(
+     val packageName: String?,
+     val className: String?,
+     val eventType: Int,
+     val detectedBrowserUrl: String? = null,
+     val isBrowser: Boolean = false,
+     val browserToolbarBottomPx: Int? = null,
++    val browserAddressBarFocused: Boolean = false,
+ )
+@@
+         val detectedNow = if (isBrowser) detectBrowserUrl(event, root, packageName) else null
+         val detectedUrl = if (isBrowser) resolveDetectedDomain(packageName, detectedNow) else null
+         val toolbarBottomPx = if (isBrowser) detectBrowserToolbarBottom(root, packageName) else null
++        val addressBarFocused = if (isBrowser) detectAddressBarFocused(event, root, packageName) else false
+ 
+         return ForegroundSnapshot(
+             packageName = packageName,
+             className = className,
+             eventType = event.eventType,
+             detectedBrowserUrl = detectedUrl,
+             isBrowser = isBrowser,
+             browserToolbarBottomPx = toolbarBottomPx,
++            browserAddressBarFocused = addressBarFocused,
+         )
+     }
+@@
+     private fun detectBrowserToolbarBottom(
+         root: AccessibilityNodeInfo?,
+         packageName: String?,
+     ): Int? {
+@@
+         return if (bounds.bottom > 0) bounds.bottom else null
+     }
++
++    private fun detectAddressBarFocused(
++        event: AccessibilityEvent,
++        root: AccessibilityNodeInfo?,
++        packageName: String?,
++    ): Boolean {
++        val profile = packageName?.let { packagesToProfile[it] } ?: return false
++        event.source?.let { source ->
++            if (isAddressBarNode(source, profile) && (source.isFocused || source.isAccessibilityFocused)) {
++                return true
++            }
++        }
++        return isAnyAddressBarFocused(root, profile)
++    }
+@@
+     private fun findBestAddressBarBounds(
+         root: AccessibilityNodeInfo?,
+         profile: BrowserProfile,
+     ): Rect? {
+@@
+         visit(root, 0)
+         return bestBounds
+     }
++
++    private fun isAnyAddressBarFocused(
++        root: AccessibilityNodeInfo?,
++        profile: BrowserProfile,
++    ): Boolean {
++        if (root == null) return false
++        val visited = mutableSetOf<Int>()
++        var focused = false
++
++        fun visit(node: AccessibilityNodeInfo?, depth: Int) {
++            if (node == null || depth > 10 || focused) return
++            val identity = System.identityHashCode(node)
++            if (!visited.add(identity) || visited.size > 420) return
++
++            if (isAddressBarNode(node, profile) && (node.isFocused || node.isAccessibilityFocused)) {
++                focused = true
++                return
++            }
++
++            for (index in 0 until node.childCount) {
++                visit(node.getChild(index), depth + 1)
++            }
++        }
++
++        visit(root, 0)
++        return focused
++    }
+*** End Patch

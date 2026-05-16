@@ -1,0 +1,169 @@
+*** Begin Patch
+*** Update File: lib/core/widgets/home_widgets/widget_views.dart
+@@
+ enum WidgetActionVariant { focus, blackout }
+-
+-class WidgetActionButton extends StatelessWidget {
+-  final IconData icon;
+-  final String title;
+-  final String subtitle;
+-  final WidgetActionVariant variant;
+-  final String? prominentValue;
+-
+-  const WidgetActionButton({
+-    super.key,
+-    required this.icon,
+-    required this.title,
+-    required this.subtitle,
+-    required this.variant,
+-    this.prominentValue,
+-  });
+-
+-  @override
+-  Widget build(BuildContext context) {
+-    final accent = variant == WidgetActionVariant.focus
+-        ? AppColors.accent
+-        : AppColors.error;
+-    return Container(
+-      height: double.infinity,
+-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
+-      decoration: BoxDecoration(
+-        borderRadius: BorderRadius.circular(22),
+-        color: Color.alphaBlend(
+-          accent.withValues(alpha: 0.14),
+-          const Color(0xFF12141A),
+-        ),
+-        border: Border.all(color: accent.withValues(alpha: 0.28)),
+-        boxShadow: [
+-          BoxShadow(
+-            color: accent.withValues(alpha: 0.14),
+-            blurRadius: 18,
+-            offset: const Offset(0, 10),
+-            spreadRadius: -8,
+-          ),
+-        ],
+-      ),
+-      child: prominentValue == null
+-          ? Row(
+-              children: [
+-                Container(
+-                  width: 42,
+-                  height: 42,
+-                  decoration: BoxDecoration(
+-                    borderRadius: BorderRadius.circular(16),
+-                    color: accent.withValues(alpha: 0.18),
+-                    border: Border.all(color: accent.withValues(alpha: 0.28)),
+-                  ),
+-                  alignment: Alignment.center,
+-                  child: Icon(
+-                    icon,
+-                    size: 18,
+-                    color: accent.withValues(alpha: 0.95),
+-                  ),
+-                ),
+-                const SizedBox(width: 12),
+-                Expanded(
+-                  child: Column(
+-                    crossAxisAlignment: CrossAxisAlignment.start,
+-                    mainAxisAlignment: MainAxisAlignment.center,
+-                    children: [
+-                      Text(
+-                        title,
+-                        maxLines: 1,
+-                        overflow: TextOverflow.ellipsis,
+-                        style: AppTypography.title3.copyWith(
+-                          fontSize: 16,
+-                          fontWeight: FontWeight.w800,
+-                          color: WidgetDesignTokens.primaryText,
+-                          height: 1.05,
+-                        ),
+-                      ),
+-                      const SizedBox(height: 6),
+-                      Text(
+-                        subtitle,
+-                        maxLines: 1,
+-                        overflow: TextOverflow.ellipsis,
+-                        style: AppTypography.caption1.copyWith(
+-                          fontSize: 12,
+-                          fontWeight: FontWeight.w700,
+-                          color: WidgetDesignTokens.secondaryText,
+-                          height: 1,
+-                        ),
+-                      ),
+-                    ],
+-                  ),
+-                ),
+-              ],
+-            )
+-          : Column(
+-              crossAxisAlignment: CrossAxisAlignment.start,
+-              children: [
+-                Row(
+-                  children: [
+-                    Container(
+-                      width: 42,
+-                      height: 42,
+-                      decoration: BoxDecoration(
+-                        borderRadius: BorderRadius.circular(16),
+-                        color: accent.withValues(alpha: 0.18),
+-                        border: Border.all(
+-                          color: accent.withValues(alpha: 0.28),
+-                        ),
+-                      ),
+-                      alignment: Alignment.center,
+-                      child: Icon(
+-                        icon,
+-                        size: 18,
+-                        color: accent.withValues(alpha: 0.95),
+-                      ),
+-                    ),
+-                    const SizedBox(width: 12),
+-                    Expanded(
+-                      child: Text(
+-                        title,
+-                        maxLines: 1,
+-                        overflow: TextOverflow.ellipsis,
+-                        style: AppTypography.title3.copyWith(
+-                          fontSize: 18,
+-                          fontWeight: FontWeight.w800,
+-                          color: WidgetDesignTokens.primaryText,
+-                          height: 1.0,
+-                        ),
+-                      ),
+-                    ),
+-                  ],
+-                ),
+-                const Spacer(),
+-                Text(
+-                  prominentValue!,
+-                  maxLines: 1,
+-                  overflow: TextOverflow.ellipsis,
+-                  style: AppTypography.largeTitle.copyWith(
+-                    fontSize: 34,
+-                    fontWeight: FontWeight.w800,
+-                    color: WidgetDesignTokens.primaryText.withValues(
+-                      alpha: 0.98,
+-                    ),
+-                    height: 1.0,
+-                  ),
+-                ),
+-                const SizedBox(height: 6),
+-                Text(
+-                  subtitle,
+-                  maxLines: 1,
+-                  overflow: TextOverflow.ellipsis,
+-                  style: AppTypography.callout.copyWith(
+-                    fontSize: 15,
+-                    fontWeight: FontWeight.w700,
+-                    color: WidgetDesignTokens.secondaryText,
+-                    height: 1,
+-                  ),
+-                ),
+-              ],
+-            ),
+-    );
+-  }
+-}
+ 
+ class FocusWidgetSquareView extends StatelessWidget {
+*** End Patch

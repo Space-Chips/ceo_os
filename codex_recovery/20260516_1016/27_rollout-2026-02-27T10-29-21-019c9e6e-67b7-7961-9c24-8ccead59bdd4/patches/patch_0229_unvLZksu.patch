@@ -1,0 +1,46 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/repositories/premium_repository.dart
+@@
+   Future<PremiumCheckResult> canStartFocusSession(int durationMinutes) async {
+@@
+     return const PremiumCheckResult.allowed();
+   }
++
++  Future<PremiumCheckResult> canStartCeoSession(int durationMinutes) async {
++    final runtime = await getRuntime();
++    if (runtime.isPremiumUser) {
++      return const PremiumCheckResult.allowed();
++    }
++
++    if (durationMinutes > PremiumLimits.ceoMaxDurationMinutes) {
++      return PremiumCheckResult.blocked(
++        reason: 'ceo_duration',
++        limit: PremiumLimits.ceoMaxDurationMinutes,
++        current: durationMinutes,
++      );
++    }
++
++    final now = DateTime.now();
++    final weekStart = DateTime(
++      now.year,
++      now.month,
++      now.day,
++    ).subtract(Duration(days: now.weekday - 1));
++    final weekStartIso = '${DateFormat('yyyy-MM-dd').format(weekStart)}T00:00:00';
++
++    final countThisWeek = await _countRows(
++      table: 'ceo_mode_sessions',
++      filters: (query) => query.gte('start_time', weekStartIso),
++    );
++
++    if (countThisWeek >= PremiumLimits.ceoSessionsPerWeek) {
++      return PremiumCheckResult.blocked(
++        reason: 'ceo_weekly',
++        limit: PremiumLimits.ceoSessionsPerWeek,
++        current: countThisWeek,
++      );
++    }
++
++    return const PremiumCheckResult.allowed();
++  }
+*** End Patch

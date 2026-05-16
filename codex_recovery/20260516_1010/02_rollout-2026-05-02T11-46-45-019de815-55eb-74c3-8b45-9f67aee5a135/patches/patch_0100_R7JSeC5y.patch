@@ -1,0 +1,7 @@
+*** Begin Patch
+*** Update File: pubspec.yaml
+@@
+   adaptive_platform_ui: ^0.1.101
++  app_links: any
+   supabase_flutter: ^2.12.0
+*** End Patch

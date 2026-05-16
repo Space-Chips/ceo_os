@@ -1,0 +1,23 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/repositories/feature_repository.dart
+@@
+   Future<void> setBlockedAppTime(String id, int minutes) async {
+@@
+         .eq('id', id)
+         .eq('created_by', _currentUserId);
+   }
++
++  Future<void> updateBlockedAppName(String id, String appName) async {
++    final trimmed = appName.trim();
++    if (trimmed.isEmpty) return;
++    if (_useLocalFamilyControlsStorage) {
++      await _familyControlsLocalStore.updateBlockedAppName(id, trimmed);
++      return;
++    }
++    await _client
++        .from('blocked_apps')
++        .update({'app_name': trimmed})
++        .eq('id', id)
++        .eq('created_by', _currentUserId);
++  }
+*** End Patch

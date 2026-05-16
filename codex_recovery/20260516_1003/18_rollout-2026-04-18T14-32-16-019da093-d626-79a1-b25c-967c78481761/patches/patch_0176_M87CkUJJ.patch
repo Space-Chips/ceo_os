@@ -1,0 +1,63 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/providers/language_provider.dart
+@@
+     'focus_prep_rule_streak_daily_first':
+         'The first completed session of the day adds +1 to your streak.',
+     'focus_prep_rule_streak_once_per_day': 'Only one streak increase per day.',
++    'focus_prep_rule_no_daily_session_required':
++        'You do not need to run a session every day to keep your streak.',
+     'focus_prep_rule_keep_streak_no_quit':
+         'You keep your streak as long as you do not quit an active session.',
+@@
+     'focus_prep_rule_streak_daily_first':
+         'La première session complétée de la journée ajoute +1 à ta streak.',
+     'focus_prep_rule_streak_once_per_day': 'Une seule hausse de streak par jour.',
++    'focus_prep_rule_no_daily_session_required':
++        'Tu n’as pas besoin de faire une session chaque jour pour garder ta streak.',
+     'focus_prep_rule_keep_streak_no_quit':
+         'Tu gardes ta streak si tu ne quittes pas une session en cours.',
+@@
+     'focus_prep_rule_streak_daily_first':
+         'La primera sesión completada del día suma +1 a tu racha.',
+     'focus_prep_rule_streak_once_per_day':
+         'Solo un aumento de racha por día.',
++    'focus_prep_rule_no_daily_session_required':
++        'No necesitas hacer una sesión cada día para mantener tu racha.',
+     'focus_prep_rule_keep_streak_no_quit':
+         'Mantienes tu racha si no abandonas una sesión activa.',
+@@
+     'focus_prep_intro_title': 'Prepare seu modo Focus',
+     'focus_prep_checklist_title': 'Regras da sessão',
+     'focus_prep_start_focus': 'Iniciar Focus',
++    'focus_prep_rule_no_daily_session_required':
++        'Você não precisa fazer uma sessão todos os dias para manter sua sequência.',
+@@
+     'focus_prep_intro_title': 'Подготовь режим Focus',
+     'focus_prep_checklist_title': 'Правила сессии',
+     'focus_prep_start_focus': 'Запустить Focus',
++    'focus_prep_rule_no_daily_session_required':
++        'Не нужно проводить сессию каждый день, чтобы сохранить серию.',
+@@
+     'focus_prep_intro_title': 'حضّر وضع التركيز',
+     'focus_prep_checklist_title': 'قواعد الجلسة',
+     'focus_prep_start_focus': 'ابدأ التركيز',
++    'focus_prep_rule_no_daily_session_required':
++        'لست بحاجة إلى جلسة كل يوم للحفاظ على السلسلة.',
+@@
+     'focus_prep_intro_title': 'Siapkan mode Fokus',
+     'focus_prep_checklist_title': 'Aturan sesi',
+     'focus_prep_start_focus': 'Mulai Fokus',
++    'focus_prep_rule_no_daily_session_required':
++        'Kamu tidak harus menjalankan sesi setiap hari untuk menjaga streak.',
+@@
+     'focus_prep_intro_title': 'फोकस मोड तैयार करें',
+     'focus_prep_checklist_title': 'सेशन नियम',
+     'focus_prep_start_focus': 'फोकस शुरू करें',
++    'focus_prep_rule_no_daily_session_required':
++        'स्ट्रीक बनाए रखने के लिए हर दिन सत्र करना ज़रूरी नहीं है।',
+@@
+     'focus_prep_intro_title': '准备你的专注模式',
+     'focus_prep_checklist_title': '会话规则',
+     'focus_prep_start_focus': '开始专注',
++    'focus_prep_rule_no_daily_session_required': '你不需要每天都做会话来保持连胜。',
+*** End Patch

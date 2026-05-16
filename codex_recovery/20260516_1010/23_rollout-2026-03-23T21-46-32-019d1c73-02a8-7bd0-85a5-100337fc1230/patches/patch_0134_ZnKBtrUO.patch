@@ -1,0 +1,41 @@
+*** Begin Patch
+*** Update File: android/app/src/main/kotlin/com/wakeapp/ceoos/WakeAccessibilityService.kt
+@@
+     private lateinit var foregroundAppDetector: ForegroundAppDetector
+     private lateinit var appBlockEngine: AppBlockEngine
+     private lateinit var browserBlockCoordinator: BrowserBlockCoordinator
+     private lateinit var gateLauncher: GateLauncher
++    private lateinit var blockingOverlay: BlockingOverlay
+@@
+         browserBlockCoordinator = BrowserBlockCoordinator()
+         appBlockEngine = AppBlockEngine(browserBlockCoordinator)
+         gateLauncher = GateLauncher()
++        blockingOverlay = BlockingOverlay(this)
+         registerPolicyListener()
+         evaluateCurrentState()
+     }
+@@
+     private fun handleSnapshot(snapshot: ForegroundSnapshot, startedAt: Long) {
+         if (foregroundAppDetector.isGateSnapshot(snapshot)) {
+             return
+         }
+@@
+         val gateLaunched = when (decision) {
+             BlockDecision.Allow -> {
++                blockingOverlay.hide()
+                 gateLauncher.dismiss(this)
+                 false
+             }
+             BlockDecision.IgnoreTransient -> false
+-            is BlockDecision.BlockApp -> gateLauncher.launch(this, decision)
+-            is BlockDecision.BlockUrl -> browserBlockCoordinator.handleBlockedUrl(this, decision, gateLauncher)
++            is BlockDecision.BlockApp -> {
++                blockingOverlay.show()
++                gateLauncher.launch(this, decision)
++            }
++            is BlockDecision.BlockUrl -> {
++                blockingOverlay.show()
++                browserBlockCoordinator.handleBlockedUrl(this, decision, gateLauncher)
++            }
+         }
+*** End Patch

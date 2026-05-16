@@ -1,0 +1,11 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/ceo_mode/ceo_mode_screen.dart
+@@
+           child: Text(
+             'CEO Mode',
+-            style: AppTypography.display.copyWith(
++            style: AppTypography.largeTitle.copyWith(
+               fontSize: 42,
+               fontWeight: FontWeight.w800,
+               letterSpacing: 0.3,
+*** End Patch

@@ -1,0 +1,114 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/providers/language_overrides.dart
+@@
+     'auth_privacy_body':
+         'WakeApp uses Supabase for account and cloud sync infrastructure, Google Sign-In when selected by the user, RevenueCat plus Apple or Google Play for purchases, and platform system APIs for blocking, notifications, widgets, and scheduling.',
+ 
++    'screen_time_unknown_app': 'Unknown app',
++    'screen_time_blocked_app': 'Blocked app',
++    'screen_time_unknown_period': 'Unknown period',
++    'screen_time_one_app_added': '1 app added',
++    'screen_time_apps_added': 'apps added',
++    'screen_time_one_app_removed': '1 app removed',
++    'screen_time_apps_removed': 'apps removed',
++    'screen_time_blocked_apps_updated': 'Blocked apps updated',
++    'screen_time_permissions_required': 'Permissions required',
++    'screen_time_permissions_required_apps_message':
++        'Allow Screen Time / Family Controls first so selected apps can be blocked during your focus sessions on this device.',
++    'screen_time_app_picker_unavailable': 'App picker unavailable',
++    'screen_time_no_app_selected': 'No app selected',
++    'screen_time_no_app_selected_message':
++        'In the Apple picker, choose at least one app then tap Done.',
++    'screen_time_valid_domain_required': 'Valid domain required',
++    'screen_time_valid_domain_required_message':
++        'Enter a website like youtube.com or reddit.com.',
++    'screen_time_already_blocked': 'Already blocked',
++    'screen_time_already_blocked_message_suffix':
++        'is already in your blocked websites.',
++    'screen_time_permissions_required_websites_message':
++        'Allow Screen Time / Family Controls first so selected websites can be blocked during your focus sessions on this device.',
++    'screen_time_website_picker_unavailable': 'Website picker unavailable',
++    'screen_time_no_website_selected': 'No website selected',
++    'screen_time_no_website_selected_message':
++        'In the Apple picker, choose at least one website/domain (not only apps) then tap Done.',
++    'screen_time_sync_failed': 'Sync failed',
++    'screen_time_sync_failed_android_message':
++        'Unable to load Android protection controls right now.',
++    'screen_time_sync_failed_ios_message':
++        'Unable to load Screen Time controls right now.',
++    'screen_time_enabled': 'Enabled',
++    'screen_time_allow': 'Allow',
++    'screen_time_unavailable': 'Unavailable',
++    'screen_time_enabled_on_device': 'Enabled on this device',
++    'screen_time_permission_required': 'Permission required',
++    'screen_time_unsupported_on_device': 'Unsupported on this device',
++    'screen_time_accessibility_enabled': 'Accessibility enabled',
++    'screen_time_accessibility_enabled_message':
++        'Accessibility access is already enabled on this device.',
++    'screen_time_usage_access_enabled': 'Usage access enabled',
++    'screen_time_usage_access_enabled_message':
++        'Usage Access is already enabled on this device.',
++    'screen_time_action_failed': 'Action failed',
++    'screen_time_access_approved': 'Access approved',
++    'screen_time_android_access_approved_message':
++        'Android protection access is already approved on this device.',
++    'screen_time_ios_access_approved_message':
++        'Screen Time / Family Controls access is already approved on this iPhone.',
++    'screen_time_daily_limit_prefix': 'Daily limit',
++    'screen_time_android_local_limit_info':
++        'Usage data for Android daily limits stays on this device and is not used for ads or unrelated analytics.',
++    'screen_time_ios_local_limit_info':
++        'Usage for Screen Time protections stays on this device and is not synced, exported, or shared.',
++    'screen_time_control_title': 'Screen Time Control',
++    'screen_time_android_privacy_notice':
++        'On Android, WakeApp uses Accessibility and Usage Access to enforce selected app and website protections on-device. Website blocking and daily limits apply in supported browsers only.',
++    'screen_time_ios_privacy_notice':
++        'On iPhone, Screen Time / Family Controls activity stays on this device. WakeApp stores your selected blocks and schedules, but not your device usage history.',
++    'screen_time_accessibility_access': 'Accessibility access',
++    'screen_time_accessibility_access_description':
++        'Required to detect foreground apps instantly and show the blocking screen when a protected app opens.',
++    'screen_time_usage_access': 'Usage access',
++    'screen_time_usage_access_description':
++        'Required to enforce daily limits accurately for apps and supported browsers.',
++    'screen_time_family_controls_access': 'Family controls access',
++    'screen_time_needs_settings_confirmation': 'Needs Settings confirmation',
++    'screen_time_grant_access_description':
++        'Grant access so WakeApp can apply on-device protections.',
++    'screen_time_blocked_apps': 'Blocked apps',
++    'screen_time_search_installed_apps': 'Search installed apps',
++    'screen_time_choose_apps_to_block': 'Choose apps to block',
++    'screen_time_choose_apps_subtitle':
++        'Open the Apple app picker and select one or multiple apps.',
++    'screen_time_open_app_picker': 'Open app picker',
++    'screen_time_choose_apps': 'Choose apps',
++    'screen_time_blocked_websites': 'Blocked websites',
++    'screen_time_global_nsfw_shield': 'Global NSFW shield',
++    'screen_time_choose_websites_picker': 'Choose websites in Apple picker',
++    'screen_time_choose_websites_subtitle':
++        'Select one or multiple websites. Each selection is saved independently.',
++    'screen_time_choose_websites': 'Choose websites',
++    'screen_time_search_or_paste_domain': 'Search or paste a domain',
++    'screen_time_suggestions_appear_as_you_type':
++        'Suggestions appear as you type.',
++    'screen_time_add_website': 'Add website',
++    'screen_time_pause': 'Pause',
++    'screen_time_plan_pause': 'Plan pause',
++    'screen_time_minutes_per_day_placeholder': 'Minutes per day (0 = blocked)',
++    'screen_time_clear_limit': 'Clear limit',
++    'screen_time_invalid_value': 'Invalid value',
++    'screen_time_invalid_minutes_message':
++        'Please enter a valid number of minutes.',
++    'screen_time_min_per_day': 'min/day',
++    'screen_time_fully_blocked': 'Fully blocked',
++    'screen_time_daily_limit_short': 'Daily limit',
++    'screen_time_blocked_website': 'Blocked website',
++    'screen_time_website_fully_blocked_message':
++        'This website is fully blocked (no daily allowance).',
++    'screen_time_planning_required': 'Planning required',
++    'screen_time_planning_required_message':
++        'Breaks must be planned at least 2 hours in advance.',
++    'screen_time_app_fully_blocked_message':
++        'This app is fully blocked (no daily allowance).',
++
+     'permission_required': 'Permission required',
+*** End Patch

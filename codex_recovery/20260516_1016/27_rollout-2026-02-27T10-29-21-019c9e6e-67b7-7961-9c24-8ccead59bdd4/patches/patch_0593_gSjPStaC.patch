@@ -1,0 +1,31 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/home/home_screen.dart
+@@
+ import '../../components/components.dart';
+ import '../../core/models/insights_models.dart';
+ import '../../core/providers/ceo_mode_provider.dart';
+ import '../../core/providers/habit_provider.dart';
+ import '../../core/providers/task_provider.dart';
+ import '../../core/repositories/feature_repository.dart';
+ import '../../core/repositories/insights_repository.dart';
+ import '../../core/repositories/user_repository.dart';
++import '../../core/services/performance_score_service.dart';
+ import '../../core/services/stats_engine.dart';
+@@
+               final rankLevel = data?.rankLevel ?? 1;
+               final habitsCount =
+                   data?.totalHabits ?? habitProvider.habits.length;
++              final scoreBundle = data == null
++                  ? null
++                  : PerformanceScoreService.build(dashboard: data);
+               final appCards = <_PrimaryAppCardData>[
+@@
+                       const SizedBox(height: 84),
+                       _DashboardMainCard(
+-                        userLabel: _userLabel,
++                        wakeScore: scoreBundle?.wake.score ?? 0,
++                        tasksCount: pendingTasks,
+                         habitsCount: habitsCount,
+                         onOpenDashboard: () => context.push('/dashboard'),
+                       ),
+*** End Patch

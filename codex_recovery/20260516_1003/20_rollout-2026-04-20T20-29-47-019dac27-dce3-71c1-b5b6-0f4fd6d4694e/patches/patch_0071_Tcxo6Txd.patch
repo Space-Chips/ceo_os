@@ -1,0 +1,12 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/android/app/src/main/kotlin/com/wakeapp/ceoos/BlockingAccessibilityService.kt
+@@
+-        val eventPackageIsBrowser = foregroundAppDetector.isBrowserPackage(eventPackage)
+-        val needRootSnapshot = eventPackage.isNullOrEmpty() || eventPackageIsBrowser
++        val eventPackageIsBrowser = foregroundAppDetector.isBrowserPackage(eventPackage)
++        val needRootSnapshot = eventPackage.isNullOrEmpty() ||
++            eventPackageIsBrowser ||
++            event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED ||
++            event.eventType == AccessibilityEvent.TYPE_WINDOWS_CHANGED
+         val root = if (needRootSnapshot) rootInActiveWindow else null
+*** End Patch

@@ -1,0 +1,43 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/repositories/task_repository.dart
+@@
+   Future<void> addEvent(
+     String title,
+     String date, {
+     String? time,
++    int? durationMinutes,
+     String? description,
+     String? sourceType,
+     String? sourceId,
+     String? recurrenceRule,
+   }) async {
+-    await _client.from('calendar_events').insert({
++    final payload = <String, dynamic>{
+       'created_by': _currentUserId,
+       'title': title,
+       'description': description,
+       'event_date': date,
+       'event_time': time,
++      'duration_minutes': durationMinutes,
+       'source_type': sourceType ?? 'manual',
+       'source_id': sourceId,
+       'recurrence_rule': recurrenceRule,
+-    });
++    };
++
++    try {
++      await _client.from('calendar_events').insert(payload);
++    } on PostgrestException catch (e) {
++      final missingDuration =
++          e.code == 'PGRST204' ||
++          e.code == '42703' ||
++          e.message.contains('duration_minutes');
++      if (!missingDuration) rethrow;
++
++      final fallbackPayload = Map<String, dynamic>.from(payload)
++        ..remove('duration_minutes');
++      await _client.from('calendar_events').insert(fallbackPayload);
++    }
+   }
+ }
+*** End Patch

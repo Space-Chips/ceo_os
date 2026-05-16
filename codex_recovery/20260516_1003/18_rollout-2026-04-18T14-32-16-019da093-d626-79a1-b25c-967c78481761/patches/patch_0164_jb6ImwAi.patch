@@ -1,0 +1,17 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/home/home_screen.dart
+@@
+ class _NoModulesMessageCard extends StatelessWidget {
++  final String message;
+   final VoidCallback onDismiss;
+ 
+-  const _NoModulesMessageCard({required this.onDismiss});
++  const _NoModulesMessageCard({required this.message, required this.onDismiss});
+@@
+             child: Text(
+-              'No modules active. Enable some from the menu.',
++              message,
+               style: AppTypography.footnote.copyWith(
+                 fontSize: 12,
+                 color: AppColors.secondaryLabel,
+*** End Patch

@@ -1,0 +1,79 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/screen_time_screen.dart
+@@
+       _showNotice(
+-        title: 'Sync failed',
++        title: _t('screen_time_sync_failed'),
+         message: _isAndroid
+-            ? 'Unable to load Android protection controls right now.'
+-            : 'Unable to load Screen Time controls right now.',
++            ? _t('screen_time_sync_failed_android_message')
++            : _t('screen_time_sync_failed_ios_message'),
+       );
+@@
+   String _permissionStatusLabel(FocusPermissionState state) {
+     switch (state) {
+       case FocusPermissionState.approved:
+-        return 'ENABLED';
++        return _t('screen_time_enabled');
+       case FocusPermissionState.denied:
+       case FocusPermissionState.notDetermined:
+       case FocusPermissionState.unknown:
+-        return 'ALLOW';
++        return _t('screen_time_allow');
+       case FocusPermissionState.unsupported:
+-        return 'UNAVAILABLE';
++        return _t('screen_time_unavailable');
+     }
+   }
+@@
+   String _permissionStatusSubtitle(FocusPermissionState state) {
+     switch (state) {
+       case FocusPermissionState.approved:
+-        return 'Enabled on this device';
++        return _t('screen_time_enabled_on_device');
+       case FocusPermissionState.denied:
+       case FocusPermissionState.notDetermined:
+       case FocusPermissionState.unknown:
+-        return 'Permission required';
++        return _t('screen_time_permission_required');
+       case FocusPermissionState.unsupported:
+-        return 'Unsupported on this device';
++        return _t('screen_time_unsupported_on_device');
+     }
+   }
+@@
+     if (_accessibilityState == FocusPermissionState.approved) {
+       await _showNotice(
+-        title: 'Accessibility enabled',
+-        message: 'Accessibility access is already enabled on this device.',
++        title: _t('screen_time_accessibility_enabled'),
++        message: _t('screen_time_accessibility_enabled_message'),
+       );
+       return;
+     }
+@@
+     if (_usageAccessState == FocusPermissionState.approved) {
+       await _showNotice(
+-        title: 'Usage access enabled',
+-        message: 'Usage Access is already enabled on this device.',
++        title: _t('screen_time_usage_access_enabled'),
++        message: _t('screen_time_usage_access_enabled_message'),
+       );
+       return;
+     }
+@@
+       _showNotice(
+-        title: 'Action failed',
+-        message: 'Please retry in a few seconds.',
++        title: _t('screen_time_action_failed'),
++        message: _t('please_try_again'),
+       );
+@@
+           CupertinoDialogAction(
+             isDefaultAction: true,
+             onPressed: () => Navigator.pop(ctx),
+-            child: const Text('OK'),
++            child: Text(_t('ok')),
+           ),
+*** End Patch

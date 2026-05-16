@@ -1,0 +1,126 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/theme/app_colors.dart
+@@
+ import 'dart:ui';
++import '../providers/theme_provider.dart';
+ 
+-/// CEO OS Color Palette — Dark, Sleek, Monochromatic with Orange Accent.
++/// Dynamic app color access bound to the active theme preset.
+ class AppColors {
+   AppColors._();
+ 
+-  // ── Core Backgrounds ──
+-  static const Color background = Color(0xFF000000); // Pure Black
+-  static const Color backgroundLight = Color(0xFF0F0F0F); // Very Dark Grey
+-  static const Color surface = Color(0xFF141414); // Slightly lighter for cards
++  static Color get _background => ThemeProvider().currentColors.background;
++  static Color get _backgroundLight =>
++      ThemeProvider().currentColors.backgroundLight;
++  static Color get _surface => ThemeProvider().currentColors.surface;
++  static Color get _glassBase => ThemeProvider().currentColors.glassBase;
++  static Color get _glassBorder => ThemeProvider().currentColors.glassBorder;
++  static Color get _cardGradientStart =>
++      ThemeProvider().currentColors.cardGradientStart;
++  static Color get _cardGradientEnd =>
++      ThemeProvider().currentColors.cardGradientEnd;
++  static Color get _accent => ThemeProvider().currentColors.accent;
++  static Color get _accentSecondary =>
++      ThemeProvider().currentColors.accentSecondary;
++  static Color get _label => ThemeProvider().currentColors.label;
++  static Color get _secondaryLabel =>
++      ThemeProvider().currentColors.secondaryLabel;
++  static Color get _tertiaryLabel =>
++      ThemeProvider().currentColors.tertiaryLabel;
++  static Color get _quaternaryLabel =>
++      ThemeProvider().currentColors.quaternaryLabel;
++  static Color get _success => ThemeProvider().currentColors.success;
++  static Color get _warning => ThemeProvider().currentColors.warning;
++  static Color get _error => ThemeProvider().currentColors.error;
++  static Color get _separator => ThemeProvider().currentColors.separator;
++  static Color get _opaqueSeparator =>
++      ThemeProvider().currentColors.opaqueSeparator;
++  static Color get _accentMuted => ThemeProvider().currentColors.accentMuted;
+ 
+-  // ── Glass & Surfaces ──
+-  static const Color glassBase = Color(0x1A1A1A1A); // Dark Glass
+-  static const Color glassBorder = Color(0x1FFFFFFF); // Subtle White Border
+-  static const Color cardGradientStart = Color(0x14FFFFFF);
+-  static const Color cardGradientEnd = Color(0x05FFFFFF);
++  static Color get background => _background;
++  static Color get backgroundLight => _backgroundLight;
++  static Color get surface => _surface;
++  static Color get glassBase => _glassBase;
++  static Color get glassBorder => _glassBorder;
++  static Color get cardGradientStart => _cardGradientStart;
++  static Color get cardGradientEnd => _cardGradientEnd;
+ 
+-  // ── Accent Color ──
+-  static const Color primaryOrange = Color(0xFFFF5500); // Vibrant Orange
+-  static const Color orangeDim = Color(0xFFCC4400);
++  static Color get primaryOrange => _accent;
++  static Color get orangeDim => _accentSecondary;
+ 
+-  static const Color accent = primaryOrange;
+-  static const Color accentSecondary = orangeDim;
++  static Color get accent => _accent;
++  static Color get accentSecondary => _accentSecondary;
+   static const Color white = Color(0xFFFFFFFF);
+ 
+-  // ── Labels ──
+-  static const Color label = Color(0xFFFFFFFF);
+-  static const Color secondaryLabel = Color(0x99FFFFFF); // 60% white
+-  static const Color tertiaryLabel = Color(0x66FFFFFF); // 40% white
+-  static const Color quaternaryLabel = Color(0x33FFFFFF); // 20% white
++  static Color get label => _label;
++  static Color get secondaryLabel => _secondaryLabel;
++  static Color get tertiaryLabel => _tertiaryLabel;
++  static Color get quaternaryLabel => _quaternaryLabel;
+ 
+-  // ── Semantic Status ──
+-  static const Color success = Color(0xFF30D158);
+-  static const Color warning = primaryOrange;
+-  static const Color error = Color(0xFFFF453A);
+-  static const Color systemRed = error;
++  static Color get success => _success;
++  static Color get warning => _warning;
++  static Color get error => _error;
++  static Color get systemRed => _error;
+ 
+-  // ── Gradients ──
+-  static const List<Color> liquidGradient = [primaryOrange, orangeDim];
+-
+-  static const List<Color> glassGradient = [
+-    Color(0x1AFFFFFF),
+-    Color(0x05FFFFFF),
+-  ];
++  static List<Color> get liquidGradient => [primaryOrange, orangeDim];
++  static List<Color> get glassGradient => [cardGradientStart, cardGradientEnd];
+ 
+-  // ── Legacy Aliases ──
+-  static const Color electricCyan = primaryOrange; // Mapping old to new
+-  static const Color royalPurple = orangeDim;
+-  static const Color softIndigo = orangeDim;
+-  static const Color vibrantPink = primaryOrange;
++  static Color get electricCyan => primaryOrange;
++  static Color get royalPurple => orangeDim;
++  static Color get softIndigo => orangeDim;
++  static Color get vibrantPink => primaryOrange;
+ 
+-  static const Color systemBackground = background;
+-  static const Color secondarySystemBackground = backgroundLight;
+-  static const Color tertiarySystemBackground = surface;
+-  static const Color systemGroupedBackground = background;
+-  static const Color separator = glassBorder;
+-  static const Color opaqueSeparator = Color(0x33FFFFFF);
+-  static const Color systemBlue = primaryOrange;
+-  static const Color accentMuted = Color(0x33FF5500);
++  static Color get systemBackground => background;
++  static Color get secondarySystemBackground => backgroundLight;
++  static Color get tertiarySystemBackground => surface;
++  static Color get systemGroupedBackground => background;
++  static Color get separator => _separator;
++  static Color get opaqueSeparator => _opaqueSeparator;
++  static Color get systemBlue => primaryOrange;
++  static Color get accentMuted => _accentMuted;
+ }
+*** End Patch

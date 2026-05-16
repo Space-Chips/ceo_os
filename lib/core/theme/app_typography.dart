@@ -1,24 +1,68 @@
-import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'app_colors.dart';
 
-/// CEO OS Typography — Sleek, modern, and monochromatic.
-/// Uses Space Grotesk for display and Inter for body.
-/// JetBrains Mono for utility/modern flair.
+/// Typography palette forced to SF Pro across the app.
 class AppTypography {
   AppTypography._();
 
-  static TextStyle get _displayBase =>
-      GoogleFonts.spaceGrotesk(color: AppColors.label, letterSpacing: -0.5);
+  static const String _sfProText = '.SF Pro Text';
+  static const String _sfProDisplay = '.SF Pro Display';
+  static const List<String> _fallbacks = [
+    'SF Pro Text',
+    'SF Pro Display',
+    'San Francisco',
+    '-apple-system',
+    'Helvetica Neue',
+    'Helvetica',
+    'Arial',
+    'sans-serif',
+  ];
+  static const List<String> _monoFallbacks = [
+    'SF Mono',
+    'SFMono-Regular',
+    'Menlo',
+    'Monaco',
+    'Courier New',
+    'monospace',
+  ];
 
-  static TextStyle get _bodyBase =>
-      GoogleFonts.inter(color: AppColors.label);
-
-  static TextStyle get mono => GoogleFonts.jetBrainsMono(
-    color: AppColors.label,
+  static TextStyle _displayFont({
+    required Color color,
+    required double letterSpacing,
+  }) => TextStyle(
+    fontFamily: _sfProDisplay,
+    fontFamilyFallback: _fallbacks,
+    color: color,
+    letterSpacing: letterSpacing,
   );
+
+  static TextStyle _bodyFont({required Color color}) => TextStyle(
+    fontFamily: _sfProText,
+    fontFamilyFallback: _fallbacks,
+    color: color,
+  );
+
+  static TextStyle _monoFont({required Color color}) => TextStyle(
+    fontFamily: 'SF Mono',
+    fontFamilyFallback: _monoFallbacks,
+    color: color,
+  );
+
+  static TextStyle get timer => TextStyle(
+    fontFamily: 'SF Mono',
+    fontFamilyFallback: _monoFallbacks,
+    color: AppColors.label,
+    fontFeatures: const [FontFeature.tabularFigures()],
+    letterSpacing: 0.2,
+  );
+
+  static TextStyle get _displayBase =>
+      _displayFont(color: AppColors.label, letterSpacing: -0.5);
+
+  static TextStyle get _bodyBase => _bodyFont(color: AppColors.label);
+
+  static TextStyle get mono => _monoFont(color: AppColors.label);
 
   // ── Type Scale ──
 
@@ -95,6 +139,19 @@ class AppTypography {
     fontSize: 54,
     fontWeight: FontWeight.w500,
     letterSpacing: -1,
+  );
+
+  static TextStyle get heroDisplay => _displayBase.copyWith(
+    fontSize: 44,
+    fontWeight: FontWeight.w700,
+    height: 1.04,
+  );
+
+  static TextStyle get overline => _bodyBase.copyWith(
+    fontSize: 11,
+    fontWeight: FontWeight.w700,
+    letterSpacing: 1.0,
+    color: AppColors.secondaryLabel,
   );
 
   // ── Legacy aliases ──

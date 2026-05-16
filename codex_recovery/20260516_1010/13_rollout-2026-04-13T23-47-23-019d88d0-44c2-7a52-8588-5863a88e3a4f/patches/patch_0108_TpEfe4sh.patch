@@ -1,0 +1,10 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/ceo_mode/ceo_mode_screen.dart
+@@
+-  Widget _glowSurface({
+-
+   Widget _glowSurface({
+     required Widget child,
+     required Color glowColor,
+     double borderRadius = 20,
+*** End Patch

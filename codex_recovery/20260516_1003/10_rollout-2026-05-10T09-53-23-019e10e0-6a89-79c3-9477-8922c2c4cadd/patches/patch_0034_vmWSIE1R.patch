@@ -1,0 +1,10 @@
+*** Begin Patch
+*** Update File: lib/components/premium_paywall.dart
+@@
+-            _MicroProofRow(isFr: widget.isFr, textColor: palette.secondary),
++            _MicroProofRow(
++              isFr: widget.isFr,
++              textColor: palette.secondary,
++              showRestore: widget.showRestoreButton,
++            ),
+*** End Patch

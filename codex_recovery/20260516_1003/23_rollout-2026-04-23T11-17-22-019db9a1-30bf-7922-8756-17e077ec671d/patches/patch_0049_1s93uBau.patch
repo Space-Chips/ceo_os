@@ -1,0 +1,6 @@
+*** Begin Patch
+*** Update File: lib/core/providers/language_provider.dart
+@@
+-    'screen_time': '屏幕时间',
++    'screen_time': '屏幕使用时间',
+*** End Patch

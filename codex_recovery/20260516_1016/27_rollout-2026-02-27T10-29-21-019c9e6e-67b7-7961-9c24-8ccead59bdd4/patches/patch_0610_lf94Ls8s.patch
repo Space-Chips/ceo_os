@@ -1,0 +1,369 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/profile/profile_screen.dart
+@@
+           child: Container(
+             width: 36,
+             height: 36,
+             decoration: BoxDecoration(
+               borderRadius: BorderRadius.circular(10),
+-              color: CupertinoColors.white.withValues(alpha: 0.05),
++              color: AppColors.topBarControlBackground,
++              border: Border.all(color: AppColors.topBarControlBorder),
+             ),
+             alignment: Alignment.center,
+             child: Icon(
+@@
+                   GlassCard(
+                     padding: const EdgeInsets.all(20),
+                     borderRadius: 20,
+                     showEdgeGlow: false,
+-                    gradientColors: [
+-                      CupertinoColors.white.withValues(alpha: 0.04),
+-                      CupertinoColors.white.withValues(alpha: 0.03),
+-                    ],
++                    gradientColors: [
++                      AppColors.cardBackgroundAlt,
++                      AppColors.cardBase,
++                    ],
+                     border: Border.all(
+-                      color: CupertinoColors.white.withValues(alpha: 0.06),
++                      color: AppColors.border,
+                       width: 1,
+                     ),
+@@
+                           decoration: BoxDecoration(
+                             borderRadius: BorderRadius.circular(14),
+-                            color: CupertinoColors.white.withValues(alpha: 0.05),
++                            color: AppColors.cardRaised,
+                             border: Border.all(
+-                              color: CupertinoColors.white.withValues(alpha: 0.06),
++                              color: AppColors.border,
+                             ),
+                           ),
+@@
+                   GlassCard(
+                     padding: const EdgeInsets.all(20),
+                     borderRadius: 20,
+                     showEdgeGlow: false,
+-                    gradientColors: [
+-                      CupertinoColors.white.withValues(alpha: 0.04),
+-                      CupertinoColors.white.withValues(alpha: 0.03),
+-                    ],
++                    gradientColors: [
++                      AppColors.cardBackgroundAlt,
++                      AppColors.cardBase,
++                    ],
+                     border: Border.all(
+-                      color: CupertinoColors.white.withValues(alpha: 0.06),
++                      color: AppColors.border,
+                       width: 1,
+                     ),
+@@
+                               _metric(
+                                 'STREAK',
+                                 '${_streak?.currentStreak ?? 0}d',
+-                                valueColor: const Color(0xFFFF9F43),
++                                valueColor: AppColors.warning,
+                                 valueSize: 20,
+                                 valueWeight: FontWeight.w700,
+                               ),
+@@
+                         onTap: _openDataDeletionFlow,
+                         leadingIcon: CupertinoIcons.delete,
+-                        leadingColor: const Color(0xFFFF5E5E),
++                        leadingColor: AppColors.error,
+                         trailing: Icon(
+                           CupertinoIcons.delete,
+                           size: 16,
+-                          color: const Color(0xFFFF5E5E),
++                          color: AppColors.error,
+                         ),
+                         isDanger: true,
+                       ),
+@@
+                     painter: _DashedBorderPainter(
+-                      color: CupertinoColors.white.withValues(alpha: 0.08),
++                      color: AppColors.borderStrong,
+                       radius: 16,
+                     ),
+                     child: Container(
+                       decoration: BoxDecoration(
+                         borderRadius: BorderRadius.circular(16),
+-                        color: CupertinoColors.white.withValues(alpha: 0.02),
++                        color: AppColors.sectionBackground,
+                       ),
+                       child: Column(
+                         children: [
+@@
+                             label: 'DATABASE WRITE CHECKS',
+                             onTap: () => context.push('/debug/database'),
+                             leadingIcon: CupertinoIcons.lab_flask,
+-                            leadingColor: const Color(0xFF9CA3AF),
++                            leadingColor: AppColors.tertiaryLabel,
+@@
+                             label: 'THEME PREVIEW',
+                             onTap: () => context.push('/debug/themes'),
+                             leadingIcon: CupertinoIcons.paintbrush,
+-                            leadingColor: const Color(0xFF9CA3AF),
++                            leadingColor: AppColors.tertiaryLabel,
+@@
+       decoration: BoxDecoration(
+         borderRadius: BorderRadius.circular(16),
+-        color: CupertinoColors.white.withValues(alpha: 0.04),
++        color: AppColors.cardBackgroundAlt,
+         border: Border.all(
+-          color: CupertinoColors.white.withValues(alpha: 0.05),
++          color: AppColors.border,
+           width: 1,
+         ),
+       ),
+@@
+               label,
+               style: AppTypography.callout.copyWith(
+                 fontSize: 13,
+-                color: isDanger ? const Color(0xFFFF5E5E) : AppColors.label,
++                color: isDanger ? AppColors.error : AppColors.label,
+                 fontWeight: FontWeight.w500,
+               ),
+             ),
+@@
+   Widget _divider() => Container(
+     height: 1,
+-    color: CupertinoColors.white.withValues(alpha: 0.05),
++    color: AppColors.border,
+   );
+@@
+       borderRadius: 18,
+       showEdgeGlow: false,
+       gradientColors: [
+-        CupertinoColors.white.withValues(alpha: 0.02),
+-        CupertinoColors.white.withValues(alpha: 0.02),
++        AppColors.cardBackgroundAlt,
++        AppColors.cardBase,
+       ],
+       border: Border.all(
+-        color: CupertinoColors.white.withValues(alpha: 0.0),
+-        width: 0,
++        color: AppColors.border,
++        width: 1,
+       ),
+       child: child,
+     );
+@@
+       activeTrackColor: AppColors.toggleOn,
+-      inactiveTrackColor: CupertinoColors.white.withValues(alpha: 0.15),
+-      thumbColor: CupertinoColors.white,
++      inactiveTrackColor: AppColors.label.withValues(alpha: 0.15),
++      thumbColor: AppColors.white,
+     );
+   }
+@@
+           height: 52,
+           decoration: BoxDecoration(
+             borderRadius: BorderRadius.circular(16),
+-            gradient: const LinearGradient(
++            gradient: LinearGradient(
+               begin: Alignment.topCenter,
+               end: Alignment.bottomCenter,
+-              colors: [Color(0xFFFFFFFF), Color(0xFFE8ECF2)],
++              colors: AppColors.buttonGradient,
+             ),
+-            boxShadow: const [
++            boxShadow: [
+               BoxShadow(
+-                color: Color(0x40000000),
++                color: AppColors.glassShadowSoft,
+                 blurRadius: 16,
+                 offset: Offset(0, 4),
+               ),
+             ],
+           ),
+@@
+               fontSize: 15,
+               fontWeight: FontWeight.w600,
+-              color: const Color(0xFF1F2937),
++              color: AppColors.onAccent,
+             ),
+           ),
+         ),
+@@
+         decoration: BoxDecoration(
+           color: AppColors.backgroundElevated.withValues(alpha: 0.98),
+           borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+           border: Border.all(
+-            color: CupertinoColors.white.withValues(alpha: 0.08),
++            color: AppColors.borderStrong,
+             width: 0.8,
+           ),
+-          boxShadow: const [
++          boxShadow: [
+             BoxShadow(
+-              color: Color(0x5C000000),
++              color: AppColors.glassShadow,
+               blurRadius: 28,
+               offset: Offset(0, -8),
+             ),
+@@
+               width: 40,
+               height: 4,
+               decoration: BoxDecoration(
+-                color: CupertinoColors.white.withValues(alpha: 0.14),
++                color: AppColors.borderStrong,
+                 borderRadius: BorderRadius.circular(999),
+               ),
+             ),
+@@
+                       width: 36,
+                       height: 36,
+                       decoration: BoxDecoration(
+                         borderRadius: BorderRadius.circular(10),
+-                        color: CupertinoColors.white.withValues(alpha: 0.05),
++                        color: AppColors.topBarControlBackground,
+                         border: Border.all(
+-                          color: CupertinoColors.white.withValues(alpha: 0.08),
++                          color: AppColors.topBarControlBorder,
+                         ),
+                       ),
+@@
+       decoration: BoxDecoration(
+         borderRadius: BorderRadius.circular(16),
+-        color: CupertinoColors.white.withValues(alpha: 0.04),
++        color: AppColors.cardBackgroundAlt,
+         border: Border.all(
+-          color: CupertinoColors.white.withValues(alpha: 0.06),
++          color: AppColors.border,
+         ),
+       ),
+*** Update File: /Users/timo/ceo_os/lib/features/leaderboard/leaderboard_screen.dart
+@@
+                   borderRadius: BorderRadius.circular(10),
+                   color: _tab == _BoardTab.global
+-                      ? AppColors.white.withValues(alpha: 0.12)
+-                      : CupertinoColors.transparent,
++                      ? AppColors.accentSurfaceSoft
++                      : AppColors.topBarControlBackground.withValues(alpha: 0),
+                 ),
+@@
+                   borderRadius: BorderRadius.circular(10),
+                   color: _tab == _BoardTab.friends
+-                      ? AppColors.white.withValues(alpha: 0.12)
+-                      : CupertinoColors.transparent,
++                      ? AppColors.accentSurfaceSoft
++                      : AppColors.topBarControlBackground.withValues(alpha: 0),
+                 ),
+@@
+           Icon(
+             CupertinoIcons.person_2,
+             size: 24,
+-            color: const Color(0xFF22D3EE),
++            color: AppColors.accentIcon,
+           ),
+@@
+         decoration: BoxDecoration(
+           shape: BoxShape.circle,
+-          color: AppColors.white.withValues(alpha: 0.08),
++          color: AppColors.topBarControlBackground,
+           border: Border.all(
+-          color: _positionBorderColor(index) ?? CupertinoColors.transparent,
++          color: _positionBorderColor(index) ??
++              AppColors.topBarControlBackground.withValues(alpha: 0),
+           width: 1,
+         ),
+@@
+   Color? _positionBorderColor(int index) {
+-    if (index == 1) return const Color(0xFFFFD700).withValues(alpha: 0.35);
+-    if (index == 2) return const Color(0xFFC8C8C8).withValues(alpha: 0.35);
+-    if (index == 3) return const Color(0xFFCD7F32).withValues(alpha: 0.35);
++    if (index == 1) {
++      return Color.lerp(AppColors.warning, AppColors.rankAccent, 0.3)!
++          .withValues(alpha: 0.35);
++    }
++    if (index == 2) {
++      return Color.lerp(AppColors.label, AppColors.secondaryLabel, 0.55)!
++          .withValues(alpha: 0.28);
++    }
++    if (index == 3) {
++      return Color.lerp(AppColors.rankAccent, AppColors.warning, 0.62)!
++          .withValues(alpha: 0.35);
++    }
+     return null;
+   }
+@@
+       decoration: BoxDecoration(
+-        color: AppColors.white.withValues(alpha: 0.08),
++        color: AppColors.topBarControlBackground,
+         borderRadius: BorderRadius.circular(8),
+       ),
+@@
+               Icon(
+                 CupertinoIcons.share,
+-                color: AppColors.white,
++                color: AppColors.onAccent,
+                 size: 18,
+               ),
+@@
+                   fontSize: 16,
+-                  color: AppColors.white,
++                  color: AppColors.onAccent,
+                   fontWeight: FontWeight.w600,
+                 ),
+               ),
+*** Update File: /Users/timo/ceo_os/lib/features/ceo_mode/ceo_mode_screen.dart
+@@
+             boxShadow: [
+-              const BoxShadow(
+-                color: Color(0x73000000),
++              BoxShadow(
++                color: AppColors.glassShadow,
+                 blurRadius: 30,
+                 offset: Offset(0, 10),
+               ),
+@@
+                               border: Border.all(
+                                 color: AppColors.activeBorder.withValues(
+                                   alpha: 0.8,
+                                 ),
+                               ),
+-                              color: CupertinoColors.white.withValues(
+-                                alpha: 0.03,
+-                              ),
++                              color: AppColors.accentSurfaceSoft.withValues(
++                                alpha: 0.28,
++                              ),
+                             ),
+                           ),
+@@
+                     ? const CupertinoActivityIndicator(
+-                        color: Color(0xFF1A1A1A),
++                        color: AppColors.onAccent,
+                       )
+                     : Text(
+                         'START CEO SESSION',
+                         style: AppTypography.callout.copyWith(
+                           fontSize: 16,
+                           fontWeight: FontWeight.w700,
+                           letterSpacing: 0.5,
+-                          color: const Color(0xFF1A1A1A),
++                          color: AppColors.onAccent,
+                         ),
+                       ),
+@@
+       decoration: BoxDecoration(
+         borderRadius: BorderRadius.circular(14),
+-        color: CupertinoColors.white.withValues(alpha: 0.04),
++        color: AppColors.cardBackgroundAlt,
+         border: Border.all(
+-          color: CupertinoColors.white.withValues(alpha: 0.05),
++          color: AppColors.border,
+           width: 0.9,
+         ),
+       ),
+@@
+             width: 36,
+             height: 36,
+             decoration: BoxDecoration(
+               borderRadius: BorderRadius.circular(10),
+-              color: CupertinoColors.white.withValues(alpha: 0.05),
++              color: AppColors.moduleIconBackground,
+             ),
+*** End Patch

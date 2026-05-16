@@ -1,0 +1,6 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/android/app/src/main/kotlin/com/wakeapp/ceoos/ClassicPauseScheduler.kt
+@@
+-        WakeAccessibilityService.requestImmediateEvaluation()
++        BlockingAccessibilityService.requestImmediateEvaluation()
+*** End Patch

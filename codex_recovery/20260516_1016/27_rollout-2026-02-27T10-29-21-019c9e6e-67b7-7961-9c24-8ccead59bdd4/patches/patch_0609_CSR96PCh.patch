@@ -1,0 +1,20 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/notes_screen.dart
+@@
+         decoration: BoxDecoration(
+           borderRadius: BorderRadius.circular(14),
+-          gradient: const LinearGradient(
++          gradient: LinearGradient(
+             begin: Alignment.topCenter,
+             end: Alignment.bottomCenter,
+             colors: [_notesGreenLight, _notesGreen],
+           ),
+-          boxShadow: const [
++          boxShadow: [
+             BoxShadow(
+-              color: Color(0x5938C793),
++              color: AppColors.themeGlow.withValues(alpha: 0.28),
+               blurRadius: 20,
+               offset: Offset(0, 6),
+               spreadRadius: -6,
+*** End Patch

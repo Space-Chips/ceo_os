@@ -1,0 +1,135 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/screen_time_screen.dart
+@@
+   Widget _countPill(String label) {
+     return Container(
+-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
++      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+       decoration: BoxDecoration(
+-        color: AppColors.white.withValues(alpha: 0.05),
++        color: AppColors.white.withValues(alpha: 0.04),
+         borderRadius: BorderRadius.circular(999),
+-        border: Border.all(color: AppColors.white.withValues(alpha: 0.06)),
++        border: Border.all(color: AppColors.border.withValues(alpha: 0.7)),
+       ),
+@@
+   Widget _iconPill({required IconData icon, required VoidCallback? onTap}) {
+     return _pressScale(
+       onPressed: onTap,
+       child: Container(
+         width: 38,
+         height: 38,
+         decoration: BoxDecoration(
+-          color: AppColors.white.withValues(alpha: 0.05),
++          color: AppColors.cardRaised,
+           borderRadius: BorderRadius.circular(14),
+-          border: Border.all(color: AppColors.white.withValues(alpha: 0.06)),
++          border: Border.all(color: AppColors.border.withValues(alpha: 0.8)),
+         ),
+@@
+   }) {
+     return _pressScale(
+       onPressed: onTap,
+       child: Container(
+-        padding: const EdgeInsets.all(16),
+-        decoration: _moduleDecoration(radius: 20),
++        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
++        decoration: _listPanelDecoration(radius: 20),
+         child: Row(
+           children: [
+             Container(
+-              width: 52,
+-              height: 52,
++              width: 44,
++              height: 44,
+               decoration: BoxDecoration(
+-                color: AppColors.white.withValues(alpha: 0.06),
+-                borderRadius: BorderRadius.circular(18),
++                color: AppColors.accentSoft.withValues(alpha: 0.16),
++                borderRadius: BorderRadius.circular(14),
+               ),
+               alignment: Alignment.center,
+-              child: Icon(icon, color: AppColors.label, size: 22),
++              child: Icon(icon, color: AppColors.accent, size: 20),
+             ),
+@@
+             ),
+             const SizedBox(width: 12),
+-            _tinyAction(label: actionLabel, onTap: onTap),
++            Text(
++              actionLabel,
++              style: AppTypography.footnote.copyWith(
++                fontSize: 12,
++                color: AppColors.accent,
++                fontWeight: FontWeight.w700,
++              ),
++            ),
++            const SizedBox(width: 4),
++            Icon(
++              CupertinoIcons.chevron_forward,
++              size: 14,
++              color: AppColors.tertiaryLabel,
++            ),
+           ],
+         ),
+       ),
+@@
+     return Container(
+-      width: 48,
+-      height: 48,
++      width: 44,
++      height: 44,
+       decoration: BoxDecoration(
+-        color: tone.withValues(alpha: 0.14),
+-        borderRadius: BorderRadius.circular(16),
+-        border: Border.all(color: tone.withValues(alpha: 0.2)),
++        color: tone.withValues(alpha: 0.12),
++        borderRadius: BorderRadius.circular(14),
++        border: Border.all(color: tone.withValues(alpha: 0.18)),
+       ),
+@@
+   }) {
+     return Container(
+-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
++      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+       decoration: BoxDecoration(
+-        color: (background ?? color).withValues(alpha: 0.12),
++        color: (background ?? color).withValues(alpha: 0.1),
+         borderRadius: BorderRadius.circular(999),
+-        border: Border.all(color: color.withValues(alpha: 0.22)),
++        border: Border.all(color: color.withValues(alpha: 0.16)),
+       ),
+@@
+   }) {
+     return Container(
+       padding: const EdgeInsets.all(18),
+-      decoration: _moduleDecoration(radius: 18),
++      decoration: _listPanelDecoration(radius: 18),
+       child: Row(
+@@
+           Container(
+             width: 46,
+             height: 46,
+             decoration: BoxDecoration(
+-              color: AppColors.white.withValues(alpha: 0.05),
++              color: AppColors.cardRaised,
+               borderRadius: BorderRadius.circular(16),
++              border: Border.all(color: AppColors.border.withValues(alpha: 0.8)),
+             ),
+@@
+   Widget _tinyAction({required String label, required VoidCallback? onTap}) {
+     return _pressScale(
+       onPressed: onTap,
+       child: Container(
+         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+         decoration: BoxDecoration(
+-          color: AppColors.white.withValues(alpha: 0.05),
++          color: AppColors.cardRaised,
+           borderRadius: BorderRadius.circular(14),
+           border: Border.all(
+-            color: AppColors.white.withValues(alpha: 0.08),
++            color: AppColors.border.withValues(alpha: 0.82),
+             width: 1,
+           ),
+         ),
+*** End Patch

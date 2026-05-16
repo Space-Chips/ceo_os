@@ -1,0 +1,152 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/focus/app_selection_sheet.dart
+@@
+ class AppSelectionSheet extends StatefulWidget {
+   final List<String> initialSelectedPackages;
+   final List<String> initialSelectedCategories;
++  final bool allowCategories;
++  final bool returnSelectedApps;
++  final String initialQuery;
+   
+   const AppSelectionSheet({
+     super.key,
+     this.initialSelectedPackages = const [],
+     this.initialSelectedCategories = const [],
++    this.allowCategories = true,
++    this.returnSelectedApps = false,
++    this.initialQuery = '',
+   });
+@@
+   void initState() {
+     super.initState();
+     _selectedPackages.addAll(widget.initialSelectedPackages);
+     _selectedCategories.addAll(widget.initialSelectedCategories);
++    _searchCtrl.text = widget.initialQuery;
+     _loadApps();
+   }
+@@
+         List<AppInfo> apps = await InstalledApps.getInstalledApps(
+           excludeSystemApps: true,
+           withIcon: true,
+         );
+         _allApps.addAll(apps);
+-        _filteredApps.addAll(apps);
++        if (widget.initialQuery.trim().isEmpty) {
++          _filteredApps.addAll(apps);
++        } else {
++          _filterApps(widget.initialQuery.trim());
++        }
+       } catch (e) {
+         AppLogger.error('Error loading apps.', e);
+       }
+     }
+@@
+-                  Padding(
+-                    padding: const EdgeInsets.symmetric(horizontal: 24),
+-                    child: Text('CATEGORIES', style: AppTypography.mono.copyWith(fontSize: 10, color: AppColors.tertiaryLabel)),
+-                  ),
+-                  const SizedBox(height: 12),
+-                  SizedBox(
+-                    height: 40,
+-                    child: ListView(
+-                      scrollDirection: Axis.horizontal,
+-                      padding: const EdgeInsets.symmetric(horizontal: 24),
+-                      children: _categories.entries.map((e) {
+-                        final isSelected = _selectedCategories.contains(e.key);
+-                        return GestureDetector(
+-                          onTap: () {
+-                            setState(() {
+-                              if (isSelected) {
+-                                _selectedCategories.remove(e.key);
+-                              } else {
+-                                _selectedCategories.add(e.key);
+-                              }
+-                            });
+-                          },
+-                          child: Container(
+-                            margin: const EdgeInsets.only(right: 8),
+-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+-                            decoration: BoxDecoration(
+-                              color: isSelected ? AppColors.primaryOrange : AppColors.glassBase,
+-                              borderRadius: BorderRadius.circular(20),
+-                              border: Border.all(color: isSelected ? AppColors.primaryOrange : AppColors.glassBorder),
+-                            ),
+-                            child: Text(
+-                              e.value.toUpperCase(),
+-                              style: AppTypography.mono.copyWith(
+-                                fontSize: 10, 
+-                                color: isSelected ? Colors.white : AppColors.secondaryLabel,
+-                                fontWeight: FontWeight.bold,
+-                              ),
+-                            ),
+-                          ),
+-                        );
+-                      }).toList(),
+-                    ),
+-                  ),
+-                  
+-                  const SizedBox(height: 24),
++                  if (widget.allowCategories) ...[
++                    Padding(
++                      padding: const EdgeInsets.symmetric(horizontal: 24),
++                      child: Text('CATEGORIES', style: AppTypography.mono.copyWith(fontSize: 10, color: AppColors.tertiaryLabel)),
++                    ),
++                    const SizedBox(height: 12),
++                    SizedBox(
++                      height: 40,
++                      child: ListView(
++                        scrollDirection: Axis.horizontal,
++                        padding: const EdgeInsets.symmetric(horizontal: 24),
++                        children: _categories.entries.map((e) {
++                          final isSelected = _selectedCategories.contains(e.key);
++                          return GestureDetector(
++                            onTap: () {
++                              setState(() {
++                                if (isSelected) {
++                                  _selectedCategories.remove(e.key);
++                                } else {
++                                  _selectedCategories.add(e.key);
++                                }
++                              });
++                            },
++                            child: Container(
++                              margin: const EdgeInsets.only(right: 8),
++                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
++                              decoration: BoxDecoration(
++                                color: isSelected ? AppColors.primaryOrange : AppColors.glassBase,
++                                borderRadius: BorderRadius.circular(20),
++                                border: Border.all(color: isSelected ? AppColors.primaryOrange : AppColors.glassBorder),
++                              ),
++                              child: Text(
++                                e.value.toUpperCase(),
++                                style: AppTypography.mono.copyWith(
++                                  fontSize: 10, 
++                                  color: isSelected ? Colors.white : AppColors.secondaryLabel,
++                                  fontWeight: FontWeight.bold,
++                                ),
++                              ),
++                            ),
++                          );
++                        }).toList(),
++                      ),
++                    ),
++                    const SizedBox(height: 24),
++                  ],
+@@
+                     onPressed: () {
++                      final selectedApps = _allApps
++                          .where((app) => _selectedPackages.contains(app.packageName))
++                          .map((app) => {
++                                'name': app.name,
++                                'packageName': app.packageName,
++                              })
++                          .toList(growable: false);
+                       Navigator.pop(context, {
+                         'packages': _selectedPackages.toList(),
+                         'categories': _selectedCategories.toList(),
++                        if (widget.returnSelectedApps) 'selected_apps': selectedApps,
+                       });
+                     },
+                   ),
+                 ),
+*** End Patch

@@ -1,0 +1,12 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/ios/Runner/AppDelegate.swift
+@@
+ @available(iOS 16.0, *)
++private extension DeviceActivityReport.Context {
++    static let ceoosDailyScreenTime = Self("CEO OS Daily Screen Time")
++    static let ceoosWeeklyAverageScreenTime = Self("CEO OS Weekly Average Screen Time")
++}
++
++@available(iOS 16.0, *)
+ private final class PrivateScreenTimeSummaryPlatformViewFactory: NSObject, FlutterPlatformViewFactory {
+*** End Patch

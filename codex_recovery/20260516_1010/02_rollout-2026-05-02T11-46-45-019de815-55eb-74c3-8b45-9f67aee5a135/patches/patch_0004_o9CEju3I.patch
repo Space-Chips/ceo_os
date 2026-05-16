@@ -1,0 +1,56 @@
+*** Begin Patch
+*** Update File: lib/features/home/home_screen.dart
+@@
+             onToggleShortcut: _toggleShortcut,
+             onOpenProfileAndSettings: () {
+               Navigator.of(sheetContext).pop();
+               unawaited(_pushAndRefresh('/profile'));
+             },
++            onOpenWidgetConfiguration: () {
++              Navigator.of(sheetContext).pop();
++              unawaited(_pushAndRefresh('/widget-configuration'));
++            },
+             onOpenAdvancedStats: () {
+               Navigator.of(sheetContext).pop();
+               unawaited(_pushAndRefresh('/stats'));
+             },
+             showAdvancedStats: _showAdvancedStats,
+@@
+ class _SecondaryMenuSheet extends StatefulWidget {
+   final Set<String> initialActiveApps;
+   final Set<String> initialEnabledShortcuts;
+   final Future<bool> Function(String moduleId, bool enabled) onToggleModule;
+   final Future<void> Function(String shortcutId, bool enabled) onToggleShortcut;
+   final VoidCallback onOpenProfileAndSettings;
++  final VoidCallback onOpenWidgetConfiguration;
+   final VoidCallback onOpenAdvancedStats;
+   final bool showAdvancedStats;
+ 
+   const _SecondaryMenuSheet({
+     required this.initialActiveApps,
+     required this.initialEnabledShortcuts,
+     required this.onToggleModule,
+     required this.onToggleShortcut,
+     required this.onOpenProfileAndSettings,
++    required this.onOpenWidgetConfiguration,
+     required this.onOpenAdvancedStats,
+     required this.showAdvancedStats,
+   });
+@@
+                         _SheetActionButton(
+                           label: language.t('profile_settings'),
+                           icon: CupertinoIcons.person_fill,
+                           onTap: widget.onOpenProfileAndSettings,
+                         ),
++                        const SizedBox(height: 12),
++                        _SheetActionButton(
++                          label: language.t('widget_configuration'),
++                          icon: CupertinoIcons.square_grid_2x2_fill,
++                          onTap: widget.onOpenWidgetConfiguration,
++                        ),
+                         if (widget.showAdvancedStats) ...[
+                           const SizedBox(height: 12),
+                           _SheetActionButton(
+                             label: language.t('advanced_stats'),
+                             icon: CupertinoIcons.chart_bar_alt_fill,
+*** End Patch

@@ -1,0 +1,32 @@
+*** Begin Patch
+*** Update File: lib/features/calendar/calendar_screen.dart
+@@
+   String _safeDateFormat(
+     String pattern,
+     DateTime date, {
+     String? fallbackPattern,
+   }) {
+     String formatWithLocale(String locale, String activePattern) {
+       final formatted = DateFormat(activePattern, locale).format(date);
+       return formatted.trim();
+     }
+ 
++    final locale = _localeCode();
+     try {
+-      final formatted = formatWithLocale(_localeCode(), pattern);
++      final formatted = formatWithLocale(locale, pattern);
+       if (formatted.isNotEmpty) return formatted;
+     } catch (_) {}
+ 
++    if (fallbackPattern != null && fallbackPattern != pattern) {
++      try {
++        final formatted = formatWithLocale(locale, fallbackPattern);
++        if (formatted.isNotEmpty) return formatted;
++      } catch (_) {}
++    }
++
+     final candidate = fallbackPattern ?? pattern;
+     try {
+       final formatted = formatWithLocale('en', candidate);
+       if (formatted.isNotEmpty) return formatted;
+*** End Patch

@@ -1,0 +1,64 @@
+*** Begin Patch
+*** Update File: lib/features/home/home_screen.dart
+@@
+           child: Row(
+             children: [
+               _ShortcutCircle(
+                 onTap: onOpenMenu,
+                 icon: CupertinoIcons.person_fill,
+                 iconColor: AppColors.secondaryLabel,
+                 glowColor: AppColors.edgeGlowSoft,
+               ),
+-              const SizedBox(width: 10),
+-              _ShortcutPill(
+-                onTap: onOpenRank,
+-                label: rankLabel,
+-                rankName: rankName,
+-              ),
++              if (showRank) ...[
++                const SizedBox(width: 10),
++                _ShortcutPill(
++                  onTap: onOpenRank,
++                  label: rankLabel,
++                  rankName: rankName,
++                ),
++              ],
+               const Spacer(),
+-              _ActionCapsule(
+-                onTap: onOpenFocus,
+-                icon: CupertinoIcons.bolt_fill,
+-                iconColor: AppColors.focusControlAccent,
+-              ),
+-              const SizedBox(width: 8),
+-              _ActionCapsule(
+-                onTap: onOpenNotes,
+-                icon: CupertinoIcons.doc_text_fill,
+-                iconColor: AppColors.notesControlAccent,
+-              ),
+-              const SizedBox(width: 8),
+-              _StreakPill(onTap: onOpenStreak, streakValue: winStreak),
++              if (showFocus) ...[
++                _ActionCapsule(
++                  onTap: onOpenFocus,
++                  icon: CupertinoIcons.bolt_fill,
++                  iconColor: AppColors.focusControlAccent,
++                ),
++                const SizedBox(width: 8),
++              ],
++              if (showNotes) ...[
++                _ActionCapsule(
++                  onTap: onOpenNotes,
++                  icon: CupertinoIcons.doc_text_fill,
++                  iconColor: AppColors.notesControlAccent,
++                ),
++                const SizedBox(width: 8),
++              ],
++              if (showWinStreak)
++                _StreakPill(onTap: onOpenStreak, streakValue: winStreak),
+             ],
+           ),
+         ),
+       ),
+     );
+   }
+*** End Patch

@@ -1,0 +1,169 @@
+*** Begin Patch
+*** Update File: ios/CeoWidgets/CeoHomeWidget.swift
+@@
+ private let keyEnabledDashboard = "ceo_widget_enabled_dashboard"
+ private let keyEnabledHabitsToday = "ceo_widget_enabled_habits_today"
+-private let keyEnabledHabitsTable = "ceo_widget_enabled_habits_table"
+ private let keyEnabledFocus = "ceo_widget_enabled_focus"
+ private let keyEnabledBlackout = "ceo_widget_enabled_blackout"
+@@
+ private let keyBlackoutUntil = "ceo_widget_blackout_until" // String (HH:mm) or ISO
+ private let keyBlackoutBlockedApps = "ceo_widget_blackout_blocked_apps" // Int
+-private let keyHabitsTableHabits = "ceo_widget_data_habits_table_habits" // [String]
+-private let keyHabitsTableDays = "ceo_widget_data_habits_table_days" // [String] 7 labels
+-private let keyHabitsTableStatesJson = "ceo_widget_data_habits_table_states_json" // String JSON [[Int]]
+-private let keyHabitsTableMore = "ceo_widget_data_habits_table_more" // Int
+ 
+ enum CeoWidgetResolvedMode {
+   case todo
+   case dashboard
+   case habits
+-  case habitsTable
+   case focus
+   case blackout
+ }
+@@
+-@available(iOSApplicationExtension 16.0, *)
+-struct CeoHabitsTableWidget: Widget {
+-  let kind: String = "com.wakeapp.ceoos.widget.habits.table"
+-
+-  var body: some WidgetConfiguration {
+-    StaticConfiguration(kind: kind, provider: CeoFixedProvider(mode: .habitsTable)) { entry in
+-      CeoFixedWidgetView(entry: entry)
+-    }
+-    .configurationDisplayName("WakeApp — Habits Table")
+-    .description("A compact habits table.")
+-    // Medium = wide + shorter height (matches “reduce height, keep width”).
+-    .supportedFamilies([.systemMedium])
+-  }
+-}
+-
+ @available(iOSApplicationExtension 16.0, *)
+ struct CeoFocusWidget: Widget {
+   let kind: String = "com.wakeapp.ceoos.widget.focus"
+@@
+     switch mode {
+     case .todo:
+       return defaults.object(forKey: keyEnabledTodo) as? Bool ?? false
+     case .dashboard:
+       return defaults.object(forKey: keyEnabledDashboard) as? Bool ?? false
+     case .habits:
+       return defaults.object(forKey: keyEnabledHabitsToday) as? Bool ?? false
+-    case .habitsTable:
+-      return defaults.object(forKey: keyEnabledHabitsTable) as? Bool ?? false
+     case .focus:
+       return defaults.object(forKey: keyEnabledFocus) as? Bool ?? false
+     case .blackout:
+       return defaults.object(forKey: keyEnabledBlackout) as? Bool ?? false
+@@
+     case .blackout:
+       BlackoutSmallNativeView(
+         isOn: defaults.object(forKey: keyBlackoutIsOn) as? Bool ?? false,
+         durationMinutes: max(15, (defaults.object(forKey: keyBlackoutDurationMinutes) as? Int) ?? 120),
+         untilText: defaults.string(forKey: keyBlackoutUntil),
+         blockedApps: max(0, defaults.integer(forKey: keyBlackoutBlockedApps)),
+       )
+-    case .habitsTable:
+-      HabitsTableMediumNativeView(
+-        habits: (defaults.array(forKey: keyHabitsTableHabits) as? [String]) ?? [],
+-        dayLabels: (defaults.array(forKey: keyHabitsTableDays) as? [String]) ?? [],
+-        states: decodeIntGrid(defaults.string(forKey: keyHabitsTableStatesJson)),
+-        more: max(0, defaults.integer(forKey: keyHabitsTableMore)),
+-      )
+     }
+   }
+@@
+   private func routeUrlFor(_ mode: CeoWidgetResolvedMode) -> String {
+     switch mode {
+     case .todo: return "ceoos:///tasks"
+     case .habits: return "ceoos:///habits"
+     case .dashboard: return "ceoos:///home"
+-    case .habitsTable: return "ceoos:///habits"
+     case .focus: return "ceoos:///focus?start=1&duration=25"
+     case .blackout: return "ceoos:///ceo-mode?start=1&duration=120"
+     }
+   }
+ }
+@@
+-private struct HabitsTableMediumNativeView: View {
+-  let habits: [String]
+-  let dayLabels: [String]
+-  let states: [[Int]]
+-  let more: Int
+-
+-  var body: some View {
+-    WidgetBackground(padding: WidgetLayout.paddingMediumLarge) {
+-      GeometryReader { geo in
+-        let contentW = geo.size.width - 0
+-        let firstCol = contentW * 0.34
+-        let rest = max(0, contentW - firstCol)
+-        let dayCol = rest / 7.0
+-
+-        VStack(alignment: .leading, spacing: WidgetLayout.gapS) {
+-          Text("Habits")
+-            .widgetText(20.5, .heavy, color: WidgetPalette.textPrimary, minScale: 0.8)
+-
+-          VStack(spacing: WidgetLayout.gapS) {
+-            // Header row
+-            HStack(spacing: 0) {
+-              Text("Habit")
+-                .frame(width: firstCol, alignment: .leading)
+-                .widgetText(11.5, .bold, color: WidgetPalette.textSecondary, minScale: 0.82)
+-              ForEach(Array((dayLabels.isEmpty ? ["M","T","W","T","F","S","S"] : dayLabels).prefix(7)).indices, id: \.self) { i in
+-                Text((dayLabels.isEmpty ? ["M","T","W","T","F","S","S"] : dayLabels)[i])
+-                  .frame(width: dayCol, alignment: .center)
+-                  .widgetText(11.5, .bold, color: WidgetPalette.textSecondary, minScale: 0.82)
+-              }
+-            }
+-            .frame(height: 16)
+-
+-            ForEach(Array(habits.prefix(3).enumerated()), id: \.offset) { idx, name in
+-              HStack(spacing: 0) {
+-                Text(name)
+-                  .frame(width: firstCol, alignment: .leading)
+-                  .widgetText(13, .bold, color: WidgetPalette.textPrimary, minScale: 0.8)
+-                ForEach(0..<7, id: \.self) { j in
+-                  let state = (idx < states.count && j < states[idx].count) ? states[idx][j] : 0
+-                  CircleCell(state: state)
+-                    .frame(width: dayCol, height: 22, alignment: .center)
+-                }
+-              }
+-              .frame(height: 22)
+-            }
+-
+-            if more > 0 {
+-              Text("+\(more) more")
+-                .widgetText(12, .semibold, color: WidgetPalette.textSecondary, minScale: 0.82)
+-            }
+-          }
+-          .padding(4)
+-          .background(WidgetPalette.cardFill2)
+-          .overlay(RoundedRectangle(cornerRadius: 22).stroke(WidgetPalette.borderSubtle2, lineWidth: 1))
+-          .clipShape(RoundedRectangle(cornerRadius: 22))
+-        }
+-      }
+-    }
+-  }
+-
+-  private struct CircleCell: View {
+-    let state: Int // 0 pending, 1 done, 2 fail
+-
+-    var body: some View {
+-      let size: CGFloat = 12
+-      let strokeW: CGFloat = 1.6
+-      ZStack {
+-        if state == 1 {
+-          Circle()
+-            .fill(WidgetPalette.red)
+-            .frame(width: size, height: size)
+-        } else {
+-          Circle()
+-            .stroke(state == 2 ? WidgetPalette.red.opacity(0.90) : Color(red: 1.0, green: 0.35, blue: 0.39).opacity(0.65), lineWidth: strokeW)
+-            .frame(width: size, height: size)
+-        }
+-      }
+-      .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+-    }
+-  }
+-}
+*** End Patch

@@ -1,0 +1,13 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/android/app/src/main/kotlin/com/wakeapp/ceoos/BlockingAccessibilityService.kt
+@@
+                 className = snapshot.className,
+                 detectedUrl = snapshot.detectedBrowserUrl,
+                 decision = effectiveDecision.javaClass.simpleName + when (effectiveDecision) {
+-                    is BlockDecision.BlockApp -> ":${decision.reason}"
+-                    is BlockDecision.BlockUrl -> ":${decision.reason}"
++                    is BlockDecision.BlockApp -> ":${effectiveDecision.reason}"
++                    is BlockDecision.BlockUrl -> ":${effectiveDecision.reason}"
+                     else -> ""
+                 },
+*** End Patch

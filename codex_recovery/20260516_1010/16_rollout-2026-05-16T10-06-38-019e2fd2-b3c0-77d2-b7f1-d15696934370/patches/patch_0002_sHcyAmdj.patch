@@ -1,0 +1,44 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/extractor.py
+@@
+ import re
+ import shutil
++import shlex
+ import subprocess
+@@
+     # Check if this is a git repo
+     is_git = (repo_path / ".git").exists()
++    repo_dirty_at_start = False
+     if is_git:
++        status = run_cmd("git status --porcelain", cwd=repo_path, check=False)
++        repo_dirty_at_start = bool(status.stdout.strip())
++        if repo_dirty_at_start:
++            warn("Git repo has existing changes; recovery will not auto-commit.")
+         print(f"\n[BACKUP] Creating safety backup branch: {backup_branch}")
+         run_cmd(f"git checkout -b {backup_branch}", cwd=repo_path)
+ 
+     applied = []
+     failed = []
++    applied_paths = set()
+@@
+         if patch_ok:
+             applied.append(patch_file)
++            applied_paths.update(touched_paths)
+             for msg in patch_messages:
+                 print(f"   [OK] {msg}")
+@@
+-    if is_git and applied:
+-        run_cmd("git add -A", cwd=repo_path)
++    if is_git and applied and not repo_dirty_at_start:
++        rel_paths = sorted(display_patch_path(repo_path, path) for path in applied_paths)
++        quoted_paths = " ".join(shlex.quote(path) for path in rel_paths)
++        run_cmd(f"git add -- {quoted_paths}", cwd=repo_path)
+         run_cmd(
+             f'git commit -m "Recovery: applied {len(applied)} patches from Codex sessions"',
+             cwd=repo_path,
+         )
++    elif is_git and applied:
++        warn("Skipped auto-commit because the repository was dirty before recovery.")
+ 
+     return applied, failed, backup_branch if is_git else "(no git repo)"
+*** End Patch

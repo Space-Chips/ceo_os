@@ -1,0 +1,15 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/theme/app_typography.dart
+@@
+ import 'dart:ui';
+ import 'package:flutter/cupertino.dart';
+ import 'package:flutter/material.dart';
+ import 'package:google_fonts/google_fonts.dart';
+ import 'app_colors.dart';
+-import '../providers/theme_provider.dart';
++import 'theme_runtime.dart';
+ import 'theme_catalog.dart';
+@@
+-  static AppTypographyProfile get _profile => ThemeProvider().currentTypography;
++  static AppTypographyProfile get _profile => ThemeRuntime.preset.typography;
+*** End Patch

@@ -1,0 +1,28 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/packages/url_launcher_ios/ios/url_launcher_ios/Sources/url_launcher_ios/URLLauncherPlugin.swift
+@@
+ public final class URLLauncherPlugin: NSObject, FlutterPlugin, UrlLauncherApi {
+ 
+   public static func register(with registrar: FlutterPluginRegistrar) {
+-    // Keep registration minimal and deterministic at app launch.
+-    // Deferring view-controller resolution avoids startup crashes observed
+-    // on iOS beta runtimes during plugin registration.
+-    let plugin = URLLauncherPlugin(registrar: registrar)
+-    UrlLauncherApiSetup.setUp(binaryMessenger: registrar.messenger(), api: plugin)
+-    // Avoid publishing the Swift plugin instance to the registrar.
+-    // On iOS 26 betas this code path crashes in swift_getObjectType during app launch.
+-    // Channel handlers remain registered through Pigeon setup above.
++    #if DEBUG
++      if #available(iOS 26.0, *) {
++        NSLog(
++          "[url_launcher_ios] Registration skipped on iOS 26 in DEBUG to avoid startup crash."
++        )
++        return
++      }
++    #endif
++
++    let plugin = URLLauncherPlugin(registrar: registrar)
++    UrlLauncherApiSetup.setUp(binaryMessenger: registrar.messenger(), api: plugin)
++    registrar.publish(plugin)
+   }
+*** End Patch

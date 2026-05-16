@@ -1,0 +1,127 @@
+*** Begin Patch
+*** Update File: lib/core/providers/theme_provider.dart
+@@
+-import 'package:flutter/material.dart';
++import 'dart:convert';
++
++import 'package:flutter/material.dart';
+ import 'package:supabase_flutter/supabase_flutter.dart';
++import 'package:shared_preferences/shared_preferences.dart';
+@@
+   SettingsRepository _settingsRepository = SettingsRepository();
+   final SupabaseClient _client = Supabase.instance.client;
+   StreamSubscription<AuthState>? _authSubscription;
++  static const _pendingOnboardingKey = 'pending_onboarding_setup_v1';
+@@
+   void _init() {
++    unawaited(_hydratePendingOnboardingFromPrefs());
+     final user = _client.auth.currentUser;
+     if (user != null) {
+       unawaited(loadThemeFromSupabase());
+     }
+     _authSubscription = _client.auth.onAuthStateChange.listen((event) async {
+       if (event.session?.user == null) {
+-        _setPreset(ThemeCatalog.defaultPresetId, notify: true);
+-        _pendingOnboardingSetup = null;
+-        _onboardingCurrentThemeId = ThemeCatalog.defaultPresetId;
++        await _hydratePendingOnboardingFromPrefs();
++        final pendingTheme = _pendingOnboardingSetup?.themePresetId;
++        final fallback = pendingTheme ?? ThemeCatalog.defaultPresetId;
++        _setPreset(fallback, notify: true);
++        _onboardingCurrentThemeId = fallback;
+         return;
+       }
+       try {
+         await loadThemeFromSupabase();
++        await _hydratePendingOnboardingFromPrefs();
+         if (_pendingOnboardingSetup != null) {
+           await persistPendingOnboardingSetup();
+         }
+       } catch (_) {
+         // Keep current runtime theme if sync fails and retry on next app event.
+@@
+   void selectThemeForOnboarding(String presetId) {
+     final normalized = _normalizedPresetId(presetId);
+     _onboardingCurrentThemeId = normalized;
+     previewTheme(normalized);
+   }
+@@
+   void setPendingOnboardingSetup(OnboardingSetupData setup) {
+     final normalizedThemeId = _normalizedPresetId(setup.themePresetId);
+     final normalizedSetup = OnboardingSetupData(
+       goal: setup.goal,
+       discipline: setup.discipline,
+       focusChallenge: setup.focusChallenge,
+       themePresetId: normalizedThemeId,
+     );
+ 
+     _pendingOnboardingSetup = normalizedSetup;
+     _onboardingCurrentThemeId = normalizedThemeId;
+     previewTheme(normalizedThemeId);
++    unawaited(_persistPendingOnboardingToPrefs(normalizedSetup));
+   }
+ 
+   Future<void> persistPendingOnboardingSetup() async {
+     final setup = _pendingOnboardingSetup;
+     if (setup == null) return;
+     if (_client.auth.currentUser == null) return;
+@@
+ 
+     await _settingsRepository.saveOnboardingSetup(normalizedSetup);
+     _setPreset(normalizedThemeId, notify: true);
+     _onboardingCurrentThemeId = normalizedThemeId;
+     _pendingOnboardingSetup = null;
++    await _clearPendingOnboardingPrefs();
+   }
+@@
+   void _setPreset(String presetId, {required bool notify}) {
+     _currentPreset = ThemeCatalog.resolveById(presetId);
+     ThemeRuntime.setPreset(_currentPreset);
+     if (notify) {
+       notifyListeners();
+     }
+   }
++
++  Future<void> _hydratePendingOnboardingFromPrefs() async {
++    final prefs = await SharedPreferences.getInstance();
++    final raw = prefs.getString(_pendingOnboardingKey);
++    if (raw == null || raw.isEmpty) return;
++    try {
++      final payload = jsonDecode(raw);
++      if (payload is! Map<String, dynamic>) return;
++      final themeId = _normalizedPresetId(
++        payload['themePresetId'] as String? ?? ThemeCatalog.defaultPresetId,
++      );
++      _pendingOnboardingSetup = OnboardingSetupData(
++        goal: payload['goal'] as String? ?? 'Execution',
++        discipline: payload['discipline'] as String? ?? 'Intermediate',
++        focusChallenge: payload['focusChallenge'] as String? ?? 'Distractions',
++        themePresetId: themeId,
++      );
++      _onboardingCurrentThemeId = themeId;
++      if (_client.auth.currentUser == null) {
++        _setPreset(themeId, notify: true);
++      }
++    } catch (_) {
++      // Ignore invalid local payloads.
++    }
++  }
++
++  Future<void> _persistPendingOnboardingToPrefs(
++    OnboardingSetupData setup,
++  ) async {
++    final prefs = await SharedPreferences.getInstance();
++    final payload = jsonEncode({
++      'goal': setup.goal,
++      'discipline': setup.discipline,
++      'focusChallenge': setup.focusChallenge,
++      'themePresetId': setup.themePresetId,
++    });
++    await prefs.setString(_pendingOnboardingKey, payload);
++  }
++
++  Future<void> _clearPendingOnboardingPrefs() async {
++    final prefs = await SharedPreferences.getInstance();
++    await prefs.remove(_pendingOnboardingKey);
++  }
+*** End Patch

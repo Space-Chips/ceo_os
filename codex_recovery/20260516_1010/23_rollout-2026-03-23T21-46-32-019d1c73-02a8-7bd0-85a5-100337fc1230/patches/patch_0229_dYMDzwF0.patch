@@ -1,0 +1,117 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/setup/setup_flow_screen.dart
+@@
+   @override
+   Widget build(BuildContext context) {
+     return _SetupStepScaffold(
+       child: Column(
+         crossAxisAlignment: CrossAxisAlignment.start,
+         children: [
+-          Container(
+-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+-            decoration: BoxDecoration(
+-              color: AppColors.glassSurfaceSoft,
+-              borderRadius: BorderRadius.circular(999),
+-              border: Border.all(color: AppColors.border),
+-            ),
+-            child: Text(
+-              'Setup • 3 steps',
+-              style: AppTypography.caption1.copyWith(
+-                color: AppColors.secondaryLabel,
+-                fontWeight: FontWeight.w600,
+-              ),
+-            ),
+-          ),
+-          const SizedBox(height: 20),
+-          Text('Screen Time setup', style: AppTypography.largeTitle),
+-          const SizedBox(height: 10),
+-          Text(
+-            'A quick, guided setup to make blocking instant and reliable.',
+-            style: AppTypography.body.copyWith(
+-              color: AppColors.secondaryLabel,
+-              height: 1.5,
+-            ),
+-          ),
+-          const SizedBox(height: 20),
+-          GlassCard(
+-            level: GlassCardLevel.elevated,
+-            child: Padding(
+-              padding: const EdgeInsets.all(16),
+-              child: Column(
+-                crossAxisAlignment: CrossAxisAlignment.start,
+-                children: [
+-                  Text('You’ll enable', style: AppTypography.title3),
+-                  const SizedBox(height: 10),
+-                  _BulletLine(
+-                    text: 'Instant blocking when an app opens.',
+-                  ),
+-                  _BulletLine(
+-                    text: 'Accurate usage limits in the background.',
+-                  ),
+-                  _BulletLine(
+-                    text: 'Focus and blackout sessions that hold.',
+-                  ),
+-                ],
+-              ),
+-            ),
+-          ),
++          GlassCard(
++            level: GlassCardLevel.elevated,
++            showEdgeGlow: true,
++            glowColor: AppColors.accent,
++            child: Column(
++              crossAxisAlignment: CrossAxisAlignment.start,
++              children: [
++                _StepProgressPill(step: 0, total: 3),
++                const SizedBox(height: 14),
++                Row(
++                  crossAxisAlignment: CrossAxisAlignment.center,
++                  children: [
++                    _IconOrb(icon: CupertinoIcons.timer, accent: AppColors.accent),
++                    const SizedBox(width: 14),
++                    Expanded(
++                      child: Column(
++                        crossAxisAlignment: CrossAxisAlignment.start,
++                        children: [
++                          Text('Screen Time setup', style: AppTypography.title1),
++                          const SizedBox(height: 6),
++                          Text(
++                            'A guided setup so blocking feels instant and reliable.',
++                            style: AppTypography.body.copyWith(
++                              color: AppColors.secondaryLabel,
++                              height: 1.35,
++                            ),
++                          ),
++                        ],
++                      ),
++                    ),
++                  ],
++                ),
++              ],
++            ),
++          ),
++          const SizedBox(height: 18),
++          GlassCard(
++            level: GlassCardLevel.standard,
++            showTopHighlight: false,
++            child: Column(
++              crossAxisAlignment: CrossAxisAlignment.start,
++              children: [
++                Text('You’ll enable', style: AppTypography.title3),
++                const SizedBox(height: 10),
++                _BulletLine(text: 'Instant blocking when an app opens.'),
++                _BulletLine(text: 'Accurate usage limits in the background.'),
++                _BulletLine(text: 'Focus and blackout sessions that hold.'),
++              ],
++            ),
++          ),
++          const SizedBox(height: 14),
++          Text(
++            'We’ll return you to WakeApp automatically after each permission.',
++            style: AppTypography.footnote.copyWith(
++              color: AppColors.tertiaryLabel,
++            ),
++          ),
+         ],
+       ),
+*** End Patch

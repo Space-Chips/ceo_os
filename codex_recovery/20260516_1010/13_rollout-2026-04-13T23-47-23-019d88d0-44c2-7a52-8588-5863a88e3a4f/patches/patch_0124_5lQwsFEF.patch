@@ -1,0 +1,33 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/screen_time_screen.dart
+@@
+     if (Platform.isIOS) {
+       final authorized = await _focusService.isAuthorized();
+       if (!authorized) {
+         final granted = await _focusService.requestPermissions();
+@@
+           return;
+         }
+       }
++      final encodedPayload = await _focusService.encodeWebsiteDomainSelection(
++        normalizedDomain,
++      );
++      if (encodedPayload == null || encodedPayload.trim().isEmpty) {
++        await _showNotice(
++          title: 'Website unavailable',
++          message:
++              'This domain could not be converted into a Screen Time website token on this iPhone.',
++        );
++        return;
++      }
+       await _runMutation(() async {
+         final record = await _repo.createBlockedWebsiteRecord(normalizedDomain);
+         if (record == null) return;
+         await _classicLocalStore.saveWebsiteBinding(
+           rowId: record.id,
+           nativeIdentifier: normalizedDomain,
++          nativePayload: encodedPayload.trim(),
+         );
+       });
+     } else {
+*** End Patch

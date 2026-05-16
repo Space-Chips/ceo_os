@@ -1,0 +1,34 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/ios/Runner/AppDelegate.swift
+@@
+-  private func registerPluginsDeterministicallyForDebugIOS26() {
+-    NSLog("[PluginReg] deterministic registration start (DEBUG)")
++  private func registerPluginsDeterministically() {
++    NSLog("[PluginReg] deterministic registration start")
++    NSLog("[PluginReg] os=\(UIDevice.current.systemVersion)")
+@@
+-    NSLog("[PluginReg] SKIP URLLauncherPlugin on DEBUG (startup crash mitigation)")
+-    NSLog("[PluginReg] SKIP WorkmanagerPlugin on DEBUG (startup crash mitigation)")
+-    NSLog("[PluginReg] deterministic registration end (DEBUG)")
++    if #available(iOS 26.0, *) {
++      NSLog("[PluginReg] SKIP URLLauncherPlugin on iOS 26+ (startup crash mitigation)")
++      NSLog("[PluginReg] SKIP WorkmanagerPlugin on iOS 26+ (startup crash mitigation)")
++    } else {
++      #if canImport(url_launcher_ios)
++      registerPlugin("URLLauncherPlugin") { URLLauncherPlugin.register(with: $0) }
++      #endif
++      #if canImport(workmanager_apple)
++      registerPlugin("WorkmanagerPlugin") { WorkmanagerPlugin.register(with: $0) }
++      #endif
++    }
++    NSLog("[PluginReg] deterministic registration end")
+   }
+@@
+-    #if DEBUG
+-    registerPluginsDeterministicallyForDebugIOS26()
+-    #else
+-    GeneratedPluginRegistrant.register(with: self)
+-    #endif
++    registerPluginsDeterministically()
+     UNUserNotificationCenter.current().delegate = self
+*** End Patch

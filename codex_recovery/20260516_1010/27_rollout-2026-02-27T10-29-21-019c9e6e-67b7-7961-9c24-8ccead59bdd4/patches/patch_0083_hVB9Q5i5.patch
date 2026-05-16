@@ -1,0 +1,61 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/tasks/tasks_screen.dart
+@@
+       child: Column(
+         crossAxisAlignment: CrossAxisAlignment.start,
+         children: [
+-          Text(
+-            title.toUpperCase(),
+-            style: AppTypography.mono.copyWith(
+-              fontSize: 11,
+-              color: highAttention ? AppColors.error : AppColors.primaryOrange,
+-              fontWeight: FontWeight.bold,
+-            ),
++          Row(
++            children: [
++              Expanded(
++                child: Text(
++                  title.toUpperCase(),
++                  style: AppTypography.mono.copyWith(
++                    fontSize: 11,
++                    color: highAttention
++                        ? AppColors.error
++                        : AppColors.primaryOrange,
++                    fontWeight: FontWeight.bold,
++                  ),
++                ),
++              ),
++              Container(
++                padding: const EdgeInsets.symmetric(
++                  horizontal: 7,
++                  vertical: 3,
++                ),
++                decoration: BoxDecoration(
++                  borderRadius: BorderRadius.circular(8),
++                  color: (highAttention ? AppColors.error : AppColors.primaryOrange)
++                      .withValues(alpha: 0.14),
++                  border: Border.all(
++                    color: (highAttention
++                            ? AppColors.error
++                            : AppColors.primaryOrange)
++                        .withValues(alpha: 0.3),
++                    width: 0.5,
++                  ),
++                ),
++                child: Text(
++                  '${tasks.length}',
++                  style: AppTypography.mono.copyWith(
++                    fontSize: 9,
++                    color: highAttention
++                        ? AppColors.error
++                        : AppColors.primaryOrange,
++                    fontWeight: FontWeight.bold,
++                  ),
++                ),
++              ),
++            ],
+           ),
+           const SizedBox(height: 3),
+           Text(
+             hint,
+*** End Patch

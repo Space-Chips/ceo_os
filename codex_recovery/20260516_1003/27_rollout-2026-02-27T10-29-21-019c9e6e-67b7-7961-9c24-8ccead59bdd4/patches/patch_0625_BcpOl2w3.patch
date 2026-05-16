@@ -1,0 +1,62 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/auth/onboarding_screen.dart
+@@
+               decoration: BoxDecoration(
+                 shape: BoxShape.circle,
+                 color: AppColors.primaryOrange.withValues(alpha: 0.07),
+               ),
+               child: BackdropFilter(
+                 filter: ImageFilter.blur(sigmaX: 100, sigmaY: 100),
+-                child: Container(color: CupertinoColors.transparent),
++                child: Container(
++                  color: AppColors.overlayScrim.withValues(alpha: 0),
++                ),
+               ),
+             ),
+           ),
+@@
+         Container(
+           width: 110,
+           height: 110,
+           decoration: BoxDecoration(
+-            gradient: const LinearGradient(
++            gradient: LinearGradient(
+               begin: Alignment.topCenter,
+               end: Alignment.bottomCenter,
+-              colors: [Color(0xFF1A1F2B), Color(0xFF121722)],
++              colors: [
++                AppColors.cardBackgroundAlt,
++                AppColors.cardBackgroundStrong,
++              ],
+             ),
+             borderRadius: BorderRadius.circular(28),
+             border: Border.all(
+@@
+           child: Text(
+             label,
+             style: AppTypography.body.copyWith(
+               fontSize: 16,
+               fontWeight: FontWeight.w600,
+-              color: CupertinoColors.white,
++              color: AppColors.onAccent,
+             ),
+           ),
+         ),
+@@
+             Container(
+               width: 110,
+               height: 110,
+               decoration: BoxDecoration(
+-                gradient: const LinearGradient(
++                gradient: LinearGradient(
+                   begin: Alignment.topCenter,
+                   end: Alignment.bottomCenter,
+-                  colors: [Color(0xFF1A1F2B), Color(0xFF121722)],
++                  colors: [
++                    AppColors.cardBackgroundAlt,
++                    AppColors.cardBackgroundStrong,
++                  ],
+                 ),
+                 borderRadius: BorderRadius.circular(28),
+                 border: Border.all(
+*** End Patch

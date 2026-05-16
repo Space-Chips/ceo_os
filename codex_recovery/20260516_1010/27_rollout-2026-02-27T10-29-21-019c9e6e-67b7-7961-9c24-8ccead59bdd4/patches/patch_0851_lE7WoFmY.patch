@@ -1,0 +1,322 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/notes_screen.dart
+@@
+ import '../../components/components.dart';
++import '../../core/repositories/premium_repository.dart';
+ import '../../core/models/task_models.dart';
+ import '../../core/repositories/feature_repository.dart';
+ import '../../core/theme/app_colors.dart';
+ import '../../core/theme/app_typography.dart';
+@@
+ class _NotesScreenState extends State<NotesScreen> {
+   final FeatureRepository _repo = FeatureRepository();
++  final PremiumRepository _premiumRepository = PremiumRepository();
+   final TextEditingController _editor = TextEditingController();
+   final TextEditingController _tagEditor = TextEditingController();
+   final TextEditingController _search = TextEditingController();
+   final FocusNode _editorFocus = FocusNode();
+@@
+   Timer? _autosaveDebounce;
+   String _lastSavedText = '';
+   String _lastSavedTitle = '';
++  bool _showingPremiumDialog = false;
+@@
+   Future<void> _persistCurrentNote() async {
+@@
+     if (_selected == null) {
+       if (trimmed.isEmpty) return;
++      final premiumCheck = await _premiumRepository.canCreateNote();
++      if (!premiumCheck.allowed) {
++        await _showPremiumBlocked(premiumCheck);
++        return;
++      }
+       setState(() => _saving = true);
+       try {
+-      final createdId = await _repo.createNote(title, text);
++        final createdId = await _repo.createNote(title, text);
+         await _load(preferredSelectedId: createdId);
+       } finally {
+         if (mounted) setState(() => _saving = false);
+       }
+@@
+   Future<void> _newNoteDraft() async {
+     await _flushAutosaveIfPending();
+     if (!mounted || _saving) return;
++    final premiumCheck = await _premiumRepository.canCreateNote();
++    if (!premiumCheck.allowed) {
++      await _showPremiumBlocked(premiumCheck);
++      return;
++    }
+     setState(() => _saving = true);
+     try {
+       final createdId = await _repo.createNote('Untitled', '');
+@@
+       if (mounted) setState(() => _saving = false);
+     }
+   }
++
++  Future<void> _showPremiumBlocked(PremiumCheckResult result) async {
++    if (_showingPremiumDialog || !mounted) return;
++    _showingPremiumDialog = true;
++    try {
++      await showPremiumGateDialog(context, result);
++    } finally {
++      _showingPremiumDialog = false;
++    }
++  }
+*** Update File: /Users/timo/ceo_os/lib/features/profile/profile_screen.dart
+@@
+ import '../../core/providers/language_provider.dart';
++import '../../core/repositories/premium_repository.dart';
+ import '../../core/providers/theme_provider.dart';
+@@
+   bool _isThemeSaving = false;
++  final PremiumRepository _premiumRepository = PremiumRepository();
+@@
+   Future<void> _showThemePicker() async {
+     final themeProvider = context.read<ThemeProvider>();
++    final runtime = await _premiumRepository.getRuntime();
+     final selected = await _showSelectionSheet(
+       title: 'INTERFACE_APPEARANCE',
+       subtitle: 'Choose your color scheme and typography.',
+       options: [
+         for (final preset in themeProvider.presets)
+           _SelectionOption(
+             id: preset.id,
+             title: preset.name,
+-            subtitle: preset.isDark ? 'Dark theme' : 'Light theme',
++            subtitle: _themeSubtitle(runtime, preset),
+             selected: preset.id == themeProvider.currentPreset.id,
+           ),
+       ],
+     );
+ 
+     if (selected == null || selected == themeProvider.currentPreset.id) return;
++
++    final themeCheck = await _premiumRepository.canUseTheme(selected);
++    if (!themeCheck.allowed) {
++      if (!mounted) return;
++      await showPremiumGateDialog(context, themeCheck);
++      return;
++    }
+ 
+     setState(() => _isThemeSaving = true);
+@@
+       }
+     }
+   }
++
++  String _themeSubtitle(PremiumRuntime runtime, AppThemePreset preset) {
++    final isPremiumTheme = runtime.config.premiumThemes.contains(preset.id);
++    if (!isPremiumTheme) {
++      return preset.isDark ? 'Dark theme' : 'Light theme';
++    }
++    if (runtime.config.launchPremiumLabelsEnabled &&
++        runtime.resolved.launchPremiumActive) {
++      return 'Premium, unlocked during launch';
++    }
++    return 'Premium theme';
++  }
+*** Update File: /Users/timo/ceo_os/lib/features/auth/onboarding_screen.dart
+@@
+ import '../../core/models/onboarding_models.dart';
+ import '../../core/providers/theme_provider.dart';
++import '../../core/repositories/premium_repository.dart';
++import '../../core/models/premium_models.dart';
+ import '../../core/theme/app_colors.dart';
+ import '../../core/theme/app_typography.dart';
+ import '../../core/theme/theme_catalog.dart';
+@@
+   String _focusChallenge = 'Distractions';
+   String _selectedThemePresetId = ThemeCatalog.defaultPresetId;
+   bool _didLoadInitialTheme = false;
++  final PremiumRepository _premiumRepository = PremiumRepository();
++  late final Future<PremiumRuntime> _premiumRuntimeFuture =
++      _premiumRepository.getRuntime();
+@@
+                     child: showingQuestionnaire
+-                        ? _Questionnaire(
+-                            goal: _goal,
+-                            discipline: _discipline,
+-                            focusChallenge: _focusChallenge,
+-                            selectedThemePresetId: _selectedThemePresetId,
+-                            onGoal: (v) => setState(() => _goal = v),
+-                            onDiscipline: (v) =>
+-                                setState(() => _discipline = v),
+-                            onFocusChallenge: (v) =>
+-                                setState(() => _focusChallenge = v),
+-                            onThemeSelected: (presetId) {
+-                              setState(() => _selectedThemePresetId = presetId);
+-                              context
+-                                  .read<ThemeProvider>()
+-                                  .selectThemeForOnboarding(presetId);
+-                            },
+-                          )
++                        ? FutureBuilder<PremiumRuntime>(
++                            future: _premiumRuntimeFuture,
++                            builder: (context, snapshot) {
++                              final runtime = snapshot.data;
++                              return _Questionnaire(
++                                goal: _goal,
++                                discipline: _discipline,
++                                focusChallenge: _focusChallenge,
++                                selectedThemePresetId: _selectedThemePresetId,
++                                premiumRuntime: runtime,
++                                onGoal: (v) => setState(() => _goal = v),
++                                onDiscipline: (v) =>
++                                    setState(() => _discipline = v),
++                                onFocusChallenge: (v) =>
++                                    setState(() => _focusChallenge = v),
++                                onThemeSelected: (presetId) async {
++                                  final themeCheck = await _premiumRepository
++                                      .canUseTheme(presetId);
++                                  if (!mounted) return;
++                                  if (!themeCheck.allowed) {
++                                    await showPremiumGateDialog(
++                                      context,
++                                      themeCheck,
++                                    );
++                                    return;
++                                  }
++                                  setState(
++                                    () => _selectedThemePresetId = presetId,
++                                  );
++                                  context
++                                      .read<ThemeProvider>()
++                                      .selectThemeForOnboarding(presetId);
++                                },
++                              );
++                            },
++                          )
+                         : PageView.builder(
+@@
+ class _Questionnaire extends StatelessWidget {
+   final String goal;
+   final String discipline;
+   final String focusChallenge;
+   final String selectedThemePresetId;
++  final PremiumRuntime? premiumRuntime;
+   final ValueChanged<String> onGoal;
+   final ValueChanged<String> onDiscipline;
+   final ValueChanged<String> onFocusChallenge;
+-  final ValueChanged<String> onThemeSelected;
++  final Future<void> Function(String) onThemeSelected;
+@@
+     required this.focusChallenge,
+     required this.selectedThemePresetId,
++    required this.premiumRuntime,
+     required this.onGoal,
+     required this.onDiscipline,
+     required this.onFocusChallenge,
+@@
+           child: _ThemeSelectorBlock(
++            premiumRuntime: premiumRuntime,
+             selectedThemePresetId: selectedThemePresetId,
+             onThemeSelected: onThemeSelected,
+           ),
+@@
+ class _ThemeSelectorBlock extends StatelessWidget {
++  final PremiumRuntime? premiumRuntime;
+   final String selectedThemePresetId;
+-  final ValueChanged<String> onThemeSelected;
++  final Future<void> Function(String) onThemeSelected;
+ 
+   const _ThemeSelectorBlock({
++    required this.premiumRuntime,
+     required this.selectedThemePresetId,
+     required this.onThemeSelected,
+   });
+@@
+         final preset = presets[i];
+         return _ThemePreviewCard(
++          premiumRuntime: premiumRuntime,
+           preset: preset,
+           selected: selectedThemePresetId == preset.id,
+-          onTap: () => onThemeSelected(preset.id),
++          onTap: () async => onThemeSelected(preset.id),
+         );
+       },
+     );
+   }
+ }
+ 
+ class _ThemePreviewCard extends StatelessWidget {
++  final PremiumRuntime? premiumRuntime;
+   final AppThemePreset preset;
+   final bool selected;
+-  final VoidCallback onTap;
++  final Future<void> Function() onTap;
+ 
+   const _ThemePreviewCard({
++    required this.premiumRuntime,
+     required this.preset,
+     required this.selected,
+     required this.onTap,
+@@
+   Widget build(BuildContext context) {
+     final palette = preset.palette;
+     final semantic = preset.semantic;
++    final runtime = premiumRuntime;
++    final isPremiumTheme =
++        runtime?.config.premiumThemes.contains(preset.id) ?? false;
++    final showLaunchLabel =
++        isPremiumTheme &&
++        (runtime?.config.launchPremiumLabelsEnabled ?? false) &&
++        (runtime?.resolved.launchPremiumActive ?? false);
++    final themeCaption = showLaunchLabel
++        ? 'Premium, unlocked during launch'
++        : isPremiumTheme
++        ? 'Premium theme'
++        : preset.subtitle;
+     final previewBackground = Color.alphaBlend(
+       semantic.cardBorder.withValues(alpha: preset.isDark ? 0.14 : 0.08),
+       semantic.cardBackgroundAlt,
+     );
+     return _OnboardingPressScale(
+@@
+                 if (selected)
+                   Container(
+                     width: 8,
+                     height: 8,
+                     decoration: BoxDecoration(
+                       color: palette.accent,
+                       shape: BoxShape.circle,
+                     ),
+                   ),
+               ],
+             ),
++            if (isPremiumTheme) ...[
++              const SizedBox(height: 8),
++              Container(
++                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
++                decoration: BoxDecoration(
++                  color: semantic.accentSurfaceSoft,
++                  borderRadius: BorderRadius.circular(999),
++                  border: Border.all(
++                    color: semantic.accentBorder.withValues(alpha: 0.9),
++                    width: 0.7,
++                  ),
++                ),
++                child: Text(
++                  showLaunchLabel ? 'Premium, unlocked during launch' : 'Premium',
++                  maxLines: 1,
++                  overflow: TextOverflow.ellipsis,
++                  style: AppTypography.caption1.copyWith(
++                    fontSize: 9,
++                    color: semantic.accentText,
++                    fontWeight: FontWeight.w600,
++                  ),
++                ),
++              ),
++            ],
+             const SizedBox(height: 10),
+             Container(
+               width: double.infinity,
+@@
+             Text(
+-              preset.subtitle,
++              themeCaption,
+               maxLines: 1,
+               overflow: TextOverflow.ellipsis,
+               style: AppTypography.caption1.copyWith(
+*** End Patch

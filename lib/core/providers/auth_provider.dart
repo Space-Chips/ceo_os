@@ -1,12 +1,23 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+
+import '../config/supabase_config.dart';
+
+class AuthSignupResult {
+  final bool requiresEmailConfirmation;
+
+  const AuthSignupResult({required this.requiresEmailConfirmation});
+}
 
 /// Auth state management using Supabase.
 class AuthProvider extends ChangeNotifier {
   final _supabase = Supabase.instance.client;
   User? _user;
   bool _hasCompletedOnboarding = false;
+  StreamSubscription<AuthState>? _authSubscription;
 
   AuthProvider() {
     _user = _supabase.auth.currentUser;
@@ -21,7 +32,8 @@ class AuthProvider extends ChangeNotifier {
   String? get userEmail => _user?.email;
 
   void _listenToAuthChanges() {
-    _supabase.auth.onAuthStateChange.listen((data) {
+    _authSubscription?.cancel();
+    _authSubscription = _supabase.auth.onAuthStateChange.listen((data) {
       _user = data.session?.user;
       notifyListeners();
     });
@@ -38,14 +50,29 @@ class AuthProvider extends ChangeNotifier {
   }
 
   /// Real signup with Supabase.
-  Future<void> signup(String name, String email, String password) async {
+  Future<AuthSignupResult> signup(
+    String name,
+    String email,
+    String password,
+  ) async {
     try {
-      await _supabase.auth.signUp(
+      final response = await _supabase.auth.signUp(
         email: email,
         password: password,
         data: {'full_name': name},
       );
       _hasCompletedOnboarding = true;
+      return AuthSignupResult(
+        requiresEmailConfirmation: response.session == null,
+      );
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> resetPassword(String email) async {
+    try {
+      await _supabase.auth.resetPasswordForEmail(email.trim());
     } catch (e) {
       rethrow;
     }
@@ -59,19 +86,25 @@ class AuthProvider extends ChangeNotifier {
       if (!kIsWeb &&
           (defaultTargetPlatform == TargetPlatform.iOS ||
               defaultTargetPlatform == TargetPlatform.android)) {
-        const webClientId =
-            'YOUR_WEB_CLIENT_ID.apps.googleusercontent.com'; // TODO: User needs to configure this
-        const iosClientId =
-            'YOUR_IOS_CLIENT_ID.apps.googleusercontent.com'; // TODO: User needs to configure this
+        if (!SupabaseConfig.hasGoogleMobileClientConfig) {
+          throw StateError(
+            'Google Sign-In mobile is not configured. Provide GOOGLE_WEB_CLIENT_ID and GOOGLE_IOS_CLIENT_ID via --dart-define before shipping.',
+          );
+        }
 
         final GoogleSignIn googleSignIn = GoogleSignIn(
-          clientId: iosClientId,
-          serverClientId: webClientId,
+          clientId: defaultTargetPlatform == TargetPlatform.iOS
+              ? SupabaseConfig.googleIosClientId
+              : null,
+          serverClientId: SupabaseConfig.googleWebClientId,
         );
         final googleUser = await googleSignIn.signIn();
-        final googleAuth = await googleUser?.authentication;
-        final accessToken = googleAuth?.accessToken;
-        final idToken = googleAuth?.idToken;
+        if (googleUser == null) {
+          throw StateError('Google Sign-In was cancelled.');
+        }
+        final googleAuth = await googleUser.authentication;
+        final accessToken = googleAuth.accessToken;
+        final idToken = googleAuth.idToken;
 
         if (accessToken == null || idToken == null) {
           throw 'Google Sign-In was cancelled or failed.';
@@ -100,5 +133,11 @@ class AuthProvider extends ChangeNotifier {
 
   Future<void> logout() async {
     await _supabase.auth.signOut();
+  }
+
+  @override
+  void dispose() {
+    _authSubscription?.cancel();
+    super.dispose();
   }
 }

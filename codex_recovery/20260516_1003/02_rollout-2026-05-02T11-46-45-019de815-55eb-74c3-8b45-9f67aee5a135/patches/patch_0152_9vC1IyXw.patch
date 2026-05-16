@@ -1,0 +1,94 @@
+*** Begin Patch
+*** Update File: lib/core/widgets/home_widgets/widget_views.dart
+@@
+   @override
+   Widget build(BuildContext context) {
+     final remaining = pending.length;
+     final items = pending.take(4).toList();
+-    final more = (remaining - items.length).clamp(0, 999);
+     return WidgetRoot(
+       padding: WidgetDesignTokens.padSquare,
+       child: Column(
+         crossAxisAlignment: CrossAxisAlignment.start,
+         children: [
+-          Text('To‑Do', style: WidgetDesignTokens.title.copyWith(fontSize: 20)),
+-          const SizedBox(height: 10),
++          Row(
++            children: [
++              Expanded(
++                child: Text(
++                  'To‑Do',
++                  style: WidgetDesignTokens.title.copyWith(fontSize: 19),
++                ),
++              ),
++              if (remaining > 0)
++                Container(
++                  padding: const EdgeInsets.symmetric(
++                    horizontal: 10,
++                    vertical: 6,
++                  ),
++                  decoration: BoxDecoration(
++                    borderRadius: BorderRadius.circular(999),
++                    color: AppColors.cardBackgroundAlt.withValues(alpha: 0.6),
++                    border: Border.all(
++                      color: AppColors.border.withValues(alpha: 0.55),
++                    ),
++                  ),
++                  child: Text(
++                    '$remaining',
++                    style: AppTypography.caption1.copyWith(
++                      fontSize: 12,
++                      fontWeight: FontWeight.w800,
++                      color: AppColors.label.withValues(alpha: 0.92),
++                      height: 1,
++                    ),
++                  ),
++                ),
++            ],
++          ),
++          const SizedBox(height: 8),
+           Expanded(
+             child: Container(
+@@
+                     : Column(
+                         children: [
+                           for (var i = 0; i < items.length; i++) ...[
+                             Expanded(
+                               child: _TodoListRowCompact(
+                                 index: i + 1,
+                                 task: items[i],
+                               ),
+                             ),
+                             if (i != items.length - 1)
+                               Container(
+                                 height: 1,
+                                 margin: const EdgeInsets.symmetric(
+                                   horizontal: 12,
+                                 ),
+                                 color: AppColors.border.withValues(alpha: 0.55),
+                               ),
+                           ],
+-                          if (more > 0)
+-                            Padding(
+-                              padding: const EdgeInsets.fromLTRB(12, 6, 12, 10),
+-                              child: Align(
+-                                alignment: Alignment.centerLeft,
+-                                child: Text(
+-                                  '+$more ${language.t('widget_more')}',
+-                                  style: WidgetDesignTokens.subtitle.copyWith(
+-                                    fontSize: 11,
+-                                    color: AppColors.secondaryLabel.withValues(
+-                                      alpha: 0.72,
+-                                    ),
+-                                  ),
+-                                ),
+-                              ),
+-                            )
+-                          else
+-                            const SizedBox.shrink(),
+                         ],
+                       ),
+               ),
+             ),
+           ),
+*** End Patch

@@ -1,0 +1,20 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/screen_time_screen.dart
+@@
+   List<BlockedApp> _blockedApps = [];
+   List<BlockedWebsite> _blockedWebsites = [];
+   List<RestPeriod> _restPeriods = [];
+   Map<String, ClassicBlockBinding> _appBindings = const {};
+-  Map<String, ClassicBlockBinding> _websiteBindings = const {};
+   bool _adultContentShieldEnabled = false;
+@@
+-      final websiteBindingsFuture = _classicLocalStore.loadWebsiteBindings();
++      final websiteBindingsFuture = _classicLocalStore.loadWebsiteBindings();
+@@
+-        _websiteBindings = Map<String, ClassicBlockBinding>.fromEntries(
+-          websiteBindings.entries.where(
+-            (entry) => validWebsiteIds.contains(entry.key),
+-          ),
+-        );
+         _adultContentShieldEnabled = adultEnabled;
+*** End Patch

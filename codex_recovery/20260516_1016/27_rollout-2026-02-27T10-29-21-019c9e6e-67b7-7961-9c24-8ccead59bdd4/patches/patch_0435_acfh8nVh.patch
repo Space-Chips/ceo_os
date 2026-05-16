@@ -1,0 +1,25 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/home/home_screen.dart
+@@
+             Text(
+               data.title,
+               maxLines: 1,
+               overflow: TextOverflow.ellipsis,
+-              style: AppTypography.mono.copyWith(
++              style: AppTypography.title3.copyWith(
+                 fontSize: compact ? 18 : 17,
+                 fontWeight: FontWeight.w700,
+                 color: data.active ? AppColors.label : AppColors.tertiaryLabel,
+               ),
+@@
+     return _InteractiveLift(
+       onTap: data.onTap,
+-      borderRadius: 28,
+-      hoverScale: 1.032,
+-      pressedScale: 1.047,
+-      glowColor: glowColor.withValues(alpha: 1.0),
++      borderRadius: 24,
++      hoverScale: 1.017,
++      pressedScale: 1.028,
++      glowColor: glowColor,
+*** End Patch

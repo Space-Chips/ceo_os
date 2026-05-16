@@ -1,0 +1,40 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/home/home_screen.dart
+@@
+   static const Set<String> _defaultActiveApps = {
+     'Pareto',
+     'Habits',
+     'Calendar',
+     'ScreenTimeManager',
+   };
++  static const Set<String> _validPrimaryApps = {
++    'Pareto',
++    'Habits',
++    'Calendar',
++    'ScreenTimeManager',
++  };
+@@
+   Future<void> _loadActiveApps() async {
+     final settings = await _featureRepository.getAppSettings();
+     if (!mounted) return;
+ 
+     final configured = settings?.activeApps;
++    final normalized = configured == null
++        ? null
++        : configured.where(_validPrimaryApps.contains).toSet();
+     setState(() {
+       _settingsId = settings?.id;
+-      if (configured != null && configured.isNotEmpty) {
+-        _activeApps = configured.toSet();
++      if (configured != null) {
++        if (normalized != null && normalized.isNotEmpty) {
++          _activeApps = normalized;
++        } else if (configured.isNotEmpty) {
++          _activeApps = {..._defaultActiveApps};
++        } else {
++          _activeApps = <String>{};
++        }
+       }
+     });
+   }
+*** End Patch

@@ -1,0 +1,34 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/screen_time_screen.dart
+@@
+     if (_protectionStatus.isAuthorized) {
+       await _showNotice(
+-        title: _isAndroid ? 'Access approved' : 'Access approved',
++        title: _t('screen_time_access_approved'),
+         message: _isAndroid
+-            ? 'Android protection access is already approved on this device.'
+-            : 'Screen Time / Family Controls access is already approved on this iPhone.',
++            ? _t('screen_time_android_access_approved_message')
++            : _t('screen_time_ios_access_approved_message'),
+       );
+       return;
+     }
+@@
+   Future<void> _showLocalLimitInfo({
+     required String title,
+     required int limitMinutes,
+   }) {
+     return _showNotice(
+       title: title,
+       message: _isAndroid
+-          ? 'Daily limit: ${limitMinutes}m\nUsage data for Android daily limits stays on this device and is not used for ads or unrelated analytics.'
+-          : 'Daily limit: ${limitMinutes}m\nUsage for Screen Time protections stays on this device and is not synced, exported, or shared.',
++          ? '${_t('screen_time_daily_limit_prefix')}: ${limitMinutes}m\n${_t('screen_time_android_local_limit_info')}'
++          : '${_t('screen_time_daily_limit_prefix')}: ${limitMinutes}m\n${_t('screen_time_ios_local_limit_info')}',
+     );
+   }
+@@
+         middle: Text(
+-          _isAndroid ? 'Focus Protection' : 'Screen Time Control',
++          _isAndroid ? _t('focus_protection') : _t('screen_time_control_title'),
+*** End Patch

@@ -1,0 +1,36 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/android/app/src/main/kotlin/com/example/ceo_os/MainActivity.kt
+@@
+                 "syncClassicShieldConfig" -> {
+                     val packages = call.argument<List<String>>("packages") ?: listOf()
+                     val payload = org.json.JSONObject()
+                     payload.put("blocked_package_names", org.json.JSONArray(packages))
+                     prefs().edit().putString("classic_block_list", payload.toString()).apply()
+                     AppBlockingService.updateClassicBlockList(packages)
+                     result.success(null)
+                 }
++                "syncClassicPauseSchedule" -> {
++                    val packages = call.argument<List<String>>("packages") ?: listOf()
++                    val payload = org.json.JSONObject()
++                    payload.put("blocked_package_names", org.json.JSONArray(packages))
++                    prefs().edit().putString("classic_pause_block_list", payload.toString()).apply()
++                    AppBlockingService.updateClassicPauseBlockList(packages)
++                    @Suppress("UNCHECKED_CAST")
++                    val periods = call.argument<List<Map<String, Any?>>>("periods") ?: emptyList()
++                    ClassicPauseScheduler.syncPauseSchedule(this, periods)
++                    result.success(null)
++                }
+                 "setClassicShieldEnabled" -> {
+                     val enabled = call.argument<Boolean>("enabled") ?: false
+                     prefs().edit().putBoolean("classic_shield_active", enabled).apply()
+                     AppBlockingService.setClassicShieldActive(enabled)
+                     result.success(null)
+@@
+                     val active =
+                         prefs.getBoolean("focus_shield_active", false) ||
+                         prefs.getBoolean("classic_shield_active", false) ||
++                        prefs.getBoolean("classic_pause_shield_active", false) ||
+                         prefs.getBoolean("ceo_shield_active", false)
+                     result.success(active)
+                 }
+*** End Patch

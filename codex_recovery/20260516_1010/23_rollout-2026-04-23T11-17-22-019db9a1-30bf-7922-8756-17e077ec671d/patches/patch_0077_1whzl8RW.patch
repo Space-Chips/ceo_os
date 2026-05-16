@@ -1,0 +1,29 @@
+*** Begin Patch
+*** Update File: lib/core/providers/language_overrides.dart
+@@
+-    'auth_privacy_body':
+-        'WakeApp uses Supabase for account and cloud sync infrastructure, Google Sign-In when selected by the user, RevenueCat plus Apple or Google Play for purchases, and platform system APIs for blocking, notifications, widgets, and scheduling.',
+-    'auth_terms_body':
+-        'WakeApp provides productivity, planning, and focus tools. Premium subscriptions may renew automatically unless canceled in your Apple App Store or Google Play subscription settings.',
+-    'auth_trust_footer':
+-        'By continuing, you agree to the Terms of Use and Privacy Policy.',
+-    'close': 'Close',
+-    'privacy_short': 'Privacy',
+-    'support_email_copied':
+-        'Support email copied: timofrmac@gmail.com. Include device, app version, and reproduction steps.',
+-    'support_short': 'Support',
+-    'terms_short': 'Terms',
++    'auth_privacy_body':
++        'WakeApp अकाउंट और क्लाउड सिंक के लिए Supabase, उपयोगकर्ता द्वारा चुने जाने पर Google Sign-In, खरीदारी के लिए RevenueCat (Apple या Google Play के साथ), और ब्लॉकिंग, नोटिफिकेशन, विजेट्स व शेड्यूलिंग के लिए प्लेटफ़ॉर्म सिस्टम API का उपयोग करता है।',
++    'auth_terms_body':
++        'WakeApp उत्पादकता, योजना और फोकस के लिए टूल देता है। प्रीमियम सब्सक्रिप्शन अपने-आप रिन्यू हो सकते हैं जब तक आप Apple App Store या Google Play की सब्सक्रिप्शन सेटिंग्स में कैंसल न करें।',
++    'auth_trust_footer':
++        'जारी रखने पर, आप उपयोग की शर्तों और गोपनीयता नीति से सहमत होते हैं।',
++    'close': 'बंद करें',
++    'privacy_short': 'गोपनीयता',
++    'support_email_copied':
++        'सपोर्ट ईमेल कॉपी हो गया: timofrmac@gmail.com. डिवाइस, ऐप वर्ज़न, और पुनरुत्पादन चरण शामिल करें।',
++    'support_short': 'सपोर्ट',
++    'terms_short': 'शर्तें',
+   },
+*** End Patch

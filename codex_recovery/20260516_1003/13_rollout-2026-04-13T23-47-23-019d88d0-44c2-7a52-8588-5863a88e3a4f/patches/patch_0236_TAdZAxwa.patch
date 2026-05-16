@@ -1,0 +1,69 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/providers/focus_provider.dart
+@@
+ class FocusProvider extends ChangeNotifier {
+   final FocusService _focusService = FocusService();
+   final FocusRepository _repository = FocusRepository();
++  final FeatureRepository _featureRepository = FeatureRepository();
+   final PremiumRepository _premiumRepository = PremiumRepository();
++  final ClassicBlockingLocalStore _classicLocalStore =
++      ClassicBlockingLocalStore();
++  final ClassicBlockingCoordinator _classicCoordinator =
++      ClassicBlockingCoordinator();
+   final StatsEngine _statsEngine = StatsEngine();
+@@
+   Timer? _timer;
+   DateTime? _sessionStartTime;
++  DateTime? _focusExitReadyAt;
++  bool _focusShieldOverrideActive = false;
++  bool _endingSession = false;
+@@
+   // ── Session Context ──
+   String? sessionTitle;
+   String? linkedTaskId;
++  static const int _focusExitCountdownSeconds = 100;
+@@
+   // ── Stats ──
+   int _totalFocusMinutesToday = 0;
+   double _screenTimeToday = 0.0;
+   List<double> _hourlyUsage = List.filled(24, 0);
+   PremiumCheckResult? _lastPremiumCheck;
++  int _configuredBlockedAppCount = 0;
++  int _configuredBlockedWebsiteCount = 0;
+@@
+   List<double> get hourlyUsage => List.unmodifiable(_hourlyUsage);
+   PremiumCheckResult? get lastPremiumCheck => _lastPremiumCheck;
++  int get configuredBlockedAppCount => _configuredBlockedAppCount;
++  int get configuredBlockedWebsiteCount => _configuredBlockedWebsiteCount;
++  bool get hasConfiguredBlockingTargets =>
++      configuredBlockedAppCount > 0 || configuredBlockedWebsiteCount > 0;
++  int get exitCountdownRemainingSeconds {
++    if (_state != FocusState.exitPending || _focusExitReadyAt == null) return 0;
++    return _focusExitReadyAt!
++        .difference(DateTime.now())
++        .inSeconds
++        .clamp(0, _focusExitCountdownSeconds);
++  }
++  bool get canFinalizeEarlyExit =>
++      _state == FocusState.exitPending && exitCountdownRemainingSeconds == 0;
++  String get exitCountdownLabel {
++    final seconds = exitCountdownRemainingSeconds.clamp(0, 999).toString();
++    return '${seconds.padLeft(2, '0')}s';
++  }
+@@
+       case FocusState.idle:
+       case FocusState.focusing:
++      case FocusState.exitPending:
+       case FocusState.requestingBreak:
+       case FocusState.breakOptionsMenu:
+         return focusDurationMinutes * 60;
+@@
+       case FocusState.idle:
+         return 'System Idle';
+       case FocusState.focusing:
+         return 'Deep Focus Active';
++      case FocusState.exitPending:
++        return 'Exit Countdown';
+       case FocusState.shortBreak:
+         return 'Short Break';
+*** End Patch

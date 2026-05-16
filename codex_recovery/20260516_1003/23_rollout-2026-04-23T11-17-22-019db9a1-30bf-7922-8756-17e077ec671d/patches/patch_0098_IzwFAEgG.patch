@@ -1,0 +1,15 @@
+*** Begin Patch
+*** Update File: lib/core/providers/language_overrides.dart
+@@
+     'dashboard_duration_half_day': 'medio día',
+     'dashboard_duration_1_day': '1 día',
+     'dashboard_duration_several_days': 'varios días',
++    'home_dashboard_load_failed': 'No se pudo cargar el panel',
++    'home_dashboard_retry_hint':
++        'Toca para intentar cargar tu panel de nuevo.',
++    'no_active_modules':
++        'No hay módulos activos. Activa módulos desde el botón de cuadrícula en el encabezado.',
+ 
+     // Event types
+     'event_types_type_name': 'NOMBRE DEL TIPO',
+*** End Patch

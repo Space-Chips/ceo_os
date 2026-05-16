@@ -1,0 +1,66 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/screen_time_screen.dart
+@@
+                     _sectionHeader(
+                       title: 'PAUSE',
+                       subtitle:
+-                          'Plan your pause at least 2 hours in advance (required)',
++                          'Plan a 30-minute pause at least 2 hours in advance',
+                       trailing: null,
+                     ),
+                     GlassCard(
+                       padding: const EdgeInsets.all(14),
+                       borderRadius: 14,
+                       child: Column(
+                         children: [
+-                          Row(
+-                            children: [
+-                              Expanded(
+-                                child: _quickPill(
+-                                  label: 'IN 2h',
+-                                  onTap: _saving
+-                                      ? null
+-                                      : () => _scheduleRestPeriod(
+-                                          startsInMinutes: 120,
+-                                          durationMinutes: 30,
+-                                        ),
+-                                ),
+-                              ),
+-                              const SizedBox(width: 8),
+-                              Expanded(
+-                                child: _quickPill(
+-                                  label: 'IN 3h',
+-                                  onTap: _saving
+-                                      ? null
+-                                      : () => _scheduleRestPeriod(
+-                                          startsInMinutes: 180,
+-                                          durationMinutes: 30,
+-                                        ),
+-                                ),
+-                              ),
+-                              const SizedBox(width: 8),
+-                              Expanded(
+-                                child: _quickPill(
+-                                  label: 'IN 6h',
+-                                  onTap: _saving
+-                                      ? null
+-                                      : () => _scheduleRestPeriod(
+-                                          startsInMinutes: 360,
+-                                          durationMinutes: 30,
+-                                        ),
+-                                ),
+-                              ),
+-                            ],
++                          SizedBox(
++                            width: double.infinity,
++                            child: _quickPill(
++                              label: 'PLAN PAUSE (IN 2h)',
++                              onTap: _saving
++                                  ? null
++                                  : () => _scheduleRestPeriod(
++                                      startsInMinutes: 120,
++                                      durationMinutes: 30,
++                                    ),
++                            ),
+                           ),
+*** End Patch

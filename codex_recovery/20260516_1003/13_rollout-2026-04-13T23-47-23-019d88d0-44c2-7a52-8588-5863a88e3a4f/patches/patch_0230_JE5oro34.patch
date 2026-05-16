@@ -1,0 +1,151 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/ios/Runner/AppDelegate.swift
+@@
+ @available(iOS 16.0, *)
+ private final class BlockedWebsiteTokenLabelPlatformViewFactory: NSObject, FlutterPlatformViewFactory {
+@@
+     ) -> FlutterPlatformView {
+         BlockedWebsiteTokenLabelPlatformView(frame: frame, viewId: viewId, args: args)
+     }
+ }
++
++@available(iOS 16.0, *)
++private final class BlockedWebsiteTokenIconPlatformViewFactory: NSObject, FlutterPlatformViewFactory {
++    func createArgsCodec() -> FlutterMessageCodec & NSObjectProtocol {
++        FlutterStandardMessageCodec.sharedInstance()
++    }
++
++    func create(
++        withFrame frame: CGRect,
++        viewIdentifier viewId: Int64,
++        arguments args: Any?
++    ) -> FlutterPlatformView {
++        BlockedWebsiteTokenIconPlatformView(frame: frame, viewId: viewId, args: args)
++    }
++}
+@@
+ @available(iOS 16.0, *)
+ private final class BlockedWebsiteTokenLabelPlatformView: NSObject, FlutterPlatformView {
+@@
+-        if let token = Self.decodeWebsiteToken(from: payload) {
++        if let token = Self.decodeWebsiteToken(from: payload) {
+             let host = UIHostingController(
+                 rootView: NativeBlockedWebsiteTokenLabelView(
+                     token: token,
+                     textColor: textColor
+                 )
+@@
+     func view() -> UIView {
+         container
+     }
+ 
+-    private static func decodeWebsiteToken(from payload: String) -> WebDomainToken? {
++    static func decodeWebsiteToken(from payload: String) -> WebDomainToken? {
+         guard let selection = decodeFamilyActivitySelectionPayload(payload) else { return nil }
+         return selection.webDomainTokens.first
+     }
+ }
++
++@available(iOS 16.0, *)
++private final class BlockedWebsiteTokenIconPlatformView: NSObject, FlutterPlatformView {
++    private let container: UIView
++
++    init(frame: CGRect, viewId: Int64, args: Any?) {
++        container = UIView(frame: frame)
++        container.backgroundColor = .clear
++        super.init()
++
++        let arguments = args as? [String: Any]
++        let payload = (arguments?["payload"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
++        let isDarkTheme = (arguments?["isDarkTheme"] as? Bool) ?? true
++
++        if let token = BlockedWebsiteTokenLabelPlatformView.decodeWebsiteToken(from: payload) {
++            let host = UIHostingController(
++                rootView: NativeBlockedWebsiteTokenIconView(token: token)
++            )
++            host.view.backgroundColor = .clear
++            host.overrideUserInterfaceStyle = isDarkTheme ? .dark : .light
++            host.view.translatesAutoresizingMaskIntoConstraints = false
++            container.addSubview(host.view)
++            NSLayoutConstraint.activate([
++                host.view.leadingAnchor.constraint(equalTo: container.leadingAnchor),
++                host.view.trailingAnchor.constraint(equalTo: container.trailingAnchor),
++                host.view.topAnchor.constraint(equalTo: container.topAnchor),
++                host.view.bottomAnchor.constraint(equalTo: container.bottomAnchor),
++            ])
++        }
++    }
++
++    func view() -> UIView {
++        container
++    }
++}
+@@
+ private struct NativeBlockedAppTokenLabelView: View {
+     let token: ApplicationToken
+     let textColor: UIColor?
+ 
++    private var resolvedTitle: String {
++        let app = Application(token: token)
++        if let name = app.localizedDisplayName?.trimmingCharacters(in: .whitespacesAndNewlines),
++           !name.isEmpty {
++            return name
++        }
++        if let bundleId = app.bundleIdentifier?.trimmingCharacters(in: .whitespacesAndNewlines),
++           !bundleId.isEmpty {
++            return bundleId
++        }
++        return "Blocked app"
++    }
++
+     var body: some View {
+-        Label(token)
+-            .labelStyle(.titleOnly)
+-            .imageScale(.large)
++        Text(resolvedTitle)
+             .font(.system(size: 18, weight: .semibold))
+             .foregroundColor(Color(uiColor: textColor ?? .label))
+             .lineLimit(1)
+             .frame(maxWidth: .infinity, alignment: .leading)
+     }
+@@
+ private struct NativeBlockedWebsiteTokenLabelView: View {
+     let token: WebDomainToken
+     let textColor: UIColor?
+ 
++    private var resolvedTitle: String {
++        let domain = WebDomain(token: token).domain?.trimmingCharacters(in: .whitespacesAndNewlines)
++        if let domain, !domain.isEmpty {
++            return domain
++        }
++        return "Blocked website"
++    }
++
+     var body: some View {
+-        Label(token)
+-            .labelStyle(.titleAndIcon)
+-            .imageScale(.medium)
++        Text(resolvedTitle)
+             .font(.system(size: 16, weight: .semibold))
+             .foregroundColor(Color(uiColor: textColor ?? .label))
+             .lineLimit(1)
+             .frame(maxWidth: .infinity, alignment: .leading)
+     }
+ }
+@@
+ private struct NativeBlockedAppTokenIconView: View {
+@@
+ }
++
++@available(iOS 16.0, *)
++private struct NativeBlockedWebsiteTokenIconView: View {
++    let token: WebDomainToken
++
++    var body: some View {
++        Label(token)
++            .labelStyle(.iconOnly)
++            .imageScale(.large)
++            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
++    }
++}
+*** End Patch

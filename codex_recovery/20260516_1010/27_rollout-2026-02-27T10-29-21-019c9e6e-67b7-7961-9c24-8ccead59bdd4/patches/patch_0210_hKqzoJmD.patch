@@ -1,0 +1,20 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/event_types_screen.dart
+@@
+     try {
+       await _repo.createEventType(
+         _nameController.text.trim(),
+         _selectedColor,
+         'calendar',
+@@
+       setState(() => _showForm = false);
+       await _load();
+     } finally {
+-      if (!mounted) return;
+-      setState(() => _creating = false);
++      if (mounted) {
++        setState(() => _creating = false);
++      }
+     }
+   }
+*** End Patch

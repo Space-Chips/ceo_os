@@ -1,0 +1,32 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/android/app/src/main/AndroidManifest.xml
+@@
+     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
+     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"/>
++    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+@@
+         <service
+             android:name=".AppBlockingService"
+             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
+             android:exported="true">
+@@
+                 android:resource="@xml/accessibility_service_config" />
+         </service>
++
++        <receiver
++            android:name=".ClassicPauseAlarmReceiver"
++            android:exported="false" />
++
++        <receiver
++            android:name=".ClassicPauseBootReceiver"
++            android:exported="true">
++            <intent-filter>
++                <action android:name="android.intent.action.BOOT_COMPLETED" />
++                <action android:name="android.intent.action.TIME_SET" />
++                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
++            </intent-filter>
++        </receiver>
+ 
+         <!-- Don't delete the meta-data below.
+*** End Patch

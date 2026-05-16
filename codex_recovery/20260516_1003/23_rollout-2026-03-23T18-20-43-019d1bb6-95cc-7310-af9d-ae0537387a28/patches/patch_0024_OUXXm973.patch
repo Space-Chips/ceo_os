@@ -1,0 +1,13 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/ceo_mode/ceo_mode_screen.dart
+@@
+               CupertinoButton(
+                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                 minimumSize: Size.zero,
+-                onPressed: () => _handleProtectionAction(ceo),
++                onPressed: ceo.protectionStatus.isSupported
++                    ? () => _handleProtectionAction(ceo)
++                    : null,
+                 child: Text(
+                   _protectionActionLabel(ceo),
+*** End Patch

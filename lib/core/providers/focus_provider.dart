@@ -1,14 +1,16 @@
 import 'dart:async';
-import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:screen_time/screen_time.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../models/block_list_model.dart';
-import '../services/focus_service.dart';
-import '../repositories/focus_repository.dart';
 
-/// Focus/Pomodoro session state.
+import '../models/block_list_model.dart';
+import '../models/premium_models.dart';
+import '../repositories/focus_repository.dart';
+import '../repositories/premium_repository.dart';
+import '../services/focus_service.dart';
+
 enum FocusState {
   idle,
   focusing,
@@ -21,88 +23,74 @@ enum FocusState {
 class FocusProvider extends ChangeNotifier {
   final FocusService _focusService = FocusService();
   final FocusRepository _repository = FocusRepository();
+  final PremiumRepository _premiumRepository = PremiumRepository();
   final ScreenTime _screenTime = ScreenTime();
 
-  // ── Settings ──
   int focusDurationMinutes = 25;
   int shortBreakMinutes = 5;
   int longBreakMinutes = 15;
   int sessionsBeforeLongBreak = 4;
   bool autoStartBreaks = true;
 
-  // ── Timer State ──
   FocusState _state = FocusState.idle;
   int _remainingSeconds = 25 * 60;
   int _completedSessions = 0;
+  int _waitRemainingSeconds = 0;
   Timer? _timer;
+  Timer? _waitTimer;
   DateTime? _sessionStartTime;
 
-  // ── Break Logic ──
-  final List<DateTime> _lastBreakAttempts = [];
-  int _waitRemainingSeconds = 0;
-  Timer? _waitTimer;
-
-  // ── Focus Mode ──
   bool _isFocusModeActive = false;
   bool _isAuthorized = false;
+  FocusProtectionStatus _protectionStatus = FocusProtectionStatus.unknown;
+  String? _lastBlockingSyncError;
 
-  // ── Session Context ──
   String? sessionTitle;
   String? linkedTaskId;
 
-  // ── Block Lists ──
   List<BlockList> _blockLists = [];
   String? _activeBlockListId;
 
-  // ── Stats ──
   int _totalFocusMinutesToday = 0;
-  double _screenTimeToday = 0.0;
-  List<double> _hourlyUsage = List.filled(24, 0);
+  double _screenTimeToday = 0;
+  final List<double> _hourlyUsage = List.filled(24, 0);
+  PremiumCheckResult? _lastPremiumCheck;
 
-  // ── Getters ──
   FocusState get state => _state;
   int get remainingSeconds => _remainingSeconds;
-  int get waitRemainingSeconds => _waitRemainingSeconds;
   int get completedSessions => _completedSessions;
-  bool get isRunning => _timer != null && _timer!.isActive;
+  bool get isRunning => _timer?.isActive == true;
   bool get isFocusModeActive => _isFocusModeActive;
   bool get isAuthorized => _isAuthorized;
+  FocusProtectionStatus get protectionStatus => _protectionStatus;
   List<BlockList> get blockLists => List.unmodifiable(_blockLists);
   String? get activeBlockListId => _activeBlockListId;
   int get totalFocusMinutesToday => _totalFocusMinutesToday;
   double get screenTimeToday => _screenTimeToday;
   List<double> get hourlyUsage => List.unmodifiable(_hourlyUsage);
+  PremiumCheckResult? get lastPremiumCheck => _lastPremiumCheck;
+  String? get lastBlockingSyncError => _lastBlockingSyncError;
+  bool get hasConfiguredBlockingTargets =>
+      configuredBlockedAppCount + configuredBlockedWebsiteCount > 0;
+
+  int get configuredBlockedAppCount {
+    final active = _activeBlockList;
+    if (active == null) return 0;
+    return active.blockedPackageNames.length + active.blockedCategories.length;
+  }
+
+  int get configuredBlockedWebsiteCount => _activeBlockList?.adultBlocking == true ? 1 : 0;
+
+  bool get shouldShowPreparationFlowBeforeFocus => false;
 
   double get progress {
     final total = _totalDurationSeconds;
-    if (total == 0) return 0;
-    return 1.0 - (_remainingSeconds / total);
+    if (total <= 0) return 0;
+    return 1 - (_remainingSeconds / total);
   }
 
-  int get _totalDurationSeconds {
-    switch (_state) {
-      case FocusState.idle:
-      case FocusState.focusing:
-      case FocusState.requestingBreak:
-      case FocusState.breakOptionsMenu:
-        return focusDurationMinutes * 60;
-      case FocusState.shortBreak:
-        return shortBreakMinutes * 60;
-      case FocusState.longBreak:
-        return longBreakMinutes * 60;
-    }
-  }
-
-  String get timerDisplay {
-    final minutes = (_remainingSeconds ~/ 60).toString().padLeft(2, '0');
-    final seconds = (_remainingSeconds % 60).toString().padLeft(2, '0');
-    return '$minutes:$seconds';
-  }
-
-  String get waitTimerDisplay {
-    final seconds = _waitRemainingSeconds.toString().padLeft(2, '0');
-    return '00:$seconds';
-  }
+  String get timerDisplay => _formatClock(_remainingSeconds);
+  String get waitTimerDisplay => _formatClock(_waitRemainingSeconds);
 
   String get stateLabel {
     switch (_state) {
@@ -115,13 +103,33 @@ class FocusProvider extends ChangeNotifier {
       case FocusState.longBreak:
         return 'Long Break';
       case FocusState.requestingBreak:
-        return 'Analyzing Request...';
+        return 'Analyzing Request';
       case FocusState.breakOptionsMenu:
-        return 'Protocol Override';
+        return 'Break Options';
     }
   }
 
-  // ── Methods ──
+  int get _totalDurationSeconds {
+    switch (_state) {
+      case FocusState.shortBreak:
+        return shortBreakMinutes * 60;
+      case FocusState.longBreak:
+        return longBreakMinutes * 60;
+      case FocusState.idle:
+      case FocusState.focusing:
+      case FocusState.requestingBreak:
+      case FocusState.breakOptionsMenu:
+        return focusDurationMinutes * 60;
+    }
+  }
+
+  BlockList? get _activeBlockList {
+    if (_blockLists.isEmpty) return null;
+    return _blockLists.firstWhere(
+      (list) => list.id == _activeBlockListId,
+      orElse: () => _blockLists.first,
+    );
+  }
 
   void toggleAutoStartBreaks() {
     autoStartBreaks = !autoStartBreaks;
@@ -130,228 +138,154 @@ class FocusProvider extends ChangeNotifier {
 
   Future<void> loadInitialData() async {
     _blockLists = await _repository.getBlockLists();
-
-    // Check for an active list from DB first
-    final activeInDb = _blockLists.where((l) => l.isActive).toList();
+    final activeInDb = _blockLists.where((list) => list.isActive).toList();
     if (activeInDb.isNotEmpty) {
       _activeBlockListId = activeInDb.first.id;
     } else {
-      // Fallback to SharedPreferences if DB doesn't have it
       final prefs = await SharedPreferences.getInstance();
       _activeBlockListId = prefs.getString('active_block_list_id');
     }
-
     if (_blockLists.isNotEmpty &&
         (_activeBlockListId == null ||
-            !_blockLists.any((l) => l.id == _activeBlockListId))) {
+            !_blockLists.any((list) => list.id == _activeBlockListId))) {
       _activeBlockListId = _blockLists.first.id;
     }
-
-    _isAuthorized = await _focusService.isAuthorized();
-
-    if (_activeBlockListId != null) {
-      await _syncToNative();
-    }
-
+    await refreshProtectionStatus();
     await refreshScreenTime();
     notifyListeners();
   }
+
+  Future<void> refreshProtectionStatus() async {
+    _protectionStatus = await _focusService.getProtectionStatus();
+    _isAuthorized = _protectionStatus.isAuthorized;
+    notifyListeners();
+  }
+
+  Future<bool> requestPermissions() async {
+    final granted = await _focusService.requestPermissions();
+    await refreshProtectionStatus();
+    if (granted) _isAuthorized = true;
+    notifyListeners();
+    return _isAuthorized || granted;
+  }
+
+  Future<AndroidProtectionStep> getNextAndroidProtectionStep() {
+    return _focusService.getNextAndroidProtectionStep();
+  }
+
+  Future<bool> openSystemSettings() => _focusService.openSystemSettings();
+
+  Future<void> persistPreparationOutcome(dynamic outcome) async {}
 
   Future<void> refreshScreenTime() async {
     try {
       final now = DateTime.now();
       final startOfDay = DateTime(now.year, now.month, now.day);
-      final List<AppUsage> usage = await _screenTime.appUsageData(
+      final usage = await _screenTime.appUsageData(
         startTime: startOfDay,
         endTime: now,
       );
-
-      double totalMinutes = 0;
-      for (var app in usage) {
-        totalMinutes += app.usageTime?.inMinutes ?? 0;
-      }
-      _screenTimeToday = totalMinutes;
-
-      // If we got 0 minutes, maybe it's just a fresh day or restricted,
-      // but if we got data, we use it.
+      _screenTimeToday = usage.fold<double>(
+        0,
+        (sum, app) => sum + (app.usageTime?.inMinutes ?? 0),
+      );
     } on MissingPluginException {
-      // Native screen-time bridge not available on this runtime (ex: simulator).
       _screenTimeToday = 0;
-    } catch (e) {
-      print("ScreenTime error: $e");
-      _generateMockScreenTime();
+    } catch (_) {
+      _screenTimeToday = 0;
     }
     notifyListeners();
   }
 
-  void _generateMockScreenTime() {
-    // Generate realistic-looking data for a high-performer
-    // Mostly focused work, some communication
-    _screenTimeToday = 142.0; // 2h 22m
-
-    // Generate hourly distribution (peaking in morning and afternoon)
-    _hourlyUsage = List.generate(24, (hour) {
-      if (hour < 6) return 0.0;
-      if (hour >= 23) return 0.0;
-
-      // Focus peaks
-      if (hour == 9 || hour == 10 || hour == 14 || hour == 15)
-        return 0.8 + (0.2 * hour % 3);
-      if (hour >= 9 && hour <= 18) return 0.4 + (0.3 * hour % 2);
-      return 0.1;
-    });
-  }
-
   Future<bool> startFocus() async {
-    // Check for authorization first
-    _isAuthorized = await _focusService.isAuthorized();
-    if (!_isAuthorized) {
+    final premiumCheck =
+        await _premiumRepository.canStartFocusSession(focusDurationMinutes);
+    _lastPremiumCheck = premiumCheck;
+    if (!premiumCheck.allowed) {
       notifyListeners();
-      // Continue even if unauthorized to allow the internal timer to run.
+      return false;
     }
 
     _state = FocusState.focusing;
     _remainingSeconds = focusDurationMinutes * 60;
-    _isFocusModeActive = true;
     _sessionStartTime = DateTime.now();
-
-    // _syncToNative handles both SharedPreferences and the active shield if focusing
+    _isFocusModeActive = true;
+    _lastBlockingSyncError = null;
     await _syncToNative();
-
     _startTimer();
     notifyListeners();
     return true;
   }
 
   void stopFocus() {
-    _logSession(completed: false);
-    _focusService.stopShield();
+    if (_state == FocusState.focusing && _sessionStartTime != null) {
+      final minutes = DateTime.now().difference(_sessionStartTime!).inMinutes;
+      _totalFocusMinutesToday += minutes.clamp(0, focusDurationMinutes);
+    }
     reset();
   }
 
   void requestBreak() {
     if (_state != FocusState.focusing) return;
-    final now = DateTime.now();
-    _lastBreakAttempts.removeWhere((d) => now.difference(d).inHours >= 2);
-    final waitSec = 5 + (_lastBreakAttempts.length * 15);
-    _lastBreakAttempts.add(now);
     _state = FocusState.requestingBreak;
-    _waitRemainingSeconds = waitSec;
-    _startWaitTimer();
+    _waitRemainingSeconds = 10;
+    _waitTimer?.cancel();
+    _waitTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      _waitRemainingSeconds -= 1;
+      if (_waitRemainingSeconds <= 0) {
+        timer.cancel();
+        _state = FocusState.breakOptionsMenu;
+      }
+      notifyListeners();
+    });
     notifyListeners();
   }
 
   void cancelBreakRequest() {
     _waitTimer?.cancel();
-    _state = FocusState.focusing;
+    _waitRemainingSeconds = 0;
+    if (_state == FocusState.requestingBreak) _state = FocusState.focusing;
     notifyListeners();
   }
 
-  void _startWaitTimer() {
-    _waitTimer?.cancel();
-    _waitTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (_waitRemainingSeconds > 0) {
-        _waitRemainingSeconds--;
-        notifyListeners();
-      } else {
-        timer.cancel();
-        _state = FocusState.breakOptionsMenu;
-        notifyListeners();
-      }
-    });
-  }
-
   void takeCustomBreak(int minutes) {
-    _logSession(completed: true);
+    _waitTimer?.cancel();
     _state = FocusState.shortBreak;
     _remainingSeconds = minutes * 60;
-    _isFocusModeActive = false;
-    _focusService.stopShield();
     _startTimer();
     notifyListeners();
   }
 
-  void cancelBlocking() {
-    stopFocus();
+  void skip() {
+    _state = FocusState.focusing;
+    _remainingSeconds = focusDurationMinutes * 60;
+    _startTimer();
+    notifyListeners();
   }
 
   void reset() {
     _timer?.cancel();
     _waitTimer?.cancel();
+    _timer = null;
+    _waitTimer = null;
     _state = FocusState.idle;
-    _isFocusModeActive = false;
-    _focusService.stopShield();
     _remainingSeconds = focusDurationMinutes * 60;
-    notifyListeners();
-  }
-
-  void skip() {
-    _timer?.cancel();
-    _onTimerComplete();
-  }
-
-  void _startTimer() {
-    _timer?.cancel();
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (_remainingSeconds > 0) {
-        _remainingSeconds--;
-        notifyListeners();
-      } else {
-        timer.cancel();
-        _onTimerComplete();
-      }
-    });
-  }
-
-  void _onTimerComplete() {
-    if (_state == FocusState.focusing) {
-      _logSession(completed: true);
-      _completedSessions++;
-      _totalFocusMinutesToday += focusDurationMinutes;
-      _isFocusModeActive = false;
-      _focusService.stopShield();
-
-      if (_completedSessions % sessionsBeforeLongBreak == 0) {
-        _state = FocusState.longBreak;
-        _remainingSeconds = longBreakMinutes * 60;
-      } else {
-        _state = FocusState.shortBreak;
-        _remainingSeconds = shortBreakMinutes * 60;
-      }
-      if (autoStartBreaks) _startTimer();
-    } else {
-      startFocus();
-    }
-    notifyListeners();
-  }
-
-  Future<void> _logSession({required bool completed}) async {
-    if (_sessionStartTime == null) return;
-    final endTime = DateTime.now();
-    final duration = endTime.difference(_sessionStartTime!).inMinutes;
-    if (duration < 1) return;
-
-    await _repository.logFocusSession(
-      startTime: _sessionStartTime!,
-      endTime: endTime,
-      durationMinutes: duration,
-      blockListId: _activeBlockListId,
-      completed: completed,
-    );
+    _waitRemainingSeconds = 0;
+    _isFocusModeActive = false;
     _sessionStartTime = null;
+    unawaited(_focusService.stopShield());
+    notifyListeners();
   }
-
-  // ── Block List Management ──
 
   Future<void> saveBlockList(BlockList list) async {
     await _repository.saveBlockList(list);
-    final index = _blockLists.indexWhere((l) => l.id == list.id);
-    if (index != -1) {
+    final index = _blockLists.indexWhere((entry) => entry.id == list.id);
+    if (index >= 0) {
       _blockLists[index] = list;
     } else {
       _blockLists.add(list);
     }
-    if (_activeBlockListId == null || _activeBlockListId == list.id) {
+    if (_activeBlockListId == null || list.isActive) {
       await setActiveBlockList(list.id);
     }
     notifyListeners();
@@ -359,46 +293,91 @@ class FocusProvider extends ChangeNotifier {
 
   Future<void> setActiveBlockList(String id) async {
     _activeBlockListId = id;
-    await _repository.updateActiveBlockList(id);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('active_block_list_id', id);
+    _blockLists = _blockLists
+        .map(
+          (list) => BlockList(
+            id: list.id,
+            name: list.name,
+            adultBlocking: list.adultBlocking,
+            blockedPackageNames: list.blockedPackageNames,
+            blockedCategories: list.blockedCategories,
+            isActive: list.id == id,
+          ),
+        )
+        .toList();
     await _syncToNative();
     notifyListeners();
   }
 
-  Future<void> _syncToNative() async {
-    if (_activeBlockListId == null) return;
-    try {
-      final list = _blockLists.firstWhere((l) => l.id == _activeBlockListId);
-      final prefs = await SharedPreferences.getInstance();
-
-      // Persist active list ID and content
-      await prefs.setString('active_block_list_id', _activeBlockListId!);
-      await prefs.setString('active_block_list', jsonEncode(list.toJson()));
-
-      if (_state == FocusState.focusing) {
-        await _focusService.startShield(
-          list.blockedPackageNames,
-          list.blockedCategories,
-        );
-      }
-    } catch (e) {
-      print("Sync to native failed: $e");
+  Future<void> deleteBlockList(String id) async {
+    await _repository.deleteBlockList(id);
+    _blockLists.removeWhere((list) => list.id == id);
+    if (_activeBlockListId == id) {
+      _activeBlockListId = _blockLists.isEmpty ? null : _blockLists.first.id;
     }
-  }
-
-  Future<List<String>?> selectAppsNative() async {
-    return await _focusService.openFamilyActivityPicker();
-  }
-
-  Future<void> requestPermissions() async {
-    await _focusService.requestPermissions();
-    _isAuthorized = await _focusService.isAuthorized();
     notifyListeners();
   }
 
-  @override
-  void dispose() {
+  Future<void> syncPlannedFocusSessions(
+    List<Map<String, dynamic>> sessions,
+  ) async {
+    await _focusService.syncPlannedSessions(sessions);
+  }
+
+  void _startTimer() {
     _timer?.cancel();
-    _waitTimer?.cancel();
-    super.dispose();
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_remainingSeconds > 0) {
+        _remainingSeconds -= 1;
+      } else {
+        timer.cancel();
+        _onTimerComplete();
+      }
+      notifyListeners();
+    });
+  }
+
+  void _onTimerComplete() {
+    if (_state == FocusState.focusing) {
+      _completedSessions += 1;
+      _totalFocusMinutesToday += focusDurationMinutes;
+      if (autoStartBreaks) {
+        _state = _completedSessions % sessionsBeforeLongBreak == 0
+            ? FocusState.longBreak
+            : FocusState.shortBreak;
+        _remainingSeconds =
+            (_state == FocusState.longBreak ? longBreakMinutes : shortBreakMinutes) *
+                60;
+        _startTimer();
+      } else {
+        reset();
+      }
+    } else {
+      _state = FocusState.idle;
+      _remainingSeconds = focusDurationMinutes * 60;
+      _isFocusModeActive = false;
+    }
+  }
+
+  Future<void> _syncToNative() async {
+    final active = _activeBlockList;
+    if (active == null) return;
+    try {
+      await _focusService.startShield(
+        active.blockedPackageNames,
+        active.blockedCategories,
+      );
+    } catch (error) {
+      _lastBlockingSyncError = error.toString();
+    }
+  }
+
+  String _formatClock(int seconds) {
+    final clamped = seconds.clamp(0, 24 * 60 * 60);
+    final minutes = (clamped ~/ 60).toString().padLeft(2, '0');
+    final secs = (clamped % 60).toString().padLeft(2, '0');
+    return '$minutes:$secs';
   }
 }

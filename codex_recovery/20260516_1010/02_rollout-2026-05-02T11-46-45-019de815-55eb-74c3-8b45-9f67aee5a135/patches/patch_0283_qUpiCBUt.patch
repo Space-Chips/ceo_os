@@ -1,0 +1,37 @@
+*** Begin Patch
+*** Update File: lib/core/providers/habit_provider.dart
+@@
+   Future<PremiumCheckResult> createHabit(
+@@
+   }) async {
+     try {
+-      final premiumCheck = await _premiumRepository.canCreateHabit();
+-      if (!premiumCheck.allowed) return premiumCheck;
++      // Enforce limits using local state (fast + avoids schema/count drift).
++      final runtime = await _premiumRepository.getRuntime();
++      if (!runtime.resolved.canCreateUnlimitedHabits) {
++        final activeCount = _habits.where((h) => !(h.archived ?? false)).length;
++        if (activeCount >= runtime.config.habitsFreeLimit) {
++          return PremiumCheckResult.blocked(
++            reason: 'habits',
++            limit: runtime.config.habitsFreeLimit,
++            current: activeCount,
++          );
++        }
++      }
+ 
+       final newHabit = await _repository.createHabit(
+         title,
+         isDaily: isDaily,
+         icon: icon,
+@@
+       }
+       return const PremiumCheckResult.allowed();
+     } catch (e) {
+       print('Error creating habit: $e');
+-      return const PremiumCheckResult.allowed();
++      // Never fail-open on premium gating.
++      return const PremiumCheckResult.blocked(reason: 'habits');
+     }
+   }
+*** End Patch

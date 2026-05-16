@@ -1,0 +1,87 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/focus/focus_starter_sheet.dart
+@@
+ import 'package:flutter/material.dart' show Colors;
+ import 'package:provider/provider.dart';
+ import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
+ import '../../components/components.dart';
++import '../../core/providers/language_provider.dart';
+ import '../../core/models/task_models.dart';
+ import '../../core/providers/focus_provider.dart';
+ import '../../core/providers/task_provider.dart';
+@@
+ class _FocusStarterSheetState extends State<FocusStarterSheet> {
+   final _titleCtrl = TextEditingController();
+   ParetoTask? _selectedTask;
++
++  String _t(String key) => context.read<LanguageProvider>().t(key);
+@@
+                         const SizedBox(width: 16),
+                         Column(
+                           crossAxisAlignment: CrossAxisAlignment.start,
+                           children: [
+-                        const NeoMonoText(
+-                          'ENTER_FOCUS',
+-                          fontSize: 20,
+-                          fontWeight: FontWeight.bold,
+-                        ),
++                        NeoMonoText(
++                          _t('focus_starter_enter_focus'),
++                          fontSize: 20,
++                          fontWeight: FontWeight.bold,
++                        ),
+                         Text(
+-                          'CONFIGURE_SESSION',
++                          _t('focus_starter_configure_session'),
+                           style: AppTypography.mono.copyWith(
+                             fontSize: 10,
+                             color: AppColors.tertiaryLabel,
+@@
+                 // Session Title
+                 Text(
+-                  'SESSION_TITLE',
++                  _t('focus_starter_session_title'),
+                   style: AppTypography.mono.copyWith(
+                     fontSize: 10,
+                     color: AppColors.tertiaryLabel,
+@@
+                 const SizedBox(height: 8),
+                 GlassInputField(
+-                  placeholder: 'DEEP_WORK_SESSION...',
++                  placeholder: _t('focus_starter_session_placeholder'),
+                   controller: _titleCtrl,
+                 ),
+                 const SizedBox(height: 24),
+ 
+                 // Link a Task
+                 Text(
+-                  'LINK_TASK',
++                  _t('focus_starter_link_task'),
+                   style: AppTypography.mono.copyWith(
+                     fontSize: 10,
+                     color: AppColors.tertiaryLabel,
+@@
+                   Padding(
+                     padding: const EdgeInsets.symmetric(vertical: 8),
+                     child: Text(
+-                      'NO_TASKS_AVAILABLE',
++                      _t('focus_starter_no_tasks'),
+                       style: AppTypography.mono.copyWith(
+                         fontSize: 11,
+@@
+                 // Duration slider
+                 Text(
+-                  'SESSION_LENGTH',
++                  _t('focus_starter_session_length'),
+                   style: AppTypography.mono.copyWith(
+                     fontSize: 10,
+                     color: AppColors.tertiaryLabel,
+@@
+                 // Start Button
+                 LiquidButton(
+-                  label: 'START_FOCUS',
++                  label: _t('focus_starter_start_focus'),
+                   fullWidth: true,
+                   onPressed: _startSession,
+                 ),
+*** End Patch

@@ -1,0 +1,81 @@
+*** Begin Patch
+*** Update File: android/app/src/main/kotlin/com/wakeapp/ceoos/BlockingAccessibilityService.kt
+@@
+ open class BlockingAccessibilityService : AccessibilityService() {
+     private lateinit var foregroundAppDetector: ForegroundAppDetector
+     private lateinit var appBlockEngine: AppBlockEngine
+-    private lateinit var gateLauncher: GateLauncher
++    private lateinit var appBlockingOverlay: AppBlockingOverlay
+ 
+     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+@@
+     @Volatile
+     private var gateShownForPackage: String? = null
+@@
+     override fun onServiceConnected() {
+         super.onServiceConnected()
+         instance = this
+         foregroundAppDetector = ForegroundAppDetector(packageName)
+         appBlockEngine = AppBlockEngine()
+-        gateLauncher = GateLauncher()
++        appBlockingOverlay = AppBlockingOverlay(this, serviceScope)
+         homePackagesCache = BlockPolicyRepository.homePackages(this)
+         registerPolicyListener()
+         evaluateCurrentState()
+     }
+@@
+     override fun onDestroy() {
+         super.onDestroy()
+         instance = null
+@@
+         prefsListener = null
+         serviceScope.cancel()
+-        gateLauncher.dismiss(this)
++        appBlockingOverlay.hide()
+         gateShownForPackage = null
+     }
+@@
+     private fun handleSnapshot(snapshot: ForegroundSnapshot) {
+         val policy = readPolicyState() ?: return
+-        val isGateVisible = BlockGateActivity.isVisible || foregroundAppDetector.isGateSnapshot(snapshot)
++        val isGateVisible = false
+         val decision = appBlockEngine.evaluate(
+             snapshot = snapshot,
+             state = policy,
+             isGateVisible = isGateVisible,
+         )
+ 
+         when (decision) {
+-            is BlockDecision.BlockApp -> ensureGateForBlockedApp(decision)
++            is BlockDecision.BlockApp -> showOverlayForBlockedApp(decision)
+             else -> {
+-                if (isGateVisible && ModeResolver.isSystemExemptPackage(snapshot.packageName, policy)) {
+-                    gateLauncher.dismiss(this)
+-                }
++                appBlockingOverlay.hide()
+             }
+         }
+     }
+ 
+-    private fun ensureGateForBlockedApp(decision: BlockDecision.BlockApp) {
++    private fun showOverlayForBlockedApp(decision: BlockDecision.BlockApp) {
+         val blockedPackage = decision.packageName.trim()
+         if (blockedPackage.isEmpty()) return
+ 
+-        if (BlockGateActivity.isVisible && gateShownForPackage == blockedPackage) return
+-
+-        // Prevent stuck states if another package triggers while the gate is already visible.
+-        if (BlockGateActivity.isVisible && gateShownForPackage != null && gateShownForPackage != blockedPackage) {
+-            gateLauncher.dismiss(this)
+-        }
+-
+         gateShownForPackage = blockedPackage
+-        gateLauncher.launch(this, decision)
++        appBlockingOverlay.show(decision)
+     }
+@@
+     private fun onGateHiddenByActivity() {
+         gateShownForPackage = null
+         evaluateCurrentState()
+     }
+*** End Patch

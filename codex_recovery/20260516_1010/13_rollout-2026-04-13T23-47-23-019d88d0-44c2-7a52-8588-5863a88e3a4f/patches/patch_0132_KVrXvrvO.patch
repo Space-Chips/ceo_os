@@ -1,0 +1,10 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/ios/Runner/AppDelegate.swift
+@@
+-        guard let token = WebDomain(domain: normalizedDomain).token else {
++        guard let token = webDomainToken(from: normalizedDomain) else {
+             result(
+                 FlutterError(
+                     code: "DOMAIN_TOKEN_UNAVAILABLE",
+                     message: "This domain cannot be converted to a Screen Time token on this device.",
+*** End Patch

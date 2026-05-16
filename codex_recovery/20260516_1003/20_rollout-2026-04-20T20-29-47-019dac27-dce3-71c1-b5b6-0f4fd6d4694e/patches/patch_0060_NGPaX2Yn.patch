@@ -1,0 +1,14 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/android/app/src/main/kotlin/com/wakeapp/ceoos/ForegroundAppDetector.kt
+@@
+     fun isGateSnapshot(snapshot: ForegroundSnapshot): Boolean {
+         return snapshot.packageName == wakePackageName &&
+             (snapshot.className?.contains("BlockGateActivity") == true)
+     }
++
++    fun clearRecentDomain(packageName: String?) {
++        val browserPackage = packageName?.trim().orEmpty()
++        if (browserPackage.isEmpty()) return
++        recentDetectedDomainsByPackage.remove(browserPackage)
++    }
+*** End Patch

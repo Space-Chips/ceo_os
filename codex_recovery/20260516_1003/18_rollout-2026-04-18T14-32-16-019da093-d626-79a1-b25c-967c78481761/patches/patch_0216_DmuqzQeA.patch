@@ -1,0 +1,619 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/providers/language_overrides.dart
+@@
+-    'ios_setup_continue': 'Continue',
++    'ios_setup_continue': 'Continue',
++    'auth_signin_error_title': 'Sign-in error',
++    'auth_invalid_email_title': 'Invalid email',
++    'auth_invalid_email_message': 'Please enter a valid email address.',
++    'auth_password_required_title': 'Password required',
++    'auth_password_required_message':
++        'Please enter your password to continue.',
++    'auth_reset_password_title': 'Reset password',
++    'auth_reset_password_enter_email_first':
++        'Enter your account email first, then try again.',
++    'auth_check_email_title': 'Check your email',
++    'auth_check_email_reset_message':
++        'If an account exists for {email}, a password reset email has been sent.',
++    'auth_login_subtitle':
++        'Sign in to restore your system, sync your data, and continue where you left off.',
++    'auth_secure_sync': 'Secure cloud sync across your devices.',
++    'auth_sign_in': 'Sign in',
++    'auth_use_same_credentials':
++        'Use the same email and password you created for WakeApp.',
++    'auth_email': 'Email',
++    'auth_email_placeholder': 'name@example.com',
++    'auth_password': 'Password',
++    'auth_forgot_password': 'Forgot password?',
++    'auth_new_to_wakeapp': 'New to WakeApp?',
++    'auth_create_account': 'Create account',
++    'auth_account_setup_error_title': 'Account setup error',
++    'auth_name_required_title': 'Name required',
++    'auth_name_required_message':
++        'Please enter your name to create the account.',
++    'auth_weak_password_title': 'Weak password',
++    'auth_weak_password_message':
++        'Use at least 8 characters for your password.',
++    'auth_password_mismatch_title': 'Password mismatch',
++    'auth_password_mismatch_message':
++        'The password confirmation does not match.',
++    'auth_check_email_signup_message':
++        'Your account was created. Please confirm your email address before signing in.',
++    'auth_create_account_title': 'Create your account',
++    'auth_create_account_subtitle':
++        'Set up your WakeApp login once, then use it across your devices.',
++    'auth_account_details': 'Account details',
++    'auth_account_details_subtitle':
++        'Choose the details you will use to sign in later.',
++    'auth_full_name': 'Full name',
++    'auth_your_name': 'Your name',
++    'auth_confirm_password_label': 'Confirm password',
++    'auth_confirm_password_placeholder': 'Confirm password',
++    'auth_already_registered': 'Already registered?',
++    'blackout_prep_intro_title': 'Prepare your screen for Blackout',
++    'blackout_prep_intro_body':
++        'Some system apps stay visible on iPhone. Group them in one folder for a cleaner Blackout.',
++    'blackout_prep_intro_goal':
++        'Goal: create a calmer Home Screen in under 20 seconds.',
++    'blackout_prep_demo_title': 'Group secondary apps during focus',
++    'blackout_prep_demo_body':
++        'FaceTime, Maps, Files, Home, Find My… Group them to reduce visual noise.',
++    'blackout_prep_demo_primary': 'Optimize my screen',
++    'blackout_prep_checklist_title': 'Do it in 20 seconds',
++    'blackout_prep_checklist_body': 'When you are done, come back here.',
++    'blackout_prep_step_hold_app': 'Long-press an app icon',
++    'blackout_prep_step_drag_on_other': 'Drag it over another app',
++    'blackout_prep_step_create_folder':
++        'Create a folder named “Out of Focus”',
++    'blackout_prep_step_add_system_apps':
++        'Add visible system apps into that folder',
++    'blackout_prep_done': 'Done',
++    'blackout_prep_animation_calm_screen': 'Calmer screen',
++    'blackout_prep_animation_folder_name': 'Out of Focus',
+   },
+@@
+-    'ios_setup_continue': 'Continuer',
++    'ios_setup_continue': 'Continuer',
++    'auth_signin_error_title': 'Erreur de connexion',
++    'auth_invalid_email_title': 'Email invalide',
++    'auth_invalid_email_message': 'Veuillez saisir une adresse email valide.',
++    'auth_password_required_title': 'Mot de passe requis',
++    'auth_password_required_message':
++        'Veuillez saisir votre mot de passe pour continuer.',
++    'auth_reset_password_title': 'Réinitialiser le mot de passe',
++    'auth_reset_password_enter_email_first':
++        'Saisis d’abord ton email de compte, puis réessaie.',
++    'auth_check_email_title': 'Vérifie ta boîte mail',
++    'auth_check_email_reset_message':
++        'Si un compte existe pour {email}, un email de réinitialisation a été envoyé.',
++    'auth_login_subtitle':
++        'Connecte-toi pour restaurer ton système, synchroniser tes données et reprendre là où tu t’es arrêté.',
++    'auth_secure_sync': 'Synchronisation cloud sécurisée entre tes appareils.',
++    'auth_sign_in': 'Connexion',
++    'auth_use_same_credentials':
++        'Utilise le même email et mot de passe que pour ton compte WakeApp.',
++    'auth_email': 'Email',
++    'auth_email_placeholder': 'nom@exemple.com',
++    'auth_password': 'Mot de passe',
++    'auth_forgot_password': 'Mot de passe oublié ?',
++    'auth_new_to_wakeapp': 'Nouveau sur WakeApp ?',
++    'auth_create_account': 'Créer un compte',
++    'auth_account_setup_error_title': 'Erreur de création du compte',
++    'auth_name_required_title': 'Nom requis',
++    'auth_name_required_message':
++        'Veuillez saisir votre nom pour créer le compte.',
++    'auth_weak_password_title': 'Mot de passe faible',
++    'auth_weak_password_message':
++        'Utilise au moins 8 caractères pour ton mot de passe.',
++    'auth_password_mismatch_title': 'Mots de passe différents',
++    'auth_password_mismatch_message':
++        'La confirmation du mot de passe ne correspond pas.',
++    'auth_check_email_signup_message':
++        'Ton compte a été créé. Merci de confirmer ton adresse email avant de te connecter.',
++    'auth_create_account_title': 'Crée ton compte',
++    'auth_create_account_subtitle':
++        'Configure ton accès WakeApp une seule fois, puis utilise-le sur tous tes appareils.',
++    'auth_account_details': 'Informations du compte',
++    'auth_account_details_subtitle':
++        'Choisis les informations que tu utiliseras pour te connecter ensuite.',
++    'auth_full_name': 'Nom complet',
++    'auth_your_name': 'Ton nom',
++    'auth_confirm_password_label': 'Confirmer le mot de passe',
++    'auth_confirm_password_placeholder': 'Confirmer le mot de passe',
++    'auth_already_registered': 'Déjà inscrit ?',
++    'blackout_prep_intro_title': 'Prépare ton écran pour Blackout',
++    'blackout_prep_intro_body':
++        'Certaines apps système restent visibles sur iPhone. Regroupe-les dans un dossier pour un Blackout plus propre.',
++    'blackout_prep_intro_goal':
++        'Objectif : créer un écran d’accueil plus calme en moins de 20 secondes.',
++    'blackout_prep_demo_title': 'Range les apps secondaires pendant ton focus',
++    'blackout_prep_demo_body':
++        'FaceTime, Plans, Fichiers, Maison, Localiser… Regroupe-les pour un écran plus calme.',
++    'blackout_prep_demo_primary': 'J’optimise mon écran',
++    'blackout_prep_checklist_title': 'Fais-le en 20 secondes',
++    'blackout_prep_checklist_body': 'Quand c’est terminé, reviens ici.',
++    'blackout_prep_step_hold_app': 'Maintiens une app',
++    'blackout_prep_step_drag_on_other': 'Fais-la glisser sur une autre',
++    'blackout_prep_step_create_folder': 'Crée un dossier “Hors Focus”',
++    'blackout_prep_step_add_system_apps': 'Ajoute les apps système visibles',
++    'blackout_prep_done': 'C’est fait',
++    'blackout_prep_animation_calm_screen': 'Écran plus calme',
++    'blackout_prep_animation_folder_name': 'Hors Focus',
+   },
+@@
+-    'ios_setup_continue': 'Continuar',
++    'ios_setup_continue': 'Continuar',
++    'auth_signin_error_title': 'Error de inicio de sesión',
++    'auth_invalid_email_title': 'Correo inválido',
++    'auth_invalid_email_message':
++        'Introduce una dirección de correo válida.',
++    'auth_password_required_title': 'Contraseña obligatoria',
++    'auth_password_required_message':
++        'Introduce tu contraseña para continuar.',
++    'auth_reset_password_title': 'Restablecer contraseña',
++    'auth_reset_password_enter_email_first':
++        'Primero escribe tu correo de cuenta y vuelve a intentarlo.',
++    'auth_check_email_title': 'Revisa tu correo',
++    'auth_check_email_reset_message':
++        'Si existe una cuenta para {email}, se ha enviado un correo para restablecer la contraseña.',
++    'auth_login_subtitle':
++        'Inicia sesión para restaurar tu sistema, sincronizar tus datos y continuar donde lo dejaste.',
++    'auth_secure_sync': 'Sincronización segura en la nube entre dispositivos.',
++    'auth_sign_in': 'Iniciar sesión',
++    'auth_use_same_credentials':
++        'Usa el mismo correo y contraseña que creaste para WakeApp.',
++    'auth_email': 'Correo',
++    'auth_email_placeholder': 'nombre@ejemplo.com',
++    'auth_password': 'Contraseña',
++    'auth_forgot_password': '¿Olvidaste tu contraseña?',
++    'auth_new_to_wakeapp': '¿Nuevo en WakeApp?',
++    'auth_create_account': 'Crear cuenta',
++    'auth_account_setup_error_title': 'Error al crear la cuenta',
++    'auth_name_required_title': 'Nombre obligatorio',
++    'auth_name_required_message':
++        'Introduce tu nombre para crear la cuenta.',
++    'auth_weak_password_title': 'Contraseña débil',
++    'auth_weak_password_message':
++        'Usa al menos 8 caracteres en tu contraseña.',
++    'auth_password_mismatch_title': 'Contraseñas distintas',
++    'auth_password_mismatch_message':
++        'La confirmación de contraseña no coincide.',
++    'auth_check_email_signup_message':
++        'Tu cuenta fue creada. Confirma tu correo antes de iniciar sesión.',
++    'auth_create_account_title': 'Crea tu cuenta',
++    'auth_create_account_subtitle':
++        'Configura tu acceso de WakeApp una vez y úsalo en todos tus dispositivos.',
++    'auth_account_details': 'Datos de la cuenta',
++    'auth_account_details_subtitle':
++        'Elige los datos que usarás para iniciar sesión más tarde.',
++    'auth_full_name': 'Nombre completo',
++    'auth_your_name': 'Tu nombre',
++    'auth_confirm_password_label': 'Confirmar contraseña',
++    'auth_confirm_password_placeholder': 'Confirmar contraseña',
++    'auth_already_registered': '¿Ya estás registrado?',
++    'blackout_prep_intro_title': 'Prepara tu pantalla para Blackout',
++    'blackout_prep_intro_body':
++        'Algunas apps del sistema siguen visibles en iPhone. Agrúpalas en una carpeta para un Blackout más limpio.',
++    'blackout_prep_intro_goal':
++        'Objetivo: crear una pantalla de inicio más calmada en menos de 20 segundos.',
++    'blackout_prep_demo_title': 'Agrupa apps secundarias durante el focus',
++    'blackout_prep_demo_body':
++        'FaceTime, Mapas, Archivos, Casa, Buscar… Agrúpalas para reducir el ruido visual.',
++    'blackout_prep_demo_primary': 'Optimizar mi pantalla',
++    'blackout_prep_checklist_title': 'Hazlo en 20 segundos',
++    'blackout_prep_checklist_body': 'Cuando termines, vuelve aquí.',
++    'blackout_prep_step_hold_app': 'Mantén pulsada una app',
++    'blackout_prep_step_drag_on_other': 'Arrástrala sobre otra',
++    'blackout_prep_step_create_folder': 'Crea una carpeta “Fuera de Focus”',
++    'blackout_prep_step_add_system_apps':
++        'Añade las apps del sistema visibles',
++    'blackout_prep_done': 'Listo',
++    'blackout_prep_animation_calm_screen': 'Pantalla más calmada',
++    'blackout_prep_animation_folder_name': 'Fuera de Focus',
+   },
+@@
+-    'ios_setup_continue': 'Continuar',
++    'ios_setup_continue': 'Continuar',
++    'auth_signin_error_title': 'Erro ao iniciar sessão',
++    'auth_invalid_email_title': 'Email inválido',
++    'auth_invalid_email_message': 'Insira um endereço de email válido.',
++    'auth_password_required_title': 'Senha obrigatória',
++    'auth_password_required_message':
++        'Insira sua senha para continuar.',
++    'auth_reset_password_title': 'Redefinir senha',
++    'auth_reset_password_enter_email_first':
++        'Digite primeiro o email da conta e tente novamente.',
++    'auth_check_email_title': 'Verifique seu email',
++    'auth_check_email_reset_message':
++        'Se existir uma conta para {email}, um email de redefinição foi enviado.',
++    'auth_login_subtitle':
++        'Entre para restaurar seu sistema, sincronizar seus dados e continuar de onde parou.',
++    'auth_secure_sync': 'Sincronização segura na nuvem entre dispositivos.',
++    'auth_sign_in': 'Entrar',
++    'auth_use_same_credentials':
++        'Use o mesmo email e senha que você criou no WakeApp.',
++    'auth_email': 'Email',
++    'auth_email_placeholder': 'nome@exemplo.com',
++    'auth_password': 'Senha',
++    'auth_forgot_password': 'Esqueceu a senha?',
++    'auth_new_to_wakeapp': 'Novo no WakeApp?',
++    'auth_create_account': 'Criar conta',
++    'auth_account_setup_error_title': 'Erro ao criar conta',
++    'auth_name_required_title': 'Nome obrigatório',
++    'auth_name_required_message': 'Digite seu nome para criar a conta.',
++    'auth_weak_password_title': 'Senha fraca',
++    'auth_weak_password_message':
++        'Use pelo menos 8 caracteres na sua senha.',
++    'auth_password_mismatch_title': 'Senhas diferentes',
++    'auth_password_mismatch_message':
++        'A confirmação de senha não corresponde.',
++    'auth_check_email_signup_message':
++        'Sua conta foi criada. Confirme seu email antes de entrar.',
++    'auth_create_account_title': 'Crie sua conta',
++    'auth_create_account_subtitle':
++        'Configure o login do WakeApp uma vez e use em todos os seus dispositivos.',
++    'auth_account_details': 'Detalhes da conta',
++    'auth_account_details_subtitle':
++        'Escolha os dados que você usará para entrar depois.',
++    'auth_full_name': 'Nome completo',
++    'auth_your_name': 'Seu nome',
++    'auth_confirm_password_label': 'Confirmar senha',
++    'auth_confirm_password_placeholder': 'Confirmar senha',
++    'auth_already_registered': 'Já possui cadastro?',
++    'blackout_prep_intro_title': 'Prepare sua tela para o Blackout',
++    'blackout_prep_intro_body':
++        'Alguns apps do sistema continuam visíveis no iPhone. Agrupe-os em uma pasta para um Blackout mais limpo.',
++    'blackout_prep_intro_goal':
++        'Objetivo: criar uma tela inicial mais calma em menos de 20 segundos.',
++    'blackout_prep_demo_title': 'Organize apps secundários durante o foco',
++    'blackout_prep_demo_body':
++        'FaceTime, Mapas, Arquivos, Casa, Buscar… Agrupe-os para reduzir ruído visual.',
++    'blackout_prep_demo_primary': 'Otimizar minha tela',
++    'blackout_prep_checklist_title': 'Faça em 20 segundos',
++    'blackout_prep_checklist_body': 'Quando terminar, volte aqui.',
++    'blackout_prep_step_hold_app': 'Pressione e segure um app',
++    'blackout_prep_step_drag_on_other': 'Arraste sobre outro app',
++    'blackout_prep_step_create_folder': 'Crie uma pasta “Fora do Foco”',
++    'blackout_prep_step_add_system_apps': 'Adicione apps de sistema visíveis',
++    'blackout_prep_done': 'Concluído',
++    'blackout_prep_animation_calm_screen': 'Tela mais calma',
++    'blackout_prep_animation_folder_name': 'Fora do Foco',
+   },
+@@
+-    'ios_setup_continue': 'Продолжить',
++    'ios_setup_continue': 'Продолжить',
++    'auth_signin_error_title': 'Ошибка входа',
++    'auth_invalid_email_title': 'Неверный email',
++    'auth_invalid_email_message': 'Введите корректный адрес email.',
++    'auth_password_required_title': 'Требуется пароль',
++    'auth_password_required_message': 'Введите пароль, чтобы продолжить.',
++    'auth_reset_password_title': 'Сброс пароля',
++    'auth_reset_password_enter_email_first':
++        'Сначала введите email аккаунта, затем попробуйте снова.',
++    'auth_check_email_title': 'Проверьте почту',
++    'auth_check_email_reset_message':
++        'Если аккаунт для {email} существует, письмо для сброса пароля отправлено.',
++    'auth_login_subtitle':
++        'Войдите, чтобы восстановить систему, синхронизировать данные и продолжить с того места, где вы остановились.',
++    'auth_secure_sync': 'Безопасная облачная синхронизация между устройствами.',
++    'auth_sign_in': 'Войти',
++    'auth_use_same_credentials':
++        'Используйте тот же email и пароль, что вы создали в WakeApp.',
++    'auth_email': 'Email',
++    'auth_email_placeholder': 'name@example.com',
++    'auth_password': 'Пароль',
++    'auth_forgot_password': 'Забыли пароль?',
++    'auth_new_to_wakeapp': 'Впервые в WakeApp?',
++    'auth_create_account': 'Создать аккаунт',
++    'auth_account_setup_error_title': 'Ошибка создания аккаунта',
++    'auth_name_required_title': 'Требуется имя',
++    'auth_name_required_message': 'Введите имя, чтобы создать аккаунт.',
++    'auth_weak_password_title': 'Слабый пароль',
++    'auth_weak_password_message':
++        'Используйте не менее 8 символов в пароле.',
++    'auth_password_mismatch_title': 'Пароли не совпадают',
++    'auth_password_mismatch_message':
++        'Подтверждение пароля не совпадает.',
++    'auth_check_email_signup_message':
++        'Аккаунт создан. Подтвердите email перед входом.',
++    'auth_create_account_title': 'Создайте аккаунт',
++    'auth_create_account_subtitle':
++        'Настройте вход в WakeApp один раз и используйте его на всех устройствах.',
++    'auth_account_details': 'Данные аккаунта',
++    'auth_account_details_subtitle':
++        'Выберите данные, которые будете использовать для входа позже.',
++    'auth_full_name': 'Полное имя',
++    'auth_your_name': 'Ваше имя',
++    'auth_confirm_password_label': 'Подтвердите пароль',
++    'auth_confirm_password_placeholder': 'Подтвердите пароль',
++    'auth_already_registered': 'Уже зарегистрированы?',
++    'blackout_prep_intro_title': 'Подготовьте экран к Blackout',
++    'blackout_prep_intro_body':
++        'Некоторые системные приложения остаются видимыми на iPhone. Сгруппируйте их в папку для более чистого Blackout.',
++    'blackout_prep_intro_goal':
++        'Цель: сделать домашний экран спокойнее менее чем за 20 секунд.',
++    'blackout_prep_demo_title': 'Сгруппируйте вторичные приложения во время фокуса',
++    'blackout_prep_demo_body':
++        'FaceTime, Карты, Файлы, Дом, Локатор… Сгруппируйте их, чтобы снизить визуальный шум.',
++    'blackout_prep_demo_primary': 'Оптимизировать экран',
++    'blackout_prep_checklist_title': 'Сделайте это за 20 секунд',
++    'blackout_prep_checklist_body': 'Когда закончите, вернитесь сюда.',
++    'blackout_prep_step_hold_app': 'Удерживайте иконку приложения',
++    'blackout_prep_step_drag_on_other': 'Перетащите на другое приложение',
++    'blackout_prep_step_create_folder': 'Создайте папку «Вне фокуса»',
++    'blackout_prep_step_add_system_apps':
++        'Добавьте видимые системные приложения',
++    'blackout_prep_done': 'Готово',
++    'blackout_prep_animation_calm_screen': 'Экран спокойнее',
++    'blackout_prep_animation_folder_name': 'Вне фокуса',
+   },
+@@
+-    'ios_setup_continue': 'متابعة',
++    'ios_setup_continue': 'متابعة',
++    'auth_signin_error_title': 'خطأ في تسجيل الدخول',
++    'auth_invalid_email_title': 'بريد إلكتروني غير صالح',
++    'auth_invalid_email_message':
++        'يرجى إدخال عنوان بريد إلكتروني صالح.',
++    'auth_password_required_title': 'كلمة المرور مطلوبة',
++    'auth_password_required_message':
++        'يرجى إدخال كلمة المرور للمتابعة.',
++    'auth_reset_password_title': 'إعادة تعيين كلمة المرور',
++    'auth_reset_password_enter_email_first':
++        'أدخل بريد حسابك أولاً ثم حاول مرة أخرى.',
++    'auth_check_email_title': 'تحقق من بريدك',
++    'auth_check_email_reset_message':
++        'إذا كان هناك حساب لـ {email} فسيتم إرسال رسالة إعادة تعيين كلمة المرور.',
++    'auth_login_subtitle':
++        'سجّل الدخول لاستعادة نظامك ومزامنة بياناتك والمتابعة من حيث توقفت.',
++    'auth_secure_sync': 'مزامنة سحابية آمنة عبر أجهزتك.',
++    'auth_sign_in': 'تسجيل الدخول',
++    'auth_use_same_credentials':
++        'استخدم نفس البريد وكلمة المرور التي أنشأتها في WakeApp.',
++    'auth_email': 'البريد الإلكتروني',
++    'auth_email_placeholder': 'name@example.com',
++    'auth_password': 'كلمة المرور',
++    'auth_forgot_password': 'هل نسيت كلمة المرور؟',
++    'auth_new_to_wakeapp': 'جديد على WakeApp؟',
++    'auth_create_account': 'إنشاء حساب',
++    'auth_account_setup_error_title': 'خطأ في إعداد الحساب',
++    'auth_name_required_title': 'الاسم مطلوب',
++    'auth_name_required_message': 'يرجى إدخال اسمك لإنشاء الحساب.',
++    'auth_weak_password_title': 'كلمة مرور ضعيفة',
++    'auth_weak_password_message':
++        'استخدم 8 أحرف على الأقل في كلمة المرور.',
++    'auth_password_mismatch_title': 'كلمتا المرور غير متطابقتين',
++    'auth_password_mismatch_message':
++        'تأكيد كلمة المرور غير مطابق.',
++    'auth_check_email_signup_message':
++        'تم إنشاء حسابك. يرجى تأكيد بريدك الإلكتروني قبل تسجيل الدخول.',
++    'auth_create_account_title': 'أنشئ حسابك',
++    'auth_create_account_subtitle':
++        'قم بإعداد تسجيل دخول WakeApp مرة واحدة ثم استخدمه على جميع أجهزتك.',
++    'auth_account_details': 'تفاصيل الحساب',
++    'auth_account_details_subtitle':
++        'اختر البيانات التي ستستخدمها لتسجيل الدخول لاحقًا.',
++    'auth_full_name': 'الاسم الكامل',
++    'auth_your_name': 'اسمك',
++    'auth_confirm_password_label': 'تأكيد كلمة المرور',
++    'auth_confirm_password_placeholder': 'تأكيد كلمة المرور',
++    'auth_already_registered': 'لديك حساب بالفعل؟',
++    'blackout_prep_intro_title': 'جهّز شاشتك لوضع Blackout',
++    'blackout_prep_intro_body':
++        'بعض تطبيقات النظام تبقى مرئية على iPhone. اجمعها في مجلد للحصول على Blackout أنظف.',
++    'blackout_prep_intro_goal':
++        'الهدف: إنشاء شاشة رئيسية أكثر هدوءًا في أقل من 20 ثانية.',
++    'blackout_prep_demo_title': 'رتّب التطبيقات الثانوية أثناء التركيز',
++    'blackout_prep_demo_body':
++        'FaceTime وخرائط وملفات والمنزل والعثور على… اجمعها لتقليل الضجيج البصري.',
++    'blackout_prep_demo_primary': 'تحسين شاشتي',
++    'blackout_prep_checklist_title': 'أنجزها في 20 ثانية',
++    'blackout_prep_checklist_body': 'عند الانتهاء، عُد إلى هنا.',
++    'blackout_prep_step_hold_app': 'اضغط مطولًا على تطبيق',
++    'blackout_prep_step_drag_on_other': 'اسحبه فوق تطبيق آخر',
++    'blackout_prep_step_create_folder': 'أنشئ مجلدًا باسم «خارج التركيز»',
++    'blackout_prep_step_add_system_apps':
++        'أضف تطبيقات النظام الظاهرة إلى المجلد',
++    'blackout_prep_done': 'تم',
++    'blackout_prep_animation_calm_screen': 'شاشة أكثر هدوءًا',
++    'blackout_prep_animation_folder_name': 'خارج التركيز',
+   },
+@@
+-    'ios_setup_continue': 'Lanjut',
++    'ios_setup_continue': 'Lanjut',
++    'auth_signin_error_title': 'Kesalahan masuk',
++    'auth_invalid_email_title': 'Email tidak valid',
++    'auth_invalid_email_message': 'Masukkan alamat email yang valid.',
++    'auth_password_required_title': 'Kata sandi wajib diisi',
++    'auth_password_required_message':
++        'Masukkan kata sandi untuk melanjutkan.',
++    'auth_reset_password_title': 'Atur ulang kata sandi',
++    'auth_reset_password_enter_email_first':
++        'Masukkan email akun terlebih dahulu, lalu coba lagi.',
++    'auth_check_email_title': 'Periksa email kamu',
++    'auth_check_email_reset_message':
++        'Jika ada akun untuk {email}, email reset kata sandi telah dikirim.',
++    'auth_login_subtitle':
++        'Masuk untuk memulihkan sistemmu, sinkronkan data, dan lanjutkan dari titik terakhir.',
++    'auth_secure_sync': 'Sinkronisasi cloud aman di semua perangkat.',
++    'auth_sign_in': 'Masuk',
++    'auth_use_same_credentials':
++        'Gunakan email dan kata sandi yang sama seperti saat membuat WakeApp.',
++    'auth_email': 'Email',
++    'auth_email_placeholder': 'nama@contoh.com',
++    'auth_password': 'Kata sandi',
++    'auth_forgot_password': 'Lupa kata sandi?',
++    'auth_new_to_wakeapp': 'Baru di WakeApp?',
++    'auth_create_account': 'Buat akun',
++    'auth_account_setup_error_title': 'Kesalahan pembuatan akun',
++    'auth_name_required_title': 'Nama wajib diisi',
++    'auth_name_required_message': 'Masukkan nama untuk membuat akun.',
++    'auth_weak_password_title': 'Kata sandi lemah',
++    'auth_weak_password_message':
++        'Gunakan minimal 8 karakter untuk kata sandi.',
++    'auth_password_mismatch_title': 'Kata sandi tidak cocok',
++    'auth_password_mismatch_message':
++        'Konfirmasi kata sandi tidak cocok.',
++    'auth_check_email_signup_message':
++        'Akun kamu berhasil dibuat. Konfirmasi email sebelum masuk.',
++    'auth_create_account_title': 'Buat akunmu',
++    'auth_create_account_subtitle':
++        'Atur login WakeApp sekali, lalu gunakan di semua perangkat.',
++    'auth_account_details': 'Detail akun',
++    'auth_account_details_subtitle':
++        'Pilih detail yang akan kamu gunakan untuk masuk nanti.',
++    'auth_full_name': 'Nama lengkap',
++    'auth_your_name': 'Namamu',
++    'auth_confirm_password_label': 'Konfirmasi kata sandi',
++    'auth_confirm_password_placeholder': 'Konfirmasi kata sandi',
++    'auth_already_registered': 'Sudah terdaftar?',
++    'blackout_prep_intro_title': 'Siapkan layar untuk Blackout',
++    'blackout_prep_intro_body':
++        'Beberapa aplikasi sistem tetap terlihat di iPhone. Kelompokkan ke satu folder untuk Blackout yang lebih bersih.',
++    'blackout_prep_intro_goal':
++        'Tujuan: membuat Home Screen lebih tenang dalam kurang dari 20 detik.',
++    'blackout_prep_demo_title': 'Rapikan aplikasi sekunder saat fokus',
++    'blackout_prep_demo_body':
++        'FaceTime, Maps, Files, Home, Find My… Kelompokkan agar gangguan visual berkurang.',
++    'blackout_prep_demo_primary': 'Optimalkan layarku',
++    'blackout_prep_checklist_title': 'Lakukan dalam 20 detik',
++    'blackout_prep_checklist_body': 'Setelah selesai, kembali ke sini.',
++    'blackout_prep_step_hold_app': 'Tekan dan tahan ikon aplikasi',
++    'blackout_prep_step_drag_on_other': 'Seret ke atas aplikasi lain',
++    'blackout_prep_step_create_folder': 'Buat folder bernama “Di Luar Fokus”',
++    'blackout_prep_step_add_system_apps':
++        'Masukkan aplikasi sistem yang terlihat',
++    'blackout_prep_done': 'Selesai',
++    'blackout_prep_animation_calm_screen': 'Layar lebih tenang',
++    'blackout_prep_animation_folder_name': 'Di Luar Fokus',
+   },
+@@
+-    'ios_setup_continue': 'जारी रखें',
++    'ios_setup_continue': 'जारी रखें',
++    'auth_signin_error_title': 'साइन-इन त्रुटि',
++    'auth_invalid_email_title': 'अमान्य ईमेल',
++    'auth_invalid_email_message': 'कृपया मान्य ईमेल पता दर्ज करें।',
++    'auth_password_required_title': 'पासवर्ड आवश्यक है',
++    'auth_password_required_message': 'जारी रखने के लिए पासवर्ड दर्ज करें।',
++    'auth_reset_password_title': 'पासवर्ड रीसेट करें',
++    'auth_reset_password_enter_email_first':
++        'पहले अपना अकाउंट ईमेल दर्ज करें, फिर दोबारा प्रयास करें।',
++    'auth_check_email_title': 'अपना ईमेल देखें',
++    'auth_check_email_reset_message':
++        'यदि {email} के लिए अकाउंट मौजूद है, तो पासवर्ड रीसेट ईमेल भेज दिया गया है।',
++    'auth_login_subtitle':
++        'अपने सिस्टम को बहाल करने, डेटा सिंक करने और जहाँ छोड़ा था वहीं से जारी रखने के लिए साइन-इन करें।',
++    'auth_secure_sync': 'आपके सभी डिवाइस पर सुरक्षित क्लाउड सिंक।',
++    'auth_sign_in': 'साइन-इन',
++    'auth_use_same_credentials':
++        'WakeApp पर बनाया गया वही ईमेल और पासवर्ड उपयोग करें।',
++    'auth_email': 'ईमेल',
++    'auth_email_placeholder': 'name@example.com',
++    'auth_password': 'पासवर्ड',
++    'auth_forgot_password': 'पासवर्ड भूल गए?',
++    'auth_new_to_wakeapp': 'WakeApp पर नए हैं?',
++    'auth_create_account': 'अकाउंट बनाएँ',
++    'auth_account_setup_error_title': 'अकाउंट सेटअप त्रुटि',
++    'auth_name_required_title': 'नाम आवश्यक है',
++    'auth_name_required_message':
++        'अकाउंट बनाने के लिए कृपया अपना नाम दर्ज करें।',
++    'auth_weak_password_title': 'कमज़ोर पासवर्ड',
++    'auth_weak_password_message': 'पासवर्ड में कम से कम 8 अक्षर रखें।',
++    'auth_password_mismatch_title': 'पासवर्ड मेल नहीं खाता',
++    'auth_password_mismatch_message': 'पासवर्ड पुष्टि मेल नहीं खाती।',
++    'auth_check_email_signup_message':
++        'आपका अकाउंट बन गया है। साइन-इन से पहले ईमेल पुष्टि करें।',
++    'auth_create_account_title': 'अपना अकाउंट बनाएँ',
++    'auth_create_account_subtitle':
++        'WakeApp लॉगिन एक बार सेट करें, फिर सभी डिवाइस पर उपयोग करें।',
++    'auth_account_details': 'अकाउंट विवरण',
++    'auth_account_details_subtitle':
++        'वे विवरण चुनें जिन्हें आप बाद में साइन-इन के लिए उपयोग करेंगे।',
++    'auth_full_name': 'पूरा नाम',
++    'auth_your_name': 'आपका नाम',
++    'auth_confirm_password_label': 'पासवर्ड की पुष्टि करें',
++    'auth_confirm_password_placeholder': 'पासवर्ड की पुष्टि करें',
++    'auth_already_registered': 'पहले से रजिस्टर्ड हैं?',
++    'blackout_prep_intro_title': 'Blackout के लिए स्क्रीन तैयार करें',
++    'blackout_prep_intro_body':
++        'iPhone पर कुछ सिस्टम ऐप्स दिखाई देते रहते हैं। साफ़ Blackout के लिए उन्हें एक फ़ोल्डर में रखें।',
++    'blackout_prep_intro_goal':
++        'लक्ष्य: 20 सेकंड से कम में अधिक शांत होम स्क्रीन बनाना।',
++    'blackout_prep_demo_title': 'फोकस के दौरान सेकेंडरी ऐप्स समेटें',
++    'blackout_prep_demo_body':
++        'FaceTime, Maps, Files, Home, Find My… विज़ुअल शोर कम करने के लिए इन्हें समूह में रखें।',
++    'blackout_prep_demo_primary': 'मेरी स्क्रीन ऑप्टिमाइज़ करें',
++    'blackout_prep_checklist_title': 'इसे 20 सेकंड में करें',
++    'blackout_prep_checklist_body': 'पूरा होने पर यहाँ वापस आएँ।',
++    'blackout_prep_step_hold_app': 'किसी ऐप आइकन को दबाकर रखें',
++    'blackout_prep_step_drag_on_other': 'उसे दूसरे ऐप पर खींचें',
++    'blackout_prep_step_create_folder': '“फोकस से बाहर” नाम का फ़ोल्डर बनाएँ',
++    'blackout_prep_step_add_system_apps':
++        'दिखने वाले सिस्टम ऐप्स उस फ़ोल्डर में जोड़ें',
++    'blackout_prep_done': 'हो गया',
++    'blackout_prep_animation_calm_screen': 'अधिक शांत स्क्रीन',
++    'blackout_prep_animation_folder_name': 'फोकस से बाहर',
+   },
+@@
+-    'ios_setup_continue': '继续',
++    'ios_setup_continue': '继续',
++    'auth_signin_error_title': '登录错误',
++    'auth_invalid_email_title': '邮箱无效',
++    'auth_invalid_email_message': '请输入有效的邮箱地址。',
++    'auth_password_required_title': '需要密码',
++    'auth_password_required_message': '请输入密码后继续。',
++    'auth_reset_password_title': '重置密码',
++    'auth_reset_password_enter_email_first':
++        '请先输入账户邮箱，再重试。',
++    'auth_check_email_title': '请检查邮箱',
++    'auth_check_email_reset_message':
++        '如果 {email} 对应的账户存在，重置密码邮件已发送。',
++    'auth_login_subtitle':
++        '登录以恢复你的系统、同步数据，并从上次中断处继续。',
++    'auth_secure_sync': '在你的设备间进行安全云同步。',
++    'auth_sign_in': '登录',
++    'auth_use_same_credentials':
++        '使用你在 WakeApp 创建的同一邮箱和密码。',
++    'auth_email': '邮箱',
++    'auth_email_placeholder': 'name@example.com',
++    'auth_password': '密码',
++    'auth_forgot_password': '忘记密码？',
++    'auth_new_to_wakeapp': '第一次使用 WakeApp？',
++    'auth_create_account': '创建账户',
++    'auth_account_setup_error_title': '账户创建错误',
++    'auth_name_required_title': '需要姓名',
++    'auth_name_required_message': '请填写姓名以创建账户。',
++    'auth_weak_password_title': '密码过弱',
++    'auth_weak_password_message': '密码至少需要 8 个字符。',
++    'auth_password_mismatch_title': '密码不一致',
++    'auth_password_mismatch_message': '密码确认不匹配。',
++    'auth_check_email_signup_message':
++        '账户已创建。登录前请先完成邮箱验证。',
++    'auth_create_account_title': '创建你的账户',
++    'auth_create_account_subtitle':
++        '只需一次设置 WakeApp 登录，随后可在所有设备使用。',
++    'auth_account_details': '账户信息',
++    'auth_account_details_subtitle': '选择你稍后登录时要使用的信息。',
++    'auth_full_name': '姓名',
++    'auth_your_name': '你的姓名',
++    'auth_confirm_password_label': '确认密码',
++    'auth_confirm_password_placeholder': '确认密码',
++    'auth_already_registered': '已经注册？',
++    'blackout_prep_intro_title': '为 Blackout 准备你的主屏幕',
++    'blackout_prep_intro_body':
++        'iPhone 上部分系统应用仍可见。把它们放进同一个文件夹，让 Blackout 更干净。',
++    'blackout_prep_intro_goal': '目标：在 20 秒内让主屏幕更安静。',
++    'blackout_prep_demo_title': '专注时整理次要应用',
++    'blackout_prep_demo_body':
++        'FaceTime、地图、文件、家庭、查找… 将它们分组以降低视觉干扰。',
++    'blackout_prep_demo_primary': '优化我的主屏幕',
++    'blackout_prep_checklist_title': '20 秒内完成',
++    'blackout_prep_checklist_body': '完成后回到这里。',
++    'blackout_prep_step_hold_app': '长按一个应用图标',
++    'blackout_prep_step_drag_on_other': '将它拖到另一个应用上',
++    'blackout_prep_step_create_folder': '创建名为“专注外”的文件夹',
++    'blackout_prep_step_add_system_apps': '把可见的系统应用加入该文件夹',
++    'blackout_prep_done': '完成',
++    'blackout_prep_animation_calm_screen': '更安静的屏幕',
++    'blackout_prep_animation_folder_name': '专注外',
+   },
+*** End Patch

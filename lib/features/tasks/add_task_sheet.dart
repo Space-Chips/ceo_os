@@ -88,7 +88,7 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
   Future<void> _addTask() async {
     if (_titleCtrl.text.trim().isEmpty) return;
 
-    await context.read<TaskProvider>().addTask(
+    final result = await context.read<TaskProvider>().addTask(
       _titleCtrl.text.trim(),
       importance: _importance,
       duration: _duration,
@@ -98,7 +98,12 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
       syncToCalendar: _deadline != null && _syncToCalendar,
     );
 
-    if (mounted) Navigator.of(context).pop();
+    if (!mounted) return;
+    if (!result.allowed) {
+      await showPremiumGateDialog(context, result);
+      return;
+    }
+    Navigator.of(context).pop();
   }
 
   void _showDeadlinePicker() {
@@ -163,7 +168,7 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
   void _showAddGroup() {
     showCupertinoDialog(
       context: context,
-      builder: (context) => BackdropFilter(
+      builder: (dialogContext) => BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
         child: CupertinoAlertDialog(
           title: Text(
@@ -187,7 +192,7 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
           ),
           actions: [
             CupertinoDialogAction(
-              child: const Text(
+              child: Text(
                 'CANCEL',
                 style: TextStyle(color: AppColors.secondaryLabel),
               ),
@@ -195,7 +200,7 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
             ),
             CupertinoDialogAction(
               isDefaultAction: true,
-              child: const Text(
+              child: Text(
                 'CREATE',
                 style: TextStyle(color: AppColors.primaryOrange),
               ),
@@ -205,7 +210,7 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
                     _groupCtrl.text,
                   );
                   _groupCtrl.clear();
-                  if (mounted) Navigator.pop(context);
+                  if (dialogContext.mounted) Navigator.pop(dialogContext);
                 }
               },
             ),
@@ -242,9 +247,9 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
           bottom: MediaQuery.of(context).viewInsets.bottom,
         ),
         decoration: BoxDecoration(
-          color: AppColors.background.withOpacity(0.8),
+          color: AppColors.background.withValues(alpha: 0.8),
           borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-          border: const Border(
+          border: Border(
             top: BorderSide(color: AppColors.glassBorder, width: 0.5),
           ),
         ),
@@ -267,7 +272,7 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
                 ),
                 const SizedBox(height: 24),
 
-                const NeoMonoText(
+                NeoMonoText(
                   'NEW_TASK_INPUT',
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -286,7 +291,7 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
                 const SizedBox(height: 8),
                 Container(
                   decoration: BoxDecoration(
-                    color: AppColors.backgroundLight.withOpacity(0.5),
+                    color: AppColors.backgroundLight.withValues(alpha: 0.5),
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
                       color: AppColors.glassBorder,
@@ -324,12 +329,12 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
                     ),
                     decoration: BoxDecoration(
                       color: _deadline != null
-                          ? AppColors.primaryOrange.withOpacity(0.1)
-                          : AppColors.backgroundLight.withOpacity(0.5),
+                          ? AppColors.primaryOrange.withValues(alpha: 0.1)
+                          : AppColors.backgroundLight.withValues(alpha: 0.5),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         color: _deadline != null
-                            ? AppColors.primaryOrange.withOpacity(0.4)
+                            ? AppColors.primaryOrange.withValues(alpha: 0.4)
                             : AppColors.glassBorder,
                         width: 0.5,
                       ),
@@ -359,7 +364,7 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
                         if (_deadline != null)
                           GestureDetector(
                             onTap: () => setState(() => _deadline = null),
-                            child: const Icon(
+                            child: Icon(
                               CupertinoIcons.xmark_circle_fill,
                               size: 16,
                               color: AppColors.secondaryLabel,
@@ -383,7 +388,7 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
                     ),
                     CupertinoSwitch(
                       value: _syncToCalendar,
-                      activeColor: AppColors.primaryOrange,
+                      activeTrackColor: AppColors.primaryOrange,
                       onChanged: (value) =>
                           setState(() => _syncToCalendar = value),
                     ),
@@ -421,7 +426,7 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
                                 color: AppColors.primaryOrange.withOpacity(0.5),
                               ),
                             ),
-                            child: const Icon(
+                            child: Icon(
                               CupertinoIcons.plus,
                               size: 14,
                               color: AppColors.primaryOrange,
@@ -543,30 +548,28 @@ class _GroupChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        margin: const EdgeInsets.only(right: 8),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? AppColors.primaryOrange.withOpacity(0.2)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isSelected ? AppColors.primaryOrange : AppColors.glassBorder,
-            width: 0.5,
-          ),
-        ),
-        child: Text(
-          label,
-          style: AppTypography.mono.copyWith(
-            fontSize: 10,
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
             color: isSelected
-                ? AppColors.primaryOrange
-                : AppColors.secondaryLabel,
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                ? AppColors.primaryOrange.withValues(alpha: 0.16)
+                : AppColors.cardBackgroundAlt,
+            border: Border.all(
+              color: isSelected ? AppColors.primaryOrange : AppColors.border,
+            ),
+          ),
+          child: Text(
+            label,
+            style: AppTypography.mono.copyWith(
+              fontSize: 11,
+              color: isSelected ? AppColors.primaryOrange : AppColors.label,
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ),
       ),

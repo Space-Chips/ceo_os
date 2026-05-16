@@ -104,27 +104,66 @@ class _BiannualReportScreenState extends State<BiannualReportScreen> {
         leading: CupertinoButton(
           padding: EdgeInsets.zero,
           onPressed: () => context.go('/home'),
-          child: const Icon(
+          child: Icon(
             CupertinoIcons.back,
             color: AppColors.primaryOrange,
           ),
         ),
-        middle: const NeoMonoText(
+        middle: NeoMonoText(
           'BIANNUAL_REPORT',
           fontSize: 18,
           fontWeight: FontWeight.bold,
+        ),
+        trailing: CupertinoButton(
+          padding: EdgeInsets.zero,
+          onPressed: _load,
+          child: Icon(
+            CupertinoIcons.refresh,
+            size: 18,
+            color: AppColors.primaryOrange,
+          ),
         ),
         backgroundColor: AppColors.background,
         border: null,
       ),
       child: _loading
-          ? const Center(
-              child: CupertinoActivityIndicator(color: AppColors.primaryOrange),
-            )
+          ? Center(child: CupertinoActivityIndicator(color: AppColors.primaryOrange))
           : SafeArea(
               child: ListView(
                 padding: const EdgeInsets.all(20),
                 children: [
+                  _glowSurface(
+                    glowColor: AppColors.primaryOrange.withValues(alpha: 0.14),
+                    borderRadius: 16,
+                    child: GlassCard(
+                      padding: const EdgeInsets.all(14),
+                      borderRadius: 16,
+                      border: Border.all(
+                        color: AppColors.primaryOrange.withValues(alpha: 0.22),
+                        width: 0.7,
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            CupertinoIcons.chart_bar_alt_fill,
+                            size: 16,
+                            color: AppColors.primaryOrange,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Rolling 180-day performance synthesis.',
+                              style: AppTypography.mono.copyWith(
+                                fontSize: 10,
+                                color: AppColors.secondaryLabel,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
                   GlassCard(
                     padding: const EdgeInsets.all(18),
                     borderRadius: 16,
@@ -143,6 +182,10 @@ class _BiannualReportScreenState extends State<BiannualReportScreen> {
                   GlassCard(
                     padding: const EdgeInsets.all(16),
                     borderRadius: 16,
+                    border: Border.all(
+                      color: AppColors.primaryOrange.withValues(alpha: 0.22),
+                      width: 0.55,
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -169,6 +212,34 @@ class _BiannualReportScreenState extends State<BiannualReportScreen> {
             ),
     );
   }
+
+  Widget _glowSurface({
+    required Widget child,
+    required Color glowColor,
+    double borderRadius = 16,
+  }) {
+    return Stack(
+      children: [
+        Positioned.fill(
+          child: IgnorePointer(
+            child: Container(
+              margin: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(borderRadius),
+                boxShadow: [
+                  BoxShadow(color: glowColor, blurRadius: 28, spreadRadius: 1),
+                ],
+              ),
+            ),
+          ),
+        ),
+        child,
+      ],
+    );
+  }
+
+
+
 
   Widget _metric(String label, String value) {
     return Expanded(

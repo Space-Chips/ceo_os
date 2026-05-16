@@ -1,0 +1,99 @@
+import 'package:flutter/cupertino.dart';
+
+import '../../core/services/focus_service.dart';
+
+class BlockingDebugScreen extends StatefulWidget {
+  const BlockingDebugScreen({super.key});
+
+  @override
+  State<BlockingDebugScreen> createState() => _BlockingDebugScreenState();
+}
+
+class _BlockingDebugScreenState extends State<BlockingDebugScreen> {
+  final FocusService _focusService = FocusService();
+  Map<String, dynamic> _debugState = const {};
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _refresh();
+  }
+
+  Future<void> _refresh() async {
+    setState(() => _loading = true);
+    final state = await _focusService.getBlockingDebugState();
+    if (!mounted) return;
+    setState(() {
+      _debugState = state;
+      _loading = false;
+    });
+  }
+
+  String _stringValue(String key) {
+    final value = _debugState[key];
+    if (value == null) return '—';
+    if (value is bool) return value ? 'true' : 'false';
+    return '$value';
+  }
+
+  Widget _row(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 140,
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: TextStyle(fontSize: 14, height: 1.35),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      navigationBar: CupertinoNavigationBar(
+        middle: Text('Blocking Debug'),
+        trailing: CupertinoButton(
+          padding: EdgeInsets.zero,
+          onPressed: _refresh,
+          child: Text('Refresh'),
+        ),
+      ),
+      child: SafeArea(
+        child: _loading
+            ? const Center(child: CupertinoActivityIndicator())
+            : ListView(
+                padding: const EdgeInsets.all(20),
+                children: [
+                  _row('Mode', _stringValue('mode')),
+                  _row('Decision', _stringValue('decision')),
+                  _row('Package', _stringValue('packageName')),
+                  _row('Class', _stringValue('className')),
+                  _row('URL / Domain', _stringValue('detectedUrl')),
+                  _row('Event type', _stringValue('eventType')),
+                  _row('Gate launched', _stringValue('gateLaunched')),
+                  _row('Gate failure', _stringValue('gateFailureReason')),
+                  _row('Latency (ms)', _stringValue('latencyMillis')),
+                  _row('Timestamp', _stringValue('timestampMillis')),
+                ],
+              ),
+      ),
+    );
+  }
+}

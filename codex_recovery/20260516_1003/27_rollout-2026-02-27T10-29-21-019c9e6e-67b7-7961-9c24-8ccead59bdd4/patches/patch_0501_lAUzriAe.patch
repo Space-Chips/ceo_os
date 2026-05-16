@@ -1,0 +1,58 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/calendar/calendar_screen.dart
+@@
+ class _WeekAnalysis {
+@@
+   const _WeekAnalysis({
+     required this.totalEventHours,
+     required this.importantEventHours,
+     required this.freeTimeHours,
+     required this.percentageImportant,
+     required this.percentageFree,
+     required this.eventCount,
+   });
+ }
++
++class _CalendarPressScale extends StatefulWidget {
++  final Widget child;
++  final VoidCallback onTap;
++  final double scaleWhenPressed;
++
++  const _CalendarPressScale({
++    required this.child,
++    required this.onTap,
++    this.scaleWhenPressed = 1.03,
++  });
++
++  @override
++  State<_CalendarPressScale> createState() => _CalendarPressScaleState();
++}
++
++class _CalendarPressScaleState extends State<_CalendarPressScale> {
++  bool _pressed = false;
++
++  void _setPressed(bool value) {
++    if (!mounted || _pressed == value) return;
++    setState(() => _pressed = value);
++  }
++
++  @override
++  Widget build(BuildContext context) {
++    return Listener(
++      onPointerDown: (_) => _setPressed(true),
++      onPointerUp: (_) => _setPressed(false),
++      onPointerCancel: (_) => _setPressed(false),
++      child: AnimatedScale(
++        scale: _pressed ? widget.scaleWhenPressed : 1,
++        duration: const Duration(milliseconds: 120),
++        curve: Curves.easeOutCubic,
++        child: GestureDetector(
++          behavior: HitTestBehavior.translucent,
++          onTap: widget.onTap,
++          child: widget.child,
++        ),
++      ),
++    );
++  }
++}
+*** End Patch

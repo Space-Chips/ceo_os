@@ -1,0 +1,237 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/ceo_mode/ceo_mode_screen.dart
+@@
+ class _CeoModeScreenState extends State<CeoModeScreen> {
+-  static const List<int> _durationOptions = [30, 60, 90, 120, 180, 240];
++  static const List<int> _durationOptions = [
++    15,
++    30,
++    45,
++    60,
++    75,
++    90,
++    120,
++    150,
++    180,
++    210,
++    240,
++  ];
+@@
+                 Text(
+                   'DURATION',
+                   style: AppTypography.mono.copyWith(
+                     fontSize: 11,
+@@
+                 ),
+                 const SizedBox(height: 10),
+-                Wrap(
+-                  spacing: 8,
+-                  runSpacing: 8,
+-                  children: _durationOptions.map((minutes) {
+-                    final selected = ceo.selectedDurationMinutes == minutes;
+-                    return GestureDetector(
+-                      onTap: () => ceo.setDuration(minutes),
+-                      child: AnimatedContainer(
+-                        duration: const Duration(milliseconds: 180),
+-                        padding: const EdgeInsets.symmetric(
+-                          horizontal: 18,
+-                          vertical: 12,
+-                        ),
+-                        decoration: BoxDecoration(
+-                          borderRadius: BorderRadius.circular(14),
+-                          color: selected
+-                              ? const Color(0xFFEDEDEF)
+-                              : AppColors.background.withValues(alpha: 0.65),
+-                          border: Border.all(
+-                            color: selected
+-                                ? const Color(0xFFEDEDEF)
+-                                : AppColors.glassBorder.withValues(alpha: 0.9),
+-                            width: 0.7,
+-                          ),
+-                        ),
+-                        child: Text(
+-                          _durationLabel(minutes),
+-                          style: AppTypography.mono.copyWith(
+-                            fontSize: 22,
+-                            fontWeight: FontWeight.w900,
+-                            color: selected
+-                                ? AppColors.background
+-                                : AppColors.secondaryLabel,
+-                          ),
+-                        ),
+-                      ),
+-                    );
+-                  }).toList(),
++                Container(
++                  height: 146,
++                  decoration: BoxDecoration(
++                    borderRadius: BorderRadius.circular(16),
++                    color: AppColors.background.withValues(alpha: 0.62),
++                    border: Border.all(
++                      color: AppColors.glassBorder.withValues(alpha: 0.8),
++                      width: 0.7,
++                    ),
++                  ),
++                  child: CupertinoPicker(
++                    itemExtent: 34,
++                    scrollController: FixedExtentScrollController(
++                      initialItem: _durationOptions.indexWhere(
++                        (m) => m == ceo.selectedDurationMinutes,
++                      ).clamp(0, _durationOptions.length - 1),
++                    ),
++                    onSelectedItemChanged: (index) {
++                      ceo.setDuration(_durationOptions[index]);
++                    },
++                    selectionOverlay: Container(
++                      margin: const EdgeInsets.symmetric(horizontal: 12),
++                      decoration: BoxDecoration(
++                        borderRadius: BorderRadius.circular(12),
++                        border: Border.all(
++                          color: AppColors.primaryOrange.withValues(alpha: 0.5),
++                          width: 0.7,
++                        ),
++                        color: AppColors.primaryOrange.withValues(alpha: 0.14),
++                      ),
++                    ),
++                    children: _durationOptions
++                        .map(
++                          (minutes) => Center(
++                            child: Text(
++                              _durationLabel(minutes),
++                              style: AppTypography.mono.copyWith(
++                                fontSize: 22,
++                                fontWeight: FontWeight.w900,
++                                color: minutes == ceo.selectedDurationMinutes
++                                    ? AppColors.label
++                                    : AppColors.secondaryLabel,
++                              ),
++                            ),
++                          ),
++                        )
++                        .toList(growable: false),
++                  ),
+                 ),
+               ],
+             ),
+@@
+   Widget _exitPendingView(CeoModeProvider ceo) {
+     return ListView(
+       padding: const EdgeInsets.symmetric(horizontal: 6),
+       children: [
+-        _glowSurface(
+-          glowColor: AppColors.error.withValues(alpha: 0.2),
+-          borderRadius: 28,
+-          child: GlassCard(
+-            padding: const EdgeInsets.all(20),
+-            borderRadius: 28,
+-            border: Border.all(
+-              color: AppColors.error.withValues(alpha: 0.45),
+-              width: 0.85,
+-            ),
+-            child: Column(
+-              children: [
+-                Icon(
+-                  CupertinoIcons.timer_fill,
+-                  size: 50,
+-                  color: AppColors.primaryOrange,
+-                ),
+-                const SizedBox(height: 12),
+-                Text(
+-                  'EXIT COUNTDOWN',
+-                  style: AppTypography.mono.copyWith(
+-                    fontSize: 14,
+-                    color: AppColors.warning,
+-                    fontWeight: FontWeight.w900,
+-                    letterSpacing: 1.8,
+-                  ),
+-                ),
+-                const SizedBox(height: 8),
+-                Text(
+-                  ceo.exitCountdownLabel,
+-                  style: AppTypography.mono.copyWith(
+-                    fontSize: 58,
+-                    fontWeight: FontWeight.w900,
+-                    color: AppColors.primaryOrange,
+-                  ),
+-                ),
+-                const SizedBox(height: 8),
+-                Text(
+-                  'If your screen turns off, countdown restarts to 10:00.',
+-                  textAlign: TextAlign.center,
+-                  style: AppTypography.mono.copyWith(
+-                    fontSize: 12,
+-                    color: AppColors.secondaryLabel,
+-                  ),
+-                ),
+-              ],
+-            ),
+-          ),
++        _glowSurface(
++          glowColor: AppColors.error.withValues(alpha: 0.22),
++          borderRadius: 220,
++          child: Container(
++            width: double.infinity,
++            padding: const EdgeInsets.all(10),
++            child: AspectRatio(
++              aspectRatio: 1,
++              child: Container(
++                decoration: BoxDecoration(
++                  shape: BoxShape.circle,
++                  gradient: RadialGradient(
++                    colors: [
++                      AppColors.primaryOrange.withValues(alpha: 0.25),
++                      AppColors.backgroundLight.withValues(alpha: 0.9),
++                      AppColors.background.withValues(alpha: 0.98),
++                    ],
++                    stops: const [0.0, 0.6, 1.0],
++                  ),
++                  border: Border.all(
++                    color: AppColors.error.withValues(alpha: 0.52),
++                    width: 1.1,
++                  ),
++                ),
++                child: Column(
++                  mainAxisAlignment: MainAxisAlignment.center,
++                  children: [
++                    Icon(
++                      CupertinoIcons.timer_fill,
++                      size: 40,
++                      color: AppColors.primaryOrange,
++                    ),
++                    const SizedBox(height: 8),
++                    Text(
++                      'EXIT COUNTDOWN',
++                      style: AppTypography.mono.copyWith(
++                        fontSize: 13,
++                        color: AppColors.warning,
++                        fontWeight: FontWeight.w900,
++                        letterSpacing: 1.8,
++                      ),
++                    ),
++                    const SizedBox(height: 8),
++                    Text(
++                      ceo.exitCountdownLabel,
++                      style: AppTypography.mono.copyWith(
++                        fontSize: 72,
++                        fontWeight: FontWeight.w900,
++                        color: AppColors.primaryOrange,
++                        height: 0.9,
++                      ),
++                    ),
++                  ],
++                ),
++              ),
++            ),
++          ),
+         ),
++        const SizedBox(height: 8),
++        Text(
++          'If your screen turns off, countdown restarts to 10:00.',
++          textAlign: TextAlign.center,
++          style: AppTypography.mono.copyWith(
++            fontSize: 12,
++            color: AppColors.secondaryLabel,
++          ),
++        ),
+         const SizedBox(height: 14),
+*** End Patch

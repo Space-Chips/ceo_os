@@ -1,0 +1,13 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/ios/ScreenTimeReport/Info.plist
+@@
+-	<key>EXAppExtensionAttributes</key>
++	<key>NSExtension</key>
+ 	<dict>
+-		<key>EXExtensionPointIdentifier</key>
++		<key>NSExtensionPointIdentifier</key>
+ 		<string>com.apple.deviceactivityui.report-extension</string>
+ 	</dict>
+ </dict>
+ </plist>
+*** End Patch

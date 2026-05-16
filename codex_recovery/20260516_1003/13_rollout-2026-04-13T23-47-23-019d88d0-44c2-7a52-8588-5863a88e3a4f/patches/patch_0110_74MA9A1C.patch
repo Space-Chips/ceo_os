@@ -1,0 +1,35 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/ios/Runner/AppDelegate.swift
+@@
+ @available(iOS 16.0, *)
+ private struct PrivateScreenTimeFallbackCard: View {
+     let title: String
+     let subtitle: String
+-    @AppStorage("screen_time_theme_version", store: UserDefaults(suiteName: screenTimeThemeAppGroupId))
+-    private var themeVersion: String = ""
+ 
+     var body: some View {
+-        let _ = themeVersion
+         let cardBackground = screenTimeThemeColor("card_bg", fallback: Color(red: 0.13, green: 0.15, blue: 0.18))
+         let cardBorder = screenTimeThemeColor("card_border", fallback: Color.white.opacity(0.08))
+         let titleColor = screenTimeThemeColor("title", fallback: Color.white.opacity(0.48))
+@@
+ private let screenTimeThemeAppGroupId = "group.com.wakeapp.ceoos"
+ private let screenTimeThemeKeyPrefix = "screen_time_theme_"
+ 
++private func screenTimeThemeDefaults() -> UserDefaults? {
++    guard FileManager.default.containerURL(
++        forSecurityApplicationGroupIdentifier: screenTimeThemeAppGroupId
++    ) != nil else {
++        return nil
++    }
++    return UserDefaults(suiteName: screenTimeThemeAppGroupId)
++}
++
+ private func screenTimeThemeColor(_ key: String, fallback: Color) -> Color {
+-    guard let defaults = UserDefaults(suiteName: screenTimeThemeAppGroupId),
++    guard let defaults = screenTimeThemeDefaults(),
+           let raw = defaults.string(forKey: "\(screenTimeThemeKeyPrefix)\(key)"),
+           let uiColor = UIColor(hexString: raw) else {
+         return fallback
+*** End Patch

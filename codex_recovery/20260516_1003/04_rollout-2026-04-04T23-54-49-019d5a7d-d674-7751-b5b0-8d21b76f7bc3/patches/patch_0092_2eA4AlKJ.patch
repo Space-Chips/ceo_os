@@ -1,0 +1,23 @@
+*** Begin Patch
+*** Update File: android/app/src/main/kotlin/com/wakeapp/ceoos/ClassicDailyLimitTracker.kt
+@@
+         context.getSharedPreferences(prefsName, Context.MODE_PRIVATE)
+             .edit()
+             .putString(configStorageKey, payload.toString())
+             .apply()
+-
+-        AppBlockingService.updateDailyLimitConfig(packageLimits, websiteLimits)
++        WakeAccessibilityService.requestImmediateEvaluation()
+     }
+ }
+*** Update File: android/app/src/main/kotlin/com/wakeapp/ceoos/ClassicPauseScheduler.kt
+@@
+         context.getSharedPreferences(prefsName, Context.MODE_PRIVATE)
+             .edit()
+             .putBoolean(pauseActiveKey, active)
+             .apply()
+-        AppBlockingService.setClassicPauseShieldActive(active)
++        BlockPolicyRepository.setClassicPauseShieldActive(context, active)
++        WakeAccessibilityService.requestImmediateEvaluation()
+     }
+*** End Patch

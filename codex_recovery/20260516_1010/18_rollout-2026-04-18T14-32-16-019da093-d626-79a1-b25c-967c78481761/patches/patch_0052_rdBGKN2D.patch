@@ -1,0 +1,41 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/services/stats_insight_generator.dart
+@@
+-    if (weekly.bestFocusWindow != null && weekly.bestFocusWindow!.isNotEmpty) {
++    final bestFocusWindow = weekly.bestFocusWindow;
++    if (bestFocusWindow != null && bestFocusWindow.isNotEmpty) {
+       insights.add(
+         WeeklyInsight(
+           title: 'Peak Focus Window',
+-          message: 'You focus best between ${weekly.bestFocusWindow}.',
++          message: 'You focus best between $bestFocusWindow.',
+         ),
+       );
+     }
+ 
+-    if (weekly.mostDistractingTimeWindow != null &&
+-        weekly.mostDistractingTimeWindow!.isNotEmpty) {
++    final distractingWindow = weekly.mostDistractingTimeWindow;
++    if (distractingWindow != null && distractingWindow.isNotEmpty) {
+       insights.add(
+         WeeklyInsight(
+           title: 'Distraction Window',
+-          message:
+-              'You are most distracted between ${weekly.mostDistractingTimeWindow}.',
++          message: 'You are most distracted between $distractingWindow.',
+         ),
+       );
+     }
+ 
+-    if (weekly.mostDistractingApp != null && weekly.mostDistractingApp!.isNotEmpty) {
++    final distractingApp = weekly.mostDistractingApp;
++    if (distractingApp != null && distractingApp.isNotEmpty) {
+       insights.add(
+         WeeklyInsight(
+           title: 'Most Distracting App',
+-          message: '${weekly.mostDistractingApp} is generating the most friction this week.',
++          message: '$distractingApp is generating the most friction this week.',
+         ),
+       );
+     }
+*** End Patch

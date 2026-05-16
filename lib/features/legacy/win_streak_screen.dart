@@ -1,10 +1,12 @@
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
 import '../../components/components.dart';
-import '../../core/models/habit_models.dart';
 import '../../core/models/user_models.dart';
+import '../../core/providers/language_provider.dart';
 import '../../core/repositories/feature_repository.dart';
+import '../../core/repositories/focus_repository.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 
@@ -16,10 +18,14 @@ class WinStreakScreen extends StatefulWidget {
 }
 
 class _WinStreakScreenState extends State<WinStreakScreen> {
-  final FeatureRepository _repo = FeatureRepository();
+  final FeatureRepository _featureRepo = FeatureRepository();
+  final FocusRepository _focusRepo = FocusRepository();
+
   WinStreak? _streak;
-  List<WeeklyHabitScore> _scores = [];
+  List<Map<String, dynamic>> _recentSessions = const [];
   bool _loading = true;
+
+  String _t(String key) => context.read<LanguageProvider>().t(key);
 
   @override
   void initState() {
@@ -28,141 +34,340 @@ class _WinStreakScreenState extends State<WinStreakScreen> {
   }
 
   Future<void> _load() async {
-    final streak = await _repo.getWinStreak();
-    final scores = await _repo.getWeeklyHabitScores(limit: 10);
+    if (mounted) setState(() => _loading = true);
+    final streak = await _featureRepo.getWinStreak();
+    final sessions = await _focusRepo.getRecentSessions();
     if (!mounted) return;
     setState(() {
       _streak = streak;
-      _scores = scores;
+      _recentSessions = sessions;
       _loading = false;
     });
+  }
+
+  int get _successRate {
+    final completed = _streak?.totalCompletedSessions ?? 0;
+    final failed = _streak?.totalFailedSessions ?? 0;
+    if (completed + failed == 0) return 0;
+    return ((completed / (completed + failed)) * 100).round();
+  }
+
+  String _sessionLine(Map<String, dynamic> row) {
+    final duration = (row['duration_minutes'] as num?)?.toInt() ?? 0;
+    final completed = row['completed'] == true;
+    return '${completed ? 'Completed' : 'Stopped early'} • ${duration}m';
   }
 
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
       backgroundColor: AppColors.background,
-      navigationBar: CupertinoNavigationBar(
-        leading: CupertinoButton(
-          padding: EdgeInsets.zero,
-          onPressed: () => context.go('/home'),
-          child: const Icon(
-            CupertinoIcons.back,
-            color: AppColors.primaryOrange,
-          ),
-        ),
-        middle: const NeoMonoText(
-          'WIN_STREAK',
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-        ),
-        backgroundColor: AppColors.background,
-        border: null,
-      ),
-      child: _loading
-          ? const Center(
-              child: CupertinoActivityIndicator(color: AppColors.primaryOrange),
-            )
-          : SafeArea(
-              child: ListView(
-                padding: const EdgeInsets.all(20),
-                children: [
-                  GlassCard(
-                    padding: const EdgeInsets.all(20),
-                    borderRadius: 18,
-                    child: Row(
+      child: AmbientBackdrop(
+        child: _loading
+            ? Center(
+                child: CupertinoActivityIndicator(
+                  color: AppColors.primaryOrange,
+                ),
+              )
+            : SafeArea(
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(20, 10, 20, 14),
+                  children: [
+                    _topBar(),
+                    const SizedBox(height: 10),
+                    _mainStreakCard(),
+                    const SizedBox(height: 14),
+                    Row(
                       children: [
-                        _metric('CURRENT', '${_streak?.currentStreak ?? 0}d'),
-                        _metric('LONGEST', '${_streak?.longestStreak ?? 0}d'),
-                        _metric(
-                          'SESSIONS',
-                          '${_streak?.totalCompletedSessions ?? 0}',
+                        Expanded(
+                          child: _statCard(
+                            icon: CupertinoIcons.rosette,
+                            color: const Color(0xFFFACC15),
+                            value: '${_streak?.longestStreak ?? 0}',
+                            label: 'RECORD',
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: _statCard(
+                            icon: CupertinoIcons.arrow_up_right,
+                            color: const Color(0xFF6EE7B7),
+                            value: '$_successRate%',
+                            label: 'SUCCESS',
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: _statCard(
+                            icon: CupertinoIcons.check_mark_circled,
+                            color: const Color(0xFFA78BFA),
+                            value: '${_streak?.totalCompletedSessions ?? 0}',
+                            label: 'COMPLETE',
+                          ),
                         ),
                       ],
                     ),
-                  ),
-                  const SizedBox(height: 14),
-                  Text(
-                    'Weekly Habit Scores',
-                    style: AppTypography.mono.copyWith(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  if (_scores.isEmpty)
+                    const SizedBox(height: 14),
                     GlassCard(
                       padding: const EdgeInsets.all(16),
-                      child: Text(
-                        'No weekly scores yet.',
-                        style: AppTypography.mono.copyWith(
-                          fontSize: 11,
-                          color: AppColors.tertiaryLabel,
-                        ),
+                      borderRadius: 22,
+                      border: Border.all(
+                        color: AppColors.glassBorder.withValues(alpha: 0.76),
+                        width: 0.7,
                       ),
-                    )
-                  else
-                    ..._scores.map(
-                      (score) => Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: GlassCard(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 12,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'RECENT SESSIONS',
+                            style: AppTypography.mono.copyWith(
+                              fontSize: 18,
+                              color: AppColors.label,
+                              fontWeight: FontWeight.w900,
+                            ),
                           ),
-                          borderRadius: 14,
-                          child: Row(
-                            children: [
-                              Expanded(
+                          const SizedBox(height: 14),
+                          if (_recentSessions.isEmpty)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 40,
+                                horizontal: 12,
+                              ),
+                              child: Center(
                                 child: Text(
-                                  '${score.weekStartDate ?? '-'} → ${score.weekEndDate ?? '-'}',
+                                  'No sessions yet. Start your first focus session!',
+                                  textAlign: TextAlign.center,
                                   style: AppTypography.mono.copyWith(
-                                    fontSize: 10,
-                                    color: AppColors.secondaryLabel,
+                                    fontSize: 14,
+                                    color: AppColors.tertiaryLabel,
+                                    height: 1.35,
                                   ),
                                 ),
                               ),
-                              Text(
-                                '${score.successPercentage ?? 0}%',
-                                style: AppTypography.mono.copyWith(
-                                  fontSize: 13,
-                                  color: AppColors.primaryOrange,
-                                  fontWeight: FontWeight.bold,
+                            )
+                          else
+                            ..._recentSessions
+                                .take(8)
+                                .map(
+                                  (row) => Padding(
+                                    padding: const EdgeInsets.only(bottom: 8),
+                                    child: Container(
+                                      width: double.infinity,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 10,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(12),
+                                        color: AppColors.backgroundLight
+                                            .withValues(alpha: 0.66),
+                                        border: Border.all(
+                                          color: AppColors.glassBorder
+                                              .withValues(alpha: 0.68),
+                                          width: 0.7,
+                                        ),
+                                      ),
+                                      child: Text(
+                                        _sessionLine(row),
+                                        style: AppTypography.mono.copyWith(
+                                          fontSize: 13,
+                                          color: AppColors.secondaryLabel,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
-                        ),
+                        ],
                       ),
                     ),
-                ],
+                  ],
+                ),
               ),
-            ),
+      ),
     );
   }
 
-  Widget _metric(String label, String value) {
-    return Expanded(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _topBar() {
+    return SizedBox(
+      height: 42,
+      child: Row(
         children: [
-          Text(
-            label,
-            style: AppTypography.mono.copyWith(
-              fontSize: 9,
-              color: AppColors.tertiaryLabel,
+          CupertinoButton(
+            padding: const EdgeInsets.symmetric(horizontal: 2),
+            minimumSize: Size.zero,
+            onPressed: () => context.go('/screen-time-manager'),
+            child: Row(
+              children: [
+                Icon(
+                  CupertinoIcons.back,
+                  size: 20,
+                  color: AppColors.secondaryLabel,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  'Screen Time',
+                  style: AppTypography.callout.copyWith(
+                    fontSize: 16,
+                    color: AppColors.secondaryLabel,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: AppTypography.mono.copyWith(
-              fontSize: 15,
-              fontWeight: FontWeight.bold,
+          const Spacer(),
+          CupertinoButton(
+            padding: const EdgeInsets.symmetric(horizontal: 2),
+            minimumSize: Size.zero,
+            onPressed: () => context.go('/home'),
+            child: Row(
+              children: [
+                Icon(
+                  CupertinoIcons.house,
+                  size: 20,
+                  color: AppColors.secondaryLabel,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  'Home',
+                  style: AppTypography.callout.copyWith(
+                    fontSize: 16,
+                    color: AppColors.secondaryLabel,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _mainStreakCard() {
+    final streak = _streak?.currentStreak ?? 0;
+    return _glowSurface(
+      glowColor: AppColors.primaryOrange.withValues(alpha: 0.34),
+      borderRadius: 38,
+      child: GlassCard(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 26),
+        borderRadius: 38,
+        border: Border.all(
+          color: AppColors.primaryOrange.withValues(alpha: 0.62),
+          width: 1.1,
+        ),
+        gradientColors: [
+          AppColors.primaryOrange.withValues(alpha: 0.18),
+          AppColors.backgroundLight.withValues(alpha: 0.92),
+        ],
+        child: Column(
+          children: [
+            Icon(
+              CupertinoIcons.flame_fill,
+              size: 98,
+              color: AppColors.primaryOrange,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'CURRENT STREAK',
+              style: AppTypography.mono.copyWith(
+                fontSize: 18,
+                color: AppColors.primaryOrange.withValues(alpha: 0.86),
+                fontWeight: FontWeight.w900,
+                letterSpacing: 4.2,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              '$streak',
+              style: AppTypography.mono.copyWith(
+                fontSize: 200,
+                color: const Color(0xFFFF9445),
+                fontWeight: FontWeight.w900,
+                height: 0.82,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              streak == 0 ? 'Start your first session' : 'Keep the momentum',
+              style: AppTypography.mono.copyWith(
+                fontSize: 16,
+                color: AppColors.secondaryLabel,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _statCard({
+    required IconData icon,
+    required Color color,
+    required String value,
+    required String label,
+  }) {
+    return GlassCard(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
+      borderRadius: 24,
+      border: Border.all(color: color.withValues(alpha: 0.52), width: 0.9),
+      gradientColors: [
+        color.withValues(alpha: 0.1),
+        AppColors.backgroundLight.withValues(alpha: 0.86),
+      ],
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Icon(icon, color: color, size: 34),
+          const SizedBox(height: 6),
+          Text(
+            value,
+            style: AppTypography.mono.copyWith(
+              fontSize: 68,
+              color: color,
+              fontWeight: FontWeight.w900,
+              height: 0.82,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: AppTypography.mono.copyWith(
+              fontSize: 11,
+              color: AppColors.tertiaryLabel,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 1.8,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _glowSurface({
+    required Widget child,
+    required Color glowColor,
+    double borderRadius = 20,
+  }) {
+    return Stack(
+      children: [
+        Positioned.fill(
+          child: IgnorePointer(
+            child: Container(
+              margin: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(borderRadius),
+                boxShadow: [
+                  BoxShadow(color: glowColor, blurRadius: 30, spreadRadius: 1),
+                ],
+              ),
+            ),
+          ),
+        ),
+        child,
+      ],
     );
   }
 }

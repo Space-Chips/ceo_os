@@ -1,0 +1,13 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/screen_time_manager/screen_time_manager_screen.dart
+@@
+                         _secondaryActionCard(
+                           title: language.t('block_apps_sites'),
+                           subtitle: language
+                               .t('targets_currently_protected')
+                               .replaceAll('{count}', '$blockedTargets'),
+                           icon: CupertinoIcons.nosign,
+-                          onTap: () => _openBlockListEditor(focus),
++                          onTap: () => context.push('/screen-time'),
+                         ),
+*** End Patch

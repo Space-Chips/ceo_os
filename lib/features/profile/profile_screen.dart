@@ -1,11 +1,14 @@
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
 import '../../components/components.dart';
 import '../../core/models/user_models.dart';
+import '../../core/providers/language_provider.dart';
 import '../../core/repositories/user_repository.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
+import '../../core/widgets/rank_art.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -15,6 +18,22 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  static const List<_LanguageOption> _languages = [
+    _LanguageOption(code: 'en', label: 'English', nativeLabel: 'English'),
+    _LanguageOption(code: 'fr', label: 'French', nativeLabel: 'Français'),
+    _LanguageOption(code: 'zh', label: 'Chinese', nativeLabel: '中文'),
+    _LanguageOption(code: 'hi', label: 'Hindi', nativeLabel: 'हिन्दी'),
+    _LanguageOption(code: 'es', label: 'Spanish', nativeLabel: 'Español'),
+    _LanguageOption(code: 'ar', label: 'Arabic', nativeLabel: 'العربية'),
+    _LanguageOption(
+      code: 'id',
+      label: 'Indonesian',
+      nativeLabel: 'Bahasa Indonesia',
+    ),
+    _LanguageOption(code: 'ru', label: 'Russian', nativeLabel: 'Русский'),
+    _LanguageOption(code: 'pt', label: 'Portuguese', nativeLabel: 'Português'),
+  ];
+
   final UserRepository _userRepository = UserRepository();
   final TextEditingController _nameCtrl = TextEditingController();
 
@@ -67,19 +86,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final language = context.watch<LanguageProvider>();
     return CupertinoPageScaffold(
       backgroundColor: AppColors.background,
       navigationBar: CupertinoNavigationBar(
         leading: CupertinoButton(
           padding: EdgeInsets.zero,
           onPressed: () => context.go('/home'),
-          child: const Icon(
-            CupertinoIcons.back,
-            color: AppColors.primaryOrange,
-          ),
+          child: Icon(CupertinoIcons.back, color: AppColors.primaryOrange),
         ),
-        middle: const NeoMonoText(
-          'PROFILE',
+        middle: NeoMonoText(
+          language.t('profile'),
           fontSize: 18,
           fontWeight: FontWeight.bold,
         ),
@@ -99,9 +116,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         border: null,
       ),
       child: _isLoading
-          ? const Center(
-              child: CupertinoActivityIndicator(color: AppColors.primaryOrange),
-            )
+          ? Center(child: CupertinoActivityIndicator(color: AppColors.primaryOrange))
           : SafeArea(
               child: ListView(
                 padding: const EdgeInsets.all(20),
@@ -141,7 +156,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     borderRadius: 18,
                     child: Row(
                       children: [
-                        _metric('RANK', _rank?.rankName ?? 'Starter'),
+                        _metric(
+                          'RANK',
+                          RankArt.displayName(_rank?.rankName ?? 'Asleep'),
+                        ),
                         _metric('LEVEL', '${_rank?.rankLevel ?? 1}'),
                         _metric('POINTS', '${_rank?.totalRankPoints ?? 0}'),
                       ],
@@ -167,6 +185,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     label: 'OPEN_LEADERBOARD',
                     fullWidth: true,
                     onPressed: () => context.push('/leaderboard'),
+                  ),
+                  const SizedBox(height: 10),
+                  LiquidButton(
+                    label: 'OPEN_SETTINGS',
+                    fullWidth: true,
+                    onPressed: () => context.push('/settings'),
                   ),
                 ],
               ),
@@ -199,4 +223,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
     );
   }
+}
+
+class _SettingsSection {
+  final String title;
+  final String body;
+
+  const _SettingsSection(this.title, this.body);
+}
+
+class _LanguageOption {
+  final String code;
+  final String label;
+  final String nativeLabel;
+
+  const _LanguageOption({
+    required this.code,
+    required this.label,
+    required this.nativeLabel,
+  });
 }

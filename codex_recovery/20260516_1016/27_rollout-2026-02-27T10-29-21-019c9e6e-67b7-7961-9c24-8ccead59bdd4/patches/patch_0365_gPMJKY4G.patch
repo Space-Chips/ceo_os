@@ -1,0 +1,116 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/components/glass_input_field.dart
+@@
+ import 'package:flutter/cupertino.dart';
++import 'dart:ui';
+ 
+ import '../core/theme/app_colors.dart';
+ import '../core/theme/app_typography.dart';
+ 
+ class GlassInputField extends StatelessWidget {
+@@
+   Widget build(BuildContext context) {
+-    return Container(
+-      decoration: BoxDecoration(
+-        color: AppColors.backgroundLight,
+-        borderRadius: BorderRadius.circular(18),
+-        border: Border.all(color: AppColors.glassBorder, width: 0.5),
++    return ClipRRect(
++      borderRadius: BorderRadius.circular(18),
++      child: BackdropFilter(
++        filter: ImageFilter.blur(
++          sigmaX: AppColors.isDark ? 12 : 8,
++          sigmaY: AppColors.isDark ? 12 : 8,
++        ),
++        child: Container(
++          decoration: BoxDecoration(
++            gradient: LinearGradient(
++              begin: Alignment.topLeft,
++              end: Alignment.bottomRight,
++              colors: AppColors.inputGlassGradient,
++            ),
++            borderRadius: BorderRadius.circular(18),
++            border: Border.all(color: AppColors.glassBorder, width: 0.7),
++            boxShadow: [
++              BoxShadow(
++                color: AppColors.glassShadow.withValues(alpha: 0.18),
++                blurRadius: 14,
++                offset: const Offset(0, 8),
++                spreadRadius: -10,
++              ),
++            ],
++          ),
++          child: Stack(
++            children: [
++              Positioned(
++                top: 1,
++                left: 8,
++                right: 8,
++                child: Container(
++                  height: 1,
++                  decoration: BoxDecoration(
++                    borderRadius: BorderRadius.circular(20),
++                    gradient: LinearGradient(
++                      colors: [
++                        Colors.transparent,
++                        AppColors.glassHighlight.withValues(alpha: 0.34),
++                        Colors.transparent,
++                      ],
++                    ),
++                  ),
++                ),
++              ),
++              CupertinoTextField(
++                controller: controller,
++                onChanged: onChanged,
++                obscureText: obscureText,
++                keyboardType: keyboardType,
++                autofocus: autofocus,
++                maxLines: maxLines,
++                placeholder: placeholder,
++                placeholderStyle: AppTypography.body.copyWith(
++                  color: AppColors.tertiaryLabel.withValues(alpha: 0.92),
++                ),
++                style: AppTypography.body.copyWith(color: AppColors.label),
++                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
++                decoration: null,
++                prefix: prefix != null
++                    ? Padding(padding: const EdgeInsets.only(left: 18), child: prefix)
++                    : null,
++                suffix: suffix != null
++                    ? Padding(padding: const EdgeInsets.only(right: 18), child: suffix)
++                    : null,
++                cursorColor: AppColors.primaryOrange,
++                cursorWidth: 1.6,
++              ),
++            ],
++          ),
++        ),
+       ),
+-      child: CupertinoTextField(
+-        controller: controller,
+-        onChanged: onChanged,
+-        obscureText: obscureText,
+-        keyboardType: keyboardType,
+-        autofocus: autofocus,
+-        maxLines: maxLines,
+-        placeholder: placeholder,
+-        placeholderStyle: AppTypography.body.copyWith(
+-          color: AppColors.quaternaryLabel,
+-        ),
+-        style: AppTypography.body.copyWith(color: AppColors.label),
+-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+-        decoration: null,
+-        prefix: prefix != null
+-            ? Padding(padding: const EdgeInsets.only(left: 18), child: prefix)
+-            : null,
+-        suffix: suffix != null
+-            ? Padding(padding: const EdgeInsets.only(right: 18), child: suffix)
+-            : null,
+-        cursorColor: AppColors.primaryOrange,
+-        cursorWidth: 1.5,
+-      ),
+     );
+   }
+ }
+*** End Patch

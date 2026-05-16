@@ -1,0 +1,33 @@
+*** Begin Patch
+*** Update File: lib/core/services/billing_service.dart
+@@
+       await Purchases.purchase(PurchaseParams.package(package));
+       final rcActive = await _isRevenueCatEntitlementActive();
+       await _diag.log(
+         'purchase_revenuecat_entitlement',
+         data: {'active': rcActive},
+       );
++      if (rcActive) {
++        await _premiumRepository.activateClientGraceWindow();
++      }
+ 
+       final synced = await _premiumRepository.waitForBillingActivation();
+       final runtime = await _premiumRepository.getRuntime();
+       await _diag.log(
+         'purchase_post_activation',
+@@
+       await Purchases.restorePurchases();
+       final rcActive = await _isRevenueCatEntitlementActive();
+       await _diag.log(
+         'restore_revenuecat_entitlement',
+         data: {'active': rcActive},
+       );
++      if (rcActive) {
++        await _premiumRepository.activateClientGraceWindow();
++      }
+ 
+       final synced = await _premiumRepository.waitForBillingActivation();
+       final runtime = await _premiumRepository.getRuntime();
+       await _diag.log(
+         'restore_post_activation',
+*** End Patch

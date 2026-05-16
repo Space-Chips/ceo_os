@@ -1,0 +1,12 @@
+*** Begin Patch
+*** Update File: lib/core/services/home_widget_service.dart
+@@
+     final habitsLines = habitList
+         .take(3)
+         .map((h) {
+           final done = habits.isHabitCompletedToday(h.id);
+-          return '${done ? '✓' : '•'} ${h.name}';
++          return '${done ? '✓' : '•'} ${h.title}';
+         })
+         .toList();
+*** End Patch

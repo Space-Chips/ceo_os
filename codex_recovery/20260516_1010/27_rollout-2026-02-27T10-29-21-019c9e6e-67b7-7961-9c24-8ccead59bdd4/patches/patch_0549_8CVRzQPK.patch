@@ -1,0 +1,25 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/calendar/calendar_screen.dart
+@@
+       itemBuilder: (context, index) {
+         final monthDate = DateTime(_currentDate.year, index + 1, 1);
+         final count = _eventCountForMonth(monthDate, events);
+-        final heatLevel = _monthlyProductivityLevel(monthDate, events, tasks);
+         return _CalendarPressScale(
+           onTap: () {
+             setState(() {
+@@
+             child: Stack(
+               children: [
+-                Positioned.fill(
+-                  child: DecoratedBox(
+-                    decoration: BoxDecoration(
+-                      color: _monthHeatColor(heatLevel),
+-                      borderRadius: BorderRadius.circular(14),
+-                    ),
+-                  ),
+-                ),
+                 Column(
+                   crossAxisAlignment: CrossAxisAlignment.start,
+                   children: [
+*** End Patch

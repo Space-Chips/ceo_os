@@ -1,0 +1,373 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/tasks/tasks_screen.dart
+@@
+ class _TasksScreenState extends State<TasksScreen> {
+   _TaskTab _activeTab = _TaskTab.list;
++  int _tabDirection = -1;
+@@
+   void _goToNextTab() {
+     if (_activeTab == _TaskTab.list) {
+-      setState(() => _activeTab = _TaskTab.matrix);
++      _setActiveTab(_TaskTab.matrix);
+       return;
+     }
+     if (_activeTab == _TaskTab.matrix) {
+-      setState(() => _activeTab = _TaskTab.history);
++      _setActiveTab(_TaskTab.history);
+     }
+   }
+ 
+   void _goToPreviousTab() {
+     if (_activeTab == _TaskTab.history) {
+-      setState(() => _activeTab = _TaskTab.matrix);
++      _setActiveTab(_TaskTab.matrix);
+       return;
+     }
+     if (_activeTab == _TaskTab.matrix) {
+-      setState(() => _activeTab = _TaskTab.list);
++      _setActiveTab(_TaskTab.list);
+     }
+   }
++
++  void _setActiveTab(_TaskTab tab) {
++    if (tab == _activeTab) return;
++    final direction = tab.index > _activeTab.index ? -1 : 1;
++    setState(() {
++      _tabDirection = direction;
++      _activeTab = tab;
++    });
++  }
+@@
+                   Text(
+                     _swipeHint().toUpperCase(),
+                     textAlign: TextAlign.center,
+@@
+                   ),
+                   const SizedBox(height: 12),
+-                  if (_activeTab == _TaskTab.list) ...[
+-                    if (nextBestTask != null)
+-                      _NextActionCard(
+-                        task: nextBestTask,
+-                        dueInfo: _dueInfo(nextBestTask.deadline),
+-                        importanceLabel: _importanceLabel(
+-                          nextBestTask.importanceLevel,
+-                        ),
+-                        durationLabel: _durationLabel(
+-                          nextBestTask.timeDuration,
+-                        ),
+-                        onOpen: () => _openTask(nextBestTask, prov),
+-                        onComplete: () async {
+-                          await prov.completeTask(nextBestTask.id);
+-                          await prov.loadEvents();
+-                        },
+-                      ),
+-                    if (nextBestTask != null) const SizedBox(height: 14),
+-                    if (uncompleted.isEmpty)
+-                      _empty(
+-                        'No open tasks. Add one and define priority + duration.',
+-                      )
+-                    else ...[
+-                      if (overdue.isNotEmpty) ...[
+-                        _TaskSection(
+-                          title: 'Overdue',
+-                          hint: 'Clear these first to regain control',
+-                          tasks: overdue,
+-                          emptyLabel: 'No overdue tasks',
+-                          onOpen: (task) => _openTask(task, prov),
+-                          onComplete: (task) async {
+-                            await prov.completeTask(task.id);
+-                            await prov.loadEvents();
+-                          },
+-                          importanceLabel: _importanceLabel,
+-                          durationLabel: _durationLabel,
+-                          dueInfo: _dueInfo,
+-                          highAttention: true,
+-                        ),
+-                        const SizedBox(height: 12),
+-                      ],
+-                      if (dueToday.isNotEmpty) ...[
+-                        _TaskSection(
+-                          title: 'Due Today',
+-                          hint: 'Execution list for today',
+-                          tasks: dueToday,
+-                          emptyLabel: 'Nothing due today',
+-                          onOpen: (task) => _openTask(task, prov),
+-                          onComplete: (task) async {
+-                            await prov.completeTask(task.id);
+-                            await prov.loadEvents();
+-                          },
+-                          importanceLabel: _importanceLabel,
+-                          durationLabel: _durationLabel,
+-                          dueInfo: _dueInfo,
+-                        ),
+-                        const SizedBox(height: 12),
+-                      ],
+-                      _TaskSection(
+-                        title: 'Next Up',
+-                        hint: 'Upcoming and backlog tasks',
+-                        tasks: nextUp,
+-                        emptyLabel: 'No queued tasks',
+-                        onOpen: (task) => _openTask(task, prov),
+-                        onComplete: (task) async {
+-                          await prov.completeTask(task.id);
+-                          await prov.loadEvents();
+-                        },
+-                        importanceLabel: _importanceLabel,
+-                        durationLabel: _durationLabel,
+-                        dueInfo: _dueInfo,
+-                      ),
+-                    ],
+-                  ],
+-                  if (_activeTab == _TaskTab.matrix) ...[
+-                    _MatrixQuad(
+-                      title: 'Quick + Important',
+-                      subtitle: 'Do now',
+-                      tasks: uncompleted
+-                          .where((t) => _isImportant(t) && _isQuick(t))
+-                          .toList(),
+-                      onOpen: (task) => _openTask(task, prov),
+-                    ),
+-                    const SizedBox(height: 10),
+-                    _MatrixQuad(
+-                      title: 'Slow + Important',
+-                      subtitle: 'Plan blocks',
+-                      tasks: uncompleted
+-                          .where((t) => _isImportant(t) && !_isQuick(t))
+-                          .toList(),
+-                      onOpen: (task) => _openTask(task, prov),
+-                    ),
+-                    const SizedBox(height: 10),
+-                    _MatrixQuad(
+-                      title: 'Quick + Not important',
+-                      subtitle: 'Batch / delegate',
+-                      tasks: uncompleted
+-                          .where((t) => !_isImportant(t) && _isQuick(t))
+-                          .toList(),
+-                      onOpen: (task) => _openTask(task, prov),
+-                    ),
+-                    const SizedBox(height: 10),
+-                    _MatrixQuad(
+-                      title: 'Slow + Not important',
+-                      subtitle: 'Eliminate',
+-                      tasks: uncompleted
+-                          .where((t) => !_isImportant(t) && !_isQuick(t))
+-                          .toList(),
+-                      onOpen: (task) => _openTask(task, prov),
+-                    ),
+-                  ],
+-                  if (_activeTab == _TaskTab.history) ...[
+-                    if (allTasks.isEmpty)
+-                      _empty('No task history yet.')
+-                    else
+-                      ...(() {
+-                        final history = [...allTasks];
+-                        history.sort((a, b) {
+-                          final aDate = a.completedDate ?? a.createdAt;
+-                          final bDate = b.completedDate ?? b.createdAt;
+-                          return bDate.compareTo(aDate);
+-                        });
+-                        return history.map(
+-                          (task) => Padding(
+-                            padding: const EdgeInsets.only(bottom: 10),
+-                            child: _HistoryRow(
+-                              task: task,
+-                              onToggle: () async {
+-                                if (task.completed) {
+-                                  await prov.uncompleteTask(task.id);
+-                                } else {
+-                                  await prov.completeTask(task.id);
+-                                }
+-                                await prov.loadEvents();
+-                              },
+-                              onDelete: () async {
+-                                await prov.deleteTask(task.id);
+-                                await prov.loadEvents();
+-                              },
+-                              onOpen: () => _openTask(task, prov),
+-                            ),
+-                          ),
+-                        );
+-                      })(),
+-                  ],
++                  AnimatedSwitcher(
++                    duration: const Duration(milliseconds: 260),
++                    switchInCurve: Curves.easeOutCubic,
++                    switchOutCurve: Curves.easeInCubic,
++                    transitionBuilder: (child, animation) {
++                      final begin = _tabDirection < 0
++                          ? const Offset(0.18, 0)
++                          : const Offset(-0.18, 0);
++                      final slide = Tween<Offset>(
++                        begin: begin,
++                        end: Offset.zero,
++                      ).animate(animation);
++                      return FadeTransition(
++                        opacity: animation,
++                        child: SlideTransition(position: slide, child: child),
++                      );
++                    },
++                    child: Container(
++                      key: ValueKey(_activeTab),
++                      child: Column(
++                        children: [
++                          if (_activeTab == _TaskTab.list) ...[
++                            if (nextBestTask != null)
++                              _NextActionCard(
++                                task: nextBestTask,
++                                dueInfo: _dueInfo(nextBestTask.deadline),
++                                importanceLabel: _importanceLabel(
++                                  nextBestTask.importanceLevel,
++                                ),
++                                durationLabel: _durationLabel(
++                                  nextBestTask.timeDuration,
++                                ),
++                                onOpen: () => _openTask(nextBestTask, prov),
++                                onComplete: () async {
++                                  await prov.completeTask(nextBestTask.id);
++                                  await prov.loadEvents();
++                                },
++                              ),
++                            if (nextBestTask != null) const SizedBox(height: 14),
++                            if (uncompleted.isEmpty)
++                              _empty(
++                                'No open tasks. Add one and define priority + duration.',
++                              )
++                            else ...[
++                              if (overdue.isNotEmpty) ...[
++                                _TaskSection(
++                                  title: 'Overdue',
++                                  hint: 'Clear these first to regain control',
++                                  tasks: overdue,
++                                  emptyLabel: 'No overdue tasks',
++                                  onOpen: (task) => _openTask(task, prov),
++                                  onComplete: (task) async {
++                                    await prov.completeTask(task.id);
++                                    await prov.loadEvents();
++                                  },
++                                  importanceLabel: _importanceLabel,
++                                  durationLabel: _durationLabel,
++                                  dueInfo: _dueInfo,
++                                  highAttention: true,
++                                ),
++                                const SizedBox(height: 12),
++                              ],
++                              if (dueToday.isNotEmpty) ...[
++                                _TaskSection(
++                                  title: 'Due Today',
++                                  hint: 'Execution list for today',
++                                  tasks: dueToday,
++                                  emptyLabel: 'Nothing due today',
++                                  onOpen: (task) => _openTask(task, prov),
++                                  onComplete: (task) async {
++                                    await prov.completeTask(task.id);
++                                    await prov.loadEvents();
++                                  },
++                                  importanceLabel: _importanceLabel,
++                                  durationLabel: _durationLabel,
++                                  dueInfo: _dueInfo,
++                                ),
++                                const SizedBox(height: 12),
++                              ],
++                              _TaskSection(
++                                title: 'Next Up',
++                                hint: 'Upcoming and backlog tasks',
++                                tasks: nextUp,
++                                emptyLabel: 'No queued tasks',
++                                onOpen: (task) => _openTask(task, prov),
++                                onComplete: (task) async {
++                                  await prov.completeTask(task.id);
++                                  await prov.loadEvents();
++                                },
++                                importanceLabel: _importanceLabel,
++                                durationLabel: _durationLabel,
++                                dueInfo: _dueInfo,
++                              ),
++                            ],
++                          ],
++                          if (_activeTab == _TaskTab.matrix) ...[
++                            _MatrixQuad(
++                              title: 'Quick + Important',
++                              subtitle: 'Do now',
++                              tasks: uncompleted
++                                  .where((t) => _isImportant(t) && _isQuick(t))
++                                  .toList(),
++                              onOpen: (task) => _openTask(task, prov),
++                            ),
++                            const SizedBox(height: 10),
++                            _MatrixQuad(
++                              title: 'Slow + Important',
++                              subtitle: 'Plan blocks',
++                              tasks: uncompleted
++                                  .where((t) => _isImportant(t) && !_isQuick(t))
++                                  .toList(),
++                              onOpen: (task) => _openTask(task, prov),
++                            ),
++                            const SizedBox(height: 10),
++                            _MatrixQuad(
++                              title: 'Quick + Not important',
++                              subtitle: 'Batch / delegate',
++                              tasks: uncompleted
++                                  .where((t) => !_isImportant(t) && _isQuick(t))
++                                  .toList(),
++                              onOpen: (task) => _openTask(task, prov),
++                            ),
++                            const SizedBox(height: 10),
++                            _MatrixQuad(
++                              title: 'Slow + Not important',
++                              subtitle: 'Eliminate',
++                              tasks: uncompleted
++                                  .where((t) => !_isImportant(t) && !_isQuick(t))
++                                  .toList(),
++                              onOpen: (task) => _openTask(task, prov),
++                            ),
++                          ],
++                          if (_activeTab == _TaskTab.history) ...[
++                            if (allTasks.isEmpty)
++                              _empty('No task history yet.')
++                            else
++                              ...(() {
++                                final history = [...allTasks];
++                                history.sort((a, b) {
++                                  final aDate = a.completedDate ?? a.createdAt;
++                                  final bDate = b.completedDate ?? b.createdAt;
++                                  return bDate.compareTo(aDate);
++                                });
++                                return history.map(
++                                  (task) => Padding(
++                                    padding: const EdgeInsets.only(bottom: 10),
++                                    child: _HistoryRow(
++                                      task: task,
++                                      onToggle: () async {
++                                        if (task.completed) {
++                                          await prov.uncompleteTask(task.id);
++                                        } else {
++                                          await prov.completeTask(task.id);
++                                        }
++                                        await prov.loadEvents();
++                                      },
++                                      onDelete: () async {
++                                        await prov.deleteTask(task.id);
++                                        await prov.loadEvents();
++                                      },
++                                      onOpen: () => _openTask(task, prov),
++                                    ),
++                                  ),
++                                );
++                              })(),
++                          ],
++                        ],
++                      ),
++                    ),
++                  ),
+                 ],
+               ),
+             ),
+@@
+   Widget _tabChip(String label, _TaskTab tab) {
+     final selected = _activeTab == tab;
+     return Expanded(
+       child: GestureDetector(
+-        onTap: () => setState(() => _activeTab = tab),
++        onTap: () => _setActiveTab(tab),
+         child: Container(
+*** End Patch

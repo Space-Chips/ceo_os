@@ -1,0 +1,65 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/ceo_mode/ceo_mode_screen.dart
+@@
+   Widget _approvedAppItem(IconData icon, String label) {
+     return Container(
+       height: 52,
+       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+       decoration: BoxDecoration(
+@@
+       ),
+     );
+   }
++
++  Widget _CeoCountdownRing({
++    required int remainingSeconds,
++    required int totalSeconds,
++  }) {
++    final total = totalSeconds <= 0 ? 1 : totalSeconds;
++    final progress = (remainingSeconds / total).clamp(0.0, 1.0);
++    final minutes = (remainingSeconds ~/ 60).toString().padLeft(2, '0');
++    final seconds = (remainingSeconds % 60).toString().padLeft(2, '0');
++    return SizedBox(
++      height: 200,
++      width: 200,
++      child: Stack(
++        alignment: Alignment.center,
++        children: [
++          CustomPaint(
++            size: const Size(200, 200),
++            painter: _CountdownRingPainter(
++              progress: progress,
++              baseColor: AppColors.borderStrong.withValues(alpha: 0.2),
++              accentColor: AppColors.primaryOrange,
++            ),
++          ),
++          Column(
++            mainAxisSize: MainAxisSize.min,
++            children: [
++              Text(
++                '$minutes:$seconds',
++                style: AppTypography.heroDisplay.copyWith(
++                  fontSize: 46,
++                  color: AppColors.primaryOrange,
++                  fontWeight: FontWeight.w700,
++                ),
++              ),
++              const SizedBox(height: 6),
++              Text(
++                'remaining',
++                style: AppTypography.caption1.copyWith(
++                  fontSize: 11,
++                  color: AppColors.secondaryLabel,
++                  letterSpacing: 1.2,
++                  fontWeight: FontWeight.w600,
++                ),
++              ),
++            ],
++          ),
++        ],
++      ),
++    );
++  }
++
++  Widget _glowSurface({
+*** End Patch

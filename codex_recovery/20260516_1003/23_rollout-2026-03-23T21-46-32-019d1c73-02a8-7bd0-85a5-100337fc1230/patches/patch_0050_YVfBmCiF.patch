@@ -1,0 +1,11 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/services/focus_service.dart
+@@
+-    } on PlatformException catch (e) {
++    } on PlatformException {
+       return false;
+     } on MissingPluginException {
+       return false;
+     }
+   }
+*** End Patch

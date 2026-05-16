@@ -1,0 +1,34 @@
+*** Begin Patch
+*** Update File: lib/features/home/stats_screen.dart
+@@
+         crossAxisAlignment: CrossAxisAlignment.start,
+         children: [
+-          Text('Today', style: AppTypography.overline),
++          Text(
++            context.read<LanguageProvider>().t('today'),
++            style: AppTypography.overline,
++          ),
+           const SizedBox(height: 8),
+           Text(
+             '$score/100',
+             style: AppTypography.title1.copyWith(fontWeight: FontWeight.w700),
+           ),
+           const SizedBox(height: 12),
+           Row(
+             children: [
+               Expanded(
+                 child: _MiniShareMetric(
+-                  label: 'Deep Work',
++                  label: context.read<LanguageProvider>().t('focus_deep_work'),
+                   value: _formatMinutes(card.deepWorkTimeMinutes),
+                 ),
+               ),
+@@
+               Expanded(
+                 child: _MiniShareMetric(
+-                  label: 'Streak',
++                  label: context.read<LanguageProvider>().t('streak'),
+                   value: '${card.currentStreak}d',
+                 ),
+               ),
+*** End Patch

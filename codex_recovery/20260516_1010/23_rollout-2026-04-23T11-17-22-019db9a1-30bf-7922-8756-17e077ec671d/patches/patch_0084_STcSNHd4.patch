@@ -1,0 +1,28 @@
+*** Begin Patch
+*** Update File: lib/core/providers/language_overrides.dart
+@@
+     'screen_time_global_nsfw_shield': 'ग्लोबल NSFW शील्ड',
+     'screen_time_pause': 'विराम',
+     'screen_time_plan_pause': 'विराम योजना',
++    'screen_time_start_session': 'सत्र शुरू करें',
++    'screen_time_deep_work_environment': 'डीप वर्क वातावरण',
++    'today': 'आज',
++    'avg_7d': '7 दिन औसत',
++    'screen_time_tile_access': 'एक्सेस',
++    'screen_time_tile_approved': 'स्वीकृत',
++    'screen_time_tile_allow': 'अनुमति दें',
++    'screen_time_tile_protected': 'सुरक्षित',
++    'screen_time_tile_targets': 'लक्ष्य',
++    'screen_time_tile_pauses': 'विराम',
++    'screen_time_tile_scheduled': 'निर्धारित',
++    'screen_time_tile_iphone': 'iPhone',
++    'screen_time_tile_unavailable': 'उपलब्ध नहीं',
++    'screen_time_tile_relaunch': 'फिर शुरू करें',
++    'screen_time_tile_grant_access': 'एक्सेस दें',
++    'screen_time_tile_real_device_only': 'सिर्फ असली डिवाइस',
++    'screen_time_tile_ios16_required': 'iOS 16 आवश्यक',
++    'screen_time_tile_full_restart': 'पूरी रीस्टार्ट',
++    'blocked_targets_on_device': '{count} इस डिवाइस पर सुरक्षित',
++    'blackout_mode_subtitle': 'सख्त नियंत्रण के साथ सुरक्षित स्प्रिंट',
+     'settings_legal': 'सेटिंग्स और कानूनी',
+*** End Patch

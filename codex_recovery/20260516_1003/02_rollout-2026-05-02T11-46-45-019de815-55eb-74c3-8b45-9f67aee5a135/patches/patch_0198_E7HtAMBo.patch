@@ -1,0 +1,207 @@
+*** Begin Patch
+*** Update File: ios/CeoWidgets/CeoHomeWidget.swift
+@@
+ private let keyDashboardProgress = "ceo_widget_data_dashboard_progress" // Int 0-100
+ private let keyDashboardMessage = "ceo_widget_data_dashboard_message" // String
+ private let keyFocusDurationMinutes = "ceo_widget_focus_duration" // Int
++private let keyFocusIsOn = "ceo_widget_focus_is_on" // Bool
+ private let keyBlackoutDurationMinutes = "ceo_widget_blackout_duration" // Int
+ private let keyBlackoutIsOn = "ceo_widget_blackout_is_on" // Bool
+ private let keyBlackoutUntil = "ceo_widget_blackout_until" // String (HH:mm) or ISO
+ private let keyBlackoutBlockedApps = "ceo_widget_blackout_blocked_apps" // Int
+@@
+ struct CeoHabitsTableWidget: Widget {
+   let kind: String = "com.wakeapp.ceoos.widget.habits.table"
+@@
+     }
+     .configurationDisplayName("WakeApp — Habits Table")
+     .description("A compact habits table.")
+-    .supportedFamilies([.systemLarge])
++    // Medium = wide + shorter height (matches “reduce height, keep width”).
++    .supportedFamilies([.systemMedium])
+   }
+ }
+@@
+     case .focus:
+       FocusSmallNativeView(
+-        minutes: max(5, (defaults.object(forKey: keyFocusDurationMinutes) as? Int) ?? 25),
++        isOn: defaults.object(forKey: keyFocusIsOn) as? Bool ?? false,
+       )
+     case .blackout:
+       BlackoutSmallNativeView(
+         isOn: defaults.object(forKey: keyBlackoutIsOn) as? Bool ?? false,
+         durationMinutes: max(15, (defaults.object(forKey: keyBlackoutDurationMinutes) as? Int) ?? 120),
+         untilText: defaults.string(forKey: keyBlackoutUntil),
+         blockedApps: max(0, defaults.integer(forKey: keyBlackoutBlockedApps)),
+       )
+     case .habitsTable:
+-      HabitsTableLargeNativeView(
++      HabitsTableMediumNativeView(
+         habits: (defaults.array(forKey: keyHabitsTableHabits) as? [String]) ?? [],
+         dayLabels: (defaults.array(forKey: keyHabitsTableDays) as? [String]) ?? [],
+         states: decodeIntGrid(defaults.string(forKey: keyHabitsTableStatesJson)),
+         more: max(0, defaults.integer(forKey: keyHabitsTableMore)),
+       )
+@@
+-private struct FocusSmallNativeView: View {
+-  let minutes: Int
++private struct FocusSmallNativeView: View {
++  let isOn: Bool
+ 
+   var body: some View {
+     WidgetBackground(padding: WidgetLayout.paddingSmall) {
+-      VStack(alignment: .leading, spacing: WidgetLayout.gapL) {
++      VStack(alignment: .leading, spacing: WidgetLayout.gapL) {
+         Text("Focus")
+           .widgetText(26, .heavy, color: WidgetPalette.textPrimary, minScale: 0.8)
+-        Text("\(minutes) min")
+-          .widgetText(34, .heavy, color: WidgetPalette.textPrimary, minScale: 0.75)
+-        Text("Today")
+-          .widgetText(14, .semibold, color: WidgetPalette.textSecondary, minScale: 0.82)
+-        ProgressBar(value: 0)
+-      }
+-    }
+-  }
+-
+-  private struct ProgressBar: View {
+-    let value: Int
+-    var body: some View {
+-      GeometryReader { geo in
+-        let w = geo.size.width
+-        let p = CGFloat(min(100, max(0, value))) / 100.0
+-        ZStack(alignment: .leading) {
+-          RoundedRectangle(cornerRadius: 999)
+-            .fill(Color.white.opacity(0.10))
+-          RoundedRectangle(cornerRadius: 999)
+-            .fill(WidgetPalette.textPrimary.opacity(0.30))
+-            .frame(width: max(8, w * p))
+-        }
+-      }
+-      .frame(height: 8)
++        Text(isOn ? "ON" : "OFF")
++          .widgetText(36, .black, color: isOn ? WidgetPalette.textPrimary : WidgetPalette.textSecondary, minScale: 0.75)
++      }
+     }
+   }
+ }
+@@
+ private struct BlackoutSmallNativeView: View {
+@@
+   var body: some View {
+     WidgetBackground(padding: WidgetLayout.paddingSmall) {
+-      VStack(alignment: .leading, spacing: WidgetLayout.gapL) {
++      VStack(alignment: .leading, spacing: WidgetLayout.gapL) {
+         Text("Blackout")
+           .widgetText(26, .heavy, color: WidgetPalette.textPrimary, minScale: 0.8)
+ 
+-        if isOn {
+-          Text("ON")
+-            .widgetText(36, .black, color: WidgetPalette.red, minScale: 0.75)
+-          Text(untilText?.isEmpty == false ? "Until \(untilText!)" : "Until later")
+-            .widgetText(14, .semibold, color: WidgetPalette.textSecondary, minScale: 0.82)
+-        } else {
+-          Text("OFF")
+-            .widgetText(36, .black, color: WidgetPalette.textSecondary, minScale: 0.75)
+-          Text("No active block")
+-            .widgetText(14, .semibold, color: WidgetPalette.textSecondary, minScale: 0.82)
+-        }
+-
+-        Spacer(minLength: 0)
+-
+-        HStack {
+-          Text("\(blockedApps) blocked apps")
+-            .widgetText(13, .semibold, color: WidgetPalette.textSecondary, minScale: 0.82)
+-          Spacer(minLength: 0)
+-          Text("\(max(1, durationMinutes / 60))h")
+-            .widgetText(13, .heavy, color: WidgetPalette.textTertiary, minScale: 0.82)
+-        }
+-        .padding(.horizontal, 8)
+-        .padding(.vertical, 6)
+-        .background(Color.white.opacity(0.06))
+-        .overlay(RoundedRectangle(cornerRadius: 999).stroke(WidgetPalette.borderSubtle2, lineWidth: 1))
+-        .clipShape(RoundedRectangle(cornerRadius: 999))
++        Text(isOn ? "ON" : "OFF")
++          .widgetText(36, .black, color: isOn ? WidgetPalette.red : WidgetPalette.textSecondary, minScale: 0.75)
+       }
+     }
+   }
+ }
+ 
+-private struct HabitsTableLargeNativeView: View {
++private struct HabitsTableMediumNativeView: View {
+   let habits: [String]
+   let dayLabels: [String]
+   let states: [[Int]]
+   let more: Int
+ 
+   var body: some View {
+     WidgetBackground(padding: WidgetLayout.paddingMediumLarge) {
+       GeometryReader { geo in
+         let contentW = geo.size.width - 0
+         let firstCol = contentW * 0.34
+         let rest = max(0, contentW - firstCol)
+         let dayCol = rest / 7.0
+ 
+-        VStack(alignment: .leading, spacing: WidgetLayout.gapS) {
++        VStack(alignment: .leading, spacing: WidgetLayout.gapS) {
+           Text("Habits")
+             .widgetText(25, .heavy, color: WidgetPalette.textPrimary, minScale: 0.8)
+-          Text("Last 7 days")
+-            .widgetText(15, .semibold, color: WidgetPalette.textSecondary, minScale: 0.82)
+ 
+           VStack(spacing: WidgetLayout.gapS) {
+             // Header row
+             HStack(spacing: 0) {
+               Text("Habit")
+                 .frame(width: firstCol, alignment: .leading)
+                 .widgetText(13, .bold, color: WidgetPalette.textSecondary, minScale: 0.82)
+               ForEach(Array((dayLabels.isEmpty ? ["M","T","W","T","F","S","S"] : dayLabels).prefix(7)).indices, id: \.self) { i in
+                 Text((dayLabels.isEmpty ? ["M","T","W","T","F","S","S"] : dayLabels)[i])
+                   .frame(width: dayCol, alignment: .center)
+                   .widgetText(13, .bold, color: WidgetPalette.textSecondary, minScale: 0.82)
+               }
+             }
+             .frame(height: 22)
+ 
+-            ForEach(Array(habits.prefix(4).enumerated()), id: \.offset) { idx, name in
++            ForEach(Array(habits.prefix(3).enumerated()), id: \.offset) { idx, name in
+               HStack(spacing: 0) {
+                 Text(name)
+                   .frame(width: firstCol, alignment: .leading)
+                   .widgetText(15.5, .bold, color: WidgetPalette.textPrimary, minScale: 0.8)
+                 ForEach(0..<7, id: \.self) { j in
+                   let state = (idx < states.count && j < states[idx].count) ? states[idx][j] : 0
+                   CircleCell(state: state)
+-                    .frame(width: dayCol, height: 34, alignment: .center)
++                    .frame(width: dayCol, height: 28, alignment: .center)
+                 }
+               }
+-              .frame(height: 34)
++              .frame(height: 28)
+             }
+ 
+             if more > 0 {
+               Text("+\(more) more")
+                 .widgetText(14, .semibold, color: WidgetPalette.textSecondary, minScale: 0.82)
+             }
+           }
+           .padding(WidgetLayout.cardPaddingM)
+           .background(WidgetPalette.cardFill2)
+           .overlay(RoundedRectangle(cornerRadius: 22).stroke(WidgetPalette.borderSubtle2, lineWidth: 1))
+           .clipShape(RoundedRectangle(cornerRadius: 22))
+         }
+       }
+     }
+   }
+ 
+   private struct CircleCell: View {
+     let state: Int // 0 pending, 1 done, 2 fail
+ 
+     var body: some View {
+-      let size: CGFloat = 18
++      let size: CGFloat = 16
+       let strokeW: CGFloat = 1.6
+       ZStack {
+         if state == 1 {
+           Circle()
+*** End Patch

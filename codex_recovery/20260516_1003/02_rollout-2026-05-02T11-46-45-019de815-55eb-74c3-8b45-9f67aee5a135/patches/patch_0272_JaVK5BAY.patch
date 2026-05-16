@@ -1,0 +1,39 @@
+*** Begin Patch
+*** Update File: lib/core/providers/auth_provider.dart
+@@
+ import 'package:flutter/foundation.dart';
+ import 'package:supabase_flutter/supabase_flutter.dart';
+ import 'package:google_sign_in/google_sign_in.dart';
+ 
+ import '../config/supabase_config.dart';
++import '../repositories/premium_repository.dart';
+@@
+   Future<AuthSignupResult> signup(
+     String name,
+     String email,
+     String password,
+   ) async {
+     try {
+       final response = await _supabase.auth.signUp(
+         email: email,
+         password: password,
+         data: {'full_name': name},
+       );
+       _hasCompletedOnboarding = true;
+       _wasJustSignedUp = true;
++
++      // If (and only if) the account is created from a TestFlight install,
++      // grant Premium permanently via the backend entitlement override.
++      // Best-effort; failure should not break signup.
++      try {
++        await PremiumRepository().grantPremiumForTestFlightAccountIfEligible();
++      } catch (_) {}
++
+       return AuthSignupResult(
+         requiresEmailConfirmation: response.session == null,
+       );
+     } catch (e) {
+       rethrow;
+     }
+   }
+*** End Patch

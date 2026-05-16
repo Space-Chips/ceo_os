@@ -1,0 +1,201 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/home/home_screen.dart
+@@
+   Set<String> _activeApps = {
+     'Pareto',
+     'Habits',
+     'Calendar',
+-    'Focus',
+-    'Insights',
++    'ScreenTimeManager',
+   };
+@@
+   Future<void> _openModules() async {
+     await context.push('/app-modules');
+@@
+   void _openQuickAddEvent() {
+@@
+   }
++
++  void _openHomeMenu() {
++    showCupertinoModalPopup<void>(
++      context: context,
++      builder: (ctx) => CupertinoActionSheet(
++        title: Text(
++          'NAVIGATION',
++          style: AppTypography.mono.copyWith(
++            fontSize: 12,
++            fontWeight: FontWeight.bold,
++          ),
++        ),
++        actions: [
++          CupertinoActionSheetAction(
++            onPressed: () {
++              Navigator.of(ctx).pop();
++              context.push('/profile');
++            },
++            child: const Text('PROFILE'),
++          ),
++          CupertinoActionSheetAction(
++            onPressed: () {
++              Navigator.of(ctx).pop();
++              context.push('/settings');
++            },
++            child: const Text('SETTINGS'),
++          ),
++          CupertinoActionSheetAction(
++            onPressed: () {
++              Navigator.of(ctx).pop();
++              _openModules();
++            },
++            child: const Text('APP_MODULES'),
++          ),
++          CupertinoActionSheetAction(
++            onPressed: () {
++              Navigator.of(ctx).pop();
++              context.push('/notes');
++            },
++            child: const Text('NOTES'),
++          ),
++          CupertinoActionSheetAction(
++            onPressed: () {
++              Navigator.of(ctx).pop();
++              context.push('/rewards');
++            },
++            child: const Text('REWARDS'),
++          ),
++          CupertinoActionSheetAction(
++            onPressed: () {
++              Navigator.of(ctx).pop();
++              context.push('/leaderboard');
++            },
++            child: const Text('LEADERBOARD'),
++          ),
++        ],
++        cancelButton: CupertinoActionSheetAction(
++          onPressed: () => Navigator.of(ctx).pop(),
++          child: const Text('CANCEL'),
++        ),
++      ),
++    );
++  }
+@@
+             _HomeHeader(
+               userLabel: _userLabel,
+               onOpenProfile: () => context.push('/profile'),
+-              onOpenModules: _openModules,
++              onOpenMenu: _openHomeMenu,
+             ),
+             const SizedBox(height: 18),
+@@
+                 return _ControlCenterCard(data: data);
+               },
+             ),
++            const SizedBox(height: 12),
++            _QuickActions(
++              onTask: _openQuickAddTask,
++              onHabit: _openQuickAddHabit,
++              onEvent: _openQuickAddEvent,
++              onFocus: _openFocusStarter,
++            ),
+             const SizedBox(height: 14),
+             _ModuleGrid(modules: activeModules),
+@@
+ class _HomeHeader extends StatelessWidget {
+   final String userLabel;
+   final VoidCallback onOpenProfile;
+-  final VoidCallback onOpenModules;
++  final VoidCallback onOpenMenu;
+ 
+   const _HomeHeader({
+     required this.userLabel,
+     required this.onOpenProfile,
+-    required this.onOpenModules,
++    required this.onOpenMenu,
+   });
+@@
+-        CupertinoButton(
+-          padding: const EdgeInsets.only(right: 6),
+-          onPressed: onOpenModules,
+-          child: Icon(
+-            CupertinoIcons.square_grid_2x2,
+-            color: AppColors.primaryOrange,
+-            size: 21,
+-          ),
+-        ),
++        CupertinoButton(
++          padding: const EdgeInsets.only(right: 6),
++          onPressed: onOpenMenu,
++          child: Icon(
++            CupertinoIcons.line_horizontal_3,
++            color: AppColors.primaryOrange,
++            size: 21,
++          ),
++        ),
+@@
+   }
+ }
++
++class _QuickActions extends StatelessWidget {
++  final VoidCallback onTask;
++  final VoidCallback onHabit;
++  final VoidCallback onEvent;
++  final VoidCallback onFocus;
++
++  const _QuickActions({
++    required this.onTask,
++    required this.onHabit,
++    required this.onEvent,
++    required this.onFocus,
++  });
++
++  @override
++  Widget build(BuildContext context) {
++    return GlassCard(
++      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
++      borderRadius: 16,
++      child: Row(
++        children: [
++          _action('TASK', CupertinoIcons.checkmark_alt, onTask),
++          const SizedBox(width: 8),
++          _action('HABIT', CupertinoIcons.flame_fill, onHabit),
++          const SizedBox(width: 8),
++          _action('EVENT', CupertinoIcons.calendar, onEvent),
++          const SizedBox(width: 8),
++          _action('FOCUS', CupertinoIcons.timer_fill, onFocus),
++        ],
++      ),
++    );
++  }
++
++  Widget _action(String label, IconData icon, VoidCallback onTap) {
++    return Expanded(
++      child: GestureDetector(
++        onTap: onTap,
++        child: Container(
++          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
++          decoration: BoxDecoration(
++            borderRadius: BorderRadius.circular(10),
++            color: AppColors.backgroundLight.withValues(alpha: 0.6),
++            border: Border.all(color: AppColors.glassBorder, width: 0.4),
++          ),
++          child: Column(
++            children: [
++              Icon(icon, size: 14, color: AppColors.primaryOrange),
++              const SizedBox(height: 5),
++              Text(
++                label,
++                style: AppTypography.mono.copyWith(
++                  fontSize: 8,
++                  color: AppColors.secondaryLabel,
++                  fontWeight: FontWeight.bold,
++                ),
++              ),
++            ],
++          ),
++        ),
++      ),
++    );
++  }
++}
+*** End Patch

@@ -1,0 +1,10 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/components/glass_card.dart
+@@
+-    final tone = switch (level) {
+-      GlassCardLevel.subtle => 0.16,
+-      GlassCardLevel.standard => 0.24,
+-      GlassCardLevel.elevated => 0.34,
+-    };
+     final shadowSpec = switch (level) {
+*** End Patch

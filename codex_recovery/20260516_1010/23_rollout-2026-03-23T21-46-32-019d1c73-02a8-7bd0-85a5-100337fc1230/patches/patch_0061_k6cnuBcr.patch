@@ -1,0 +1,342 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/android/app/src/main/kotlin/com/wakeapp/ceoos/MainActivity.kt
+@@
+ import android.content.ComponentName
+ import android.content.Context
+ import android.content.Intent
+ import android.content.pm.ApplicationInfo
+@@
+ import android.provider.Settings
+ import io.flutter.plugin.common.MethodChannel
+ import io.flutter.embedding.android.FlutterActivity
+ import io.flutter.embedding.engine.FlutterEngine
+@@
+ class MainActivity: FlutterActivity() {
+     private val CHANNEL = "com.ceoos.app/focus"
++
++    private enum class AndroidProtectionStep {
++        ACCESSIBILITY,
++        OVERLAY,
++        USAGE_ACCESS,
++        COMPLETE,
++    }
+@@
+     private fun hasBlockingPermissions(): Boolean {
+         return isAccessibilityServiceEnabled()
+             && Settings.canDrawOverlays(this)
+             && hasUsageStatsPermission()
+     }
++
++    private fun nextMissingProtectionStep(): AndroidProtectionStep {
++        return when {
++            !isAccessibilityServiceEnabled() -> AndroidProtectionStep.ACCESSIBILITY
++            !Settings.canDrawOverlays(this) -> AndroidProtectionStep.OVERLAY
++            !hasUsageStatsPermission() -> AndroidProtectionStep.USAGE_ACCESS
++            else -> AndroidProtectionStep.COMPLETE
++        }
++    }
++
++    private fun openNextProtectionSettings(): Boolean {
++        val intent = when (nextMissingProtectionStep()) {
++            AndroidProtectionStep.ACCESSIBILITY -> {
++                Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
++            }
++            AndroidProtectionStep.OVERLAY -> {
++                Intent(
++                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
++                    Uri.parse("package:$packageName"),
++                )
++            }
++            AndroidProtectionStep.USAGE_ACCESS -> {
++                Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
++            }
++            AndroidProtectionStep.COMPLETE -> {
++                Intent(
++                    Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
++                    Uri.fromParts("package", packageName, null),
++                )
++            }
++        }.apply {
++            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
++        }
++
++        startActivity(intent)
++        return true
++    }
++
++    private fun authorizationStatus(): String {
++        return if (hasBlockingPermissions()) "approved" else "denied"
++    }
+@@
+             when (call.method) {
+                 "requestPermissions" -> {
+-                    // Open Accessibility Settings
+-                    val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+-                    startActivity(intent)
+-                    
+-                    // Also check Overlay permission
+-                    if (!Settings.canDrawOverlays(this)) {
+-                        val overlayIntent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, 
+-                            Uri.parse("package:$packageName"))
+-                        startActivity(overlayIntent)
+-                    }
+-
+-                    if (!hasUsageStatsPermission()) {
+-                        val usageIntent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
+-                        startActivity(usageIntent)
+-                    }
+-                    result.success(hasBlockingPermissions())
++                    result.success(openNextProtectionSettings())
+                 }
+                 "isAuthorized" -> {
+                     result.success(hasBlockingPermissions())
+                 }
++                "getAuthorizationStatus" -> {
++                    result.success(authorizationStatus())
++                }
++                "openSystemSettings" -> {
++                    result.success(openNextProtectionSettings())
++                }
+                 "listLaunchableApps" -> {
+                     listLaunchableApps(result)
+                 }
+*** Update File: /Users/timo/ceo_os/android/app/src/main/kotlin/com/wakeapp/ceoos/AppBlockingService.kt
+@@
+ import android.os.Build
+ import android.os.Handler
+ import android.os.Looper
+ import android.util.Log
+@@
+ class AppBlockingService : AccessibilityService() {
++    private fun debugLog(message: String) {
++        if (BuildConfig.DEBUG) {
++            Log.d("AppBlockingService", message)
++        }
++    }
+ 
+     private var windowManager: WindowManager? = null
+@@
+         fun updateBlockList(packages: List<String>) {
+             instance?.focusBlockedPackages?.apply {
+                 clear()
+                 addAll(packages.map { it.trim() }.filter { it.isNotEmpty() })
+             }
+-            Log.d("AppBlockingService", "Updated focus block list: $packages")
++            instance?.debugLog("Updated focus block list. count=${packages.size}")
+         }
+@@
+         fun updateClassicBlockList(packages: List<String>) {
+             instance?.classicBaseBlockedPackages?.apply {
+                 clear()
+                 addAll(packages.map { it.trim() }.filter { it.isNotEmpty() })
+             }
+-            Log.d("AppBlockingService", "Updated classic base block list: $packages")
++            instance?.debugLog("Updated classic base block list. count=${packages.size}")
+         }
+@@
+         fun updateClassicBlockWebsiteList(domains: List<String>) {
+             instance?.classicBaseBlockedWebsites?.apply {
+                 clear()
+                 addAll(domains.mapNotNull { normalizeDomainToken(it) })
+             }
+-            Log.d("AppBlockingService", "Updated classic base website block list: $domains")
++            instance?.debugLog("Updated classic base website block list. count=${domains.size}")
+         }
+@@
+         fun updateClassicPauseBlockList(packages: List<String>) {
+             instance?.classicPauseBlockedPackages?.apply {
+                 clear()
+                 addAll(packages.map { it.trim() }.filter { it.isNotEmpty() })
+             }
+-            Log.d("AppBlockingService", "Updated classic pause block list: $packages")
++            instance?.debugLog("Updated classic pause block list. count=${packages.size}")
+         }
+@@
+         fun updateClassicPauseBlockWebsiteList(domains: List<String>) {
+             instance?.classicPauseBlockedWebsites?.apply {
+                 clear()
+                 addAll(domains.mapNotNull { normalizeDomainToken(it) })
+             }
+-            Log.d("AppBlockingService", "Updated classic pause website block list: $domains")
++            instance?.debugLog("Updated classic pause website block list. count=${domains.size}")
+         }
+@@
+-            Log.d(
+-                "AppBlockingService",
+-                "Updated daily limit config. apps=$packageConfig websites=$websiteConfig",
+-            )
++            instance?.debugLog(
++                "Updated daily limit config. appCount=${packageConfig.size} websiteCount=${websiteConfig.size}",
++            )
+         }
+@@
+-        Log.d("AppBlockingService", "Service connected")
++        debugLog("Service connected")
+@@
+-            Log.d("AppBlockingService", "Refreshed focus block list from prefs: $focusBlockedPackages")
++            debugLog("Refreshed focus block list from prefs. count=${focusBlockedPackages.size}")
+         } catch (e: Exception) {
+             Log.e("AppBlockingService", "Error refreshing focus prefs", e)
+         }
+@@
+-            Log.d(
+-                "AppBlockingService",
+-                "Refreshed classic base block list from prefs. apps=$classicBaseBlockedPackages websites=$classicBaseBlockedWebsites",
+-            )
++            debugLog(
++                "Refreshed classic base block list from prefs. appCount=${classicBaseBlockedPackages.size} websiteCount=${classicBaseBlockedWebsites.size}",
++            )
+         } catch (e: Exception) {
+             Log.e("AppBlockingService", "Error refreshing classic base prefs", e)
+         }
+@@
+-            Log.d(
+-                "AppBlockingService",
+-                "Refreshed classic pause block list from prefs. apps=$classicPauseBlockedPackages websites=$classicPauseBlockedWebsites",
+-            )
++            debugLog(
++                "Refreshed classic pause block list from prefs. appCount=${classicPauseBlockedPackages.size} websiteCount=${classicPauseBlockedWebsites.size}",
++            )
+         } catch (e: Exception) {
+             Log.e("AppBlockingService", "Error refreshing classic pause prefs", e)
+         }
+@@
+-            Log.d(
+-                "AppBlockingService",
+-                "Refreshed daily limit config. apps=$dailyLimitMinutesByPackage websites=$dailyLimitMinutesByWebsite",
+-            )
++            debugLog(
++                "Refreshed daily limit config. appCount=${dailyLimitMinutesByPackage.size} websiteCount=${dailyLimitMinutesByWebsite.size}",
++            )
+         } catch (e: Exception) {
+             Log.e("AppBlockingService", "Error refreshing daily limit prefs", e)
+         }
+@@
+         if (changed) {
+-            Log.d(
+-                "AppBlockingService",
+-                "Daily limit state changed. apps=$exceededDailyLimitPackages websites=$exceededDailyLimitWebsites",
+-            )
++            debugLog(
++                "Daily limit state changed. appCount=${exceededDailyLimitPackages.size} websiteCount=${exceededDailyLimitWebsites.size}",
++            )
+         }
+@@
+-            Log.e("AppBlockingService", "Error showing overlay for $target", e)
++            Log.e("AppBlockingService", "Error showing overlay", e)
+         }
+     }
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/screen_time_screen.dart
+@@
+ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
+@@
+   bool _showAddWebsite = false;
+   bool _didJumpToInitialSection = false;
++
++  bool get _isAndroid => Platform.isAndroid;
++  bool get _isIOS => Platform.isIOS;
+@@
+   Future<void> _handleAccessAction() async {
+     if (_saving) return;
+-    if (_protectionStatus.isAuthorized) {
++    if (_protectionStatus.isAuthorized) {
+       await _showNotice(
+-        title: 'Access approved',
+-        message:
+-            'Screen Time / Family Controls access is already approved on this iPhone.',
++        title: _isAndroid ? 'Access approved' : 'Access approved',
++        message: _isAndroid
++            ? 'Android protection access is already approved on this device.'
++            : 'Screen Time / Family Controls access is already approved on this iPhone.',
+       );
+       return;
+     }
++    if (_isAndroid) {
++      final confirmed = await _showAndroidPermissionDisclosure();
++      if (!confirmed) return;
++    }
+     if (_protectionStatus.shouldOpenSettings) {
+       await _focusService.openSystemSettings();
+     } else {
+       await _focusService.requestPermissions();
+     }
+     await _load();
+   }
++
++  Future<bool> _showAndroidPermissionDisclosure() async {
++    final result = await showCupertinoDialog<bool>(
++      context: context,
++      builder: (ctx) => CupertinoAlertDialog(
++        title: const Text('Android permissions required'),
++        content: Padding(
++          padding: const EdgeInsets.only(top: 8),
++          child: Text(
++            'CEO OS needs Accessibility to detect selected distracting apps and supported websites, Usage Access to measure time for daily limits, and display-over-other-apps permission to show the blocking shield. These permissions are used only for on-device focus protections, not for ads or unrelated analytics.',
++          ),
++        ),
++        actions: [
++          CupertinoDialogAction(
++            onPressed: () => Navigator.pop(ctx, false),
++            child: const Text('Not now'),
++          ),
++          CupertinoDialogAction(
++            isDefaultAction: true,
++            onPressed: () => Navigator.pop(ctx, true),
++            child: const Text('Continue'),
++          ),
++        ],
++      ),
++    );
++    return result ?? false;
++  }
+@@
+-                        'On iPhone, Screen Time / Family Controls activity stays on this device. CEO OS stores your selected blocks and schedules, but not your device usage history.',
++                        _isAndroid
++                            ? 'On Android, CEO OS uses Accessibility, Usage Access, and overlay permission to enforce selected app and website protections on-device. Website blocking and daily limits apply in supported browsers only.'
++                            : 'On iPhone, Screen Time / Family Controls activity stays on this device. CEO OS stores your selected blocks and schedules, but not your device usage history.',
+@@
+-                                Text(
+-                                  'FAMILY CONTROLS ACCESS',
++                                Text(
++                                  _isAndroid
++                                      ? 'ANDROID PROTECTION ACCESS'
++                                      : 'FAMILY CONTROLS ACCESS',
+                                   style: AppTypography.overline.copyWith(
+@@
+-                                  _protectionStatus.isAuthorized
+-                                      ? 'Approved on this device'
+-                                      : (_protectionStatus.shouldOpenSettings
+-                                            ? 'Needs Settings confirmation'
+-                                            : 'Permission required'),
++                                  _protectionStatus.isAuthorized
++                                      ? 'Approved on this device'
++                                      : (_protectionStatus.shouldOpenSettings
++                                            ? (_isAndroid
++                                                  ? 'Needs Android settings'
++                                                  : 'Needs Settings confirmation')
++                                            : 'Permission required'),
+@@
+-                                  _protectionStatus.isAuthorized
+-                                      ? 'Selections and usage stay local to this iPhone.'
+-                                      : 'Grant access so CEO OS can apply on-device protections.',
++                                  _protectionStatus.isAuthorized
++                                      ? (_isAndroid
++                                            ? 'Accessibility, Usage Access, and overlay are ready for on-device blocking.'
++                                            : 'Selections and usage stay local to this iPhone.')
++                                      : (_isAndroid
++                                            ? 'Grant the Android permissions needed for app blocking, supported-browser website blocking, and daily-limit enforcement.'
++                                            : 'Grant access so CEO OS can apply on-device protections.'),
+@@
+-                            label: _protectionStatus.isAuthorized
+-                                ? 'CHECK'
+-                                : (_protectionStatus.shouldOpenSettings
+-                                      ? 'SETTINGS'
+-                                      : 'ALLOW'),
++                            label: _protectionStatus.isAuthorized
++                                ? 'CHECK'
++                                : (_protectionStatus.shouldOpenSettings
++                                      ? 'SETTINGS'
++                                      : (_isAndroid ? 'CONTINUE' : 'ALLOW')),
+                             onTap: _handleAccessAction,
+                           ),
+*** End Patch

@@ -1,0 +1,19 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/widgets/rank_art.dart
+@@
+   static double visualScale(String rankName) {
+     switch (canonicalKey(rankName)) {
+       case 'sleeping':
+-        return 0.95;
++        return 1.0;
+       case 'awakened':
+-        return 0.98;
++        return 1.03;
+       case 'bronze':
+         return 1.04;
+       default:
+-        return 1.1;
++        return 1.14;
+     }
+   }
+*** End Patch

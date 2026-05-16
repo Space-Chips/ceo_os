@@ -1,0 +1,15 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/home/home_screen.dart
+@@
+ import '../../core/services/stats_engine.dart';
+ import '../../core/theme/app_colors.dart';
+ import '../../core/theme/app_typography.dart';
++import '../../core/widgets/rank_art.dart';
+@@
+-              final rankName = (data?.rankName.trim().isNotEmpty ?? false)
++              final rankNameRaw = (data?.rankName.trim().isNotEmpty ?? false)
+                   ? data!.rankName.trim()
+-                  : 'Starter';
++                  : 'Asleep';
++              final rankName = RankArt.displayName(rankNameRaw);
+*** End Patch

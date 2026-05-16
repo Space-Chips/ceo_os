@@ -1,0 +1,41 @@
+*** Begin Patch
+*** Update File: lib/features/home/home_screen.dart
+@@
+         child: Container(
+           height: 40,
+           padding: const EdgeInsets.symmetric(horizontal: 14),
+           decoration: BoxDecoration(
+             borderRadius: BorderRadius.circular(999),
+             gradient: LinearGradient(
+               begin: Alignment.topLeft,
+               end: Alignment.bottomRight,
+               colors: [
+-              AppColors.cardBackgroundAlt,
+-              AppColors.cardBackgroundStrong,
++              AppColors.accentSurfaceSoft,
++              AppColors.cardBackgroundStrong,
+               ],
+             ),
+             border: Border.all(color: AppColors.pillBorder, width: 1),
+             boxShadow: [
+               BoxShadow(
+-              color: AppColors.glassShadowSoft.withValues(alpha: 0.16),
++              color: AppColors.themeGlow.withValues(alpha: 0.14),
+                 blurRadius: 10,
+                 offset: const Offset(0, 5),
+                 spreadRadius: -8,
+               ),
+             ],
+           ),
+@@
+             Text(
+               'WakeApp Pro',
+               style: AppTypography.footnote.copyWith(
+                 fontSize: 12,
+                 fontWeight: FontWeight.w800,
+                 letterSpacing: 0.4,
+-                color: AppColors.label,
++                color: AppColors.accentText.withValues(alpha: 0.95),
+               ),
+             ),
+*** End Patch

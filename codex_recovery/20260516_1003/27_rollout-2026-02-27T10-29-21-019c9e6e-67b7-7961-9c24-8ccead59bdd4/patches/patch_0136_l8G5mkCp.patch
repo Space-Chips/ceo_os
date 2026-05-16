@@ -1,0 +1,13 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/rank/rank_screen.dart
+@@
+   Color _tierTone(int level) {
+     if (level >= 9) return AppColors.warning;
+-    if (level >= 8) return AppColors.accentPrimary;
++    if (level >= 8) return AppColors.accentSecondary;
+     if (level >= 6) return AppColors.primaryOrange;
+     if (level >= 4) return AppColors.secondaryLabel;
+     return AppColors.tertiaryLabel;
+   }
+ }
+*** End Patch

@@ -1,0 +1,182 @@
+*** Begin Patch
+*** Add File: lib/features/control_center_setup/widgets/dashboard_widgets_screen.dart
++import 'package:flutter/cupertino.dart';
++import 'package:flutter/material.dart';
++
++import '../../../components/liquid_button.dart';
++import '../../../core/theme/app_colors.dart';
++import '../../../core/theme/app_typography.dart';
++import '../control_center_setup_models.dart';
++import 'control_center_preview.dart';
++
++class DashboardWidgetsScreen extends StatelessWidget {
++  final ControlCenterSetupState state;
++  final void Function(DashboardWidget widget) onToggle;
++  final VoidCallback onContinue;
++
++  const DashboardWidgetsScreen({
++    super.key,
++    required this.state,
++    required this.onToggle,
++    required this.onContinue,
++  });
++
++  @override
++  Widget build(BuildContext context) {
++    return Padding(
++      padding: const EdgeInsets.fromLTRB(18, 4, 18, 18),
++      child: Column(
++        crossAxisAlignment: CrossAxisAlignment.start,
++        children: [
++          Text(
++            'Choisis ce que tu veux voir',
++            style: AppTypography.largeTitle.copyWith(
++              fontSize: 30,
++              fontWeight: FontWeight.w800,
++              letterSpacing: -0.9,
++              color: AppColors.label,
++            ),
++          ),
++          const SizedBox(height: 8),
++          Text(
++            'Active ou désactive les éléments intégrés. La preview se met à jour en temps réel.',
++            style: AppTypography.subhead.copyWith(
++              color: AppColors.secondaryLabel.withValues(alpha: 0.72),
++              height: 1.35,
++            ),
++          ),
++          const SizedBox(height: 14),
++          ControlCenterPreview(state: state, showDashboard: true),
++          const SizedBox(height: 14),
++          Expanded(
++            child: ListView(
++              physics: const BouncingScrollPhysics(),
++              padding: EdgeInsets.zero,
++              children: [
++                DashboardWidgetToggle(
++                  label: 'Focus',
++                  icon: CupertinoIcons.bolt_fill,
++                  value: state.enabledDashboardWidgets.contains(
++                    DashboardWidget.focus,
++                  ),
++                  onChanged: (_) => onToggle(DashboardWidget.focus),
++                ),
++                DashboardWidgetToggle(
++                  label: 'Notes',
++                  icon: CupertinoIcons.doc_text_fill,
++                  value: state.enabledDashboardWidgets.contains(
++                    DashboardWidget.notes,
++                  ),
++                  onChanged: (_) => onToggle(DashboardWidget.notes),
++                ),
++                DashboardWidgetToggle(
++                  label: 'Win streak',
++                  icon: CupertinoIcons.flame_fill,
++                  value: state.enabledDashboardWidgets.contains(
++                    DashboardWidget.winStreak,
++                  ),
++                  onChanged: (_) => onToggle(DashboardWidget.winStreak),
++                ),
++                DashboardWidgetToggle(
++                  label: 'Rank',
++                  icon: CupertinoIcons.star_fill,
++                  value: state.enabledDashboardWidgets.contains(
++                    DashboardWidget.rank,
++                  ),
++                  onChanged: (_) => onToggle(DashboardWidget.rank),
++                ),
++                DashboardWidgetToggle(
++                  label: 'Blackout button',
++                  icon: CupertinoIcons.moon_fill,
++                  value: state.enabledDashboardWidgets.contains(
++                    DashboardWidget.blackoutButton,
++                  ),
++                  onChanged: (_) => onToggle(DashboardWidget.blackoutButton),
++                ),
++              ],
++            ),
++          ),
++          const SizedBox(height: 10),
++          LiquidButton(text: 'Continuer', onPressed: onContinue),
++        ],
++      ),
++    );
++  }
++}
++
++class DashboardWidgetToggle extends StatelessWidget {
++  final String label;
++  final IconData icon;
++  final bool value;
++  final ValueChanged<bool> onChanged;
++
++  const DashboardWidgetToggle({
++    super.key,
++    required this.label,
++    required this.icon,
++    required this.value,
++    required this.onChanged,
++  });
++
++  @override
++  Widget build(BuildContext context) {
++    return Padding(
++      padding: const EdgeInsets.only(bottom: 10),
++      child: GestureDetector(
++        onTap: () => onChanged(!value),
++        child: AnimatedContainer(
++          duration: const Duration(milliseconds: 240),
++          curve: Curves.easeOutCubic,
++          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
++          decoration: BoxDecoration(
++            borderRadius: BorderRadius.circular(18),
++            color: AppColors.white.withValues(alpha: value ? 0.07 : 0.05),
++            border: Border.all(
++              color: value
++                  ? AppColors.accent.withValues(alpha: 0.22)
++                  : AppColors.white.withValues(alpha: 0.08),
++            ),
++          ),
++          child: Row(
++            children: [
++              Container(
++                width: 42,
++                height: 42,
++                decoration: BoxDecoration(
++                  borderRadius: BorderRadius.circular(16),
++                  color: AppColors.white.withValues(alpha: 0.05),
++                  border: Border.all(
++                    color: AppColors.white.withValues(alpha: 0.08),
++                  ),
++                ),
++                child: Icon(icon, size: 20, color: AppColors.accentIcon),
++              ),
++              const SizedBox(width: 12),
++              Expanded(
++                child: Text(
++                  label,
++                  style: AppTypography.headline.copyWith(
++                    color: AppColors.label,
++                    fontWeight: FontWeight.w800,
++                  ),
++                ),
++              ),
++              AnimatedScale(
++                duration: const Duration(milliseconds: 180),
++                curve: Curves.easeOutCubic,
++                scale: value ? 1 : 0.98,
++                child: CupertinoSwitch(
++                  value: value,
++                  onChanged: onChanged,
++                  activeColor: AppColors.accent,
++                ),
++              ),
++            ],
++          ),
++        ),
++      ),
++    );
++  }
++}
++
+*** End Patch

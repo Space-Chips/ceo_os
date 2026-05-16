@@ -1,0 +1,51 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/repositories/feature_repository.dart
+@@
+-import 'package:intl/intl.dart';
+ import 'package:supabase_flutter/supabase_flutter.dart';
+*** Update File: /Users/timo/ceo_os/lib/core/services/stats_engine.dart
+@@
+-  DateTime? _parseLooseDate(dynamic raw) {
+-    if (raw == null) return null;
+-    final value = raw.toString().trim();
+-    if (value.isEmpty) return null;
+-    if (value.contains('T')) {
+-      return DateTime.tryParse(value);
+-    }
+-    return DateTime.tryParse('${value}T00:00:00');
+-  }
+-
+-  bool _looksProductive(String entityType, String entityName) {
+-    const productiveKeywords = {
+-      'calendar',
+-      'notes',
+-      'docs',
+-      'mail',
+-      'work',
+-      'slack',
+-      'notion',
+-      'meeting',
+-      'task',
+-      'todo',
+-    };
+-    return productiveKeywords.any(
+-      (keyword) => entityType.contains(keyword) || entityName.contains(keyword),
+-    );
+-  }
+-
+   bool _isHabitScheduledOn(Map<String, dynamic> habit, DateTime day) {
+*** Update File: /Users/timo/ceo_os/lib/features/leaderboard/leaderboard_screen.dart
+@@
+     final ranked = globalRaw.where((e) => e.optedIn).toList()
+       ..sort((a, b) {
+         final byLevel = (b.rankLevel ?? 0).compareTo(a.rankLevel ?? 0);
+         if (byLevel != 0) return byLevel;
+         final byStreak = (b.winStreak ?? 0).compareTo(a.winStreak ?? 0);
+-        if (byStreak != 0) return byStreak;
+-        return (a.screenTimeAvgMinutes ?? 9999).compareTo(
+-          b.screenTimeAvgMinutes ?? 9999,
+-        );
++        if (byStreak != 0) return byStreak;
++        return a.createdBy.compareTo(b.createdBy);
+       });
+*** End Patch

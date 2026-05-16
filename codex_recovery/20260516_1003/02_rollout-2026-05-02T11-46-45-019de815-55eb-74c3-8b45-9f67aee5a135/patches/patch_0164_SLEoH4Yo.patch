@@ -1,0 +1,55 @@
+*** Begin Patch
+*** Update File: lib/core/widgets/home_widgets/widget_views.dart
+@@
+ class _HabitsTodayRow extends StatelessWidget {
+@@
+   @override
+   Widget build(BuildContext context) {
+     return Padding(
+       padding: const EdgeInsets.fromLTRB(12, 4, 12, 4),
+       child: Row(
+         children: [
+           Expanded(
+             child: Text(
+               title,
+               maxLines: 1,
+               overflow: TextOverflow.ellipsis,
+               style: AppTypography.title3.copyWith(
+-                fontSize: 14.5,
++                fontSize: 16,
+                 fontWeight: FontWeight.w800,
+-                color: AppColors.label.withValues(alpha: 0.95),
++                color: WidgetDesignTokens.primaryText,
+                 height: 1.05,
+               ),
+             ),
+           ),
+           const SizedBox(width: 12),
+           Container(
+             width: 24,
+             height: 24,
+             decoration: BoxDecoration(
+               shape: BoxShape.circle,
+               color: AppColors.cardBackgroundAlt,
+               border: Border.all(
+                 color: AppColors.border.withValues(alpha: 0.65),
+               ),
+             ),
+             alignment: Alignment.center,
+             child: Text(
+               '$index',
+               style: AppTypography.callout.copyWith(
+                 fontSize: 12,
+                 fontWeight: FontWeight.w800,
+-                color: AppColors.secondaryLabel.withValues(alpha: 0.85),
++                color: WidgetDesignTokens.secondaryText,
+                 height: 1,
+               ),
+             ),
+           ),
+         ],
+       ),
+     );
+   }
+ }
+*** End Patch

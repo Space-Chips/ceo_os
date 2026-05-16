@@ -1,0 +1,46 @@
+*** Begin Patch
+*** Update File: lib/core/services/focus_service.dart
+@@
+ enum AndroidProtectionStep {
+   accessibility,
+-  overlay,
+   usageAccess,
+   complete,
+   unknown,
+@@
+-        case 'overlay':
+-          return AndroidProtectionStep.overlay;
+         case 'usage_access':
+           return AndroidProtectionStep.usageAccess;
+@@
+-  Future<bool> launchExternalApp(String packageName) async {
+-    const method = 'launchExternalApp';
+-    if (_shouldSkipMissingMethod(method)) return false;
+-    try {
+-      final result = await _channel.invokeMethod<bool>(method, {
+-        'packageName': packageName,
+-      });
+-      return result == true;
+-    } on PlatformException catch (e) {
+-      AppLogger.error("Failed to launch external app: '${e.message}'.");
+-      return false;
+-    } on MissingPluginException {
+-      _markMissingMethod(method);
+-      return false;
+-    }
++  Future<Map<String, dynamic>> getBlockingDebugState() async {
++    const method = 'getBlockingDebugState';
++    if (_shouldSkipMissingMethod(method)) return const {};
++    try {
++      final result = await _channel.invokeMapMethod<String, dynamic>(method);
++      return result ?? const {};
++    } on PlatformException catch (e) {
++      AppLogger.error("Failed to read blocking debug state: '${e.message}'.");
++      return const {};
++    } on MissingPluginException {
++      _markMissingMethod(method);
++      return const {};
++    }
+   }
+ }
+*** End Patch

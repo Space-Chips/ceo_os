@@ -1,0 +1,163 @@
+*** Begin Patch
+*** Update File: lib/features/profile/profile_screen.dart
+@@
+             itemBuilder: (context, index) {
+               final option = options[index];
++              final isDisabled = option.disabled;
+               return _PressScale(
+                 pressedScale: 0.98,
+                 child: GestureDetector(
+-                  onTap: () => Navigator.of(popupContext).pop(option.id),
++                  onTap: isDisabled
++                      ? null
++                      : () => Navigator.of(popupContext).pop(option.id),
+                   child: Container(
+                     height: 56,
+                     padding: const EdgeInsets.symmetric(horizontal: 16),
+                     decoration: BoxDecoration(
+                       borderRadius: BorderRadius.circular(16),
+-                      color: option.selected
++                      color: option.selected
+                           ? AppColors.accentSurfaceSoft
+                           : AppColors.cardBackgroundAlt,
+                       border: Border.all(
+                         color: option.selected
+                             ? AppColors.activeBorder
+                             : AppColors.border,
+                       ),
+                     ),
+                     child: Row(
+                       children: [
+                         Expanded(
+-                          child: Column(
+-                            mainAxisAlignment: MainAxisAlignment.center,
+-                            crossAxisAlignment: CrossAxisAlignment.start,
+-                            children: [
+-                              Row(
+-                                mainAxisSize: MainAxisSize.min,
+-                                children: [
+-                                  Flexible(
+-                                    child: Text(
+-                                      option.title,
+-                                      style: AppTypography.callout.copyWith(
+-                                        fontSize: 14,
+-                                        fontWeight: FontWeight.w600,
+-                                        color: AppColors.label,
+-                                      ),
+-                                      overflow: TextOverflow.ellipsis,
+-                                    ),
+-                                  ),
+-                                  if (option.isPremium) ...[
+-                                    const SizedBox(width: 8),
+-                                    Container(
+-                                      padding: const EdgeInsets.symmetric(
+-                                        horizontal: 6,
+-                                        vertical: 2,
+-                                      ),
+-                                      decoration: BoxDecoration(
+-                                        borderRadius: BorderRadius.circular(
+-                                          999,
+-                                        ),
+-                                        color: AppColors.accentSurfaceSoft,
+-                                        border: Border.all(
+-                                          color: AppColors.activeBorder,
+-                                        ),
+-                                      ),
+-                                      child: Text(
+-                                        'PREMIUM',
+-                                        style: AppTypography.caption2.copyWith(
+-                                          fontSize: 9,
+-                                          fontWeight: FontWeight.w700,
+-                                          color: AppColors.accent,
+-                                          letterSpacing: 0.5,
+-                                        ),
+-                                      ),
+-                                    ),
+-                                  ],
+-                                ],
+-                              ),
+-                              const SizedBox(height: 2),
+-                              Text(
+-                                option.subtitle,
+-                                style: AppTypography.caption1.copyWith(
+-                                  fontSize: 11,
+-                                  color: AppColors.secondaryLabel,
+-                                ),
+-                              ),
+-                            ],
+-                          ),
++                          child: Opacity(
++                            opacity: isDisabled ? 0.45 : 1,
++                            child: Column(
++                              mainAxisAlignment: MainAxisAlignment.center,
++                              crossAxisAlignment: CrossAxisAlignment.start,
++                              children: [
++                                Row(
++                                  mainAxisSize: MainAxisSize.min,
++                                  children: [
++                                    Flexible(
++                                      child: Text(
++                                        option.title,
++                                        style: AppTypography.callout.copyWith(
++                                          fontSize: 14,
++                                          fontWeight: FontWeight.w600,
++                                          color: AppColors.label,
++                                        ),
++                                        overflow: TextOverflow.ellipsis,
++                                      ),
++                                    ),
++                                    if (option.isPremium) ...[
++                                      const SizedBox(width: 8),
++                                      Container(
++                                        padding: const EdgeInsets.symmetric(
++                                          horizontal: 6,
++                                          vertical: 2,
++                                        ),
++                                        decoration: BoxDecoration(
++                                          borderRadius: BorderRadius.circular(
++                                            999,
++                                          ),
++                                          color: AppColors.accentSurfaceSoft,
++                                          border: Border.all(
++                                            color: AppColors.activeBorder,
++                                          ),
++                                        ),
++                                        child: Text(
++                                          'PREMIUM',
++                                          style: AppTypography.caption2.copyWith(
++                                            fontSize: 9,
++                                            fontWeight: FontWeight.w700,
++                                            color: AppColors.accent,
++                                            letterSpacing: 0.5,
++                                          ),
++                                        ),
++                                      ),
++                                    ],
++                                  ],
++                                ),
++                                const SizedBox(height: 2),
++                                Text(
++                                  option.subtitle,
++                                  style: AppTypography.caption1.copyWith(
++                                    fontSize: 11,
++                                    color: AppColors.secondaryLabel,
++                                  ),
++                                ),
++                              ],
++                            ),
++                          ),
+                         ),
+-                        if (option.selected)
++                        if (isDisabled)
++                          Icon(
++                            CupertinoIcons.lock_fill,
++                            size: 16,
++                            color:
++                                AppColors.secondaryLabel.withValues(alpha: 0.8),
++                          )
++                        else if (option.selected)
+                           Icon(
+                             CupertinoIcons.check_mark_circled_solid,
+                             size: 18,
+                             color: AppColors.accent,
+*** End Patch

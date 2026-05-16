@@ -1,0 +1,13 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/router/app_router.dart
+@@
+-      initialLocation: isAndroid ? '/setup-gate' : '/home',
++      initialLocation: '/home',
+@@
+-        if (auth.isAuthenticated && (loggingIn || onboarding)) {
+-          return isAndroid ? '/setup-gate' : '/home';
+-        }
++        if (auth.isAuthenticated && (loggingIn || onboarding)) {
++          return '/home';
++        }
+*** End Patch

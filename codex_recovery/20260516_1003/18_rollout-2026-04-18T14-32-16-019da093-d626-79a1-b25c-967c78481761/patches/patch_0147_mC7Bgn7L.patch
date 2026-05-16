@@ -1,0 +1,11 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/profile/profile_screen.dart
+@@
+             onPressed: () => Navigator.of(context).pop(),
+             child: Text(
+-              'OK',
++              _t('ok'),
+               style: AppTypography.mono.copyWith(
+                 color: AppColors.primaryOrange,
+               ),
+*** End Patch

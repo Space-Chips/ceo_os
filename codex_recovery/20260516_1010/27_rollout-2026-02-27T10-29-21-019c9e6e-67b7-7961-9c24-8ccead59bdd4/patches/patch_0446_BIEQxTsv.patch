@@ -1,0 +1,96 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/models/advanced_stats_models.dart
+@@
+ class WeeklyTransformationCard {
+   final int screenTimeBeforeMinutes;
+   final int screenTimeNowMinutes;
+   final int timeRecoveredMinutes;
+   final double consistencyPercent;
+   final double rankProgressPercent;
++  final double attentionDelta;
++  final double screenTimeDeltaPercent;
+ 
+   const WeeklyTransformationCard({
+     required this.screenTimeBeforeMinutes,
+     required this.screenTimeNowMinutes,
+     required this.timeRecoveredMinutes,
+     required this.consistencyPercent,
+     required this.rankProgressPercent,
++    required this.attentionDelta,
++    required this.screenTimeDeltaPercent,
+   });
+ }
+@@
+ class MilestoneShareCard {
+   final String milestoneType;
+   final String title;
+   final String subtitle;
++  final DateTime? unlockedAt;
+ 
+   const MilestoneShareCard({
+     required this.milestoneType,
+     required this.title,
+     required this.subtitle,
++    this.unlockedAt,
+   });
+ }
++
++class HeatmapShareCard {
++  final int bestScore;
++  final int consistencyPercent;
++  final List<HeatmapCell> cells;
++
++  const HeatmapShareCard({
++    required this.bestScore,
++    required this.consistencyPercent,
++    required this.cells,
++  });
++}
++
++class StatsHighlight {
++  final String label;
++  final String value;
++  final String? deltaLabel;
++
++  const StatsHighlight({
++    required this.label,
++    required this.value,
++    this.deltaLabel,
++  });
++}
+ 
+ class HeatmapCell {
+   final DateTime date;
+   final int attentionScore;
+   final int intensityLevel;
+@@
+ class AdvancedStatsSnapshot {
+   final DailyStats? daily;
+   final WeeklyStats? weekly;
+   final MonthlyStats? monthly;
+   final LifetimeStats? lifetime;
+   final List<WeeklyInsight> insights;
+   final List<HeatmapCell> heatmap;
+   final TodayShareCard? todayCard;
+   final WeeklyTransformationCard? weeklyCard;
++  final CeoCompletionCard? ceoCard;
++  final List<MilestoneShareCard> milestoneCards;
++  final HeatmapShareCard? heatmapCard;
++  final List<StatsHighlight> highlights;
+ 
+   const AdvancedStatsSnapshot({
+     required this.daily,
+     required this.weekly,
+     required this.monthly,
+     required this.lifetime,
+     required this.insights,
+     required this.heatmap,
+     required this.todayCard,
+     required this.weeklyCard,
++    required this.ceoCard,
++    required this.milestoneCards,
++    required this.heatmapCard,
++    required this.highlights,
+   });
+ }
+*** End Patch

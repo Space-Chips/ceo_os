@@ -1,0 +1,99 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/components/glass_input_field.dart
+@@
+   final Widget? suffix;
+   final bool autofocus;
+   final int? maxLines;
++  final bool autocorrect;
++  final TextCapitalization textCapitalization;
++  final TextInputAction? textInputAction;
++  final Iterable<String>? autofillHints;
+ 
+   const GlassInputField({
+     super.key,
+@@
+     this.suffix,
+     this.autofocus = false,
+     this.maxLines = 1,
++    this.autocorrect = true,
++    this.textCapitalization = TextCapitalization.none,
++    this.textInputAction,
++    this.autofillHints,
+   });
+@@
+                 keyboardType: keyboardType,
+                 autofocus: autofocus,
+                 maxLines: maxLines,
++                autocorrect: autocorrect,
++                textCapitalization: textCapitalization,
++                textInputAction: textInputAction,
++                autofillHints: autofillHints,
+                 placeholder: placeholder,
+*** Update File: /Users/timo/ceo_os/lib/features/auth/login_screen.dart
+@@
+                           GlassInputField(
+                             placeholder: 'EMAIL_ADDRESS',
+                             controller: _emailCtrl,
+                             keyboardType: TextInputType.emailAddress,
++                            autocorrect: false,
++                            textInputAction: TextInputAction.next,
++                            autofillHints: const [AutofillHints.username],
+                             prefix: Icon(
+                               CupertinoIcons.mail,
+                               size: 16,
+@@
+                           GlassInputField(
+                             placeholder: 'ACCESS_KEY',
+                             controller: _passCtrl,
+                             obscureText: true,
++                            autocorrect: false,
++                            textInputAction: TextInputAction.done,
++                            autofillHints: const [AutofillHints.password],
+                             prefix: Icon(
+                               CupertinoIcons.lock,
+                               size: 16,
+*** Update File: /Users/timo/ceo_os/lib/features/auth/signup_screen.dart
+@@
+                           GlassInputField(
+                             placeholder: 'FULL_NAME',
+                             controller: _nameCtrl,
++                            textCapitalization: TextCapitalization.words,
++                            textInputAction: TextInputAction.next,
++                            autofillHints: const [AutofillHints.name],
+                             prefix: Icon(
+                               CupertinoIcons.person,
+                               size: 16,
+@@
+                           GlassInputField(
+                             placeholder: 'EMAIL_ADDRESS',
+                             controller: _emailCtrl,
+                             keyboardType: TextInputType.emailAddress,
++                            autocorrect: false,
++                            textInputAction: TextInputAction.next,
++                            autofillHints: const [AutofillHints.username],
+                             prefix: Icon(
+                               CupertinoIcons.mail,
+                               size: 16,
+@@
+                           GlassInputField(
+                             placeholder: 'ACCESS_KEY',
+                             controller: _passCtrl,
+                             obscureText: true,
++                            autocorrect: false,
++                            textInputAction: TextInputAction.next,
++                            autofillHints: const [AutofillHints.newPassword],
+                             prefix: Icon(
+                               CupertinoIcons.lock,
+                               size: 16,
+@@
+                           GlassInputField(
+                             placeholder: 'CONFIRM_ACCESS_KEY',
+                             controller: _confirmPassCtrl,
+                             obscureText: true,
++                            autocorrect: false,
++                            textInputAction: TextInputAction.done,
++                            autofillHints: const [AutofillHints.newPassword],
+                             prefix: Icon(
+                               CupertinoIcons.lock_shield,
+                               size: 16,
+*** End Patch

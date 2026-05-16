@@ -1,0 +1,6 @@
+*** Begin Patch
+*** Update File: lib/features/control_center_setup/widgets/dashboard_intro_screen.dart
+@@
+-          LiquidButton(text: 'Continuer', onPressed: widget.onContinue),
++          LiquidButton(label: 'Continuer', onPressed: widget.onContinue),
+*** End Patch

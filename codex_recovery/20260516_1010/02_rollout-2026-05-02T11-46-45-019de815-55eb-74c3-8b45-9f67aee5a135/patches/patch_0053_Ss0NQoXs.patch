@@ -1,0 +1,17 @@
+*** Begin Patch
+*** Update File: ios/CeoWidgets/CeoWidgetsBundle.swift
+@@
+ @main
+ struct CeoWidgetsBundle: WidgetBundle {
+     var body: some Widget {
+-        CeoHomeWidget()
++        CeoTodoWidget()
++        CeoDashboardWidget()
++        CeoHabitsWidget()
+         if #available(iOSApplicationExtension 18.0, *) {
+             CeoWidgetsControl()
+             CeoWidgetsLiveActivity()
+         }
+     }
+ }
+*** End Patch

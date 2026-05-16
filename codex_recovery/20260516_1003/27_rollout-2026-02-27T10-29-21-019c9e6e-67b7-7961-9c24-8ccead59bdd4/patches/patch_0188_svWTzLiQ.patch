@@ -1,0 +1,24 @@
+*** Begin Patch
+*** Update File: lib/features/tasks/add_task_sheet.dart
+@@
+   Future<void> _addTask() async {
+     if (_titleCtrl.text.trim().isEmpty) return;
+ 
+-    await context.read<TaskProvider>().addTask(
++    final result = await context.read<TaskProvider>().addTask(
+       _titleCtrl.text.trim(),
+       importance: _importance,
+       duration: _duration,
+@@
+       syncToCalendar: _deadline != null && _syncToCalendar,
+     );
+ 
+-    if (mounted) Navigator.of(context).pop();
++    if (!mounted) return;
++    if (!result.allowed) {
++      await showPremiumGateDialog(context, result);
++      return;
++    }
++    Navigator.of(context).pop();
+   }
+*** End Patch

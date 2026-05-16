@@ -1,6 +1,5 @@
 import 'dart:ui';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../components/components.dart';
@@ -40,7 +39,7 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
           actions: [
             CupertinoDialogAction(
-              child: const Text('DISMISS', style: TextStyle(color: AppColors.primaryOrange)),
+              child: Text('DISMISS', style: TextStyle(color: AppColors.primaryOrange)),
               onPressed: () => Navigator.pop(context),
             ),
           ],
@@ -76,11 +75,11 @@ class _LoginScreenState extends State<LoginScreen> {
               height: 300,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppColors.primaryOrange.withOpacity(0.08),
+                color: AppColors.primaryOrange.withValues(alpha: 0.08),
               ),
               child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 100, sigmaY: 100),
-                child: Container(color: Colors.transparent),
+                child: Container(color: CupertinoColors.transparent),
               ),
             ),
           ),
@@ -96,7 +95,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     // Header
                     Column(
                       children: [
-                        const NeoMonoText(
+                        NeoMonoText(
                           'CEO OS',
                           fontSize: 42,
                           fontWeight: FontWeight.w800,
@@ -134,14 +133,14 @@ class _LoginScreenState extends State<LoginScreen> {
                             placeholder: 'EMAIL_ADDRESS',
                             controller: _emailCtrl,
                             keyboardType: TextInputType.emailAddress,
-                            prefix: const Icon(CupertinoIcons.mail, size: 16, color: AppColors.secondaryLabel),
+                            prefix: Icon(CupertinoIcons.mail, size: 16, color: AppColors.secondaryLabel),
                           ),
                           const SizedBox(height: 16),
                           GlassInputField(
                             placeholder: 'ACCESS_KEY',
                             controller: _passCtrl,
                             obscureText: true,
-                            prefix: const Icon(CupertinoIcons.lock, size: 16, color: AppColors.secondaryLabel),
+                            prefix: Icon(CupertinoIcons.lock, size: 16, color: AppColors.secondaryLabel),
                           ),
                           const SizedBox(height: 32),
                           LiquidButton(

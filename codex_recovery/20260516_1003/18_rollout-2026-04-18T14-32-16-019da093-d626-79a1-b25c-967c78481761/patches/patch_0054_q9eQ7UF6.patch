@@ -1,0 +1,12 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/dashboard/dashboard_screen.dart
+@@
+   bool _isScheduled(Habit habit, DateTime day) {
+     if (habit.isDaily) return true;
+-    if (habit.specificDays == null || habit.specificDays!.isEmpty) return true;
+-    return habit.specificDays!.contains(_habitWeekday(day));
++    final specificDays = habit.specificDays;
++    if (specificDays == null || specificDays.isEmpty) return true;
++    return specificDays.contains(_habitWeekday(day));
+   }
+*** End Patch

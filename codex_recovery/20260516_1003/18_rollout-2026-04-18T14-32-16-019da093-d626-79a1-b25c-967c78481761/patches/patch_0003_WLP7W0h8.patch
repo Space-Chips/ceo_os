@@ -1,0 +1,80 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/ios/Runner/GeneratedPluginRegistrant.m
+@@
+ @implementation GeneratedPluginRegistrant
+ 
+ + (void)registerWithRegistry:(NSObject<FlutterPluginRegistry>*)registry {
+-  [AdaptivePlatformUiPlugin registerWithRegistrar:[registry registrarForPlugin:@"AdaptivePlatformUiPlugin"]];
+-  [AppLinksIosPlugin registerWithRegistrar:[registry registrarForPlugin:@"AppLinksIosPlugin"]];
+-  [FlutterLocalNotificationsPlugin registerWithRegistrar:[registry registrarForPlugin:@"FlutterLocalNotificationsPlugin"]];
+-  [FLTGoogleSignInPlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTGoogleSignInPlugin"]];
+-  [HomeWidgetPlugin registerWithRegistrar:[registry registrarForPlugin:@"HomeWidgetPlugin"]];
+-  [PathProviderPlugin registerWithRegistrar:[registry registrarForPlugin:@"PathProviderPlugin"]];
+-  [PurchasesFlutterPlugin registerWithRegistrar:[registry registrarForPlugin:@"PurchasesFlutterPlugin"]];
+-  [SharedPreferencesPlugin registerWithRegistrar:[registry registrarForPlugin:@"SharedPreferencesPlugin"]];
+-  [URLLauncherPlugin registerWithRegistrar:[registry registrarForPlugin:@"URLLauncherPlugin"]];
+-  [WorkmanagerPlugin registerWithRegistrar:[registry registrarForPlugin:@"WorkmanagerPlugin"]];
++  if (![registry hasPlugin:@"AdaptivePlatformUiPlugin"]) {
++    NSObject<FlutterPluginRegistrar>* registrar = [registry registrarForPlugin:@"AdaptivePlatformUiPlugin"];
++    if (registrar != nil) {
++      [AdaptivePlatformUiPlugin registerWithRegistrar:registrar];
++    }
++  }
++  if (![registry hasPlugin:@"AppLinksIosPlugin"]) {
++    NSObject<FlutterPluginRegistrar>* registrar = [registry registrarForPlugin:@"AppLinksIosPlugin"];
++    if (registrar != nil) {
++      [AppLinksIosPlugin registerWithRegistrar:registrar];
++    }
++  }
++  if (![registry hasPlugin:@"FlutterLocalNotificationsPlugin"]) {
++    NSObject<FlutterPluginRegistrar>* registrar = [registry registrarForPlugin:@"FlutterLocalNotificationsPlugin"];
++    if (registrar != nil) {
++      [FlutterLocalNotificationsPlugin registerWithRegistrar:registrar];
++    }
++  }
++  if (![registry hasPlugin:@"FLTGoogleSignInPlugin"]) {
++    NSObject<FlutterPluginRegistrar>* registrar = [registry registrarForPlugin:@"FLTGoogleSignInPlugin"];
++    if (registrar != nil) {
++      [FLTGoogleSignInPlugin registerWithRegistrar:registrar];
++    }
++  }
++  if (![registry hasPlugin:@"HomeWidgetPlugin"]) {
++    NSObject<FlutterPluginRegistrar>* registrar = [registry registrarForPlugin:@"HomeWidgetPlugin"];
++    if (registrar != nil) {
++      [HomeWidgetPlugin registerWithRegistrar:registrar];
++    }
++  }
++  if (![registry hasPlugin:@"PathProviderPlugin"]) {
++    NSObject<FlutterPluginRegistrar>* registrar = [registry registrarForPlugin:@"PathProviderPlugin"];
++    if (registrar != nil) {
++      [PathProviderPlugin registerWithRegistrar:registrar];
++    }
++  }
++  if (![registry hasPlugin:@"PurchasesFlutterPlugin"]) {
++    NSObject<FlutterPluginRegistrar>* registrar = [registry registrarForPlugin:@"PurchasesFlutterPlugin"];
++    if (registrar != nil) {
++      [PurchasesFlutterPlugin registerWithRegistrar:registrar];
++    }
++  }
++  if (![registry hasPlugin:@"SharedPreferencesPlugin"]) {
++    NSObject<FlutterPluginRegistrar>* registrar = [registry registrarForPlugin:@"SharedPreferencesPlugin"];
++    if (registrar != nil) {
++      [SharedPreferencesPlugin registerWithRegistrar:registrar];
++    }
++  }
++  if (![registry hasPlugin:@"URLLauncherPlugin"]) {
++    NSObject<FlutterPluginRegistrar>* registrar = [registry registrarForPlugin:@"URLLauncherPlugin"];
++    if (registrar != nil) {
++      [URLLauncherPlugin registerWithRegistrar:registrar];
++    }
++  }
++  if (![registry hasPlugin:@"WorkmanagerPlugin"]) {
++    NSObject<FlutterPluginRegistrar>* registrar = [registry registrarForPlugin:@"WorkmanagerPlugin"];
++    if (registrar != nil) {
++      [WorkmanagerPlugin registerWithRegistrar:registrar];
++    }
++  }
+ }
+ 
+ @end
+*** End Patch

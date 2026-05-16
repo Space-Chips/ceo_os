@@ -1,0 +1,29 @@
+*** Begin Patch
+*** Update File: ios/CeoWidgets/CeoHomeWidget.swift
+@@
+ struct CeoTodoWidget: Widget {
+   let kind: String = "com.wakeapp.ceoos.widget.todo"
+@@
+     StaticConfiguration(kind: kind, provider: CeoFixedProvider(mode: .todo)) { entry in
+       CeoFixedWidgetView(entry: entry)
+     }
+     .configurationDisplayName("WakeApp — To‑Do")
+     .description("Your top tasks on the Home Screen.")
+-    .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
++    .supportedFamilies([.systemSmall])
+   }
+ }
+@@
+ struct CeoDashboardWidget: Widget {
+   let kind: String = "com.wakeapp.ceoos.widget.dashboard"
+@@
+     StaticConfiguration(kind: kind, provider: CeoFixedProvider(mode: .dashboard)) { entry in
+       CeoFixedWidgetView(entry: entry)
+     }
+     .configurationDisplayName("WakeApp — Dashboard")
+     .description("A compact dashboard for tasks and habits.")
+-    .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
++    .supportedFamilies([.systemSmall, .systemMedium])
+   }
+ }
+*** End Patch

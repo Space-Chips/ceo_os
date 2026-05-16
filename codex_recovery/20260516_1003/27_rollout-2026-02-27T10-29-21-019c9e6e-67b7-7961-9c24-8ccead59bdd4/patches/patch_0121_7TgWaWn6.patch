@@ -1,0 +1,50 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/models/settings_models.dart
+@@
+ class AppSettings {
+   final String id;
+   final String createdBy;
+   final List<String>? activeApps;
+   final String themePreset;
++  final String languageCode;
++  final bool notificationsEnabled;
++  final bool habitNotificationsEnabled;
++  final bool calendarNotificationsEnabled;
++  final bool focusNotificationsEnabled;
+   final String? onboardingGoal;
+   final String? onboardingDiscipline;
+   final String? onboardingFocusChallenge;
+   final DateTime? themeUpdatedAt;
+   final DateTime createdAt;
+@@
+     required this.id,
+     required this.createdBy,
+     this.activeApps,
+     required this.themePreset,
++    this.languageCode = 'en',
++    this.notificationsEnabled = true,
++    this.habitNotificationsEnabled = true,
++    this.calendarNotificationsEnabled = true,
++    this.focusNotificationsEnabled = true,
+     this.onboardingGoal,
+     this.onboardingDiscipline,
+     this.onboardingFocusChallenge,
+     this.themeUpdatedAt,
+     required this.createdAt,
+@@
+       activeApps: json['active_apps'] != null
+           ? List<String>.from(json['active_apps'])
+           : null,
+       themePreset: json['theme_preset'] ?? 'obsidian_dark',
++      languageCode: json['language_code'] ?? 'en',
++      notificationsEnabled: json['notifications_enabled'] ?? true,
++      habitNotificationsEnabled: json['habit_notifications_enabled'] ?? true,
++      calendarNotificationsEnabled:
++          json['calendar_notifications_enabled'] ?? true,
++      focusNotificationsEnabled: json['focus_notifications_enabled'] ?? true,
+       onboardingGoal: json['onboarding_goal'],
+       onboardingDiscipline: json['onboarding_discipline'],
+       onboardingFocusChallenge: json['onboarding_focus_challenge'],
+       themeUpdatedAt: json['theme_updated_at'] != null
+           ? DateTime.parse(json['theme_updated_at'])
+*** End Patch

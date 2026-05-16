@@ -1,0 +1,21 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/repositories/feature_repository.dart
+@@
+   Future<String> saveActiveAppsFast(
+     List<String> apps, {
+     String? settingsId,
+   }) async {
+@@
+-    final created = await _client
++    final created = await _client
+         .from('app_settings')
+-        .insert({'created_by': _currentUserId, 'active_apps': apps})
++        .upsert(
++          {'created_by': _currentUserId, 'active_apps': apps},
++          onConflict: 'created_by',
++        )
+         .select('id')
+         .single();
+     return created['id'] as String;
+   }
+*** End Patch

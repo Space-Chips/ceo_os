@@ -1,0 +1,19 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/ios/Runner/AppDelegate.swift
+@@
+     #if !targetEnvironment(simulator)
+     if #available(iOS 16.0, *) {
+         registrar.register(
+             PrivateScreenTimeSummaryPlatformViewFactory(),
+             withId: "com.ceoos.app/private_screen_time_summary"
+         )
++        registrar.register(
++            BlockedAppTokenLabelPlatformViewFactory(),
++            withId: "com.ceoos.app/blocked_app_token_label"
++        )
+     }
+     #endif
+ 
+     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+   }
+*** End Patch

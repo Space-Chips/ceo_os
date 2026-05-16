@@ -1,0 +1,52 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/services/focus_service.dart
+@@
+ class AndroidLaunchableApp {
+   final String name;
+   final String packageName;
+   final Uint8List? iconBytes;
++  final bool isBlocked;
+ 
+   const AndroidLaunchableApp({
+     required this.name,
+     required this.packageName,
+     this.iconBytes,
++    this.isBlocked = false,
+   });
+ 
+   factory AndroidLaunchableApp.fromJson(Map<Object?, Object?> json) {
+     final rawIcon = json['icon'];
+     return AndroidLaunchableApp(
+@@
+           ? (json['name'] as String).trim()
+           : ((json['packageName'] as String?)?.trim() ?? 'App'),
+       packageName: (json['packageName'] as String?)?.trim() ?? '',
+       iconBytes: rawIcon is Uint8List ? rawIcon : null,
++      isBlocked: json['isBlocked'] == true,
+     );
+   }
+ }
+@@
+   Future<List<AndroidLaunchableApp>> listAndroidLaunchableApps() async {
+@@
+     }
+   }
++
++  Future<bool> launchExternalApp(String packageName) async {
++    const method = 'launchExternalApp';
++    if (_shouldSkipMissingMethod(method)) return false;
++    try {
++      final result = await _channel.invokeMethod<bool>(method, {
++        'packageName': packageName,
++      });
++      return result == true;
++    } on PlatformException catch (e) {
++      AppLogger.error("Failed to launch external app: '${e.message}'.");
++      return false;
++    } on MissingPluginException {
++      _markMissingMethod(method);
++      return false;
++    }
++  }
+ }
+*** End Patch

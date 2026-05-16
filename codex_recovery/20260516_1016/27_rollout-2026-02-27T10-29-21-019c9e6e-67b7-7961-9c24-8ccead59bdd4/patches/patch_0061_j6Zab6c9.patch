@@ -1,0 +1,32 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/focus/focus_screen.dart
+@@
+               decoration: BoxDecoration(
+                 shape: BoxShape.circle,
+-                color: AppColors.primaryOrange.withOpacity(0.05),
++                color: AppColors.primaryOrange.withValues(alpha: 0.05),
+               ),
+@@
+                                   child: Container(
+-                                    color: AppColors.background.withOpacity(
++                                    color: AppColors.background.withValues(
+                                       0.4,
+                                     ),
+                                     child: _buildActiveOverlay(prov),
+@@
+         color: isDanger
+-            ? AppColors.error.withOpacity(0.1)
+-            : AppColors.primaryOrange.withOpacity(0.1),
++            ? AppColors.error.withValues(alpha: 0.1)
++            : AppColors.primaryOrange.withValues(alpha: 0.1),
+@@
+                             color: list.id == provider.activeBlockListId
+-                                ? AppColors.primaryOrange.withOpacity(0.2)
++                                ? AppColors.primaryOrange.withValues(alpha: 0.2)
+                                 : Colors.transparent,
+@@
+                             AppColors.primaryOrange,
+-                            AppColors.primaryOrange.withOpacity(0.1),
++                            AppColors.primaryOrange.withValues(alpha: 0.1),
+                           ],
+*** End Patch

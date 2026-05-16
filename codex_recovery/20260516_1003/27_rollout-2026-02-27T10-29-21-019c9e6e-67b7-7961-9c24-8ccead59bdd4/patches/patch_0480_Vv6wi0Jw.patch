@@ -1,0 +1,409 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/habits/add_habit_sheet.dart
+@@
+-import 'dart:ui';
+ import 'package:flutter/cupertino.dart';
+ import 'package:flutter/material.dart' show Colors, TimeOfDay, Divider;
+@@
+       case 'bolt':
+-        return CupertinoIcons.bolt_fill;
++        return CupertinoIcons.bolt;
+       case 'flame':
+-        return CupertinoIcons.flame_fill;
++        return CupertinoIcons.flame;
+       case 'drop':
+-        return CupertinoIcons.drop_fill;
++        return CupertinoIcons.drop;
+       case 'heart':
+-        return CupertinoIcons.heart_fill;
++        return CupertinoIcons.heart;
+       case 'star':
+-        return CupertinoIcons.star_fill;
++        return CupertinoIcons.star;
+@@
+       case 'briefcase':
+-        return CupertinoIcons.briefcase_fill;
++        return CupertinoIcons.briefcase;
+       case 'book':
+-        return CupertinoIcons.book_fill;
++        return CupertinoIcons.book;
+@@
+       case 'moon':
+-        return CupertinoIcons.moon_fill;
++        return CupertinoIcons.moon;
+       case 'sun':
+-        return CupertinoIcons.sun_max_fill;
++        return CupertinoIcons.sun_max;
+       case 'water':
+-        return CupertinoIcons.drop_fill; // distinct from drop?
++        return CupertinoIcons.drop;
+       case 'dumbbell':
+-        return CupertinoIcons.sportscourt_fill;
++        return CupertinoIcons.sportscourt;
+@@
+       case 'brain':
+-        return CupertinoIcons.lightbulb_fill;
++        return CupertinoIcons.lightbulb;
+@@
+       case 'money':
+-        return CupertinoIcons.money_dollar_circle_fill;
++        return CupertinoIcons.money_dollar_circle;
+@@
+       case 'phone_off':
+-        return CupertinoIcons.phone_down_fill;
++        return CupertinoIcons.phone_down;
+       case 'book_open':
+-        return CupertinoIcons.book_circle_fill;
++        return CupertinoIcons.book_circle;
+       case 'camera':
+-        return CupertinoIcons.camera_fill;
++        return CupertinoIcons.camera;
+@@
+       case 'sleep':
+-        return CupertinoIcons.moon_stars_fill;
++        return CupertinoIcons.moon_stars;
+@@
+       case 'check':
+-        return CupertinoIcons.check_mark_circled_solid;
++        return CupertinoIcons.check_mark_circled;
+@@
+       decoration: BoxDecoration(
+-        color: AppColors.background.withOpacity(0.95),
++        color: AppColors.background.withValues(alpha: 0.96),
+         borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+       ),
+-      child: ClipRRect(
+-        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+-        child: BackdropFilter(
+-          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+-          child: Column(
++      child: ClipRRect(
++        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
++        child: Column(
+             children: [
+@@
+-                    _sectionHeader('GOAL_LINK'),
+-                    GlassCard(
++                    _sectionHeader('GOAL LINK'),
++                    Container(
+                       padding: const EdgeInsets.all(12),
++                      decoration: _solidCardDecoration(radius: 18),
+                       child: Column(
+@@
+-                              style: AppTypography.mono.copyWith(
+-                                fontSize: 10,
+-                                color: AppColors.tertiaryLabel,
++                              style: AppTypography.caption1.copyWith(
++                                fontSize: 11,
++                                color: AppColors.tertiaryLabel.withValues(alpha: 0.72),
+                               ),
+                             )
+                           else
+@@
+                                     decoration: BoxDecoration(
+                                       color: selected
+-                                          ? AppColors.primaryOrange.withOpacity(
+-                                              0.2,
+-                                            )
+-                                          : Colors.transparent,
+-                                      borderRadius: BorderRadius.circular(8),
++                                          ? AppColors.white.withValues(alpha: 0.15)
++                                          : AppColors.white.withValues(alpha: 0.05),
++                                      borderRadius: BorderRadius.circular(14),
+                                       border: Border.all(
+-                                        color: selected
+-                                            ? AppColors.primaryOrange
+-                                            : AppColors.glassBorder,
++                                        color: selected
++                                            ? AppColors.white.withValues(alpha: 0.16)
++                                            : AppColors.white.withValues(alpha: 0.08),
+                                       ),
+                                     ),
+                                     child: Text(
+-                                      goal.toUpperCase(),
+-                                      style: AppTypography.mono.copyWith(
+-                                        fontSize: 10,
+-                                        color: selected
+-                                            ? AppColors.primaryOrange
+-                                            : AppColors.secondaryLabel,
++                                      goal,
++                                      style: AppTypography.caption1.copyWith(
++                                        fontSize: 11,
++                                        color: selected
++                                            ? AppColors.label
++                                            : AppColors.secondaryLabel,
++                                        fontWeight: FontWeight.w600,
+                                       ),
+                                     ),
+                                   ),
+@@
+                             child: Text(
+-                              '+ CREATE_GOAL',
+-                              style: AppTypography.mono.copyWith(
+-                                fontSize: 10,
+-                                color: AppColors.primaryOrange,
+-                                fontWeight: FontWeight.bold,
++                              '+ Create Goal',
++                              style: AppTypography.callout.copyWith(
++                                fontSize: 12,
++                                color: AppColors.secondaryLabel,
++                                fontWeight: FontWeight.w600,
+                               ),
+                             ),
+                           ),
+                         ],
+                       ),
+                     ),
+                     const SizedBox(height: 24),
+-                    const NeoMonoText(
+-                      'CUSTOM_PROTOCOL_INIT',
+-                      fontSize: 18,
+-                      fontWeight: FontWeight.bold,
++                    Text(
++                      'Custom Protocol',
++                      style: AppTypography.title2.copyWith(
++                        fontSize: 20,
++                        fontWeight: FontWeight.w700,
++                        color: AppColors.label,
++                      ),
+                     ),
+                   ],
+                 ),
+               ),
+@@
+-                    _sectionHeader('IDENTITY_MATRIX'),
++                    _sectionHeader('IDENTITY'),
+                     GlassInputField(
+@@
+-                    _sectionHeader('VISUAL_IDENTIFIER'),
++                    _sectionHeader('VISUAL IDENTIFIER'),
+                     SizedBox(
+                       height: 50,
+@@
+                               decoration: BoxDecoration(
+                                 color: isSelected
+-                                    ? AppColors.primaryOrange.withOpacity(0.2)
+-                                    : Colors.transparent,
+-                                borderRadius: BorderRadius.circular(12),
++                                    ? AppColors.white.withValues(alpha: 0.15)
++                                    : AppColors.white.withValues(alpha: 0.05),
++                                borderRadius: BorderRadius.circular(14),
+                                 border: Border.all(
+                                   color: isSelected
+-                                      ? AppColors.primaryOrange
+-                                      : AppColors.glassBorder,
+-                                  width: 0.5,
++                                      ? AppColors.white.withValues(alpha: 0.16)
++                                      : AppColors.white.withValues(alpha: 0.08),
++                                  width: 1,
+                                 ),
+                               ),
+                               child: Icon(
+                                 _getIconData(iconName),
+                                 size: 20,
+                                 color: isSelected
+-                                    ? AppColors.primaryOrange
++                                    ? AppColors.label
+                                     : AppColors.secondaryLabel,
+                               ),
+                             ),
+@@
+-                    _sectionHeader('TEMPORAL_SETTINGS'),
+-                    GlassCard(
++                    _sectionHeader('TEMPORAL SETTINGS'),
++                    Container(
+                       padding: const EdgeInsets.all(16),
++                      decoration: _solidCardDecoration(radius: 18),
+                       child: Column(
+                         crossAxisAlignment: CrossAxisAlignment.start,
+                         children: [
+@@
+-                    _sectionHeader('OBJECTIVE_PARAMETERS'),
+-                    GlassCard(
++                    _sectionHeader('OBJECTIVE PARAMETERS'),
++                    Container(
+                       padding: const EdgeInsets.all(16),
++                      decoration: _solidCardDecoration(radius: 18),
+                       child: Column(
+                         children: [
+@@
+                                               color: isSel
+-                                                  ? AppColors.primaryOrange
+-                                                        .withOpacity(0.2)
+-                                                  : Colors.transparent,
+-                                              borderRadius:
+-                                                  BorderRadius.circular(8),
++                                                  ? AppColors.white.withValues(alpha: 0.15)
++                                                  : AppColors.white.withValues(alpha: 0.05),
++                                              borderRadius:
++                                                  BorderRadius.circular(14),
+                                               border: Border.all(
+                                                 color: isSel
+-                                                    ? AppColors.primaryOrange
+-                                                    : AppColors.glassBorder,
++                                                    ? AppColors.white.withValues(alpha: 0.16)
++                                                    : AppColors.white.withValues(alpha: 0.08),
+                                               ),
+                                             ),
+                                             child: Text(
+                                               u.toUpperCase(),
+-                                              style: AppTypography.mono
++                                              style: AppTypography.caption1
+                                                   .copyWith(
+-                                                    fontSize: 10,
++                                                    fontSize: 11,
+                                                     color: isSel
+-                                                        ? AppColors
+-                                                              .primaryOrange
++                                                        ? AppColors.label
+                                                         : AppColors
+                                                               .secondaryLabel,
++                                                    fontWeight: FontWeight.w600,
+                                                   ),
+                                             ),
+                                           ),
+@@
+-                    _sectionHeader('EXECUTION_LOGISTICS'),
+-                    GlassCard(
++                    _sectionHeader('EXECUTION LOGISTICS'),
++                    Container(
+                       padding: const EdgeInsets.all(16),
++                      decoration: _solidCardDecoration(radius: 18),
+                       child: Column(
+                         children: [
+@@
+                               Text(
+                                 'AUTO_POPUP_LOG',
+-                                style: AppTypography.mono.copyWith(
++                                style: AppTypography.callout.copyWith(
+                                   fontSize: 12,
+                                   color: AppColors.secondaryLabel,
+                                 ),
+                               ),
+-                              CupertinoSwitch(
++                              _HabitToggle(
+                                 value: _autoPopup,
+-                                activeColor: AppColors.primaryOrange,
+                                 onChanged: (v) =>
+                                     setState(() => _autoPopup = v),
+                               ),
+@@
+                               Text(
+                                 'SYNC_TO_CALENDAR',
+-                                style: AppTypography.mono.copyWith(
++                                style: AppTypography.callout.copyWith(
+                                   fontSize: 12,
+                                   color: AppColors.secondaryLabel,
+                                 ),
+                               ),
+-                              CupertinoSwitch(
++                              _HabitToggle(
+                                 value: _syncToCalendar,
+-                                activeColor: AppColors.primaryOrange,
+                                 onChanged: (v) =>
+                                     setState(() => _syncToCalendar = v),
+                               ),
+@@
+               // Footer Button
+               Padding(
+                 padding: const EdgeInsets.all(24),
+-                child: LiquidButton(
+-                  label: 'INITIATE_PROTOCOL',
+-                  fullWidth: true,
+-                  onPressed: _addHabit,
++                child: _PrimaryProtocolButton(
++                  label: 'Initiate Protocol',
++                  onTap: _addHabit,
+                 ),
+               ),
+             ],
+-          ),
+-        ),
++          ),
+       ),
+     );
+   }
+ 
+   Widget _sectionHeader(String title) {
+     return Padding(
+       padding: const EdgeInsets.only(bottom: 12, left: 4),
+       child: Text(
+         title,
+-        style: AppTypography.mono.copyWith(
+-          fontSize: 10,
+-          color: AppColors.primaryOrange,
+-          letterSpacing: 1.5,
+-          fontWeight: FontWeight.bold,
++        style: AppTypography.overline.copyWith(
++          fontSize: 12,
++          color: AppColors.secondaryLabel.withValues(alpha: 0.6),
++          letterSpacing: 2,
++          fontWeight: FontWeight.w600,
+         ),
+       ),
+     );
+   }
+ }
+@@
+     return GestureDetector(
+       onTap: () => onChanged(value),
+       child: Container(
+         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+         decoration: BoxDecoration(
+-          color: isSelected ? AppColors.primaryOrange : Colors.transparent,
+-          borderRadius: BorderRadius.circular(8),
+-          border: Border.all(
+-            color: isSelected ? AppColors.primaryOrange : AppColors.glassBorder,
+-          ),
++          color: isSelected
++              ? AppColors.white.withValues(alpha: 0.15)
++              : AppColors.white.withValues(alpha: 0.05),
++          borderRadius: BorderRadius.circular(14),
+         ),
+         child: Text(
+           label,
+-          style: AppTypography.mono.copyWith(
+-            fontSize: 10,
+-            color: isSelected ? Colors.white : AppColors.secondaryLabel,
+-            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
++          style: AppTypography.caption1.copyWith(
++            fontSize: 11,
++            color: isSelected ? AppColors.label : AppColors.secondaryLabel,
++            fontWeight: FontWeight.w600,
+           ),
+         ),
+       ),
+@@
+     return GestureDetector(
+       onTap: () => onChanged(value),
+       child: Container(
+         padding: const EdgeInsets.symmetric(vertical: 12),
+         alignment: Alignment.center,
+         decoration: BoxDecoration(
+           color: isSelected
+-              ? AppColors.primaryOrange.withOpacity(0.2)
+-              : Colors.transparent,
+-          borderRadius: BorderRadius.circular(8),
+-          border: Border.all(
+-            color: isSelected ? AppColors.primaryOrange : AppColors.glassBorder,
+-          ),
++              ? AppColors.white.withValues(alpha: 0.15)
++              : AppColors.white.withValues(alpha: 0.05),
++          borderRadius: BorderRadius.circular(14),
+         ),
+         child: Text(
+           label,
+-          style: AppTypography.mono.copyWith(
+-            fontSize: 10,
+-            color: isSelected
+-                ? AppColors.primaryOrange
+-                : AppColors.secondaryLabel,
+-            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
++          style: AppTypography.caption1.copyWith(
++            fontSize: 11,
++            color: isSelected ? AppColors.label : AppColors.secondaryLabel,
++            fontWeight: FontWeight.w600,
+           ),
+         ),
+       ),
+*** End Patch

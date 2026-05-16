@@ -1,0 +1,6 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/ios/Runner.xcodeproj/project.pbxproj
+@@
+-			shellScript = "if [ \"$PLATFORM_NAME\" = \"iphoneos\" ]; then\n  EXTENSION_SRC=\"${BUILT_PRODUCTS_DIR}/ScreenTimeReportExtension.appex\"\n  EXTENSION_DEST=\"${TARGET_BUILD_DIR}/${WRAPPER_NAME}/PlugIns\"\n  mkdir -p \"$EXTENSION_DEST\"\n  if [ -d \"$EXTENSION_SRC\" ]; then\n    rsync -a \"$EXTENSION_SRC\" \"$EXTENSION_DEST/\"\n  else\n    echo \"ScreenTimeReportExtension.appex not found at $EXTENSION_SRC\"\n    exit 1\n  fi\nelse\n  rm -rf \"${TARGET_BUILD_DIR}/${WRAPPER_NAME}/PlugIns/ScreenTimeReportExtension.appex\"\nfi\n";
++			shellScript = "if [ \"$PLATFORM_NAME\" = \"iphoneos\" ]; then\n  EXTENSION_SRC=\"${BUILT_PRODUCTS_DIR}/ScreenTimeReportExtension.appex\"\n  EXTENSION_DEST=\"${TARGET_BUILD_DIR}/${WRAPPER_NAME}/PlugIns\"\n  mkdir -p \"$EXTENSION_DEST\"\n  if [ -d \"$EXTENSION_SRC\" ]; then\n    # Dereference symlinks from BUILT_PRODUCTS_DIR so archive contains a real .appex bundle.\n    rsync -aL --delete \"$EXTENSION_SRC\" \"$EXTENSION_DEST/\"\n  else\n    echo \"ScreenTimeReportExtension.appex not found at $EXTENSION_SRC\"\n    exit 1\n  fi\nelse\n  rm -rf \"${TARGET_BUILD_DIR}/${WRAPPER_NAME}/PlugIns/ScreenTimeReportExtension.appex\"\nfi\n";
+*** End Patch

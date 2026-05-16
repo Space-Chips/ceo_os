@@ -1,0 +1,59 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/screen_time_screen.dart
+@@
+       final usageAccessFuture = _isAndroid
+           ? _focusService.getUsageAccessPermissionState()
+           : Future.value(FocusPermissionState.unknown);
+       final appBindingsFuture = _classicLocalStore.loadAppBindings();
++      final iosAppCatalogFuture = _refreshIosAppCatalog();
++      final iosWebsiteCatalogFuture = _refreshIosWebsiteCatalog();
+@@
+       final usageAccessState = await usageAccessFuture;
+       final appBindings = await appBindingsFuture;
++      final iosAppCatalog = await iosAppCatalogFuture;
++      final iosWebsiteCatalog = await iosWebsiteCatalogFuture;
+       final upgradedApps = await _upgradeIosBlockedAppNames(
+         apps: apps,
+         appBindings: appBindings,
+       );
+@@
+         _appBindings = Map<String, ClassicBlockBinding>.fromEntries(
+           appBindings.entries.where((entry) => validAppIds.contains(entry.key)),
+         );
++        _iosAppSelectionByBundle = iosAppCatalog;
++        _iosWebsitePayloadByDomain = iosWebsiteCatalog;
+         _adultContentShieldEnabled = adultEnabled;
+         _protectionStatus = protectionStatus;
+@@
+   Future<List<BlockedApp>?> _upgradeIosBlockedAppNames({
+@@
+     if (!changed) return null;
+     return _repo.getBlockedApps();
+   }
++
++  Future<Map<String, IosFamilyActivitySelection>> _refreshIosAppCatalog() async {
++    if (!Platform.isIOS) return const {};
++    final map = <String, IosFamilyActivitySelection>{};
++    for (final suggestion in _iosAppSuggestions) {
++      final encoded = await _focusService.encodeApplicationBundleSelection(
++        suggestion.bundleIdentifier,
++      );
++      final payload = encoded?.payload.trim();
++      if (payload == null || payload.isEmpty) continue;
++      map[suggestion.bundleIdentifier] = encoded!;
++    }
++    return map;
++  }
++
++  Future<Map<String, String>> _refreshIosWebsiteCatalog() async {
++    if (!Platform.isIOS) return const {};
++    final map = <String, String>{};
++    for (final domain in _websiteSuggestions) {
++      final encoded = await _focusService.encodeWebsiteDomainSelection(domain);
++      final payload = encoded?.trim();
++      if (payload == null || payload.isEmpty) continue;
++      map[domain] = payload;
++    }
++    return map;
++  }
+*** End Patch

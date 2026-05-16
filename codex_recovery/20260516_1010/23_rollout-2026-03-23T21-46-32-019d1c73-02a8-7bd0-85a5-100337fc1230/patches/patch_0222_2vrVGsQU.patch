@@ -1,0 +1,34 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/android/app/src/main/kotlin/com/wakeapp/ceoos/MainActivity.kt
+@@
+     private fun nextMissingProtectionStep(): AndroidProtectionStep {
+         return when {
+-            !hasOverlayPermission() -> AndroidProtectionStep.OVERLAY
+-            !hasUsageStatsPermission() -> AndroidProtectionStep.USAGE_ACCESS
+-            !isAccessibilityServiceEnabled() -> AndroidProtectionStep.ACCESSIBILITY
++            !isAccessibilityServiceEnabled() -> AndroidProtectionStep.ACCESSIBILITY
++            !hasUsageStatsPermission() -> AndroidProtectionStep.USAGE_ACCESS
++            !hasOverlayPermission() -> AndroidProtectionStep.OVERLAY
+             else -> AndroidProtectionStep.COMPLETE
+         }
+     }
+@@
+                     "getNextProtectionStep" -> result.success(nextProtectionStepName())
+                     "openSystemSettings" -> result.success(openNextProtectionSettings())
+                     "openAccessibilitySettings" -> result.success(openAccessibilitySettings())
+                     "openUsageAccessSettings" -> result.success(openUsageAccessSettings())
+                     "openOverlaySettings" -> result.success(openOverlaySettings())
++                    "setPendingPermissionReturn" -> {
++                        val raw = call.argument<String>("step")
++                        val step = PermissionReturnCoordinator.parseStep(raw)
++                        if (step != null) {
++                            PermissionReturnCoordinator.setPendingStep(this, step)
++                        }
++                        result.success(null)
++                    }
++                    "clearPendingPermissionReturn" -> {
++                        PermissionReturnCoordinator.clearPendingStep(this)
++                        result.success(null)
++                    }
+                     "cacheSelection" -> {
+*** End Patch

@@ -1,0 +1,30 @@
+*** Begin Patch
+*** Update File: lib/features/home/home_screen.dart
+@@
+   static const List<_ModuleToggleOption> _shortcutOptions = [
+     _ModuleToggleOption(
+       moduleId: 'rank',
+       titleKey: 'rank',
+       icon: CupertinoIcons.star_fill,
+     ),
+-    _ModuleToggleOption(
+-      moduleId: 'leaderboard',
+-      titleKey: 'leaderboard',
+-      icon: CupertinoIcons.rosette,
+-    ),
+     _ModuleToggleOption(
+       moduleId: 'focus',
+       titleKey: 'focus_mode',
+       icon: CupertinoIcons.bolt_fill,
+     ),
+-    _ModuleToggleOption(
+-      moduleId: 'family_time',
+-      titleKey: 'family_time',
+-      icon: CupertinoIcons.person_2_fill,
+-    ),
+     _ModuleToggleOption(
+       moduleId: 'block_apps',
+       titleKey: 'block_apps_sites',
+       icon: CupertinoIcons.shield_fill,
+     ),
+*** End Patch

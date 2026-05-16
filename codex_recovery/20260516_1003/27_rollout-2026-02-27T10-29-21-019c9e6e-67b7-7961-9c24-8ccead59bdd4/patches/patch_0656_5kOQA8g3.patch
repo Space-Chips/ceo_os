@@ -1,0 +1,174 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/home/home_screen.dart
+@@
+       child: AnimatedContainer(
+         duration: const Duration(milliseconds: 180),
+         curve: Curves.easeOutCubic,
+         height: 64,
+         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+         decoration: BoxDecoration(
+           borderRadius: BorderRadius.circular(18),
+           color: enabled
+               ? AppColors.accent.withValues(alpha: 0.06)
+               : AppColors.cardBackgroundAlt,
+           border: Border.all(
+             color: enabled
+-                ? AppColors.activeBorder
+-                : AppColors.border,
+-            width: 1,
++                ? (AppColors.isDark
++                    ? AppColors.activeBorder
++                    : AppColors.selectionOutline.withValues(alpha: 0.98))
++                : (AppColors.isDark
++                    ? AppColors.border
++                    : AppColors.borderStrong.withValues(alpha: 0.92)),
++            width: AppColors.isDark ? 1 : 1.2,
+           ),
+           boxShadow: [
+             BoxShadow(
+-              color: AppColors.glassShadowSoft.withValues(alpha: 0.16),
+-              blurRadius: 14,
+-              offset: Offset(0, 6),
++              color: AppColors.glassShadowSoft.withValues(
++                alpha: AppColors.isDark ? 0.16 : 0.09,
++              ),
++              blurRadius: AppColors.isDark ? 14 : 11,
++              offset: Offset(0, AppColors.isDark ? 6 : 5),
+               spreadRadius: -10,
+             ),
+             if (enabled)
+               BoxShadow(
+-                color: AppColors.themeGlow.withValues(alpha: 0.15),
+-                blurRadius: 12,
++                color: AppColors.themeGlow.withValues(
++                  alpha: AppColors.isDark ? 0.15 : 0.08,
++                ),
++                blurRadius: AppColors.isDark ? 12 : 8,
+                 spreadRadius: -4,
+               ),
+           ],
+         ),
+         child: Opacity(
+           opacity: locked ? 0.42 : 1,
+-          child: Row(
+-          children: [
+-            Container(
+-              width: 36,
+-              height: 36,
+-              decoration: BoxDecoration(
+-                borderRadius: BorderRadius.circular(10),
+-                color: AppColors.moduleIconBackground,
+-              ),
+-              alignment: Alignment.center,
+-              child: Icon(
+-                option.icon,
+-                size: 18,
+-                color: enabled ? AppColors.accent : AppColors.tertiaryLabel,
+-              ),
+-            ),
+-            const SizedBox(width: 12),
+-            Expanded(
+-              child: Text(
+-                option.title,
+-                style: AppTypography.callout.copyWith(
+-                  fontSize: 14,
+-                  color: AppColors.label,
+-                  fontWeight: FontWeight.w600,
++          child: Stack(
++            children: [
++              Positioned(
++                top: 0,
++                left: 10,
++                right: 10,
++                child: IgnorePointer(
++                  child: Container(
++                    height: 1,
++                    decoration: BoxDecoration(
++                      borderRadius: BorderRadius.circular(999),
++                      color: AppColors.glassHighlight.withValues(
++                        alpha: AppColors.isDark ? 0.18 : 0.24,
++                      ),
++                    ),
++                  ),
+                 ),
+               ),
+-            ),
+-            if (saving)
+-              const CupertinoActivityIndicator()
+-            else
+-              TweenAnimationBuilder<double>(
+-                key: ValueKey('${option.moduleId}-$enabled'),
+-                tween: Tween<double>(begin: 0.92, end: 1),
+-                duration: const Duration(milliseconds: 180),
+-                curve: Curves.easeOutBack,
+-                builder: (context, scale, child) {
+-                  return Transform.scale(scale: scale, child: child);
+-                },
+-                child: CupertinoSwitch(
+-                  value: enabled,
+-                  onChanged: locked ? null : onChanged,
+-                  activeTrackColor: AppColors.toggleOn,
+-                  inactiveTrackColor: AppColors.label.withValues(
+-                    alpha: 0.15,
++              Row(
++                children: [
++                  Container(
++                    width: 36,
++                    height: 36,
++                    decoration: BoxDecoration(
++                      borderRadius: BorderRadius.circular(10),
++                      color: AppColors.moduleIconBackground,
++                    ),
++                    alignment: Alignment.center,
++                    child: Icon(
++                      option.icon,
++                      size: 18,
++                      color: enabled ? AppColors.accent : AppColors.tertiaryLabel,
++                    ),
+                   ),
+-                  thumbColor: AppColors.white,
+-                ),
++                  const SizedBox(width: 12),
++                  Expanded(
++                    child: Text(
++                      option.title,
++                      style: AppTypography.callout.copyWith(
++                        fontSize: 14,
++                        color: AppColors.label,
++                        fontWeight: FontWeight.w600,
++                      ),
++                    ),
++                  ),
++                  if (saving)
++                    const CupertinoActivityIndicator()
++                  else
++                    TweenAnimationBuilder<double>(
++                      key: ValueKey('${option.moduleId}-$enabled'),
++                      tween: Tween<double>(begin: 0.92, end: 1),
++                      duration: const Duration(milliseconds: 180),
++                      curve: Curves.easeOutBack,
++                      builder: (context, scale, child) {
++                        return Transform.scale(scale: scale, child: child);
++                      },
++                      child: CupertinoSwitch(
++                        value: enabled,
++                        onChanged: locked ? null : onChanged,
++                        activeTrackColor: AppColors.toggleOn,
++                        inactiveTrackColor: AppColors.label.withValues(
++                          alpha: 0.15,
++                        ),
++                        thumbColor: AppColors.white,
++                      ),
++                    ),
++                ],
+               ),
+-          ],
+-        )),
++            ],
++          ),
++        ),
+       ),
+     );
+   }
+ }
+*** End Patch

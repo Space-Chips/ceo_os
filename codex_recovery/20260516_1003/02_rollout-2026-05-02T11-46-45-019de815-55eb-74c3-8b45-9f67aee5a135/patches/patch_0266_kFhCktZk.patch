@@ -1,0 +1,38 @@
+*** Begin Patch
+*** Update File: lib/core/repositories/premium_repository.dart
+@@
+   ResolvedEntitlements _resolveEntitlements({
+     required PremiumConfig config,
+     required UserEntitlements entitlements,
+     required String subscriptionStatus,
+     required bool isTestFlight,
+     required bool clientGraceActive,
+   }) {
+     final normalizedStatus = subscriptionStatus.toLowerCase().trim();
+     final hasPaidSubscription = normalizedStatus == 'active';
+     final isTrialing = normalizedStatus == 'trialing';
+     final now = DateTime.now();
+     final overrideActive =
+         entitlements.premiumOverride &&
+         (entitlements.premiumOverrideExpiresAt == null ||
+             (entitlements.premiumOverrideExpiresAt?.isAfter(now) ?? false));
+-    final launchStartedOk =
+-        config.launchStartedAt == null ||
+-        !now.isBefore(config.launchStartedAt!);
+-    final launchNotEnded =
+-        config.launchEndsAt == null || now.isBefore(config.launchEndsAt!);
+-    final launchPremiumActive =
+-        config.launchModeEnabled && launchStartedOk && launchNotEnded;
++    // Premium auto-grant should not depend on launch mode anymore.
++    final launchPremiumActive = false;
+     final testFlightPremiumActive =
+         TesterConfig.testFlightPremiumEnabled && isTestFlight;
+     final isPremiumUser =
+         TesterConfig.testerPremiumEnabled ||
+         testFlightPremiumActive ||
+-        launchPremiumActive ||
+         hasPaidSubscription ||
+         isTrialing ||
+         clientGraceActive ||
+         overrideActive;
+*** End Patch

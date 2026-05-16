@@ -1,0 +1,481 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/home/home_screen.dart
+@@
+                   ListView(
+                     padding: const EdgeInsets.fromLTRB(14, 0, 14, 20),
+                     children: [
+-                      const SizedBox(height: 84),
++                      const SizedBox(height: 92),
+@@
+   @override
+   Widget build(BuildContext context) {
+-    return ClipRRect(
+-      borderRadius: BorderRadius.circular(20),
+-      child: BackdropFilter(
+-        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+-        child: Container(
+-          padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
+-          decoration: BoxDecoration(
+-            borderRadius: BorderRadius.circular(20),
+-            gradient: LinearGradient(
+-              begin: Alignment.topLeft,
+-              end: Alignment.bottomRight,
+-              colors: [
+-                AppColors.background.withValues(alpha: 0.34),
+-                AppColors.background.withValues(alpha: 0.16),
+-              ],
+-            ),
+-            border: Border.all(
+-              color: CupertinoColors.white.withValues(alpha: 0.05),
+-              width: 0.8,
+-            ),
+-            boxShadow: [
+-              BoxShadow(
+-                color: CupertinoColors.black.withValues(alpha: 0.26),
+-                blurRadius: 18,
+-                offset: const Offset(0, 10),
+-                spreadRadius: -12,
+-              ),
+-            ],
+-          ),
+-          child: Row(
+-            children: [
+-              _ShortcutCircle(
+-                onTap: onOpenMenu,
+-                icon: CupertinoIcons.person_fill,
+-                iconColor: AppColors.secondaryLabel,
+-                glowColor: AppColors.edgeGlowSoft,
+-              ),
+-              const SizedBox(width: 10),
+-              _ShortcutPill(
+-                onTap: onOpenRank,
+-                label: rankName,
+-                levelText: 'LEVEL $rankLevel',
+-              ),
+-              const Spacer(),
+-              _ActionCapsule(
+-                onTap: onOpenFocus,
+-                icon: CupertinoIcons.bolt_fill,
+-                iconColor: AppColors.accent,
+-              ),
+-              const SizedBox(width: 8),
+-              _ActionCapsule(
+-                onTap: onOpenNotes,
+-                icon: CupertinoIcons.doc_text_fill,
+-                iconColor: AppColors.accent,
+-              ),
+-              const SizedBox(width: 8),
+-              _StreakPill(
+-                onTap: onOpenStreak,
+-                streakValue: winStreak,
+-              ),
+-            ],
+-          ),
+-        ),
++    return ClipRect(
++      child: BackdropFilter(
++        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
++        child: Container(
++          padding: const EdgeInsets.fromLTRB(0, 4, 0, 10),
++          decoration: BoxDecoration(
++            gradient: LinearGradient(
++              begin: Alignment.topCenter,
++              end: Alignment.bottomCenter,
++              colors: [
++                AppColors.background.withValues(alpha: 0.40),
++                AppColors.background.withValues(alpha: 0.22),
++                AppColors.background.withValues(alpha: 0.02),
++              ],
++            ),
++          ),
++          child: Row(
++            children: [
++              _ShortcutCircle(
++                onTap: onOpenMenu,
++                icon: CupertinoIcons.person_fill,
++                iconColor: AppColors.secondaryLabel,
++                glowColor: AppColors.edgeGlowSoft,
++              ),
++              const SizedBox(width: 10),
++              _ShortcutPill(onTap: onOpenRank, label: rankName),
++              const Spacer(),
++              _ActionCapsule(
++                onTap: onOpenFocus,
++                icon: CupertinoIcons.bolt_fill,
++                iconColor: AppColors.accent,
++              ),
++              const SizedBox(width: 8),
++              _ActionCapsule(
++                onTap: onOpenNotes,
++                icon: CupertinoIcons.doc_text_fill,
++                iconColor: AppColors.accent,
++              ),
++              const SizedBox(width: 8),
++              _StreakPill(onTap: onOpenStreak, streakValue: winStreak),
++            ],
++          ),
++        ),
+       ),
+     );
+   }
+ }
+ 
+ class _ShortcutPill extends StatelessWidget {
+   final VoidCallback onTap;
+   final String label;
+-  final String levelText;
+ 
+   const _ShortcutPill({
+     required this.onTap,
+     required this.label,
+-    required this.levelText,
+   });
+@@
+       borderRadius: 14,
+       glowColor: AppColors.edgeGlowSoft,
+       hoverScale: 1.01,
+       pressedScale: 0.96,
+       longPressGlowColor: AppColors.themeGlow.withValues(alpha: 0.24),
+       child: ConstrainedBox(
+-        constraints: const BoxConstraints(minWidth: 118),
++        constraints: const BoxConstraints(minWidth: 106),
+         child: Container(
+-          height: 48,
+-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
++          height: 42,
++          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+           decoration: BoxDecoration(
+-            borderRadius: BorderRadius.circular(14),
++            borderRadius: BorderRadius.circular(16),
+             gradient: LinearGradient(
+               begin: Alignment.topLeft,
+               end: Alignment.bottomRight,
+               colors: [
+-                CupertinoColors.white.withValues(alpha: 0.06),
+-                AppColors.surface.withValues(alpha: 0.18),
++                AppColors.accent.withValues(alpha: 0.08),
++                CupertinoColors.white.withValues(alpha: 0.03),
+               ],
+             ),
+             border: Border.all(
+-              color: CupertinoColors.white.withValues(alpha: 0.08),
++              color: AppColors.accent.withValues(alpha: 0.28),
+               width: 1,
+             ),
+             boxShadow: [
+               BoxShadow(
+-                color: AppColors.glassShadowSoft.withValues(alpha: 0.18),
+-                blurRadius: 10,
+-                offset: const Offset(0, 4),
+-                spreadRadius: -8,
++                color: AppColors.glassShadowSoft.withValues(alpha: 0.12),
++                blurRadius: 10,
++                offset: const Offset(0, 5),
++                spreadRadius: -9,
+               ),
+             ],
+           ),
+-          child: Column(
+-            mainAxisSize: MainAxisSize.min,
+-            mainAxisAlignment: MainAxisAlignment.center,
+-            crossAxisAlignment: CrossAxisAlignment.start,
++          child: Row(
++            mainAxisSize: MainAxisSize.min,
+             children: [
+-              Text(
+-                levelText,
+-                maxLines: 1,
+-                overflow: TextOverflow.ellipsis,
+-                style: AppTypography.overline.copyWith(
+-                  fontSize: 9,
+-                  letterSpacing: 0.8,
+-                  color: AppColors.secondaryLabel.withValues(alpha: 0.6),
+-                ),
+-              ),
+-              Row(
+-                mainAxisSize: MainAxisSize.min,
+-                children: [
+-                  Container(
+-                    width: 8,
+-                    height: 8,
+-                    margin: const EdgeInsets.only(right: 6),
+-                    decoration: BoxDecoration(
+-                      shape: BoxShape.circle,
+-                      color: AppColors.accent,
+-                      boxShadow: [
+-                        BoxShadow(
+-                          color: AppColors.themeGlow.withValues(alpha: 0.24),
+-                          blurRadius: 6,
+-                          spreadRadius: -2,
+-                        ),
+-                      ],
+-                    ),
+-                  ),
+-                  Flexible(
+-                    child: Text(
+-                      label.toUpperCase(),
+-                      maxLines: 1,
+-                      overflow: TextOverflow.ellipsis,
+-                      style: AppTypography.callout.copyWith(
+-                        fontSize: 13,
+-                        fontWeight: FontWeight.w600,
+-                        color: AppColors.label,
+-                      ),
+-                    ),
+-                  ),
+-                ],
++              Container(
++                width: 9,
++                height: 9,
++                margin: const EdgeInsets.only(right: 8),
++                decoration: BoxDecoration(
++                  shape: BoxShape.circle,
++                  color: AppColors.accent,
++                  boxShadow: [
++                    BoxShadow(
++                      color: AppColors.themeGlow.withValues(alpha: 0.18),
++                      blurRadius: 6,
++                      spreadRadius: -2,
++                    ),
++                  ],
++                ),
++              ),
++              Flexible(
++                child: Text(
++                  label.toUpperCase(),
++                  maxLines: 1,
++                  overflow: TextOverflow.ellipsis,
++                  style: AppTypography.callout.copyWith(
++                    fontSize: 14,
++                    fontWeight: FontWeight.w600,
++                    color: AppColors.label,
++                  ),
++                ),
+               ),
+             ],
+           ),
+@@
+       child: Container(
+-        width: 42,
+-        height: 42,
++        width: 40,
++        height: 40,
+         decoration: BoxDecoration(
+           borderRadius: BorderRadius.circular(12),
+           gradient: LinearGradient(
+             begin: Alignment.topLeft,
+             end: Alignment.bottomRight,
+             colors: [
+-              CupertinoColors.white.withValues(alpha: 0.055),
+-              AppColors.surface.withValues(alpha: 0.12),
++              CupertinoColors.white.withValues(alpha: 0.07),
++              AppColors.surface.withValues(alpha: 0.07),
+             ],
+           ),
+           border: Border.all(
+-            color: CupertinoColors.white.withValues(alpha: 0.08),
++            color: CupertinoColors.white.withValues(alpha: 0.06),
+             width: 1,
+           ),
+           boxShadow: [
+             BoxShadow(
+-              color: CupertinoColors.black.withValues(alpha: 0.18),
+-              blurRadius: 10,
+-              offset: const Offset(0, 5),
+-              spreadRadius: -8,
++              color: CupertinoColors.black.withValues(alpha: 0.12),
++              blurRadius: 8,
++              offset: const Offset(0, 4),
++              spreadRadius: -8,
+             ),
+           ],
+         ),
+@@
+       child: Container(
+-        height: 42,
++        height: 40,
+         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+         decoration: BoxDecoration(
+-          borderRadius: BorderRadius.circular(12),
++          borderRadius: BorderRadius.circular(999),
+           gradient: LinearGradient(
+             begin: Alignment.topLeft,
+             end: Alignment.bottomRight,
+             colors: [
+-              CupertinoColors.white.withValues(alpha: 0.055),
+-              AppColors.surface.withValues(alpha: 0.12),
++              CupertinoColors.white.withValues(alpha: 0.06),
++              AppColors.surface.withValues(alpha: 0.08),
+             ],
+           ),
+           border: Border.all(
+-            color: CupertinoColors.white.withValues(alpha: 0.08),
++            color: CupertinoColors.white.withValues(alpha: 0.06),
+             width: 1,
+           ),
+           boxShadow: [
+             BoxShadow(
+-              color: CupertinoColors.black.withValues(alpha: 0.18),
+-              blurRadius: 10,
+-              offset: const Offset(0, 5),
+-              spreadRadius: -8,
++              color: CupertinoColors.black.withValues(alpha: 0.12),
++              blurRadius: 8,
++              offset: const Offset(0, 4),
++              spreadRadius: -8,
+             ),
+           ],
+         ),
+@@
+             Icon(
+               CupertinoIcons.flame_fill,
+-              size: 16,
++              size: 14,
+               color: AppColors.warning,
+             ),
+             const SizedBox(width: 8),
+             Text(
+               '$streakValue',
+               style: AppTypography.callout.copyWith(
+                 fontSize: 13,
+                 fontWeight: FontWeight.w700,
+-                color: AppColors.warning,
++                color: AppColors.label,
+               ),
+             ),
+           ],
+@@
+       child: Container(
+         width: 40,
+         height: 40,
+         decoration: BoxDecoration(
+           shape: BoxShape.circle,
+           gradient: LinearGradient(
+             begin: Alignment.topLeft,
+             end: Alignment.bottomRight,
+             colors: [
+-              CupertinoColors.white.withValues(alpha: 0.055),
+-              AppColors.surface.withValues(alpha: 0.12),
++              CupertinoColors.white.withValues(alpha: 0.06),
++              AppColors.surface.withValues(alpha: 0.08),
+             ],
+           ),
+           border: Border.all(
+-            color: CupertinoColors.white.withValues(alpha: 0.08),
++            color: CupertinoColors.white.withValues(alpha: 0.07),
+             width: 1,
+           ),
+           boxShadow: [
+             BoxShadow(
+-              color: AppColors.glassShadowSoft.withValues(alpha: 0.14),
+-              blurRadius: 8,
+-              offset: const Offset(0, 4),
++              color: AppColors.glassShadowSoft.withValues(alpha: 0.12),
++              blurRadius: 8,
++              offset: const Offset(0, 4),
+               spreadRadius: -6,
+             ),
+           ],
+@@
+ class _DashboardMainCard extends StatelessWidget {
+   final int wakeScore;
+   final int tasksCount;
+   final int habitsCount;
+@@
+       child: GlassCard(
+         padding: const EdgeInsets.all(18),
+-        borderRadius: 30,
++        borderRadius: 22,
+         level: GlassCardLevel.elevated,
+         showEdgeGlow: false,
+-        gradientColors: [AppColors.cardRaised, AppColors.cardBase],
+-        border: Border.all(color: AppColors.borderStrong, width: 1),
++        gradientColors: [
++          AppColors.cardRaised,
++          AppColors.cardBase.withValues(alpha: 0.96),
++        ],
++        border: Border.all(color: AppColors.borderStrong, width: 0.9),
+         child: SizedBox(
+-          height: 188,
++          height: 178,
+           child: Column(
+             crossAxisAlignment: CrossAxisAlignment.start,
+             children: [
+               Text(
+                 'Dashboard',
+                 maxLines: 1,
+                 overflow: TextOverflow.ellipsis,
+-                style: AppTypography.title1.copyWith(fontSize: 24),
++                style: AppTypography.title1.copyWith(
++                  fontSize: 26,
++                  fontWeight: FontWeight.w700,
++                ),
+               ),
+-              const SizedBox(height: 2),
+-              Text(
+-                'Your execution system',
+-                style: AppTypography.callout.copyWith(
+-                  color: AppColors.secondaryLabel,
+-                ),
+-              ),
+-              const SizedBox(height: 12),
++              const SizedBox(height: 16),
+               Expanded(
+                 child: Center(
+                   child: Column(
+                     mainAxisSize: MainAxisSize.min,
+                     children: [
+@@
+                       Text(
+                         'WAKE SCORE',
+                         style: AppTypography.overline.copyWith(
+                           fontSize: 10,
+-                          letterSpacing: 1.2,
++                          letterSpacing: 1.4,
+                           color: AppColors.secondaryLabel.withValues(alpha: 0.6),
+                         ),
+                       ),
+-                      const SizedBox(height: 4),
++                      const SizedBox(height: 8),
+                       Text(
+                         '$wakeScore',
+                         textAlign: TextAlign.center,
+                         style: AppTypography.timer.copyWith(
+-                          fontSize: 40,
++                          fontSize: 46,
+                           fontWeight: FontWeight.w700,
+                           color: AppColors.accent,
+                         ),
+                       ),
+                     ],
+                   ),
+                 ),
+               ),
+-              const SizedBox(height: 8),
++              const SizedBox(height: 14),
+               Row(
++                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                 children: [
+                   Expanded(
+                     child: _DashboardSecondaryMetric(
+                       label: 'Tasks',
+@@
+         Text(
+           label,
+           style: AppTypography.caption1.copyWith(
+-            fontSize: 11,
++            fontSize: 11,
+             color: AppColors.secondaryLabel.withValues(alpha: 0.6),
+           ),
+         ),
+-        const SizedBox(height: 2),
++        const SizedBox(height: 6),
+         Text(
+           value,
+           style: AppTypography.callout.copyWith(
+-            fontSize: 16,
++            fontSize: 18,
+             fontWeight: FontWeight.w600,
+             color: AppColors.label,
+           ),
+*** End Patch

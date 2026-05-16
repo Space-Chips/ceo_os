@@ -1,0 +1,12 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/profile/profile_screen.dart
+@@
+                             ? CupertinoActivityIndicator(
+                                 color: AppColors.primaryOrange,
+                               )
+                             : _rowValueChevron(
+-                                theme.currentPreset.name,
++                                _themeDisplayName(theme.currentPreset),
+                               ),
+                       ),
+*** End Patch

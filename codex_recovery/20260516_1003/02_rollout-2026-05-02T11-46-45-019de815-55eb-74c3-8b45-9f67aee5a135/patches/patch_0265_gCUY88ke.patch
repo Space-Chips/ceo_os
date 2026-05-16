@@ -1,0 +1,19 @@
+*** Begin Patch
+*** Update File: lib/core/config/tester_config.dart
+@@
+ class TesterConfig {
+@@
+-  static const bool testFlightPremiumEnabled = bool.fromEnvironment(
+-    'TESTFLIGHT_PREMIUM_ENABLED',
+-    defaultValue: true,
+-  );
++  /// Always enabled: TestFlight installations should always be Premium for QA.
++  /// (Whether a given install is TestFlight is detected at runtime via the iOS receipt.)
++  static const bool testFlightPremiumEnabled = true;
+@@
+   static const String testFlightBetaPremiumKey = String.fromEnvironment(
+     'TESTFLIGHT_BETA_PREMIUM_KEY',
+     defaultValue: '',
+   );
+ }
+*** End Patch

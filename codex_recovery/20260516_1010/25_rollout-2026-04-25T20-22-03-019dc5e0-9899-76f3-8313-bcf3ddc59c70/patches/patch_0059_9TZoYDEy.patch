@@ -1,0 +1,17 @@
+*** Begin Patch
+*** Update File: lib/features/control_center_setup/widgets/fly_to_slot_overlay.dart
+@@
+   }) async {
+     final overlay = Overlay.of(context);
+-    if (overlay == null) return;
+ 
+     final controller = AnimationController(
+       vsync: vsync,
+       duration: const Duration(milliseconds: 520),
+     );
+-    final curved = CurvedAnimation(parent: controller, curve: Curves.easeOutCubic);
++    final curved = CurvedAnimation(
++      parent: controller,
++      curve: Curves.easeOutCubic,
++    );
+*** End Patch

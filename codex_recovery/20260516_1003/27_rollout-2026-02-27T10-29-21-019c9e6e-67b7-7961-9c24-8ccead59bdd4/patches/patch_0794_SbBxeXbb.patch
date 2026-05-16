@@ -1,0 +1,28 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/services/focus_service.dart
+@@
+   Future<void> syncClassicPauseSchedule(
+     List<String> packageNames,
+     List<String> categories,
+     List<Map<String, dynamic>> periods,
+   ) async {
+@@
+     }
+   }
++
++  Future<void> syncClassicDailyLimits(
++    List<Map<String, dynamic>> entries,
++  ) async {
++    try {
++      await _channel.invokeMethod('syncClassicDailyLimits', {
++        'entries': entries,
++      });
++    } on PlatformException catch (e) {
++      AppLogger.error("Failed to sync classic daily limits: '${e.message}'.");
++    } on MissingPluginException {
++      AppLogger.warning(
++        'Native syncClassicDailyLimits method missing. Rebuild required.',
++      );
++    }
++  }
+*** End Patch

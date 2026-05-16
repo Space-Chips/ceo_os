@@ -1,0 +1,43 @@
+*** Begin Patch
+*** Update File: lib/components/premium_paywall.dart
+@@
+   Future<void> _openManageSubscriptions() async {
+     if (widget.manageOpensComparison) {
+       // Close the paywall sheet first, then route to the comparison screen.
+       if (Navigator.of(context).canPop()) {
+         Navigator.of(context).pop();
+       }
+       await Future<void>.delayed(const Duration(milliseconds: 30));
+       if (!mounted) return;
+       GoRouter.of(context).push('/upgrade');
+       return;
+     }
+ 
+     final Uri uri = _isAndroid
+         ? Uri.parse('https://play.google.com/store/account/subscriptions')
+         : Uri.parse('https://apps.apple.com/account/subscriptions');
+-    await launchUrl(uri, mode: LaunchMode.externalApplication);
++    final launched = await launchUrl(uri, mode: LaunchMode.platformDefault);
++    if (launched) return;
++    if (!mounted) return;
++
++    final title = widget.isFr ? 'Abonnements' : 'Subscriptions';
++    final message = widget.isFr
++        ? "Impossible d’ouvrir la page d’abonnements automatiquement. Ouvre Réglages > Apple ID > Abonnements."
++        : "Couldn't open subscriptions automatically. Open Settings > Apple ID > Subscriptions.";
++    await showCupertinoDialog<void>(
++      context: context,
++      builder: (_) => CupertinoAlertDialog(
++        title: Text(title),
++        content: Text(message),
++        actions: [
++          CupertinoDialogAction(
++            isDefaultAction: true,
++            onPressed: () => Navigator.of(context).pop(),
++            child: const Text('OK'),
++          ),
++        ],
++      ),
++    );
+   }
+*** End Patch

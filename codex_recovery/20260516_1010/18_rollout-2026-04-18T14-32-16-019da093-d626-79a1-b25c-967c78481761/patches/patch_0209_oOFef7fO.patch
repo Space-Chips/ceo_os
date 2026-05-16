@@ -1,0 +1,9 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/ceo_mode/blackout_preparation/blackout_preparation_intro_view.dart
+@@
+             onPressed: onSkip,
+             child: Text(
+-              'Passer',
+               language.t('focus_skip'),
+               style: AppTypography.callout.copyWith(
+*** End Patch

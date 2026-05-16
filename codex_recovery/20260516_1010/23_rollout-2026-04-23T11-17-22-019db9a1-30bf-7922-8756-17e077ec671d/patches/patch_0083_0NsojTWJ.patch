@@ -1,0 +1,15 @@
+*** Begin Patch
+*** Update File: lib/core/providers/language_overrides.dart
+@@
+-    'notes': 'नोट्स',
++    'notes': 'नोट्स',
++    'notes_new_note': 'नई नोट',
++    'notes_last_edit': 'आख़िरी संपादन',
++    'notes_untitled': 'बिना शीर्षक',
++    'notes_search_placeholder': 'नोट्स खोजें…',
++    'notes_recent': 'हाल ही में',
++    'notes_all_notes': 'सभी नोट्स',
++    'notes_no_tag': 'कोई टैग नहीं',
++    'notes_tag_placeholder': '#काम/मीटिंग',
++    'notes_write_placeholder': 'अपना नोट लिखें…',
+*** End Patch

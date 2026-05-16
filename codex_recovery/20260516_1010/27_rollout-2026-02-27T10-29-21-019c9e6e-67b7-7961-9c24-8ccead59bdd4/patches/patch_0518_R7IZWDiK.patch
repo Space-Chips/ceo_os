@@ -1,0 +1,95 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/repositories/feature_repository.dart
+@@
+   Future<void> saveActiveApps(List<String> apps) async {
+     final existing = await getAppSettings();
+@@
+     await _client
+         .from('app_settings')
+         .update({'active_apps': apps})
+-        .eq('id', existing.id);
++        .eq('id', existing.id)
++        .eq('created_by', _currentUserId);
+   }
+@@
+       await _client
+           .from('app_settings')
+           .update({'active_apps': apps})
+-          .eq('id', settingsId);
++          .eq('id', settingsId)
++          .eq('created_by', _currentUserId);
+       return settingsId;
+     }
+@@
+   Future<void> updateNote(String id, String title, String content) async {
+     await _client
+         .from('notes')
+@@
+         })
+-        .eq('id', id);
++        .eq('id', id)
++        .eq('created_by', _currentUserId);
+   }
+ 
+   Future<void> deleteNote(String id) async {
+-    await _client.from('notes').delete().eq('id', id);
++    await _client
++        .from('notes')
++        .delete()
++        .eq('id', id)
++        .eq('created_by', _currentUserId);
+   }
+@@
+   Future<void> createEventType(String name, String color, String icon) async {
++    final trimmedName = name.trim();
++    if (trimmedName.isEmpty) return;
+     await _client.from('event_types').insert({
+       'created_by': _currentUserId,
+-      'name': name,
++      'name': trimmedName,
+       'color': color,
+       'icon': icon,
+     });
+   }
+ 
+   Future<void> deleteEventType(String id) async {
+-    await _client.from('event_types').delete().eq('id', id);
++    await _client
++        .from('event_types')
++        .delete()
++        .eq('id', id)
++        .eq('created_by', _currentUserId);
+   }
+@@
+   Future<void> createBlockedApp(String appName) async {
++    final trimmedName = appName.trim();
++    if (trimmedName.isEmpty) return;
+     await _client.from('blocked_apps').insert({
+       'created_by': _currentUserId,
+-      'app_name': appName.trim(),
++      'app_name': trimmedName,
+       'time_limit_minutes': 0,
+     });
+   }
+@@
+   Future<void> createBlockedWebsite(String urlDomain) async {
++    final trimmedDomain = urlDomain.trim();
++    if (trimmedDomain.isEmpty) return;
+     await _client.from('blocked_websites').insert({
+       'created_by': _currentUserId,
+-      'url_domain': urlDomain.trim(),
++      'url_domain': trimmedDomain,
+       'time_limit_minutes': 0,
+     });
+   }
+@@
+     await _client
+         .from('weekly_contracts')
+         .update({
+@@
+         })
+-        .eq('id', existing.id);
++        .eq('id', existing.id)
++        .eq('created_by', _currentUserId);
+   }
+*** End Patch

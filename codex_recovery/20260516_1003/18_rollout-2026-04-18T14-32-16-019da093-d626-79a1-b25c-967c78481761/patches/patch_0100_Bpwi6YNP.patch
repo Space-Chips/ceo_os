@@ -1,0 +1,10 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/profile/profile_screen.dart
+@@
+                                         color: AppColors.accentSurfaceSoft,
+                                         border: Border.all(
+-                                          color: AppColors.accentBorder,
++                                          color: AppColors.activeBorder,
+                                         ),
+                                       ),
+*** End Patch

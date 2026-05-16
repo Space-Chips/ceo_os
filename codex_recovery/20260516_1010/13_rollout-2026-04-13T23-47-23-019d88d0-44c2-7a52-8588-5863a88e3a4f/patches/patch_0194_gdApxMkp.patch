@@ -1,0 +1,41 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/services/classic_blocking_coordinator.dart
+@@
+     final appBindings = await _localStore.loadAppBindings();
++    final hydratedAppBindings = await _backfillIosAppBindings(
++      apps: apps,
++      existingBindings: appBindings,
++    );
+     var websiteBindings = await _localStore.loadWebsiteBindings();
+@@
+       (item) =>
+           _isFullyBlocked(item.timeLimitMinutes) &&
+-          _isAppEnforceable(appBindings[item.id]),
++          _isAppEnforceable(hydratedAppBindings[item.id]),
+     );
+     final pauseScopedApps = apps.where(
+-      (item) => _isAppEnforceable(appBindings[item.id]),
++      (item) => _isAppEnforceable(hydratedAppBindings[item.id]),
+     );
+@@
+       for (final item in alwaysBlockedApps) item.id: appBindings[item.id]!,
+@@
+       for (final item in pauseScopedApps) item.id: appBindings[item.id]!,
+@@
+       apps: apps,
+       websites: websites,
+-      appBindings: appBindings,
++      appBindings: hydratedAppBindings,
+       websiteBindings: websiteBindings,
+     );
+@@
+       enforceableAppCount: appBindings.values
++          .where((item) => item.isEnforceable)
++          .length,
++      enforceableWebsiteCount: websiteBindings.values
+           .where((item) => item.isEnforceable)
+           .length,
+-      enforceableWebsiteCount: websiteBindings.values
+-          .where((item) => item.isEnforceable)
+-          .length,
+*** End Patch

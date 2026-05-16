@@ -1,0 +1,108 @@
+*** Begin Patch
+*** Update File: lib/core/services/home_widget_service.dart
+@@
+-class _CeoWidgetCard extends StatelessWidget {
+-  final String title;
+-  final String subtitle;
+-  final List<String> lines;
+-  final Widget? childOverride;
+-
+-  const _CeoWidgetCard({
+-    required this.title,
+-    required this.subtitle,
+-    required this.lines,
+-    this.childOverride,
+-  });
+-
+-  factory _CeoWidgetCard.smallTodo({
+-    required String title,
+-    required String subtitle,
+-    required List<String> lines,
+-  }) {
+-    return _CeoWidgetCard(title: title, subtitle: subtitle, lines: lines);
+-  }
+-
+-  factory _CeoWidgetCard.largeTodo({
+-    required String title,
+-    required String subtitle,
+-    required List<String> lines,
+-  }) {
+-    return _CeoWidgetCard(title: title, subtitle: subtitle, lines: lines);
+-  }
+-
+-  @override
+-  Widget build(BuildContext context) {
+-    return Container(
+-      decoration: BoxDecoration(
+-        borderRadius: BorderRadius.circular(26),
+-        gradient: LinearGradient(
+-          begin: Alignment.topLeft,
+-          end: Alignment.bottomRight,
+-          colors: [
+-            AppColors.sectionBackground.withValues(alpha: 0.95),
+-            AppColors.background,
+-          ],
+-        ),
+-        border: Border.all(color: AppColors.borderStrong, width: 1),
+-        boxShadow: [
+-          BoxShadow(
+-            color: AppColors.glassShadow,
+-            blurRadius: 42,
+-            offset: Offset(0, 18),
+-            spreadRadius: -18,
+-          ),
+-        ],
+-      ),
+-      padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
+-      child:
+-          childOverride ??
+-          Column(
+-            crossAxisAlignment: CrossAxisAlignment.start,
+-            children: [
+-              Text(
+-                title,
+-                maxLines: 1,
+-                overflow: TextOverflow.ellipsis,
+-                style: AppTypography.title3.copyWith(
+-                  fontSize: 18,
+-                  fontWeight: FontWeight.w800,
+-                  color: AppColors.label,
+-                ),
+-              ),
+-              const SizedBox(height: 10),
+-              Text(
+-                subtitle,
+-                maxLines: 2,
+-                overflow: TextOverflow.ellipsis,
+-                style: AppTypography.subhead.copyWith(
+-                  fontSize: 12,
+-                  height: 1.25,
+-                  color: AppColors.secondaryLabel.withValues(alpha: 0.72),
+-                ),
+-              ),
+-              if (lines.isNotEmpty) ...[
+-                const SizedBox(height: 12),
+-                ...lines.map(
+-                  (line) => Padding(
+-                    padding: const EdgeInsets.only(bottom: 7),
+-                    child: Text(
+-                      line,
+-                      maxLines: 1,
+-                      overflow: TextOverflow.ellipsis,
+-                      style: AppTypography.callout.copyWith(
+-                        fontSize: 13,
+-                        fontWeight: FontWeight.w600,
+-                        color: AppColors.label.withValues(alpha: 0.88),
+-                      ),
+-                    ),
+-                  ),
+-                ),
+-              ],
+-            ],
+-          ),
+-    );
+-  }
+-}
+-
+ class _CeoDashboardCard extends StatelessWidget {
+*** End Patch

@@ -1,0 +1,188 @@
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+type Json = string | number | boolean | null | { [key: string]: Json } | Json[];
+
+type RevenueCatEvent = {
+  id?: string;
+  type?: string;
+  app_user_id?: string;
+  original_app_user_id?: string;
+  product_id?: string;
+  entitlement_ids?: string[];
+  store?: string;
+  purchased_at_ms?: number;
+  expiration_at_ms?: number | null;
+  canceled_at_ms?: number | null;
+  event_timestamp_ms?: number;
+  period_type?: string;
+  aliases?: string[];
+  [key: string]: Json | undefined;
+};
+
+const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+const revenueCatAuth = Deno.env.get('REVENUECAT_WEBHOOK_AUTH') ?? '';
+
+if (!supabaseUrl || !serviceRoleKey) {
+  throw new Error('Supabase service role environment is missing.');
+}
+
+const supabase = createClient(supabaseUrl, serviceRoleKey, {
+  auth: { persistSession: false },
+});
+
+Deno.serve(async (request) => {
+  if (request.method !== 'POST') {
+    return new Response('Method not allowed', { status: 405 });
+  }
+
+  if (revenueCatAuth) {
+    const header = request.headers.get('authorization') ?? '';
+    const expected = `Bearer ${revenueCatAuth}`;
+    if (header !== expected) {
+      return new Response('Unauthorized', { status: 401 });
+    }
+  }
+
+  let payload: Record<string, Json>;
+  try {
+    payload = await request.json();
+  } catch (_) {
+    return new Response('Invalid JSON', { status: 400 });
+  }
+
+  const event = ((payload['event'] as Record<string, Json> | undefined) ??
+    payload) as unknown as RevenueCatEvent;
+  const appUserId =
+    normalizeText(event.app_user_id) ??
+    normalizeText(event.original_app_user_id);
+  if (!appUserId) {
+    return new Response('Missing app_user_id', { status: 400 });
+  }
+
+  const eventId =
+    normalizeText(event.id) ??
+    [
+      normalizeText(event.type) ?? 'unknown',
+      normalizeText(event.product_id) ?? 'product',
+      normalizeText(event.app_user_id) ?? 'user',
+      String(event.event_timestamp_ms ?? Date.now()),
+    ].join(':');
+
+  const status = deriveStatus(event);
+  const providerPayload = payload as Json;
+  const periodStartsAt = toIsoString(event.purchased_at_ms);
+  const periodEndsAt = toIsoString(event.expiration_at_ms);
+  const canceledAt = toIsoString(event.canceled_at_ms);
+
+  const { error: eventError } = await supabase.from('billing_webhook_events').upsert(
+    {
+      provider: 'revenuecat',
+      event_id: eventId,
+      event_type: normalizeText(event.type),
+      created_by: appUserId,
+      payload: providerPayload,
+    },
+    { onConflict: 'provider,event_id' },
+  );
+
+  if (eventError) {
+    await supabase.from('billing_subscriptions').upsert(
+      {
+        created_by: appUserId,
+        provider: 'revenuecat',
+        status: 'inactive',
+        last_error: `Failed to persist webhook event: ${eventError.message}`,
+        last_error_at: new Date().toISOString(),
+        last_webhook_event_id: eventId,
+        last_webhook_event_at: new Date().toISOString(),
+        last_synced_at: new Date().toISOString(),
+      },
+      { onConflict: 'created_by' },
+    );
+    return new Response(`Failed to persist webhook event: ${eventError.message}`, {
+      status: 500,
+    });
+  }
+
+  const { error: subscriptionError } = await supabase.from(
+    'billing_subscriptions',
+  ).upsert(
+    {
+      created_by: appUserId,
+      status,
+      provider: 'revenuecat',
+      external_customer_id: normalizeText(event.original_app_user_id) ?? appUserId,
+      external_subscription_id: normalizeText(event.id) ?? normalizeText(event.product_id),
+      product_id: normalizeText(event.product_id),
+      price_id: normalizeText(event.product_id),
+      trial_ends_at:
+        event.period_type === 'trial' ? periodEndsAt : null,
+      period_starts_at: periodStartsAt,
+      period_ends_at: periodEndsAt,
+      canceled_at: canceledAt,
+      provider_payload: providerPayload,
+      last_webhook_event_id: eventId,
+      last_webhook_event_at: new Date().toISOString(),
+      last_error: null,
+      last_error_at: null,
+      last_synced_at: new Date().toISOString(),
+    },
+    { onConflict: 'created_by' },
+  );
+
+  if (subscriptionError) {
+    await supabase.from('billing_subscriptions').upsert(
+      {
+        created_by: appUserId,
+        provider: 'revenuecat',
+        status: 'inactive',
+        last_error: `Failed to upsert billing subscription: ${subscriptionError.message}`,
+        last_error_at: new Date().toISOString(),
+        last_webhook_event_id: eventId,
+        last_webhook_event_at: new Date().toISOString(),
+        last_synced_at: new Date().toISOString(),
+      },
+      { onConflict: 'created_by' },
+    );
+    return new Response(
+      `Failed to upsert billing subscription: ${subscriptionError.message}`,
+      { status: 500 },
+    );
+  }
+
+  return Response.json({ ok: true });
+});
+
+function normalizeText(value: unknown): string | null {
+  if (typeof value !== 'string') return null;
+  const normalized = value.trim();
+  return normalized.length == 0 ? null : normalized;
+}
+
+function toIsoString(timestampMs: number | null | undefined): string | null {
+  if (timestampMs == null) return null;
+  if (!Number.isFinite(timestampMs)) return null;
+  return new Date(timestampMs).toISOString();
+}
+
+function deriveStatus(event: RevenueCatEvent): string {
+  const type = (event.type ?? '').toUpperCase();
+  switch (type) {
+    case 'INITIAL_PURCHASE':
+    case 'RENEWAL':
+    case 'NON_RENEWING_PURCHASE':
+    case 'PRODUCT_CHANGE':
+    case 'UNCANCELLATION':
+      return event.period_type === 'trial' ? 'trialing' : 'active';
+    case 'BILLING_ISSUE':
+    case 'SUBSCRIPTION_PAUSED':
+      return 'past_due';
+    case 'CANCELLATION':
+      return 'canceled';
+    case 'EXPIRATION':
+      return 'inactive';
+    default:
+      return event.period_type === 'trial' ? 'trialing' : 'active';
+  }
+}

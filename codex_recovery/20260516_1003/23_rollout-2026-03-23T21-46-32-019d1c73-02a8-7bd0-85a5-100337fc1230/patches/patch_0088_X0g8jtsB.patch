@@ -1,0 +1,79 @@
+*** Begin Patch
+*** Add File: /Users/timo/ceo_os/assets/marketing/play_feature_graphic_wakeapp_template.svg
++<svg width="1024" height="500" viewBox="0 0 1024 500" fill="none" xmlns="http://www.w3.org/2000/svg">
++  <defs>
++    <linearGradient id="bg" x1="92" y1="38" x2="930" y2="462" gradientUnits="userSpaceOnUse">
++      <stop stop-color="#1A1E23"/>
++      <stop offset="1" stop-color="#090B0E"/>
++    </linearGradient>
++    <radialGradient id="glowTop" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(190 110) rotate(90) scale(210 240)">
++      <stop stop-color="#E9EEF8" stop-opacity="0.08"/>
++      <stop offset="1" stop-color="#E9EEF8" stop-opacity="0"/>
++    </radialGradient>
++    <radialGradient id="glowBottom" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(816 392) rotate(90) scale(178 220)">
++      <stop stop-color="#DCE4F5" stop-opacity="0.08"/>
++      <stop offset="1" stop-color="#DCE4F5" stop-opacity="0"/>
++    </radialGradient>
++    <linearGradient id="panelStroke" x1="574" y1="50" x2="918" y2="444" gradientUnits="userSpaceOnUse">
++      <stop stop-color="#48515F"/>
++      <stop offset="1" stop-color="#262D37"/>
++    </linearGradient>
++    <linearGradient id="phoneStroke" x1="602" y1="70" x2="922" y2="432" gradientUnits="userSpaceOnUse">
++      <stop stop-color="#EEF3FC" stop-opacity="0.35"/>
++      <stop offset="1" stop-color="#B8C6DD" stop-opacity="0.14"/>
++    </linearGradient>
++    <linearGradient id="slotStroke" x1="620" y1="86" x2="912" y2="420" gradientUnits="userSpaceOnUse">
++      <stop stop-color="#515A68"/>
++      <stop offset="1" stop-color="#2B313A"/>
++    </linearGradient>
++  </defs>
++
++  <rect width="1024" height="500" fill="url(#bg)"/>
++  <circle cx="190" cy="110" r="210" fill="url(#glowTop)"/>
++  <circle cx="816" cy="392" r="178" fill="url(#glowBottom)"/>
++
++  <g opacity="0.34">
++    <path d="M36 102C170 58 314 34 468 34C658 34 828 72 984 130" stroke="#232A33" stroke-width="1.5"/>
++    <path d="M20 430C160 454 312 468 470 468C650 468 832 446 1002 392" stroke="#171C23" stroke-width="1.5"/>
++  </g>
++
++  <text x="74" y="170" fill="#F7FAFF" font-size="58" font-family="SF Pro Display, Inter, Arial, sans-serif" font-weight="700" letter-spacing="-1.8">WakeApp</text>
++  <text x="78" y="215" fill="#C8D1DE" font-size="22" font-family="SF Pro Display, Inter, Arial, sans-serif" font-weight="500">Your focus control center</text>
++
++  <text x="78" y="278" fill="#99A5B4" font-size="18" font-family="SF Pro Display, Inter, Arial, sans-serif">Manage sessions, limits, routines,</text>
++  <text x="78" y="306" fill="#99A5B4" font-size="18" font-family="SF Pro Display, Inter, Arial, sans-serif">and distraction blocking from one place.</text>
++
++  <g>
++    <rect x="78" y="350" width="132" height="38" rx="19" fill="#1C222A" stroke="#313947"/>
++    <text x="104" y="374" fill="#F5F8FD" font-size="16" font-family="SF Pro Display, Inter, Arial, sans-serif" font-weight="600">Focus</text>
++    <rect x="224" y="350" width="132" height="38" rx="19" fill="#1C222A" stroke="#313947"/>
++    <text x="247" y="374" fill="#F5F8FD" font-size="16" font-family="SF Pro Display, Inter, Arial, sans-serif" font-weight="600">Blackout</text>
++    <rect x="370" y="350" width="132" height="38" rx="19" fill="#1C222A" stroke="#313947"/>
++    <text x="399" y="374" fill="#F5F8FD" font-size="16" font-family="SF Pro Display, Inter, Arial, sans-serif" font-weight="600">Habits</text>
++  </g>
++
++  <g transform="rotate(-6 698 250)">
++    <rect x="592" y="56" width="182" height="390" rx="32" fill="#0D1014" stroke="url(#phoneStroke)" stroke-width="2"/>
++    <rect x="606" y="72" width="154" height="360" rx="24" fill="#14181D" stroke="url(#slotStroke)"/>
++    <rect x="656" y="60" width="54" height="10" rx="5" fill="#222934"/>
++    <text x="628" y="104" fill="#8E9AAA" font-size="11" font-family="SF Pro Display, Inter, Arial, sans-serif" letter-spacing="1.8">CONTROL CENTER</text>
++    <rect x="626" y="126" width="114" height="184" rx="18" fill="#1B2027" stroke="#323946" stroke-dasharray="6 6"/>
++    <text x="642" y="222" fill="#A9B4C3" font-size="15" font-family="SF Pro Display, Inter, Arial, sans-serif" font-weight="600">Insert updated</text>
++    <text x="655" y="244" fill="#A9B4C3" font-size="15" font-family="SF Pro Display, Inter, Arial, sans-serif" font-weight="600">dashboard or</text>
++    <text x="637" y="266" fill="#A9B4C3" font-size="15" font-family="SF Pro Display, Inter, Arial, sans-serif" font-weight="600">control screen</text>
++    <rect x="626" y="326" width="114" height="66" rx="16" fill="#171C22" stroke="#2B313A"/>
++  </g>
++
++  <g transform="rotate(5 866 252)">
++    <rect x="768" y="58" width="182" height="390" rx="32" fill="#0D1014" stroke="url(#phoneStroke)" stroke-width="2"/>
++    <rect x="782" y="74" width="154" height="360" rx="24" fill="#14181D" stroke="url(#slotStroke)"/>
++    <rect x="832" y="62" width="54" height="10" rx="5" fill="#222934"/>
++    <text x="807" y="106" fill="#8E9AAA" font-size="11" font-family="SF Pro Display, Inter, Arial, sans-serif" letter-spacing="1.8">BLACKOUT MODE</text>
++    <rect x="802" y="128" width="114" height="184" rx="18" fill="#1B2027" stroke="#323946" stroke-dasharray="6 6"/>
++    <text x="818" y="224" fill="#A9B4C3" font-size="15" font-family="SF Pro Display, Inter, Arial, sans-serif" font-weight="600">Insert updated</text>
++    <text x="834" y="246" fill="#A9B4C3" font-size="15" font-family="SF Pro Display, Inter, Arial, sans-serif" font-weight="600">Blackout</text>
++    <text x="834" y="268" fill="#A9B4C3" font-size="15" font-family="SF Pro Display, Inter, Arial, sans-serif" font-weight="600">screen</text>
++    <rect x="802" y="328" width="114" height="66" rx="16" fill="#171C22" stroke="#2B313A"/>
++  </g>
++</svg>
+*** End Patch

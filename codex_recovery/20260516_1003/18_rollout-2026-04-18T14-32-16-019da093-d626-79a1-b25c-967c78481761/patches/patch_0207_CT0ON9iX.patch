@@ -1,0 +1,66 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/auth/signup_screen.dart
+@@
+   @override
+   Widget build(BuildContext context) {
++    final language = context.watch<LanguageProvider>();
+     return CupertinoPageScaffold(
+@@
+                         Text(
+-                          'Create your account',
++                          language.t('auth_create_account_title'),
+@@
+                         Text(
+-                          'Set up your WakeApp login once, then use it across your devices.',
++                          language.t('auth_create_account_subtitle'),
+@@
+                             Text(
+-                              'Account details',
++                              language.t('auth_account_details'),
+@@
+                             Text(
+-                              'Choose the details you will use to sign in later.',
++                              language.t('auth_account_details_subtitle'),
+@@
+-                            _fieldLabel('Full name'),
++                            _fieldLabel(language.t('auth_full_name')),
+@@
+-                              placeholder: 'Your name',
++                              placeholder: language.t('auth_your_name'),
+@@
+-                            _fieldLabel('Email'),
++                            _fieldLabel(language.t('auth_email')),
+@@
+-                              placeholder: 'name@example.com',
++                              placeholder: language.t(
++                                'auth_email_placeholder',
++                              ),
+@@
+-                            _fieldLabel('Password'),
++                            _fieldLabel(language.t('auth_password')),
+@@
+-                              placeholder: 'Password',
++                              placeholder: language.t('auth_password'),
+@@
+-                            _fieldLabel('Confirm password'),
++                            _fieldLabel(
++                              language.t('auth_confirm_password_label'),
++                            ),
+@@
+-                              placeholder: 'Confirm password',
++                              placeholder: language.t(
++                                'auth_confirm_password_placeholder',
++                              ),
+@@
+                             LiquidButton(
+-                              label: 'Create account',
++                              label: language.t('auth_create_account'),
+@@
+                         Text(
+-                          'Already registered? ',
++                          language.t('auth_already_registered'),
+@@
+                           child: Text(
+-                            'Sign in',
++                            language.t('auth_sign_in'),
+*** End Patch

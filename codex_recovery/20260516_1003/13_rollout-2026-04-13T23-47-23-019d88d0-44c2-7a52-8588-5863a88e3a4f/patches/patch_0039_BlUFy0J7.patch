@@ -1,0 +1,11 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/setup/setup_flow_screen.dart
+@@
+   @override
+   Widget build(BuildContext context) {
+     return _SetupStepScaffold(
+-      progressStep: 0,
+       child: Column(
+         crossAxisAlignment: CrossAxisAlignment.start,
+         children: [
+*** End Patch

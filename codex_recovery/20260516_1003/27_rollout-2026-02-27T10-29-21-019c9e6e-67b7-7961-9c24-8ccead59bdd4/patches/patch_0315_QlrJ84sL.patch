@@ -1,0 +1,37 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/repositories/feature_repository.dart
+@@
+ class FeatureRepository {
++  static const String adultContentShieldMarker = '__ADULT_CONTENT__';
+   final SupabaseService _supabaseService;
+@@
+   Future<void> addBlockedWebsiteTime(String id, int minutes) async {
+@@
+         .eq('created_by', _currentUserId);
+   }
++
++  Future<void> setAdultContentShieldEnabled(bool enabled) async {
++    if (enabled) {
++      final existing = await _client
++          .from('blocked_websites')
++          .select('id')
++          .eq('created_by', _currentUserId)
++          .eq('url_domain', adultContentShieldMarker)
++          .maybeSingle();
++      if (existing == null) {
++        await _client.from('blocked_websites').insert({
++          'created_by': _currentUserId,
++          'url_domain': adultContentShieldMarker,
++          'time_limit_minutes': 0,
++        });
++      }
++      return;
++    }
++
++    await _client
++        .from('blocked_websites')
++        .delete()
++        .eq('created_by', _currentUserId)
++        .eq('url_domain', adultContentShieldMarker);
++  }
+*** End Patch

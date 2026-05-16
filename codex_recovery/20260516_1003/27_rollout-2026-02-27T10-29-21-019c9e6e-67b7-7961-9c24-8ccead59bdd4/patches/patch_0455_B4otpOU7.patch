@@ -1,0 +1,178 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/services/stats_engine.dart
+@@
+   int _estimateRecoveredMinutes(Map<String, dynamic> payload) {
+@@
+     return _recoveryMinutesByCategory['default']!;
+   }
++
++  List<MilestoneShareCard> _buildMilestoneCards(LifetimeStats? lifetime) {
++    if (lifetime == null || lifetime.milestonesUnlocked.isEmpty) return const [];
++    return lifetime.milestonesUnlocked.map((milestone) {
++      switch (milestone) {
++        case '7_day_streak':
++          return const MilestoneShareCard(
++            milestoneType: 'streak',
++            title: '7 Day Discipline Streak',
++            subtitle: 'You protected your attention for a full week.',
++          );
++        case '30_day_streak':
++          return const MilestoneShareCard(
++            milestoneType: 'streak',
++            title: '30 Day Streak',
++            subtitle: 'A full month of consistent discipline.',
++          );
++        case '100_hours_focus':
++          return const MilestoneShareCard(
++            milestoneType: 'focus',
++            title: '100 Hours of Focus',
++            subtitle: 'Deep work is now a real part of your identity.',
++          );
++        case '200_hours_focus':
++          return const MilestoneShareCard(
++            milestoneType: 'focus',
++            title: '200 Hours of Focus',
++            subtitle: 'This is elite attention capacity.',
++          );
++        case '500_distractions_blocked':
++          return const MilestoneShareCard(
++            milestoneType: 'control',
++            title: '500 Distractions Blocked',
++            subtitle: 'You repeatedly chose intention over impulse.',
++          );
++        case 'attention_90_plus':
++          return const MilestoneShareCard(
++            milestoneType: 'score',
++            title: '90+ Attention Score',
++            subtitle: 'You delivered an exceptional discipline day.',
++          );
++        default:
++          return MilestoneShareCard(
++            milestoneType: 'custom',
++            title: milestone.replaceAll('_', ' '),
++            subtitle: 'Milestone unlocked.',
++          );
++      }
++    }).toList(growable: false);
++  }
++
++  List<StatsHighlight> _buildHighlights({
++    required DailyStats? daily,
++    required WeeklyStats? weekly,
++    required MonthlyStats? monthly,
++    required LifetimeStats? lifetime,
++  }) {
++    final highlights = <StatsHighlight>[];
++    if (daily != null) {
++      highlights.add(
++        StatsHighlight(
++          label: 'Attention Score',
++          value: '${daily.attentionScore}',
++          deltaLabel: 'Today',
++        ),
++      );
++      highlights.add(
++        StatsHighlight(
++          label: 'Deep Work',
++          value: '${daily.deepWorkTimeMinutes}m',
++          deltaLabel: daily.bestFocusWindow,
++        ),
++      );
++    }
++    if (weekly != null) {
++      highlights.add(
++        StatsHighlight(
++          label: 'Weekly Focus',
++          value: '${weekly.totalDeepWorkTimeMinutes}m',
++          deltaLabel: '${weekly.weeklyTransformationDelta >= 0 ? '+' : ''}${weekly.weeklyTransformationDelta.toStringAsFixed(0)} score',
++        ),
++      );
++      highlights.add(
++        StatsHighlight(
++          label: 'Distractions Blocked',
++          value: '${weekly.totalDistractionsBlocked}',
++          deltaLabel: weekly.mostDistractingApp,
++        ),
++      );
++    }
++    if (monthly != null) {
++      highlights.add(
++        StatsHighlight(
++          label: 'Month Attention',
++          value: '${monthly.monthlyAttentionScore}',
++          deltaLabel: monthly.rankChange == 0 ? 'Rank stable' : 'Rank ${monthly.rankChange > 0 ? '+' : ''}${monthly.rankChange}',
++        ),
++      );
++    }
++    if (lifetime != null) {
++      highlights.add(
++        StatsHighlight(
++          label: 'Current Rank',
++          value: lifetime.currentRank,
++          deltaLabel: '${lifetime.highestStreakEver} day best streak',
++        ),
++      );
++    }
++    return highlights;
++  }
++
++  double _inferRankProgress(Map<String, dynamic> snapshot) {
++    final rankPoints = (snapshot['total_rank_points'] as num?)?.toDouble();
++    if (rankPoints == null || rankPoints <= 0) return 0;
++    return (rankPoints % 100).clamp(0, 100).toDouble();
++  }
++
++  DateTime? _parseLooseDate(dynamic raw) {
++    if (raw == null) return null;
++    final value = raw.toString().trim();
++    if (value.isEmpty) return null;
++    if (value.contains('T')) {
++      return DateTime.tryParse(value);
++    }
++    return DateTime.tryParse('${value}T00:00:00');
++  }
++
++  bool _looksProductive(String entityType, String entityName) {
++    const productiveKeywords = {
++      'calendar',
++      'notes',
++      'docs',
++      'mail',
++      'work',
++      'slack',
++      'notion',
++      'meeting',
++      'task',
++      'todo',
++    };
++    return productiveKeywords.any(
++      (keyword) => entityType.contains(keyword) || entityName.contains(keyword),
++    );
++  }
++
++  bool _isHabitScheduledOn(Map<String, dynamic> habit, DateTime day) {
++    final isDaily = _bool(habit['is_daily'], fallback: true);
++    if (isDaily) return true;
++
++    final frequencyType = (habit['frequency_type'] as String?)?.trim().toLowerCase() ?? 'daily';
++    final specificDaysRaw = habit['specific_days'];
++    final specificDays = specificDaysRaw is List
++        ? specificDaysRaw.map((day) => _int(day)).toList(growable: false)
++        : const <int>[];
++    final normalizedWeekday = day.weekday % 7;
++
++    if (specificDays.isNotEmpty) {
++      return specificDays.contains(normalizedWeekday);
++    }
++
++    if (frequencyType == 'interval') {
++      final createdAt = DateTime.tryParse((habit['created_at'] ?? '').toString());
++      final intervalDays = _int(habit['interval_days']);
++      if (createdAt == null || intervalDays <= 0) return false;
++      final distance = _day(day).difference(_day(createdAt)).inDays;
++      return distance >= 0 && distance % intervalDays == 0;
++    }
++
++    return frequencyType == 'daily';
++  }
+*** End Patch

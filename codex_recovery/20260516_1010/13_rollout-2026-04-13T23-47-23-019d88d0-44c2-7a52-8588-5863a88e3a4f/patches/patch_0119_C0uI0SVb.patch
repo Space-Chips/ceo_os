@@ -1,0 +1,35 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/ios/Runner/AppDelegate.swift
+@@
+     private func encodeWebsiteDomainSelection(args: [String: Any]?, result: FlutterResult) {
+@@
+         result(encoded)
+     }
++
++    private func describeAppSelectionPayload(args: [String: Any]?, result: FlutterResult) {
++        guard let payload = (args?["payload"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines),
++              !payload.isEmpty else {
++            result(nil)
++            return
++        }
++        guard let selection = decodeSelection(encoded: payload),
++              let token = selection.applicationTokens.first else {
++            result(nil)
++            return
++        }
++        let app = Application(token: token)
++        let appName = app.localizedDisplayName?.trimmingCharacters(in: .whitespacesAndNewlines)
++        let bundleIdentifier = app.bundleIdentifier?.trimmingCharacters(in: .whitespacesAndNewlines)
++        result([
++            "appName": appName ?? "",
++            "bundleIdentifier": bundleIdentifier ?? ""
++        ])
++    }
+@@
+         case "encodeWebsiteDomainSelection":
+             encodeWebsiteDomainSelection(args: args, result: result)
++        case "describeAppSelectionPayload":
++            describeAppSelectionPayload(args: args, result: result)
+         case "syncClassicDailyLimits":
+             syncClassicDailyLimits(args: args, result: result)
+*** End Patch

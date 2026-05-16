@@ -1,0 +1,52 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/services/focus_service.dart
+@@
+ class IosFamilyActivitySelection {
+@@
+   const IosFamilyActivitySelection({
+     required this.payload,
+     this.appName,
+     this.bundleIdentifier,
+   });
++
++  String? get preferredLabel {
++    final name = appName?.trim();
++    if (name != null && name.isNotEmpty) return name;
++    final bundle = bundleIdentifier?.trim();
++    if (bundle != null && bundle.isNotEmpty) return bundle;
++    return null;
++  }
+ }
+@@
+   Future<String?> encodeWebsiteDomainSelection(String domain) async {
+@@
+   }
++
++  Future<IosFamilyActivitySelection?> describeAppSelectionPayload(
++    String payload,
++  ) async {
++    const method = 'describeAppSelectionPayload';
++    if (_shouldSkipMissingMethod(method)) return null;
++    try {
++      final result = await _channel.invokeMapMethod<String, dynamic>(method, {
++        'payload': payload,
++      });
++      if (result == null) return null;
++      final appName = (result['appName'] as String?)?.trim();
++      final bundleIdentifier = (result['bundleIdentifier'] as String?)?.trim();
++      return IosFamilyActivitySelection(
++        payload: payload.trim(),
++        appName: appName?.isNotEmpty == true ? appName : null,
++        bundleIdentifier: bundleIdentifier?.isNotEmpty == true
++            ? bundleIdentifier
++            : null,
++      );
++    } on PlatformException catch (e) {
++      AppLogger.error("Failed to describe app payload: '${e.message}'.");
++      return null;
++    } on MissingPluginException {
++      _markMissingMethod(method);
++      return null;
++    }
++  }
+*** End Patch

@@ -1,0 +1,45 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/screen_time_screen.dart
+@@
+                 _statusPill(
+-                  label: limit > 0 ? '$limit min/day' : 'Fully blocked',
++                  label: limit > 0
++                      ? '$limit ${_t('screen_time_min_per_day')}'
++                      : _t('screen_time_fully_blocked'),
+                   color: limit > 0 ? AppColors.primaryOrange : AppColors.error,
+                 ),
+                 const Spacer(),
+                 _secondaryAction(
+-                  label: 'Daily limit',
++                  label: _t('screen_time_daily_limit_short'),
+                   onTap: _saving
+@@
+     final title = (site.urlDomain ?? '').trim().isNotEmpty
+         ? (site.urlDomain ?? '').trim()
+         : (bindingDomain != null && bindingDomain.isNotEmpty
+               ? bindingDomain
+-              : 'Blocked website');
++              : _t('screen_time_blocked_website'));
+@@
+         if (limit <= 0) {
+           _showNotice(
+             title: title,
+-            message: 'This website is fully blocked (no daily allowance).',
++            message: _t('screen_time_website_fully_blocked_message'),
+           );
+           return;
+         }
+@@
+                 _statusPill(
+-                  label: limit > 0 ? '$limit min/day' : 'Fully blocked',
++                  label: limit > 0
++                      ? '$limit ${_t('screen_time_min_per_day')}'
++                      : _t('screen_time_fully_blocked'),
+                   color: limit > 0 ? AppColors.primaryOrange : AppColors.error,
+                 ),
+                 const Spacer(),
+                 _secondaryAction(
+-                  label: 'Daily limit',
++                  label: _t('screen_time_daily_limit_short'),
+                   onTap: _saving
+*** End Patch

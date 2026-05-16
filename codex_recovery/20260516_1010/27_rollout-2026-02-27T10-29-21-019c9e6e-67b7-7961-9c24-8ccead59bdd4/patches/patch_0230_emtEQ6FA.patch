@@ -1,0 +1,21 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/services/focus_service.dart
+@@
+   // Start shielding specific apps/categories
+   Future<void> startShield(List<String> packageNames, List<String> categories) async {
+@@
+   }
++
++  // Start a strict CEO shield profile (platform specific).
++  Future<bool> startCeoShield() async {
++    try {
++      await _channel.invokeMethod('startCeoShield');
++      return true;
++    } on PlatformException catch (e) {
++      print("Failed to start CEO shield: '${e.message}'.");
++      return false;
++    } on MissingPluginException {
++      return false;
++    }
++  }
+*** End Patch

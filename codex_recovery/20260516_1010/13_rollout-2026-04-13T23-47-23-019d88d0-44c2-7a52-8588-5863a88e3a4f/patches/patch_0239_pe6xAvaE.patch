@@ -1,0 +1,214 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/providers/focus_provider.dart
+@@
+   Future<void> saveBlockList(BlockList list) async {
+@@
+     if (_activeBlockListId == null || _activeBlockListId == list.id) {
+       await setActiveBlockList(list.id);
+     }
+     notifyListeners();
+   }
+ 
+   Future<void> setActiveBlockList(String id) async {
+     _activeBlockListId = id;
+     await _repository.updateActiveBlockList(id);
+-    await _syncToNative();
+     notifyListeners();
+   }
+-
+-  Future<void> _syncToNative() async {
+-    if (_activeBlockListId == null) return;
+-    try {
+-      final list = _blockLists.firstWhere((l) => l.id == _activeBlockListId);
+-      final prefs = await SharedPreferences.getInstance();
+-
+-      // Persist active list ID and content
+-      await prefs.setString('active_block_list_id', _activeBlockListId!);
+-      await prefs.setString('active_block_list', jsonEncode(list.toJson()));
+-
+-      // Keep iOS native/extension selection up to date even when not actively focusing.
+-      await _focusService.cacheSelection(
+-        list.blockedPackageNames,
+-        list.blockedCategories,
+-      );
+-
+-      if (_state == FocusState.focusing) {
+-        await _focusService.startShield(
+-          list.blockedPackageNames,
+-          list.blockedCategories,
+-        );
+-      }
+-    } catch (e) {
+-      AppLogger.error('Sync to native focus protection failed.', e);
+-    }
+-  }
+@@
+   Future<List<String>?> selectAppsNative() async {
+     return await _focusService.openFamilyActivityPicker();
+   }
++
++  Future<_FocusShieldSnapshot> _buildFocusShieldSnapshot() async {
++    final blockedApps = await _featureRepository.getBlockedApps();
++    final blockedWebsites = await _featureRepository.getBlockedWebsites();
++    final appBindings = await _classicLocalStore.loadAppBindings();
++    final websiteBindings = await _classicLocalStore.loadWebsiteBindings();
++
++    final selectors = <String>{};
++    final websiteDomains = <String>{};
++    var appCount = 0;
++    var websiteCount = 0;
++
++    for (final app in blockedApps) {
++      final binding = appBindings[app.id];
++      if (binding == null) continue;
++
++      if (Platform.isIOS) {
++        var payload = binding.nativePayload?.trim();
++        final bundleId = binding.nativeIdentifier?.trim();
++        if ((payload == null || payload.isEmpty) &&
++            bundleId != null &&
++            bundleId.isNotEmpty) {
++          payload = await _focusService.encodeApplicationBundleSelection(
++            bundleId,
++          );
++          if (payload != null && payload.trim().isNotEmpty) {
++            payload = payload.trim();
++            await _classicLocalStore.saveAppBinding(
++              rowId: app.id,
++              nativeIdentifier: bundleId,
++              nativePayload: payload,
++            );
++          }
++        }
++        if (payload != null && payload.isNotEmpty) {
++          selectors.add(payload);
++          appCount++;
++        }
++      } else {
++        final packageName = binding.nativeIdentifier?.trim();
++        if (packageName != null && packageName.isNotEmpty) {
++          selectors.add(packageName);
++          appCount++;
++        }
++      }
++    }
++
++    for (final website in blockedWebsites) {
++      final rawDomain = website.urlDomain?.trim();
++      if (rawDomain == FeatureRepository.adultContentShieldMarker) {
++        continue;
++      }
++
++      final binding = websiteBindings[website.id];
++      final bindingDomain = binding?.nativeIdentifier?.trim();
++      final normalizedDomain = normalizeDomainInput(
++        bindingDomain?.isNotEmpty == true ? bindingDomain! : rawDomain,
++      );
++      final domain = normalizedDomain?.trim().toLowerCase();
++      if (domain != null && domain.isNotEmpty) {
++        websiteDomains.add(domain);
++      }
++
++      if (Platform.isIOS) {
++        var payload = binding?.nativePayload?.trim();
++        if ((payload == null || payload.isEmpty) &&
++            domain != null &&
++            domain.isNotEmpty) {
++          payload = await _focusService.encodeWebsiteDomainSelection(domain);
++          if (payload != null && payload.trim().isNotEmpty) {
++            payload = payload.trim();
++            await _classicLocalStore.saveWebsiteBinding(
++              rowId: website.id,
++              nativeIdentifier: domain,
++              nativePayload: payload,
++            );
++          }
++        }
++        if (payload != null && payload.isNotEmpty) {
++          selectors.add(payload);
++        }
++      }
++
++      final enforceable = (Platform.isIOS)
++          ? ((domain != null && domain.isNotEmpty) ||
++                ((binding?.nativePayload?.trim().isNotEmpty ?? false)))
++          : (domain != null && domain.isNotEmpty);
++      if (enforceable) {
++        websiteCount++;
++      }
++    }
++
++    return _FocusShieldSnapshot(
++      selectors: selectors.toList(growable: false),
++      websiteDomains: websiteDomains.toList(growable: false),
++      blockedAppCount: appCount,
++      blockedWebsiteCount: websiteCount,
++    );
++  }
++
++  Future<void> _refreshBlockingSummary() async {
++    final snapshot = await _buildFocusShieldSnapshot();
++    _configuredBlockedAppCount = snapshot.blockedAppCount;
++    _configuredBlockedWebsiteCount = snapshot.blockedWebsiteCount;
++  }
++
++  Future<void> _applyFocusShieldOverrideFromBlockedAppsSites() async {
++    try {
++      final snapshot = await _buildFocusShieldSnapshot();
++      _configuredBlockedAppCount = snapshot.blockedAppCount;
++      _configuredBlockedWebsiteCount = snapshot.blockedWebsiteCount;
++      if (!snapshot.hasAnyTarget) {
++        _focusShieldOverrideActive = false;
++        return;
++      }
++      await _focusService.syncClassicShieldConfig(
++        snapshot.selectors,
++        const [],
++        websiteDomains: snapshot.websiteDomains,
++      );
++      await _focusService.setClassicShieldEnabled(true);
++      _focusShieldOverrideActive = true;
++    } catch (error) {
++      _focusShieldOverrideActive = false;
++      AppLogger.error('Failed to apply Focus Mode shield override.', error);
++    }
++  }
++
++  Future<void> _syncClassicBaselineFromBlockedAppsSites() async {
++    try {
++      final apps = await _featureRepository.getBlockedApps();
++      final websites = await _featureRepository.getBlockedWebsites();
++      final filteredWebsites = websites
++          .where(
++            (site) =>
++                (site.urlDomain ?? '').trim() !=
++                FeatureRepository.adultContentShieldMarker,
++          )
++          .toList(growable: false);
++      final restPeriods = await _featureRepository.getRestPeriods();
++      await _classicCoordinator.syncNativeState(
++        apps: apps,
++        websites: filteredWebsites,
++        restPeriods: restPeriods,
++      );
++    } catch (error) {
++      AppLogger.error('Failed to restore baseline classic shielding.', error);
++    }
++  }
++
++  Future<void> _resetAfterSession() async {
++    _timer?.cancel();
++    _waitTimer?.cancel();
++    _state = FocusState.idle;
++    _isFocusModeActive = false;
++    _focusExitReadyAt = null;
++    _remainingSeconds = focusDurationMinutes * 60;
++
++    if (_focusShieldOverrideActive) {
++      await _syncClassicBaselineFromBlockedAppsSites();
++      _focusShieldOverrideActive = false;
++    } else {
++      await _refreshBlockingSummary();
++    }
++  }
+*** End Patch

@@ -1,0 +1,123 @@
+*** Begin Patch
+*** Update File: lib/core/providers/language_provider.dart
+@@
+   'fr': {
++    'app_name': 'WakeApp',
+     'profile': 'PROFIL',
+     'save': 'ENREGISTRER',
+     'saving': 'ENREGISTREMENT',
+@@
+     'app_modules': 'MODULES_APP',
+     'notes': 'NOTES',
++    'notes_new_note': 'Nouvelle note',
++    'notes_last_edit': 'Dernière modif',
++    'notes_untitled': 'Sans titre',
++    'notes_search_placeholder': 'Rechercher des notes…',
++    'notes_recent': 'RÉCENT',
++    'notes_all_notes': 'Toutes les notes',
++    'notes_no_tag': 'Sans tag',
++    'notes_tag_placeholder': '#travail/réunion',
++    'notes_write_placeholder': 'Écris ta note…',
+     'rewards': 'RÉCOMPENSES',
+     'cancel': 'ANNULER',
+@@
+     'rank': 'RANG',
+     'event_types': 'TYPES_ÉVÉNEMENTS',
++    'event_types_create_title': 'Créer un type d’événement',
++    'event_types_type_name': 'NOM DU TYPE',
++    'event_types_name_placeholder': 'Travail, sport, perso…',
++    'event_types_color': 'COULEUR',
++    'event_types_create_button': '+ Créer un type',
++    'event_types_empty_title': 'Aucun type pour l’instant.',
++    'event_types_empty_subtitle':
++        'Crée ton premier type pour organiser tes événements.',
++    'untitled': 'Sans titre',
++    'create': 'Créer',
++    'creating': 'Création…',
+     'biannual': 'SEMESTRIEL',
+@@
+     'settings_module_control_os_multiline':
+         'Paramètres, statistiques avancées et contrôle des modules\nde votre système.',
+     'blackout_mode': 'Mode Blackout',
++    'blackout_locked': 'VERROUILLÉ',
++    'blackout_description':
++        'Focus maximal. Une fois activé, tout est verrouillé jusqu’à la fin de la session.',
++    'duration': 'Durée',
++    'blackout_essential_apps': 'Apps essentielles',
++    'blackout_phone': 'Téléphone',
++    'blackout_messages': 'Messages',
++    'blackout_essential_note':
++        'Le mode Blackout bloque tout sauf les apps essentielles ci-dessus.',
++    'blackout_start_session': 'Démarrer la session',
++    'blackout_active': 'BLACKOUT ACTIF',
++    'blackout_active_description':
++        'Toutes les apps et sites sont verrouillés jusqu’à la fin de la session.',
++    'blackout_request_exit': 'DEMANDER SORTIE ({minutes} MIN)',
++    'blackout_exit_countdown': 'COMPTE À REBOURS',
++    'blackout_exit_hint':
++        'Si ton écran s’éteint, le compte à rebours revient à 10:00.',
++    'blackout_return_to_session': 'RETOUR À LA SESSION',
++    'blackout_quit_now': 'QUITTER MAINTENANT',
++    'blackout_wait_for_countdown': 'ATTENDRE LE COMPTE À REBOURS',
++    'blackout_remaining': 'restant',
++    'blackout_confirm_title': 'Activer le mode Blackout ?',
++    'blackout_confirm_body':
++        'Toutes les apps sauf Téléphone, Messages et Calendrier seront indisponibles jusqu’à la fin de la session.',
++    'blackout_confirm_start': 'Démarrer',
++    'blackout_action_refresh': 'Rafraîchir',
++    'blackout_action_unavailable': 'Indisponible',
++    'blackout_action_open_settings': 'Ouvrir les réglages',
++    'blackout_action_enable': 'Activer',
++    'blackout_protection_granted': 'Accès de protection accordé',
++    'blackout_protection_unavailable_android':
++        'La protection Android est indisponible ici',
++    'blackout_protection_unavailable_ios':
++        'La protection Screen Time est indisponible ici',
++    'blackout_protection_off_android':
++        'L’accès de protection Android est désactivé. Réactive-le dans les réglages pour un Blackout appliqué.',
++    'blackout_protection_off_ios':
++        'L’accès Screen Time est désactivé. Réactive-le dans les réglages iOS pour un Blackout appliqué.',
++    'blackout_protection_grant_android':
++        'Accorde les permissions Android pour activer les sessions Blackout protégées',
++    'blackout_protection_grant_ios':
++        'Accorde les permissions Screen Time pour activer les sessions Blackout protégées',
++    'blackout_error_permissions_title_android':
++        'Activer la protection Android',
++    'blackout_error_permissions_title_ios': 'Activer Screen Time',
++    'blackout_error_permissions_message_android':
++        'Le mode Blackout peut bloquer sur cet Android, mais l’accessibilité ou l’accès à l’utilisation est désactivé. Réactive la protection Android avant de démarrer une session protégée.',
++    'blackout_error_permissions_message_ios':
++        'Le mode Blackout peut bloquer sur cet iPhone, mais l’accès Screen Time / Family Controls est désactivé. Réactive-le dans les réglages iOS avant de démarrer une session protégée.',
++    'blackout_error_unsupported_title': 'Environnement non supporté',
++    'blackout_error_unsupported_message_android':
++        'Ce build n’expose pas les services Android requis pour appliquer Blackout. La session ne peut pas être appliquée ici.',
++    'blackout_error_unsupported_message_ios':
++        'Ce build n’expose pas la protection Apple Screen Time / Family Controls requise. Blackout ne peut pas appliquer la session ici.',
++    'blackout_error_activation_failed_title': 'Blackout indisponible',
++    'blackout_error_activation_failed_message_android':
++        'WakeApp n’a pas pu démarrer la protection Blackout Android sur cet appareil. Vérifie les permissions puis réessaie.',
++    'blackout_error_activation_failed_message_ios':
++        'WakeApp n’a pas pu démarrer la session Blackout protégée sur cet appareil. Vérifie l’accès Screen Time puis réessaie.',
++    'blackout_error_setup_required_title': 'Configuration requise',
++    'blackout_error_setup_required_message_android':
++        'Active les permissions de protection Android pour appliquer Blackout.',
++    'blackout_error_setup_required_message_ios':
++        'Active les permissions Screen Time / Family Controls pour appliquer Blackout.',
++    'screen_time_tile_protected': 'Protégé',
++    'screen_time_tile_targets': 'cibles',
++    'screen_time_tile_pauses': 'Pauses',
++    'screen_time_tile_scheduled': 'planifiées',
++    'screen_time_tile_access': 'Accès',
++    'screen_time_tile_approved': 'Approuvé',
++    'screen_time_tile_allow': 'Autoriser',
++    'screen_time_tile_iphone': 'iPhone',
++    'screen_time_tile_unavailable': 'Indispo',
++    'screen_time_tile_relaunch': 'Relancer',
++    'screen_time_tile_grant_access': 'accorder l’accès',
++    'screen_time_tile_real_device_only': 'appareil réel',
++    'screen_time_tile_ios16_required': 'iOS 16 requis',
++    'screen_time_tile_full_restart': 'redémarrage complet',
+     'max_focus': 'Focus max',
+     'session_prefix': 'Session',
+     'exit_prefix': 'Sortie',
+*** End Patch

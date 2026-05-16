@@ -1,0 +1,7 @@
+*** Begin Patch
+*** Update File: lib/features/premium/premium_comparison_table.dart
+@@
+-    final surface = AppColors.cardBackgroundAlt;
++    final surface = AppColors.isDark ? AppColors.surface : AppColors.cardBackgroundAlt;
+     final palette = _textPaletteForSurface(surface);
+*** End Patch

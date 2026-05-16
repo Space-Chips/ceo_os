@@ -1,0 +1,11 @@
+*** Begin Patch
+*** Update File: lib/core/providers/language_provider.dart
+@@
+     'widget_mode_habits': 'Habits',
++    'widget_mode_habits_table': 'Habits Table',
+     'widget_completed': 'Completed',
+@@
+     'widget_mode_habits': 'Habitudes',
++    'widget_mode_habits_table': "Tableau d'habitudes",
+     'widget_completed': 'Complété',
+*** End Patch

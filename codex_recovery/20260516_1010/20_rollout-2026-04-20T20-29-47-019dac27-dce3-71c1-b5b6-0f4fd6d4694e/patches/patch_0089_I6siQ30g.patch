@@ -1,0 +1,38 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/android/app/src/main/kotlin/com/wakeapp/ceoos/BlockingAccessibilityService.kt
+@@
+         mainHandler.postDelayed(
+             {
+                 if (!attemptCloseBlockedBrowserSurface(browserPkg)) {
++                    Log.d("WakeBlocking", "browser_exit_step=1 action=fallback_back pkg=$browserPkg")
+                     performGlobalAction(GLOBAL_ACTION_BACK)
+                 }
+             },
+             40L,
+         )
+@@
+         mainHandler.postDelayed(
+             {
+                 if (!attemptCloseBlockedBrowserSurface(browserPkg)) {
++                    Log.d("WakeBlocking", "browser_exit_step=2 action=fallback_back pkg=$browserPkg")
+                     performGlobalAction(GLOBAL_ACTION_BACK)
+                 }
+             },
+             170L,
+         )
+@@
+                 for (node in nodes) {
+                     if (clickNodeOrClickableAncestor(node)) {
++                        Log.d("WakeBlocking", "browser_exit action=close_by_id pkg=$browserPackage viewId=$viewId")
+                         return true
+                     }
+                 }
+@@
+             val labelMatches = keywords.any { keyword ->
+                 text.contains(keyword) || desc.contains(keyword)
+             }
+             if (labelMatches && clickNodeOrClickableAncestor(node)) {
++                Log.d("WakeBlocking", "browser_exit action=close_by_label text=$text desc=$desc")
+                 return true
+             }
+*** End Patch

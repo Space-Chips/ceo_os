@@ -1,0 +1,72 @@
+*** Begin Patch
+*** Update File: lib/core/services/home_widget_service.dart
+@@
+-class _CeoBaseCard extends StatelessWidget {
+-  final String headerTitle;
+-  final String headerSubtitle;
+-  final Widget child;
+-
+-  const _CeoBaseCard({
+-    required this.headerTitle,
+-    required this.headerSubtitle,
+-    required this.child,
+-  });
+-
+-  @override
+-  Widget build(BuildContext context) {
+-    return Container(
+-      decoration: BoxDecoration(
+-        borderRadius: BorderRadius.circular(26),
+-        gradient: LinearGradient(
+-          begin: Alignment.topLeft,
+-          end: Alignment.bottomRight,
+-          colors: [
+-            AppColors.sectionBackground.withValues(alpha: 0.95),
+-            AppColors.background,
+-          ],
+-        ),
+-        border: Border.all(color: AppColors.borderStrong, width: 1),
+-        boxShadow: [
+-          BoxShadow(
+-            color: AppColors.glassShadow,
+-            blurRadius: 42,
+-            offset: Offset(0, 18),
+-            spreadRadius: -18,
+-          ),
+-        ],
+-      ),
+-      padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
+-      child: Column(
+-        crossAxisAlignment: CrossAxisAlignment.start,
+-        children: [
+-          Text(
+-            headerTitle,
+-            maxLines: 1,
+-            overflow: TextOverflow.ellipsis,
+-            style: AppTypography.title3.copyWith(
+-              fontSize: 18,
+-              fontWeight: FontWeight.w800,
+-              color: AppColors.label,
+-            ),
+-          ),
+-          if (headerSubtitle.trim().isNotEmpty) ...[
+-            const SizedBox(height: 8),
+-            Text(
+-              headerSubtitle,
+-              maxLines: 2,
+-              overflow: TextOverflow.ellipsis,
+-              style: AppTypography.subhead.copyWith(
+-                fontSize: 12,
+-                height: 1.2,
+-                color: AppColors.secondaryLabel.withValues(alpha: 0.75),
+-                fontWeight: FontWeight.w600,
+-              ),
+-            ),
+-          ],
+-          Expanded(child: child),
+-        ],
+-      ),
+-    );
+-  }
+-}
+*** End Patch

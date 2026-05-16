@@ -1,0 +1,77 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/repositories/settings_repository.dart
+@@
+   Future<List<BlockedApp>> getBlockedApps() async {
+     try {
+       final response = await _client
+           .from('blocked_apps')
+           .select()
+           .eq('created_by', _currentUserId);
+ 
+       return (response as List)
+           .map((data) => BlockedApp.fromJson(data))
+           .toList();
+     } catch (e) {
+       print('Error getting blocked apps: $e');
+       return [];
+     }
+   }
++
++  Future<void> _safeDeleteByCreatedBy(String tableName) async {
++    try {
++      await _client.from(tableName).delete().eq('created_by', _currentUserId);
++    } catch (_) {
++      // Ignore missing/non-critical table errors in fallback mode.
++    }
++  }
++
++  Future<void> _fallbackDeleteMyAccountData() async {
++    const tables = [
++      'habit_completions',
++      'habit_logs',
++      'habits',
++      'calendar_events',
++      'pareto_tasks',
++      'task_groups',
++      'focus_sessions',
++      'block_lists',
++      'blocked_apps',
++      'notes',
++      'objectives',
++      'screen_time_logs',
++      'event_types',
++      'leaderboard_entries',
++      'friend_connections',
++      'weekly_habit_scores',
++      'weekly_contracts',
++      'user_ranks',
++      'win_streaks',
++      'app_settings',
++    ];
++
++    for (final table in tables) {
++      await _safeDeleteByCreatedBy(table);
++    }
++
++    try {
++      await _client.from('profiles').delete().eq('id', _currentUserId);
++    } catch (_) {
++      // Ignore fallback profile delete errors.
++    }
++  }
++
++  Future<void> deleteMyAccountData() async {
++    try {
++      await _client.rpc('delete_my_account_data');
++      return;
++    } on PostgrestException catch (e) {
++      if (e.code == 'PGRST202' ||
++          e.message.contains('delete_my_account_data')) {
++        await _fallbackDeleteMyAccountData();
++        return;
++      }
++      rethrow;
++    }
++  }
+ }
+*** End Patch

@@ -1,0 +1,161 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/repositories/focus_repository.dart
+@@
+ import 'package:supabase_flutter/supabase_flutter.dart';
+ import 'package:screen_time/screen_time.dart';
+ import '../models/block_list_model.dart';
++import '../models/user_models.dart';
+ import '../services/supabase_service.dart';
+ import '../utils/app_logger.dart';
+@@
+   Future<void> _refreshWinStreakForSession({
+     required bool completed,
+     required DateTime endTime,
+@@
+       AppLogger.error('Error refreshing win streak after session.', e);
+     }
+   }
++
++  Future<WinStreak?> getOrRepairWinStreak() async {
++    try {
++      final current = await _client
++          .from('win_streaks')
++          .select()
++          .eq('created_by', _currentUserId)
++          .maybeSingle();
++      final repaired = await _rebuildWinStreakFromSessions(existing: current);
++      if (repaired == null) return null;
++      return WinStreak.fromJson(repaired);
++    } catch (e) {
++      AppLogger.error('Error getting repaired win streak.', e);
++      return null;
++    }
++  }
++
++  Future<Map<String, dynamic>?> _rebuildWinStreakFromSessions({
++    Map<String, dynamic>? existing,
++  }) async {
++    try {
++      final sessions = await _client
++          .from('focus_sessions')
++          .select('completed, end_time, created_at')
++          .eq('created_by', _currentUserId)
++          .order('end_time', ascending: true);
++
++      final rows = (sessions as List)
++          .cast<Map<String, dynamic>>()
++          .where(
++            (row) =>
++                row['completed'] == true &&
++                (row['end_time'] ?? row['created_at']) != null,
++          )
++          .toList(growable: false);
++
++      final completedDays = <DateTime>{};
++      for (final row in rows) {
++        final raw = (row['end_time'] ?? row['created_at']) as String?;
++        final parsed = raw == null ? null : DateTime.tryParse(raw);
++        if (parsed == null) continue;
++        completedDays.add(DateTime(parsed.year, parsed.month, parsed.day));
++      }
++
++      final sortedDays = completedDays.toList()..sort();
++      var longestStreak = 0;
++      var currentRun = 0;
++      DateTime? previousDay;
++      for (final day in sortedDays) {
++        if (previousDay != null &&
++            day.difference(previousDay).inDays == 1) {
++          currentRun += 1;
++        } else {
++          currentRun = 1;
++        }
++        if (currentRun > longestStreak) longestStreak = currentRun;
++        previousDay = day;
++      }
++
++      var currentStreak = 0;
++      String? lastSessionDate;
++      if (sortedDays.isNotEmpty) {
++        final latestDay = sortedDays.last;
++        lastSessionDate =
++            '${latestDay.year.toString().padLeft(4, '0')}-'
++            '${latestDay.month.toString().padLeft(2, '0')}-'
++            '${latestDay.day.toString().padLeft(2, '0')}';
++
++        final today = DateTime.now();
++        final todayDay = DateTime(today.year, today.month, today.day);
++        final age = todayDay.difference(latestDay).inDays;
++        if (age <= 1) {
++          currentStreak = 1;
++          for (var i = sortedDays.length - 2; i >= 0; i--) {
++            final newer = sortedDays[i + 1];
++            final older = sortedDays[i];
++            if (newer.difference(older).inDays == 1) {
++              currentStreak += 1;
++              continue;
++            }
++            break;
++          }
++        }
++      }
++
++      final totalCompleted = rows.length;
++      final allSessions = (sessions as List).cast<Map<String, dynamic>>();
++      final totalFailed = allSessions.where((row) => row['completed'] != true).length;
++
++      final currentStreakExisting =
++          (existing?['current_streak'] as num?)?.toInt() ?? 0;
++      final longestStreakExisting =
++          (existing?['longest_streak'] as num?)?.toInt() ?? 0;
++      final totalCompletedExisting =
++          (existing?['total_completed_sessions'] as num?)?.toInt() ?? 0;
++      final totalFailedExisting =
++          (existing?['total_failed_sessions'] as num?)?.toInt() ?? 0;
++      final lastSessionDateExisting =
++          (existing?['last_session_date'] as String?)?.trim();
++
++      final unchanged =
++          currentStreakExisting == currentStreak &&
++          longestStreakExisting == longestStreak &&
++          totalCompletedExisting == totalCompleted &&
++          totalFailedExisting == totalFailed &&
++          lastSessionDateExisting == lastSessionDate;
++
++      if (!unchanged) {
++        await _client.from('win_streaks').upsert({
++          'created_by': _currentUserId,
++          'current_streak': currentStreak,
++          'longest_streak': longestStreak,
++          'total_completed_sessions': totalCompleted,
++          'total_failed_sessions': totalFailed,
++          'last_session_date': lastSessionDate,
++        }, onConflict: 'created_by');
++
++        await _client
++            .from('leaderboard_entries')
++            .update({
++              'win_streak': currentStreak,
++              'last_sync_date': DateTime.now().toIso8601String(),
++            })
++            .eq('created_by', _currentUserId);
++
++        await _client
++            .from('user_ranks')
++            .update({'win_streak_bonus': currentStreak})
++            .eq('created_by', _currentUserId);
++      }
++
++      final refreshed = await _client
++          .from('win_streaks')
++          .select()
++          .eq('created_by', _currentUserId)
++          .maybeSingle();
++      return refreshed;
++    } catch (e) {
++      AppLogger.error('Error rebuilding win streak from sessions.', e);
++      return existing;
++    }
++  }
+ }
+*** End Patch

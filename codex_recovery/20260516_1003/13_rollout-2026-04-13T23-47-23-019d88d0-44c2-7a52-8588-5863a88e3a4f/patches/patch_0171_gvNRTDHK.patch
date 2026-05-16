@@ -1,0 +1,39 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/screen_time_screen.dart
+@@
+   Future<List<BlockedApp>?> _upgradeIosBlockedAppNames({
+     required List<BlockedApp> apps,
+     required Map<String, ClassicBlockBinding> appBindings,
+   }) async {
+@@
+     if (!changed) return null;
+     return _repo.getBlockedApps();
+   }
++
++  Future<List<BlockedWebsite>?> _upgradeIosBlockedWebsiteDomains({
++    required List<BlockedWebsite> websites,
++    required Map<String, ClassicBlockBinding> websiteBindings,
++  }) async {
++    if (!Platform.isIOS || websites.isEmpty) return null;
++
++    var changed = false;
++    for (final website in websites) {
++      final currentDomain = website.urlDomain?.trim();
++      if (currentDomain != null && currentDomain.isNotEmpty) continue;
++      final payload = websiteBindings[website.id]?.nativePayload?.trim();
++      if (payload == null || payload.isEmpty) continue;
++      final described = await _focusService.describeWebsiteSelectionPayload(
++        payload,
++      );
++      final resolved = described?.domain?.trim();
++      if (resolved == null || resolved.isEmpty) continue;
++      final normalized = normalizeDomainInput(resolved) ?? resolved;
++      if (normalized.trim().isEmpty) continue;
++      await _repo.updateBlockedWebsiteDomain(website.id, normalized);
++      changed = true;
++    }
++
++    if (!changed) return null;
++    return _repo.getBlockedWebsites();
++  }
+*** End Patch

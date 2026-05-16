@@ -1,0 +1,86 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/android/app/src/main/kotlin/com/wakeapp/ceoos/BlockingAccessibilityService.kt
+@@
+     private var shield: InterceptionShield? = null
+     private val mainHandler = Handler(Looper.getMainLooper())
++    private var pendingWebOverlayRunnable: Runnable? = null
++    private var pendingWebOverlayDecision: BlockDecision.BlockUrl? = null
++    private var pendingWebOverlaySnapshot: ForegroundSnapshot? = null
+@@
+         serviceScope.cancel()
+         gateLauncher.dismiss(this)
+         mainHandler.removeCallbacksAndMessages(null)
++        pendingWebOverlayRunnable = null
++        pendingWebOverlayDecision = null
++        pendingWebOverlaySnapshot = null
+         shield?.hide()
+         browserBlockingOverlay.hide()
+         shield = null
+@@
+             BlockDecision.Allow -> {
++                cancelPendingWebOverlay()
+                 if (!BlockGateActivity.isVisible) {
+                     blockingNavigator.dismiss(this)
+                 }
+                 shield?.hide()
+                 browserBlockingOverlay.hide()
+                 false
+             }
+             BlockDecision.IgnoreTransient -> {
++                cancelPendingWebOverlay()
+                 if (!snapshot.isBrowser) {
+                     browserBlockingOverlay.hide()
+                 }
+                 false
+             }
+             is BlockDecision.BlockApp -> {
++                cancelPendingWebOverlay()
+                 browserBlockingOverlay.hide()
+                 shield?.show()
+                 val launchResult = gateLauncher.launch(this, effectiveDecision)
+@@
+             }
+             is BlockDecision.BlockUrl -> {
+                 shield?.hide()
+-                browserBlockingOverlay.show(snapshot, effectiveDecision)
++                scheduleWebOverlay(snapshot, effectiveDecision)
+                 false
+             }
+         }
+@@
+     private fun navigateHomeFromGate(
+         blockType: String?,
+         browserPackage: String?,
+         blockedDomain: String?,
+@@
+         )
+     }
++
++    private fun scheduleWebOverlay(
++        snapshot: ForegroundSnapshot,
++        decision: BlockDecision.BlockUrl,
++    ) {
++        val sameDecision = pendingWebOverlayDecision == decision
++        val sameSnapshotPackage = pendingWebOverlaySnapshot?.packageName == snapshot.packageName
++        pendingWebOverlayDecision = decision
++        pendingWebOverlaySnapshot = snapshot
++        if (sameDecision && sameSnapshotPackage) return
++
++        cancelPendingWebOverlay()
++        val runnable = Runnable {
++            val finalDecision = pendingWebOverlayDecision ?: return@Runnable
++            val finalSnapshot = pendingWebOverlaySnapshot ?: return@Runnable
++            browserBlockingOverlay.show(finalSnapshot, finalDecision)
++        }
++        pendingWebOverlayRunnable = runnable
++        // Small stabilization delay prevents typing/suggestion flashes.
++        mainHandler.postDelayed(runnable, 90L)
++    }
++
++    private fun cancelPendingWebOverlay() {
++        pendingWebOverlayRunnable?.let { mainHandler.removeCallbacks(it) }
++        pendingWebOverlayRunnable = null
++        pendingWebOverlayDecision = null
++        pendingWebOverlaySnapshot = null
++    }
+*** End Patch

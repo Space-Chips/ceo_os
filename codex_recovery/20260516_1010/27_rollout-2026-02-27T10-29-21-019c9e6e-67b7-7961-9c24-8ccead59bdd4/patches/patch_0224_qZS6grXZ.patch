@@ -1,0 +1,17 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/habits/habits_screen.dart
+@@
+ class _GoalsTab extends StatefulWidget {
+-  const _GoalsTab();
++  const _GoalsTab({super.key});
+@@
+ class _GoalsTabState extends State<_GoalsTab> {
+@@
+   void _showCreateGoalDialog() {
+@@
+   }
++
++  void openCreateGoalDialog() {
++    _showCreateGoalDialog();
++  }
+*** End Patch

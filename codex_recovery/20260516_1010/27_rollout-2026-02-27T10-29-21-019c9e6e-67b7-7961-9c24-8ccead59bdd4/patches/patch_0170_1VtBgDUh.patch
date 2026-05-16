@@ -1,0 +1,263 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/focus/focus_screen.dart
+@@
+   @override
+   Widget build(BuildContext context) {
+     return CupertinoPageScaffold(
+       backgroundColor: AppColors.background,
+-      child: Stack(
+-        children: [
+-          // Background Glow
+-          Positioned(
+-            top: 200,
+-            left: -100,
+-            child: Container(
+-              width: 400,
+-              height: 400,
+-              decoration: BoxDecoration(
+-                shape: BoxShape.circle,
+-                color: AppColors.primaryOrange.withValues(alpha: 0.05),
+-              ),
+-              child: BackdropFilter(
+-                filter: ImageFilter.blur(sigmaX: 100, sigmaY: 100),
+-                child: Container(color: CupertinoColors.transparent),
+-              ),
+-            ),
+-          ),
+-
+-          SafeArea(
+-            child: Consumer<FocusProvider>(
+-              builder: (context, prov, _) {
+-                final isIdle = prov.state == FocusState.idle;
+-
+-                return Column(
+-                  children: [
+-                    const SizedBox(height: 20),
+-                    Padding(
+-                      padding: const EdgeInsets.symmetric(horizontal: 24),
+-                      child: Row(
+-                        children: [
+-                          CupertinoButton(
+-                            padding: EdgeInsets.zero,
+-                            onPressed: () => context.go('/home'),
+-                            child: Icon(
+-                              CupertinoIcons.back,
+-                              color: AppColors.primaryOrange,
+-                            ),
+-                          ),
+-                          const SizedBox(width: 8),
+-                          const Expanded(
+-                            child: NeoMonoText(
+-                              'SYSTEM_FOCUS',
+-                              fontSize: 24,
+-                              fontWeight: FontWeight.bold,
+-                            ),
+-                          ),
+-                          if (!isIdle)
+-                            CupertinoButton(
+-                              padding: EdgeInsets.zero,
+-                              onPressed: prov.reset,
+-                              child: Icon(
+-                                CupertinoIcons.stop_fill,
+-                                color: AppColors.primaryOrange,
+-                                size: 20,
+-                              ),
+-                            )
+-                          else
+-                            CupertinoButton(
+-                              padding: EdgeInsets.zero,
+-                              onPressed: prov.requestPermissions,
+-                              child: Icon(
+-                                CupertinoIcons.shield_fill,
+-                                color: AppColors.secondaryLabel,
+-                                size: 20,
+-                              ),
+-                            ),
+-                        ],
+-                      ),
+-                    ),
+-                    const SizedBox(height: 16),
+-
+-                    Expanded(
+-                      child: Stack(
+-                        children: [
+-                          // Base Content
+-                          Opacity(
+-                            opacity: isIdle ? 1.0 : 0.2,
+-                            child: AbsorbPointer(
+-                              absorbing: !isIdle,
+-                              child: _StatsView(
+-                                provider: prov,
+-                                onManageBlockList: _showBlockListManager,
+-                                onEditBlockList: _showBlockListSheet,
+-                              ),
+-                            ),
+-                          ),
+-
+-                          // Quick Start Bar
+-                          if (isIdle)
+-                            Positioned(
+-                              top: 0,
+-                              left: 24,
+-                              right: 24,
+-                              child: _QuickStartBar(provider: prov),
+-                            ),
+-
+-                          // Active Overlay
+-                          if (!isIdle)
+-                            Positioned.fill(
+-                              child: ClipRect(
+-                                child: BackdropFilter(
+-                                  filter: ImageFilter.blur(
+-                                    sigmaX: 10,
+-                                    sigmaY: 10,
+-                                  ),
+-                                  child: Container(
+-                                    color: AppColors.background.withValues(
+-                                      alpha: 0.4,
+-                                    ),
+-                                    child: _buildActiveOverlay(prov),
+-                                  ),
+-                                ),
+-                              ),
+-                            ),
+-                        ],
+-                      ),
+-                    ),
+-                  ],
+-                );
+-              },
+-            ),
+-          ),
+-        ],
++      child: AmbientBackdrop(
++        child: Stack(
++          children: [
++            // Background Glow
++            Positioned(
++              top: 200,
++              left: -100,
++              child: Container(
++                width: 400,
++                height: 400,
++                decoration: BoxDecoration(
++                  shape: BoxShape.circle,
++                  color: AppColors.primaryOrange.withValues(alpha: 0.05),
++                ),
++                child: BackdropFilter(
++                  filter: ImageFilter.blur(sigmaX: 100, sigmaY: 100),
++                  child: Container(color: CupertinoColors.transparent),
++                ),
++              ),
++            ),
++
++            SafeArea(
++              child: Consumer<FocusProvider>(
++                builder: (context, prov, _) {
++                  final isIdle = prov.state == FocusState.idle;
++
++                  return Column(
++                    children: [
++                      const SizedBox(height: 20),
++                      Padding(
++                        padding: const EdgeInsets.symmetric(horizontal: 24),
++                        child: Row(
++                          children: [
++                            CupertinoButton(
++                              padding: EdgeInsets.zero,
++                              onPressed: () => context.go('/home'),
++                              child: Icon(
++                                CupertinoIcons.back,
++                                color: AppColors.primaryOrange,
++                              ),
++                            ),
++                            const SizedBox(width: 8),
++                            const Expanded(
++                              child: NeoMonoText(
++                                'SYSTEM_FOCUS',
++                                fontSize: 24,
++                                fontWeight: FontWeight.bold,
++                              ),
++                            ),
++                            if (!isIdle)
++                              CupertinoButton(
++                                padding: EdgeInsets.zero,
++                                onPressed: prov.reset,
++                                child: Icon(
++                                  CupertinoIcons.stop_fill,
++                                  color: AppColors.primaryOrange,
++                                  size: 20,
++                                ),
++                              )
++                            else
++                              CupertinoButton(
++                                padding: EdgeInsets.zero,
++                                onPressed: prov.requestPermissions,
++                                child: Icon(
++                                  CupertinoIcons.shield_fill,
++                                  color: AppColors.secondaryLabel,
++                                  size: 20,
++                                ),
++                              ),
++                          ],
++                        ),
++                      ),
++                      const SizedBox(height: 16),
++
++                      Expanded(
++                        child: Stack(
++                          children: [
++                            // Base Content
++                            Opacity(
++                              opacity: isIdle ? 1.0 : 0.2,
++                              child: AbsorbPointer(
++                                absorbing: !isIdle,
++                                child: _StatsView(
++                                  provider: prov,
++                                  onManageBlockList: _showBlockListManager,
++                                  onEditBlockList: _showBlockListSheet,
++                                ),
++                              ),
++                            ),
++
++                            // Quick Start Bar
++                            if (isIdle)
++                              Positioned(
++                                top: 0,
++                                left: 24,
++                                right: 24,
++                                child: _QuickStartBar(provider: prov),
++                              ),
++
++                            // Active Overlay
++                            if (!isIdle)
++                              Positioned.fill(
++                                child: ClipRect(
++                                  child: BackdropFilter(
++                                    filter: ImageFilter.blur(
++                                      sigmaX: 10,
++                                      sigmaY: 10,
++                                    ),
++                                    child: Container(
++                                      color: AppColors.background.withValues(
++                                        alpha: 0.4,
++                                      ),
++                                      child: _buildActiveOverlay(prov),
++                                    ),
++                                  ),
++                                ),
++                              ),
++                          ],
++                        ),
++                      ),
++                    ],
++                  );
++                },
++              ),
++            ),
++          ],
++        ),
+       ),
+     );
+   }
+*** End Patch

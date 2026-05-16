@@ -1,0 +1,13 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/ios/FocusActivityMonitor/FocusActivityMonitor.entitlements
+@@
+ 	<key>com.apple.developer.family-controls</key>
+ 	<true/>
++	<key>com.apple.developer.device-activity-monitoring</key>
++	<true/>
+ 	<key>com.apple.security.application-groups</key>
+ 	<array>
+ 		<string>group.com.wakeapp.ceoos</string>
+ 	</array>
+ </dict>
+*** End Patch

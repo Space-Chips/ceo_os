@@ -1,0 +1,206 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/android/app/src/main/kotlin/com/example/ceo_os/AppBlockingService.kt
+@@
+ import android.graphics.Color
+ import android.graphics.PixelFormat
++import android.app.usage.UsageStatsManager
+ import android.os.Build
++import android.os.Handler
++import android.os.Looper
+ import android.util.Log
+ import android.view.Gravity
+ import android.view.WindowManager
+ import android.view.accessibility.AccessibilityEvent
+ import android.widget.FrameLayout
+ import android.widget.TextView
++import java.util.Calendar
+ import org.json.JSONObject
+@@
+     private var focusBlockedPackages = mutableSetOf<String>()
+     private var classicBaseBlockedPackages = mutableSetOf<String>()
+     private var classicPauseBlockedPackages = mutableSetOf<String>()
++    private var dailyLimitMinutesByPackage = mutableMapOf<String, Int>()
++    private var exceededDailyLimitPackages = mutableSetOf<String>()
+     private var focusShieldActive = false
+     private var classicShieldActive = false
+     private var classicPauseShieldActive = false
+     private var ceoShieldActive = false
+     private var currentPackageName: String? = null
++    private val usageHandler = Handler(Looper.getMainLooper())
++    private val usageCheckRunnable = object : Runnable {
++        override fun run() {
++            evaluateDailyLimitsNow()
++            if (dailyLimitMinutesByPackage.isNotEmpty()) {
++                usageHandler.postDelayed(this, 15000L)
++            }
++        }
++    }
+@@
+         fun updateClassicPauseBlockList(packages: List<String>) {
+             instance?.classicPauseBlockedPackages?.clear()
+             instance?.classicPauseBlockedPackages?.addAll(packages)
+             Log.d("AppBlockingService", "Updated classic pause block list: $packages")
+         }
++
++        fun updateDailyLimitConfig(config: Map<String, Int>) {
++            instance?.dailyLimitMinutesByPackage?.clear()
++            instance?.dailyLimitMinutesByPackage?.putAll(config)
++            instance?.refreshDailyLimitConfigFromPrefs()
++            instance?.scheduleDailyLimitMonitoring()
++            instance?.evaluateDailyLimitsNow()
++            Log.d("AppBlockingService", "Updated daily limit config: $config")
++        }
+@@
+         refreshClassicBaseBlockListFromPrefs()
+         refreshClassicPauseBlockListFromPrefs()
++        refreshDailyLimitConfigFromPrefs()
+         refreshShieldFlagsFromPrefs()
++        scheduleDailyLimitMonitoring()
+         enforceCurrentForegroundIfNeeded()
+         Log.d("AppBlockingService", "Service Connected")
+     }
+@@
+     private fun refreshShieldFlagsFromPrefs() {
+         val prefs = getSharedPreferences("FlutterSharedPreferences", Context.MODE_PRIVATE)
+         focusShieldActive = prefs.getBoolean("focus_shield_active", false)
+         classicShieldActive = prefs.getBoolean("classic_shield_active", false)
+         classicPauseShieldActive = prefs.getBoolean("classic_pause_shield_active", false)
++        exceededDailyLimitPackages.clear()
++        val exceededJson = prefs.getString("classic_daily_limit_exceeded_packages", null)
++        if (!exceededJson.isNullOrEmpty()) {
++            try {
++                val array = org.json.JSONArray(exceededJson)
++                for (i in 0 until array.length()) {
++                    exceededDailyLimitPackages.add(array.getString(i))
++                }
++            } catch (_: Exception) {
++            }
++        }
+         ceoShieldActive = prefs.getBoolean("ceo_shield_active", false)
+     }
++
++    private fun refreshDailyLimitConfigFromPrefs() {
++        try {
++            val prefs = getSharedPreferences("FlutterSharedPreferences", Context.MODE_PRIVATE)
++            val jsonStr = prefs.getString("classic_daily_limit_config", null)
++            dailyLimitMinutesByPackage.clear()
++            if (jsonStr.isNullOrEmpty()) {
++                return
++            }
++            val json = JSONObject(jsonStr)
++            val packagesObject = json.optJSONObject("package_limits")
++            if (packagesObject != null) {
++                val keys = packagesObject.keys()
++                while (keys.hasNext()) {
++                    val key = keys.next()
++                    val minutes = packagesObject.optInt(key, 0)
++                    if (minutes > 0) {
++                        dailyLimitMinutesByPackage[key] = minutes
++                    }
++                }
++            }
++            Log.d("AppBlockingService", "Refreshed daily limit config: $dailyLimitMinutesByPackage")
++        } catch (e: Exception) {
++            Log.e("AppBlockingService", "Error refreshing daily limit prefs", e)
++        }
++    }
+@@
+         if (classicPauseShieldActive) {
+             merged.addAll(classicPauseBlockedPackages)
+         }
++        merged.addAll(exceededDailyLimitPackages)
+         return merged
+     }
+@@
+     private fun applyShieldState() {
+-        if (!focusShieldActive && !classicShieldActive && !classicPauseShieldActive && !ceoShieldActive) {
++        if (!focusShieldActive && !classicShieldActive && !classicPauseShieldActive && !ceoShieldActive && exceededDailyLimitPackages.isEmpty()) {
+             removeBlockOverlay()
+         }
+     }
++
++    private fun scheduleDailyLimitMonitoring() {
++        usageHandler.removeCallbacks(usageCheckRunnable)
++        if (dailyLimitMinutesByPackage.isNotEmpty()) {
++            usageHandler.post(usageCheckRunnable)
++        }
++    }
++
++    private fun persistExceededDailyLimitPackages() {
++        val prefs = getSharedPreferences("FlutterSharedPreferences", Context.MODE_PRIVATE)
++        val array = org.json.JSONArray()
++        exceededDailyLimitPackages.forEach { array.put(it) }
++        prefs.edit()
++            .putString("classic_daily_limit_exceeded_packages", array.toString())
++            .putBoolean("classic_daily_limit_active", exceededDailyLimitPackages.isNotEmpty())
++            .apply()
++    }
++
++    private fun queryUsageMinutesToday(packageName: String): Int {
++        val usageStatsManager = getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
++        val calendar = Calendar.getInstance().apply {
++            set(Calendar.HOUR_OF_DAY, 0)
++            set(Calendar.MINUTE, 0)
++            set(Calendar.SECOND, 0)
++            set(Calendar.MILLISECOND, 0)
++        }
++        val stats = usageStatsManager.queryUsageStats(
++            UsageStatsManager.INTERVAL_DAILY,
++            calendar.timeInMillis,
++            System.currentTimeMillis(),
++        )
++        if (stats.isNullOrEmpty()) return 0
++        val millis = stats
++            .filter { it.packageName == packageName }
++            .sumOf { it.totalTimeInForeground }
++        return (millis / 60000L).toInt()
++    }
++
++    private fun evaluateDailyLimitsNow() {
++        if (dailyLimitMinutesByPackage.isEmpty()) {
++            exceededDailyLimitPackages.clear()
++            persistExceededDailyLimitPackages()
++            enforceCurrentForegroundIfNeeded()
++            return
++        }
++
++        val newlyExceeded = mutableSetOf<String>()
++        dailyLimitMinutesByPackage.forEach { (packageName, limitMinutes) ->
++            val usedMinutes = queryUsageMinutesToday(packageName)
++            if (usedMinutes >= limitMinutes) {
++                newlyExceeded.add(packageName)
++            }
++        }
++        if (newlyExceeded != exceededDailyLimitPackages) {
++            exceededDailyLimitPackages = newlyExceeded
++            persistExceededDailyLimitPackages()
++        } else {
++            persistExceededDailyLimitPackages()
++        }
++        enforceCurrentForegroundIfNeeded()
++    }
+@@
+         if (candidate == null) {
+-            if (!focusShieldActive && !classicShieldActive && !classicPauseShieldActive && !ceoShieldActive) {
++            if (!focusShieldActive && !classicShieldActive && !classicPauseShieldActive && !ceoShieldActive && exceededDailyLimitPackages.isEmpty()) {
+                 removeBlockOverlay()
+             }
+             return
+         }
+@@
+         currentPackageName = event.packageName?.toString()
+-        if (!focusShieldActive && !classicShieldActive && !classicPauseShieldActive && !ceoShieldActive) {
++        evaluateDailyLimitsNow()
++        if (!focusShieldActive && !classicShieldActive && !classicPauseShieldActive && !ceoShieldActive && exceededDailyLimitPackages.isEmpty()) {
+             removeBlockOverlay()
+             return
+         }
+@@
+     override fun onDestroy() {
+         super.onDestroy()
+         instance = null
++        usageHandler.removeCallbacks(usageCheckRunnable)
+         removeBlockOverlay()
+     }
+ }
+*** End Patch

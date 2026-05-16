@@ -1,0 +1,26 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/habits/habits_screen.dart
+@@
+   @override
+   Widget build(BuildContext context) {
++    final language = context.watch<LanguageProvider>();
+     return Consumer<HabitProvider>(
+@@
+                       NeoMonoText(
+-                  'NO_HABITS',
++                  language.t('no_habits'),
+@@
+                           'HABIT',
++                          language.t('habit'),
+@@
+                           Text(
+                             '${DateFormat('MMM d').format(weekStart)} — ${DateFormat('MMM d').format(weekStart.add(const Duration(days: 6)))}',
+@@
+                           Text(
+-                            'WEEK SCORE',
++                            language.t('habits_week_score'),
+@@
+                       Text(
+-                        'TARGET 90%',
++                        language.t('habits_target_90'),
+*** End Patch

@@ -1,0 +1,307 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/focus/focus_screen.dart
+@@
+   @override
+   Widget build(BuildContext context) {
+     const presets = [25, 45, 90];
+ 
+-    return GlassCard(
+-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+-      borderRadius: 24,
+-      child: Column(
+-        children: [
+-          Row(
+-            children: [
+-              Expanded(
+-                child: Column(
+-                  crossAxisAlignment: CrossAxisAlignment.start,
+-                  mainAxisSize: MainAxisSize.min,
+-                  children: [
+-                    Text(
+-                      'SESSION_LENGTH',
+-                      style: AppTypography.mono.copyWith(
+-                        fontSize: 8,
+-                        color: AppColors.tertiaryLabel,
+-                      ),
+-                    ),
+-                    const SizedBox(height: 4),
+-                    NeoMonoText(
+-                      '${provider.focusDurationMinutes}M',
+-                      fontSize: 16,
+-                      color: AppColors.primaryOrange,
+-                    ),
+-                  ],
+-                ),
+-              ),
+-              SizedBox(
+-                width: 140,
+-                child: AdaptiveSlider(
+-                  value: provider.focusDurationMinutes.toDouble(),
+-                  min: 5,
+-                  max: 90,
+-                  onChanged: (v) {
+-                    provider.focusDurationMinutes = v.round();
+-                    provider.reset();
+-                  },
+-                ),
+-              ),
+-            ],
+-          ),
+-          const SizedBox(height: 8),
+-          Row(
+-            children: presets
+-                .map(
+-                  (value) => Expanded(
+-                    child: Padding(
+-                      padding: const EdgeInsets.symmetric(horizontal: 2),
+-                      child: CupertinoButton(
+-                        padding: const EdgeInsets.symmetric(vertical: 7),
+-                        minimumSize: Size.zero,
+-                        color: provider.focusDurationMinutes == value
+-                            ? AppColors.primaryOrange.withValues(alpha: 0.2)
+-                            : AppColors.backgroundLight.withValues(alpha: 0.6),
+-                        borderRadius: BorderRadius.circular(10),
+-                        onPressed: () {
+-                          provider.focusDurationMinutes = value;
+-                          provider.reset();
+-                        },
+-                        child: Text(
+-                          '${value}M',
+-                          style: AppTypography.mono.copyWith(
+-                            fontSize: 10,
+-                            fontWeight: FontWeight.bold,
+-                            color: provider.focusDurationMinutes == value
+-                                ? AppColors.primaryOrange
+-                                : AppColors.secondaryLabel,
+-                          ),
+-                        ),
+-                      ),
+-                    ),
+-                  ),
+-                )
+-                .toList(),
+-          ),
+-          const SizedBox(height: 8),
+-          Container(
+-            width: double.infinity,
+-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+-            decoration: BoxDecoration(
+-              borderRadius: BorderRadius.circular(10),
+-              color: AppColors.error.withValues(alpha: 0.08),
+-              border: Border.all(
+-                color: AppColors.error.withValues(alpha: 0.25),
+-                width: 0.5,
+-              ),
+-            ),
+-            child: Text(
+-              'EARLY EXIT CAN BREAK YOUR STREAK',
+-              style: AppTypography.mono.copyWith(
+-                fontSize: 8,
+-                color: AppColors.secondaryLabel,
+-              ),
+-              textAlign: TextAlign.center,
+-            ),
+-          ),
+-          const SizedBox(height: 8),
+-          SizedBox(
+-            width: double.infinity,
+-            child: CupertinoButton(
+-              padding: const EdgeInsets.symmetric(vertical: 10),
+-              color: provider.isAuthorized
+-                  ? AppColors.primaryOrange
+-                  : AppColors.tertiaryLabel,
+-              borderRadius: BorderRadius.circular(12),
+-              onPressed: () async {
+-                await provider.startFocus();
+-              },
+-              child: Text(
+-                'BEGIN_FOCUS_MODE',
+-                style: AppTypography.mono.copyWith(
+-                  fontSize: 11,
+-                  color: AppColors.white,
+-                  fontWeight: FontWeight.bold,
+-                ),
+-              ),
+-            ),
+-          ),
+-        ],
+-      ),
+-    );
++    return Stack(
++      children: [
++        Positioned.fill(
++          child: IgnorePointer(
++            child: Container(
++              margin: const EdgeInsets.all(8),
++              decoration: BoxDecoration(
++                borderRadius: BorderRadius.circular(24),
++                boxShadow: [
++                  BoxShadow(
++                    color: AppColors.primaryOrange.withValues(alpha: 0.2),
++                    blurRadius: 30,
++                    spreadRadius: 1,
++                  ),
++                ],
++              ),
++            ),
++          ),
++        ),
++        GlassCard(
++          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
++          borderRadius: 24,
++          border: Border.all(
++            color: AppColors.primaryOrange.withValues(alpha: 0.2),
++            width: 0.65,
++          ),
++          child: Column(
++            children: [
++              Row(
++                children: [
++                  Expanded(
++                    child: Column(
++                      crossAxisAlignment: CrossAxisAlignment.start,
++                      mainAxisSize: MainAxisSize.min,
++                      children: [
++                        Text(
++                          'SESSION_LENGTH',
++                          style: AppTypography.mono.copyWith(
++                            fontSize: 8,
++                            color: AppColors.tertiaryLabel,
++                          ),
++                        ),
++                        const SizedBox(height: 4),
++                        NeoMonoText(
++                          '${provider.focusDurationMinutes}M',
++                          fontSize: 16,
++                          color: AppColors.primaryOrange,
++                        ),
++                      ],
++                    ),
++                  ),
++                  SizedBox(
++                    width: 140,
++                    child: AdaptiveSlider(
++                      value: provider.focusDurationMinutes.toDouble(),
++                      min: 5,
++                      max: 90,
++                      onChanged: (v) {
++                        provider.focusDurationMinutes = v.round();
++                        provider.reset();
++                      },
++                    ),
++                  ),
++                ],
++              ),
++              const SizedBox(height: 8),
++              Row(
++                children: presets
++                    .map(
++                      (value) => Expanded(
++                        child: Padding(
++                          padding: const EdgeInsets.symmetric(horizontal: 2),
++                          child: CupertinoButton(
++                            padding: const EdgeInsets.symmetric(vertical: 7),
++                            minimumSize: Size.zero,
++                            color: provider.focusDurationMinutes == value
++                                ? AppColors.primaryOrange.withValues(alpha: 0.2)
++                                : AppColors.backgroundLight.withValues(
++                                    alpha: 0.6,
++                                  ),
++                            borderRadius: BorderRadius.circular(10),
++                            onPressed: () {
++                              provider.focusDurationMinutes = value;
++                              provider.reset();
++                            },
++                            child: Text(
++                              '${value}M',
++                              style: AppTypography.mono.copyWith(
++                                fontSize: 10,
++                                fontWeight: FontWeight.bold,
++                                color: provider.focusDurationMinutes == value
++                                    ? AppColors.primaryOrange
++                                    : AppColors.secondaryLabel,
++                              ),
++                            ),
++                          ),
++                        ),
++                      ),
++                    )
++                    .toList(),
++              ),
++              const SizedBox(height: 8),
++              Row(
++                children: [
++                  Icon(
++                    provider.isAuthorized
++                        ? CupertinoIcons.checkmark_shield_fill
++                        : CupertinoIcons.exclamationmark_shield_fill,
++                    size: 13,
++                    color: provider.isAuthorized
++                        ? AppColors.success
++                        : AppColors.warning,
++                  ),
++                  const SizedBox(width: 6),
++                  Expanded(
++                    child: Text(
++                      provider.isAuthorized
++                          ? 'PROTECTION_PERMISSIONS_READY'
++                          : 'PROTECTION_PERMISSIONS_REQUIRED',
++                      style: AppTypography.mono.copyWith(
++                        fontSize: 8,
++                        color: AppColors.tertiaryLabel,
++                      ),
++                    ),
++                  ),
++                ],
++              ),
++              const SizedBox(height: 8),
++              Container(
++                width: double.infinity,
++                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
++                decoration: BoxDecoration(
++                  borderRadius: BorderRadius.circular(10),
++                  color: AppColors.error.withValues(alpha: 0.08),
++                  border: Border.all(
++                    color: AppColors.error.withValues(alpha: 0.25),
++                    width: 0.5,
++                  ),
++                ),
++                child: Text(
++                  'EARLY EXIT CAN BREAK YOUR STREAK',
++                  style: AppTypography.mono.copyWith(
++                    fontSize: 8,
++                    color: AppColors.secondaryLabel,
++                  ),
++                  textAlign: TextAlign.center,
++                ),
++              ),
++              const SizedBox(height: 8),
++              SizedBox(
++                width: double.infinity,
++                child: CupertinoButton(
++                  padding: const EdgeInsets.symmetric(vertical: 10),
++                  color: provider.isAuthorized
++                      ? AppColors.primaryOrange
++                      : AppColors.tertiaryLabel,
++                  borderRadius: BorderRadius.circular(12),
++                  onPressed: () async {
++                    await provider.startFocus();
++                  },
++                  child: Text(
++                    'BEGIN_FOCUS_MODE',
++                    style: AppTypography.mono.copyWith(
++                      fontSize: 11,
++                      color: AppColors.white,
++                      fontWeight: FontWeight.bold,
++                    ),
++                  ),
++                ),
++              ),
++            ],
++          ),
++        ),
++      ],
++    );
+   }
+ }
+*** End Patch

@@ -1,4 +1,4 @@
-package com.example.ceo_os
+package com.wakeapp.ceoos
 
 import android.accessibilityservice.AccessibilityService
 import android.view.accessibility.AccessibilityEvent
@@ -18,25 +18,46 @@ class AppBlockingService : AccessibilityService() {
 
     private var windowManager: WindowManager? = null
     private var blockView: FrameLayout? = null
-    private var blockedPackages = mutableSetOf<String>()
-    private var isShieldActive = false
+    private var focusBlockedPackages = mutableSetOf<String>()
+    private var classicBlockedPackages = mutableSetOf<String>()
+    private var focusShieldActive = false
+    private var classicShieldActive = false
+    private var ceoShieldActive = false
 
     companion object {
         var instance: AppBlockingService? = null
         
         fun updateBlockList(packages: List<String>) {
-            instance?.blockedPackages?.clear()
-            instance?.blockedPackages?.addAll(packages)
+            instance?.focusBlockedPackages?.clear()
+            instance?.focusBlockedPackages?.addAll(packages)
             Log.d("AppBlockingService", "Updated block list: $packages")
         }
 
+        fun updateClassicBlockList(packages: List<String>) {
+            instance?.classicBlockedPackages?.clear()
+            instance?.classicBlockedPackages?.addAll(packages)
+            Log.d("AppBlockingService", "Updated classic block list: $packages")
+        }
+
         fun setShieldActive(active: Boolean) {
-            instance?.isShieldActive = active
+            instance?.focusShieldActive = active
+            instance?.ceoShieldActive = false
+            instance?.refreshFocusBlockListFromPrefs()
+            instance?.applyShieldState()
+        }
+
+        fun setClassicShieldActive(active: Boolean) {
+            instance?.classicShieldActive = active
+            instance?.refreshClassicBlockListFromPrefs()
+            instance?.applyShieldState()
+        }
+
+        fun setCeoShieldActive(active: Boolean) {
+            instance?.ceoShieldActive = active
             if (active) {
-                instance?.refreshBlockListFromPrefs()
-            } else {
-                instance?.removeBlockOverlay()
+                instance?.refreshFocusBlockListFromPrefs()
             }
+            instance?.applyShieldState()
         }
     }
 
@@ -44,37 +65,83 @@ class AppBlockingService : AccessibilityService() {
         super.onServiceConnected()
         instance = this
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
-        refreshBlockListFromPrefs()
+        refreshFocusBlockListFromPrefs()
+        refreshClassicBlockListFromPrefs()
+        refreshShieldFlagsFromPrefs()
         Log.d("AppBlockingService", "Service Connected")
     }
 
-    private fun refreshBlockListFromPrefs() {
+    private fun refreshFocusBlockListFromPrefs() {
         try {
             val prefs = getSharedPreferences("FlutterSharedPreferences", Context.MODE_PRIVATE)
             val jsonStr = prefs.getString("flutter.active_block_list", null)
             if (jsonStr != null) {
-                // Flutter's SharedPreferences adds "flutter." prefix
                 val json = JSONObject(jsonStr)
                 val packagesArray = json.optJSONArray("blocked_package_names")
-                blockedPackages.clear()
+                focusBlockedPackages.clear()
                 if (packagesArray != null) {
                     for (i in 0 until packagesArray.length()) {
-                        blockedPackages.add(packagesArray.getString(i))
+                        focusBlockedPackages.add(packagesArray.getString(i))
                     }
                 }
-                Log.d("AppBlockingService", "Refreshed block list from prefs: $blockedPackages")
+                Log.d("AppBlockingService", "Refreshed focus block list from prefs: $focusBlockedPackages")
             }
         } catch (e: Exception) {
             Log.e("AppBlockingService", "Error refreshing prefs", e)
         }
     }
 
+    private fun refreshClassicBlockListFromPrefs() {
+        try {
+            val prefs = getSharedPreferences("FlutterSharedPreferences", Context.MODE_PRIVATE)
+            val jsonStr = prefs.getString("classic_block_list", null)
+            classicBlockedPackages.clear()
+            if (jsonStr.isNullOrEmpty()) {
+                return
+            }
+            val json = JSONObject(jsonStr)
+            val packagesArray = json.optJSONArray("blocked_package_names")
+            if (packagesArray != null) {
+                for (i in 0 until packagesArray.length()) {
+                    classicBlockedPackages.add(packagesArray.getString(i))
+                }
+            }
+            Log.d("AppBlockingService", "Refreshed classic block list from prefs: $classicBlockedPackages")
+        } catch (e: Exception) {
+            Log.e("AppBlockingService", "Error refreshing classic prefs", e)
+        }
+    }
+
+    private fun refreshShieldFlagsFromPrefs() {
+        val prefs = getSharedPreferences("FlutterSharedPreferences", Context.MODE_PRIVATE)
+        focusShieldActive = prefs.getBoolean("focus_shield_active", false)
+        classicShieldActive = prefs.getBoolean("classic_shield_active", false)
+        ceoShieldActive = prefs.getBoolean("ceo_shield_active", false)
+    }
+
+    private fun effectiveBlockedPackages(): Set<String> {
+        val merged = mutableSetOf<String>()
+        if (focusShieldActive || ceoShieldActive) {
+            merged.addAll(focusBlockedPackages)
+        }
+        if (classicShieldActive) {
+            merged.addAll(classicBlockedPackages)
+        }
+        return merged
+    }
+
+    private fun applyShieldState() {
+        if (!focusShieldActive && !classicShieldActive && !ceoShieldActive) {
+            removeBlockOverlay()
+        }
+    }
+
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
-        if (!isShieldActive) return
+        if (!focusShieldActive && !classicShieldActive && !ceoShieldActive) return
         if (event?.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
             val packageName = event.packageName?.toString() ?: return
             
-            if (blockedPackages.contains(packageName)) {
+            if (effectiveBlockedPackages().contains(packageName)) {
                 showBlockOverlay(packageName)
             }
         }

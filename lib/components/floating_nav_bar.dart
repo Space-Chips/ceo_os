@@ -1,6 +1,5 @@
 import 'dart:ui';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart' show Colors;
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_typography.dart';
 
@@ -32,26 +31,40 @@ class FloatingNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final radius = BorderRadius.circular(30);
     return Positioned(
-      bottom: 24, // Adjust distance from bottom
+      bottom: 20,
       left: 16,
       right: 16,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Nav Tabs Pill
           Expanded(
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(30),
+              borderRadius: radius,
               child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
                 child: Container(
                   height: 60,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF2A2A2A).withOpacity(0.85), // Dark pill color matching mockup
-                    borderRadius: BorderRadius.circular(30),
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: AppColors.floatingGlassGradient,
+                    ),
+                    borderRadius: radius,
                     border: Border.all(
-                        color: AppColors.glassBorder.withOpacity(0.1), width: 0.5),
+                      color: AppColors.glassBorder.withValues(alpha: 0.85),
+                      width: 0.65,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.glassShadow.withValues(alpha: 0.26),
+                        blurRadius: 20,
+                        offset: const Offset(0, 10),
+                        spreadRadius: -10,
+                      ),
+                    ],
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -73,7 +86,6 @@ class FloatingNavBar extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 16),
-          // Action Button Circle
           ClipRRect(
             borderRadius: BorderRadius.circular(30),
             child: BackdropFilter(
@@ -82,10 +94,19 @@ class FloatingNavBar extends StatelessWidget {
                 width: 60,
                 height: 60,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF2A2A2A).withOpacity(0.85),
+                  gradient: LinearGradient(
+                    colors: [
+                      AppColors.floatingGlassGradient.first,
+                      AppColors.floatingGlassGradient.last,
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
                   shape: BoxShape.circle,
                   border: Border.all(
-                      color: AppColors.glassBorder.withOpacity(0.1), width: 0.5),
+                    color: AppColors.glassBorder.withValues(alpha: 0.85),
+                    width: 0.65,
+                  ),
                 ),
                 child: CupertinoButton(
                   padding: EdgeInsets.zero,
@@ -124,7 +145,7 @@ class _NavBarTab extends StatelessWidget {
         children: [
           Icon(
             item.icon,
-            color: isSelected ? AppColors.primaryOrange : const Color(0xFFB0B0B0), // Lighter grey for unselected
+            color: isSelected ? AppColors.primaryOrange : AppColors.secondaryLabel,
             size: 24,
           ),
           if (isSelected) ...[

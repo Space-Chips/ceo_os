@@ -1,0 +1,15 @@
+*** Begin Patch
+*** Update File: lib/core/providers/language_provider.dart
+@@
+   'en': {
++    'app_name': 'WakeApp',
+     'profile': 'PROFILE',
+     'save': 'SAVE',
+     'saving': 'SAVING',
+@@
+   'zh': {
++    'app_name': '觉醒应用',
+     'profile': '个人资料',
+     'save': '保存',
+     'saving': '正在保存',
+*** End Patch

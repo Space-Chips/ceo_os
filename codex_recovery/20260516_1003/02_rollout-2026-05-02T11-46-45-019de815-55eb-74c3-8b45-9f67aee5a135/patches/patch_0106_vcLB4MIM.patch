@@ -1,0 +1,124 @@
+*** Begin Patch
+*** Update File: lib/core/services/home_widget_service.dart
+@@
+ import '../models/task_models.dart';
+ import '../theme/app_colors.dart';
+ import '../theme/app_typography.dart';
++import '../widgets/home_widgets/widget_views.dart';
+@@
+     if (enabledTodo) {
+       futures.addAll([
+         HomeWidget.renderFlutterWidget(
+-          _CeoTodoCard.small(
+-            title: language.t('widget_mode_todo'),
+-            subtitle:
+-                '${language.t('today')} • ${pendingTasks.length} ${language.t('widget_remaining')}',
+-            tasks: pendingTasks,
+-            language: language,
+-          ),
++          TodoWidgetSquareView(language: language, pending: pendingTasks),
+           key: _keyTodoSmall,
+           logicalSize: const Size(170, 170),
+           pixelRatio: 2,
+         ),
+         HomeWidget.renderFlutterWidget(
+-          _CeoTodoCard.large(
+-            title: language.t('widget_mode_todo'),
+-            subtitle:
+-                '${pendingTasks.length} ${language.t('widget_remaining')}',
+-            tasks: pendingTasks,
+-            language: language,
+-          ),
++          TodoWidgetSquareView(language: language, pending: pendingTasks),
+           key: _keyTodoLarge,
+           logicalSize: const Size(360, 180),
+           pixelRatio: 2,
+         ),
+       ]);
+     } else {
+@@
+     if (enabledDashboard) {
+       final progressDenom = (totalTasks + totalHabits);
+       final progress = progressDenom == 0
+           ? 0.0
+           : ((doneTasks + doneHabits) / progressDenom).clamp(0.0, 1.0);
++      final progressPercent = (progress * 100).round().clamp(0, 100);
+       futures.addAll([
+         HomeWidget.renderFlutterWidget(
+-          _CeoDashboardCard.small(
+-            title: language.t('widget_mode_dashboard'),
+-            dateLabel: dateLabel,
+-            todoLabel: language.t('widget_metric_todo'),
+-            habitsLabel: language.t('widget_metric_habits'),
+-            eventsLabel: language.t('widget_metric_events'),
+-            emptyTitle: language.t('widget_day_empty'),
+-            emptySubtitle: language.t('widget_day_empty_hint'),
+-            tasksDone: doneTasks,
+-            tasksTotal: totalTasks,
+-            habitsDone: doneHabits,
+-            habitsTotal: totalHabits,
+-            eventsCount: eventsCount,
+-            progress: progress,
+-          ),
++          DashboardWidgetSquareView(
++            language: language,
++            dateLabel: dateLabel,
++            tasksDone: doneTasks,
++            tasksTotal: totalTasks,
++            habitsDone: doneHabits,
++            habitsTotal: totalHabits,
++            eventsCount: eventsCount,
++            progressPercent: progressPercent,
++            nextLine: nextEventTitle.isEmpty
++                ? language.t('widget_no_events_today')
++                : 'Next: $nextEventTitle',
++          ),
+           key: _keyDashboardSmall,
+           logicalSize: const Size(170, 170),
+           pixelRatio: 2,
+         ),
+         HomeWidget.renderFlutterWidget(
+-          _CeoDashboardCard.large(
+-            title: language.t('widget_mode_dashboard'),
+-            dateLabel: dateLabel,
+-            todoLabel: language.t('widget_metric_todo'),
+-            habitsLabel: language.t('widget_metric_habits'),
+-            eventsLabel: language.t('widget_metric_events'),
+-            nextLabel: language.t('widget_next'),
+-            noEventsLabel: language.t('widget_no_events_today'),
+-            todayFocusLabel: language.t('widget_today_focus'),
+-            allTasksDoneLabel: language.t('widget_all_tasks_done'),
+-            emptyTitle: language.t('widget_day_empty'),
+-            emptySubtitle: language.t('widget_day_empty_hint'),
+-            tasksDone: doneTasks,
+-            tasksTotal: totalTasks,
+-            habitsDone: doneHabits,
+-            habitsTotal: totalHabits,
+-            eventsCount: eventsCount,
+-            nextEventTitle: nextEventTitle,
+-            nextEventTime: nextEventTime,
+-            topTasks: pendingTasks.take(2).toList(),
+-            progress: progress,
+-          ),
++          DashboardWidgetRectangularView(
++            language: language,
++            dateLabel: dateLabel,
++            tasksDone: doneTasks,
++            tasksTotal: totalTasks,
++            habitsDone: doneHabits,
++            habitsTotal: totalHabits,
++            eventsCount: eventsCount,
++            progressPercent: progressPercent,
++            nextTitle: nextEventTitle.isEmpty
++                ? language.t('widget_no_events_today')
++                : (nextEventTime.isEmpty
++                    ? nextEventTitle
++                    : '$nextEventTime — $nextEventTitle'),
++          ),
+           key: _keyDashboardLarge,
+           logicalSize: const Size(360, 180),
+           pixelRatio: 2,
+         ),
+       ]);
+     } else {
+*** End Patch

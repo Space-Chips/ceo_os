@@ -1,0 +1,45 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/screen_time_screen.dart
+@@
+-  String _durationLabel(int minutes) {
+-    if (minutes <= 0) return 'Fully blocked';
+-    return '${minutes}m remaining';
+-  }
+-
+   String _restLabel(RestPeriod period) {
+     final start = period.startTime;
+     final end = period.endTime;
+     if (start == null || end == null) return 'Unknown period';
+     return '${DateFormat('MMM d, HH:mm').format(start)} → ${DateFormat('HH:mm').format(end)}';
+   }
+-
+-  Future<void> _startRestPeriod(int minutes) {
+-    final now = DateTime.now();
+-    return _runMutation(() {
+-      return _repo.createRestPeriod(
+-        startTime: now,
+-        endTime: now.add(Duration(minutes: minutes)),
+-        active: true,
+-      );
+-    });
+-  }
+@@
+-  Future<void> _activateScheduledRest(RestPeriod period) {
+-    final now = DateTime.now();
+-    final start = period.startTime;
+-    final end = period.endTime;
+-    var durationMinutes = 30;
+-    if (start != null && end != null) {
+-      durationMinutes = end.difference(start).inMinutes;
+-      if (durationMinutes < 5) durationMinutes = 5;
+-    }
+-    return _runMutation(() {
+-      return _repo.updateRestPeriod(
+-        id: period.id,
+-        startTime: now,
+-        endTime: now.add(Duration(minutes: durationMinutes)),
+-        active: true,
+-      );
+-    });
+-  }
+*** End Patch

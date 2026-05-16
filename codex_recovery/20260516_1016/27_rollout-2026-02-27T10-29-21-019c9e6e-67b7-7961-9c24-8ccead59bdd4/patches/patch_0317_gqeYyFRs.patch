@@ -1,0 +1,22 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/screen_time_screen.dart
+@@
+     final totalSeconds = _logTotalSeconds();
+     final totalHours = (totalSeconds / 3600).toStringAsFixed(1);
+     final activeRest = _activeRestPeriod();
+     final scheduledRests = _scheduledRestPeriods();
+-    final nonScheduledRests = _restPeriods.where((period) {
++    final completedRests = _restPeriods.where((period) {
+       if (period.active) return true;
+       final start = period.startTime;
+       if (start == null) return true;
+       final now = DateTime.now();
+       return start.isBefore(now);
+     }).toList();
++    final limitedApps = _blockedApps
++        .where((app) => (app.timeLimitMinutes ?? 0) > 0)
++        .toList(growable: false);
++    final limitedSites = _blockedWebsites
++        .where((site) => (site.timeLimitMinutes ?? 0) > 0)
++        .toList(growable: false);
+*** End Patch

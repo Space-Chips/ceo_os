@@ -1,0 +1,31 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/home/home_screen.dart
+@@
+ class _PrimaryAppsGrid extends StatelessWidget {
+   final List<_PrimaryAppCardData> cards;
+ 
+   const _PrimaryAppsGrid({required this.cards});
+ 
++  Widget _fullWidthCard(_PrimaryAppCardData data) {
++    return SizedBox(
++      height: 170,
++      child: _PrimaryAppCard(data: data, compact: false),
++    );
++  }
++
+   Widget _squareCard(_PrimaryAppCardData data) {
+     return AspectRatio(
+       aspectRatio: 1,
+       child: _PrimaryAppCard(data: data, compact: true),
+     );
+@@
+     return _AdaptiveTwoColumnGrid<_PrimaryAppCardData>(
+       items: cards,
+       spacing: 14,
+-      fullWidthBuilder: (card) => _PrimaryAppCard(data: card, compact: false),
++      fullWidthBuilder: (card) => _fullWidthCard(card),
+       squareBuilder: (card) => _squareCard(card),
+     );
+   }
+ }
+*** End Patch

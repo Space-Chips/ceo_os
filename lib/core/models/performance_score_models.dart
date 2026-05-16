@@ -1,0 +1,87 @@
+class ExecutionScoreBreakdown {
+  final int score;
+  final int tasksCompleted;
+  final int totalTasks;
+  final double completionRate;
+  final int crucialTasksCompleted;
+  final int crucialTasksTotal;
+  final int estimatedMinutesPlanned;
+  final int estimatedMinutesCompleted;
+
+  const ExecutionScoreBreakdown({
+    required this.score,
+    required this.tasksCompleted,
+    required this.totalTasks,
+    required this.completionRate,
+    required this.crucialTasksCompleted,
+    required this.crucialTasksTotal,
+    required this.estimatedMinutesPlanned,
+    required this.estimatedMinutesCompleted,
+  });
+}
+
+class ConsistencyScoreBreakdown {
+  final int score;
+  final int habitsCompleted;
+  final int totalHabits;
+  final double weeklyCompletionRate;
+  final int currentStreak;
+  final int bestStreak;
+  final int activeDays;
+
+  const ConsistencyScoreBreakdown({
+    required this.score,
+    required this.habitsCompleted,
+    required this.totalHabits,
+    required this.weeklyCompletionRate,
+    required this.currentStreak,
+    required this.bestStreak,
+    required this.activeDays,
+  });
+}
+
+class AttentionScoreBreakdown {
+  final int score;
+  final int focusSessionsCompleted;
+  final int deepWorkMinutes;
+  final int earlyExits;
+  final int distractionsBlocked;
+  final int recoveredTimeMinutes;
+
+  const AttentionScoreBreakdown({
+    required this.score,
+    required this.focusSessionsCompleted,
+    required this.deepWorkMinutes,
+    required this.earlyExits,
+    required this.distractionsBlocked,
+    required this.recoveredTimeMinutes,
+  });
+}
+
+class WakeScoreBreakdown {
+  final int score;
+  final int executionScore;
+  final int consistencyScore;
+  final int attentionScore;
+
+  const WakeScoreBreakdown({
+    required this.score,
+    required this.executionScore,
+    required this.consistencyScore,
+    required this.attentionScore,
+  });
+}
+
+class PerformanceScoreBundle {
+  final ExecutionScoreBreakdown execution;
+  final ConsistencyScoreBreakdown consistency;
+  final AttentionScoreBreakdown attention;
+  final WakeScoreBreakdown wake;
+
+  const PerformanceScoreBundle({
+    required this.execution,
+    required this.consistency,
+    required this.attention,
+    required this.wake,
+  });
+}

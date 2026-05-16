@@ -1,0 +1,14 @@
+*** Begin Patch
+*** Update File: android/app/src/main/res/values/styles.xml
+@@
+     <style name="BlockGateTheme" parent="@android:style/Theme.Black.NoTitleBar.Fullscreen">
+         <item name="android:windowIsTranslucent">false</item>
+         <item name="android:windowBackground">@android:color/transparent</item>
+-        <item name="android:windowAnimationStyle">@null</item>
++        <item name="android:windowAnimationStyle">@style/BlockGateAnimation</item>
+     </style>
++    <style name="BlockGateAnimation">
++        <item name="android:windowEnterAnimation">@anim/block_gate_enter</item>
++        <item name="android:windowExitAnimation">@anim/block_gate_exit</item>
++    </style>
+*** End Patch

@@ -1,0 +1,20 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/profile/profile_screen.dart
+@@
+-    final selected = await _showSelectionSheet(
+-      title: 'INTERFACE_APPEARANCE',
++    final selected = await _showSelectionSheet(
++      title: 'INTERFACE APPEARANCE',
+@@
+-          title: 'NOTIFICATION_CHANNELS',
++          title: 'NOTIFICATION CHANNELS',
+@@
+-      title: 'PRIVACY_POLICY',
++      title: 'PRIVACY POLICY',
+@@
+-      title: 'PERMISSIONS',
++      title: 'PERMISSIONS',
+@@
+-      title: 'TERMS_OF_USE',
++      title: 'TERMS OF USE',
+*** End Patch

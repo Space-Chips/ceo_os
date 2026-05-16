@@ -1,0 +1,65 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/habits/habits_screen.dart
+@@
+-  bool _sameDay(DateTime a, DateTime b) {
+-    return a.year == b.year && a.month == b.month && a.day == b.day;
+-  }
+-
+   int _frequencyScore(Habit habit) {
+     if (habit.isDaily) return 7;
+     return habit.specificDays?.length ?? 0;
+   }
+@@
+-// ── Habit Tile ──
+-
+-class _HabitTile extends StatelessWidget {
+-  final Habit habit;
+-  final VoidCallback onToggle;
+-  const _HabitTile({required this.habit, required this.onToggle});
+-
+-  @override
+-  Widget build(BuildContext context) {
+-    final prov = context.watch<HabitProvider>();
+-    final isComplete = prov.isHabitCompletedToday(habit.id);
+-
+-    return GlassCard(
+-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+-      borderRadius: 16,
+-      child: Row(
+-        children: [
+-          GestureDetector(
+-            onTap: onToggle,
+-            child: Icon(
+-              isComplete
+-                  ? CupertinoIcons.checkmark_circle_fill
+-                  : CupertinoIcons.circle,
+-              size: 22,
+-              color: isComplete ? AppColors.success : AppColors.tertiaryLabel,
+-            ),
+-          ),
+-          const SizedBox(width: 14),
+-          Expanded(
+-            child: Text(
+-              habit.title.toUpperCase(),
+-              style: AppTypography.mono.copyWith(
+-                fontSize: 12,
+-                fontWeight: FontWeight.w600,
+-                color: isComplete ? AppColors.tertiaryLabel : AppColors.label,
+-                decoration: isComplete ? TextDecoration.lineThrough : null,
+-              ),
+-            ),
+-          ),
+-          Text(
+-            habit.isDaily ? 'DAILY' : 'WEEKLY',
+-            style: AppTypography.mono.copyWith(
+-              fontSize: 8,
+-              color: AppColors.tertiaryLabel,
+-              letterSpacing: 1,
+-            ),
+-          ),
+-        ],
+-      ),
+-    );
+-  }
+-}
+*** End Patch

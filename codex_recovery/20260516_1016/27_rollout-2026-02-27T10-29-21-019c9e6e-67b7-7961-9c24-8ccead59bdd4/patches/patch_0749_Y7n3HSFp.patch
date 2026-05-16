@@ -1,0 +1,28 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/services/stats_engine.dart
+@@
+             case 'attention_90_plus':
+               return const MilestoneShareCard(
+                 milestoneType: 'score',
+-                title: '90+ Attention Score',
++                title: '90+ Discipline Day',
+                 subtitle: 'You delivered an exceptional discipline day.',
+               );
+@@
+     if (daily != null) {
+       highlights.add(
+         StatsHighlight(
+-          label: 'Attention Score',
++          label: 'Today Discipline',
+           value: '${daily.attentionScore}',
+           deltaLabel: 'Today',
+         ),
+@@
+     if (monthly != null) {
+       highlights.add(
+         StatsHighlight(
+-          label: 'Month Attention',
++          label: 'Month Discipline',
+           value: '${monthly.monthlyAttentionScore}',
+           deltaLabel: monthly.rankChange == 0
+*** End Patch

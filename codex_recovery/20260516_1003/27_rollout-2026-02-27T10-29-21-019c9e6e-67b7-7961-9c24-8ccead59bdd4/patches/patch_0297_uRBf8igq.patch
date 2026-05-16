@@ -1,0 +1,21 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/ios/Runner.xcodeproj/project.pbxproj
+@@
+ 			97C146E51CF9000F007C117D = {
+ 				isa = PBXGroup;
+ 				children = (
+ 					9740EEB11CF90186004384FC /* Flutter */,
+ 					97C146F01CF9000F007C117D /* Runner */,
+ 					8578F97B2F4379B20038063F /* CeoWidgets */,
++					ABFC1660CF1F4F18865A63F1 /* FocusActivityMonitor */,
+ 					8578F9762F4379B20038063F /* Frameworks */,
+@@
+ 			97C146EF1CF9000F007C117D /* Products */ = {
+ 				isa = PBXGroup;
+ 				children = (
+ 					97C146EE1CF9000F007C117D /* Runner.app */,
+ 					331C8081294A63A400263BE5 /* RunnerTests.xctest */,
+ 					8578F9752F4379B20038063F /* CeoWidgetsExtension.appex */,
++					E9A5CEDA2259476E98F0C12E /* FocusActivityMonitor.appex */,
+ 				);
+*** End Patch

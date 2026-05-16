@@ -1,0 +1,30 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/calendar/add_event_sheet.dart
+@@
+ import 'dart:ui';
+ import 'package:flutter/cupertino.dart';
+-import 'package:flutter/material.dart' show Colors, TimeOfDay;
++import 'package:flutter/material.dart' show TimeOfDay;
+@@
+           height: 300,
+           decoration: BoxDecoration(
+-            color: AppColors.background.withOpacity(0.9),
++            color: AppColors.background.withValues(alpha: 0.9),
+             borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+           ),
+@@
+           height: 300,
+           decoration: BoxDecoration(
+-            color: AppColors.background.withOpacity(0.9),
++            color: AppColors.background.withValues(alpha: 0.9),
+             borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+           ),
+@@
+         ),
+         decoration: BoxDecoration(
+-          color: AppColors.background.withOpacity(0.8),
++          color: AppColors.background.withValues(alpha: 0.8),
+           borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+           border: Border(top: BorderSide(color: AppColors.glassBorder, width: 0.5)),
+         ),
+*** End Patch

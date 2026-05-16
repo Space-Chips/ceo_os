@@ -1,0 +1,27 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/tasks/add_task_sheet.dart
+@@
+ import '../../components/components.dart';
+ import '../../core/providers/task_provider.dart';
+ import '../../core/theme/app_colors.dart';
+ import '../../core/theme/app_typography.dart';
++import 'task_importance_theme.dart';
+@@
+   String _labelForImportance(String value) {
+     switch (value) {
+@@
+     }
+   }
++
++  Color _importanceColor(String value) => TaskImportanceTheme.accent(value);
+@@
+                                       child: Text(
+                                         _labelForImportance(e).toUpperCase(),
+                                         style: AppTypography.mono.copyWith(
+                                           fontSize: 12,
+-                                          color: AppColors.label,
++                                          color: _importanceColor(e),
+                                         ),
+                                       ),
+                                     ),
+*** End Patch

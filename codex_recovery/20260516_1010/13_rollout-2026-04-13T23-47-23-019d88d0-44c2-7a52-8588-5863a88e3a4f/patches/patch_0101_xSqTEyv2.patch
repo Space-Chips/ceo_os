@@ -1,0 +1,11 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/services/classic_blocking_coordinator.dart
+@@
+   bool _isWebsiteEnforceable(ClassicBlockBinding? binding) =>
+       binding != null &&
+       (Platform.isIOS
+-          ? (binding.nativePayload?.trim().isNotEmpty ?? false)
++          ? ((binding.nativePayload?.trim().isNotEmpty ?? false) ||
++              (binding.nativeIdentifier?.trim().isNotEmpty ?? false))
+           : (binding.nativeIdentifier?.trim().isNotEmpty ?? false));
+*** End Patch

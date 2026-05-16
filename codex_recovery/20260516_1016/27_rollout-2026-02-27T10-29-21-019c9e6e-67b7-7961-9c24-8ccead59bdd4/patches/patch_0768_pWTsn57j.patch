@@ -1,0 +1,42 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/ios/Runner/AppDelegate.swift
+@@
+     func handlePlannedNotification(_ userInfo: [AnyHashable: Any]) {
+         guard let type = (userInfo["focus_plan_type"] as? String)?.lowercased() else { return }
+         if type == "start" {
+-            store.shield.applications = selection.applicationTokens
+-            store.shield.applicationCategories = ShieldSettings.ActivityCategoryPolicy.specific(selection.categoryTokens)
+-            store.shield.webDomains = selection.webDomainTokens
++            sharedDefaults()?.set(true, forKey: focusEnabledStorageKey)
++            applyEffectiveShield()
+         }
+     }
+@@
+         case "startShield":
+             if let packages = args?["packages"] as? [String], !packages.isEmpty {
+-                // On iOS, the first 'package' contains the JSON encoded selection
+-                applySelectionFrom(encoded: packages.first, applyShield: true)
++                updateFocusSelection(encodedPayloads: packages, applyShield: true)
+                 result(nil)
+             } else {
+                 startShield(result: result)
+             }
+         case "cacheSelection":
+             cacheSelection(args: args, result: result)
++        case "syncClassicShieldConfig":
++            syncClassicShieldConfig(args: args, result: result)
++        case "setClassicShieldEnabled":
++            setClassicShieldEnabled(args: args, result: result)
+         case "startCeoShield":
+             startCeoShield(result: result)
+         case "stopShield":
+             stopShield(result: result)
+         case "isShieldActive":
+-            result(store.shield.applications != nil || store.shield.applicationCategories != nil)
++            let defaults = sharedDefaults()
++            let active =
++                (defaults?.bool(forKey: focusEnabledStorageKey) ?? false)
++                || (defaults?.bool(forKey: classicEnabledStorageKey) ?? false)
++                || (defaults?.bool(forKey: ceoEnabledStorageKey) ?? false)
++            result(active)
+*** End Patch

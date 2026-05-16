@@ -1,0 +1,126 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/home/home_screen.dart
+@@
+   void _handleSourceDataChanged() {
+     _refreshDebounce?.cancel();
+     _refreshDebounce = Timer(const Duration(milliseconds: 280), () {
+       if (!mounted) return;
+       _reloadSnapshot();
+       unawaited(_loadWinStreak());
+     });
+   }
++
++  Future<void> _pushAndRefresh(String route) async {
++    await context.push(route);
++    if (!mounted) return;
++    _handleSourceDataChanged();
++  }
+@@
+                 _PrimaryAppCardData(
+                   moduleId: 'Pareto',
+                   title: 'To-Do',
+                   icon: CupertinoIcons.check_mark_circled,
+                   active: _isEnabled('Pareto'),
+                   badgeValue: pendingTasks,
+-                  onTap: () => context.push('/tasks'),
++                  onTap: () => unawaited(_pushAndRefresh('/tasks')),
+                   onQuickAdd: _openQuickAddTask,
+                 ),
+                 _PrimaryAppCardData(
+                   moduleId: 'Habits',
+                   title: 'Habits',
+                   icon: CupertinoIcons.checkmark_circle,
+                   active: _isEnabled('Habits'),
+                   badgeValue: habitsCount,
+-                  onTap: () => context.push('/habits'),
++                  onTap: () => unawaited(_pushAndRefresh('/habits')),
+                   onQuickAdd: _openQuickAddHabit,
+                 ),
+                 _PrimaryAppCardData(
+                   moduleId: 'Calendar',
+                   title: 'Schedule',
+                   icon: CupertinoIcons.calendar,
+                   active: _isEnabled('Calendar'),
+-                  onTap: () => context.push('/calendar'),
++                  onTap: () => unawaited(_pushAndRefresh('/calendar')),
+                   onQuickAdd: _openQuickAddEvent,
+                 ),
+                 _PrimaryAppCardData(
+                   moduleId: 'ScreenTimeManager',
+                   title: 'Screen Time',
+                   icon: CupertinoIcons.shield,
+                   active: _isEnabled('ScreenTimeManager'),
+-                  onTap: () => context.push('/screen-time-manager'),
++                  onTap: () => unawaited(_pushAndRefresh('/screen-time-manager')),
+                 ),
+@@
+                 _PrimaryAppCardData(
+                   moduleId: 'rank',
+                   title: 'Rank',
+                   icon: CupertinoIcons.star_fill,
+                   active: true,
+-                  onTap: () => context.push('/rank'),
++                  onTap: () => unawaited(_pushAndRefresh('/rank')),
+                 ),
+                 _PrimaryAppCardData(
+                   moduleId: 'leaderboard',
+                   title: 'Friends & Leaderboard',
+                   icon: CupertinoIcons.rosette,
+                   active: true,
+-                  onTap: () => context.push('/leaderboard'),
++                  onTap: () => unawaited(_pushAndRefresh('/leaderboard')),
+                 ),
+                 _PrimaryAppCardData(
+                   moduleId: 'focus',
+                   title: 'Focus Mode',
+                   icon: CupertinoIcons.bolt_fill,
+                   active: true,
+-                  onTap: () => context.push('/focus'),
++                  onTap: () => unawaited(_pushAndRefresh('/focus')),
+                 ),
+                 _PrimaryAppCardData(
+                   moduleId: 'family_time',
+                   title: 'Family Time',
+                   icon: CupertinoIcons.person_2_fill,
+                   active: true,
+-                  onTap: () => context.push('/family-time'),
++                  onTap: () => unawaited(_pushAndRefresh('/family-time')),
+                 ),
+                 _PrimaryAppCardData(
+                   moduleId: 'block_apps',
+                   title: 'Block Apps & Sites',
+                   icon: CupertinoIcons.shield_fill,
+                   active: true,
+-                  onTap: () => context.push('/screen-time'),
++                  onTap: () => unawaited(_pushAndRefresh('/screen-time')),
+                 ),
+                 _PrimaryAppCardData(
+                   moduleId: 'streak',
+                   title: 'Streak',
+                   icon: CupertinoIcons.flame_fill,
+                   active: true,
+-                  onTap: () => context.push('/win-streak'),
++                  onTap: () => unawaited(_pushAndRefresh('/win-streak')),
+                 ),
+                 _PrimaryAppCardData(
+                   moduleId: 'notes',
+                   title: 'Notes',
+                   icon: CupertinoIcons.doc_text_fill,
+                   active: true,
+-                  onTap: () => context.push('/notes'),
++                  onTap: () => unawaited(_pushAndRefresh('/notes')),
+                 ),
+@@
+                             wakeScore: scoreBundle?.wake.score ?? 0,
+                             tasksCount: pendingTasks,
+                             habitsCount: habitsCount,
+                             eventsCount: todayEventsCount,
+                             showYesterdayHabitAlert:
+                                 pendingSnapshot.data ?? false,
+-                            onOpenDashboard: () => context.push('/dashboard'),
++                            onOpenDashboard: () =>
++                                unawaited(_pushAndRefresh('/dashboard')),
+                           );
+                         },
+                       ),
+*** End Patch

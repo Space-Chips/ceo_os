@@ -1,0 +1,24 @@
+*** Begin Patch
+*** Update File: lib/core/models/premium_models.dart
+@@
+   switch (reason) {
++    case 'onboarding':
++      return PremiumMessage(
++        title: isFr ? 'Passe en Premium' : 'Go Premium',
++        description: isFr
++            ? 'Débloque WakeApp en illimité pour 2,99€ / mois. Tu peux annuler à tout moment dans les réglages Apple ID.'
++            : 'Unlock WakeApp without limits for €2.99 / month. You can cancel anytime in your Apple ID settings.',
++      );
++    case 'upgrade':
++      return PremiumMessage(
++        title: isFr ? 'WakeApp Premium' : 'WakeApp Premium',
++        description: isFr
++            ? 'Débloque les habitudes et tâches illimitées, des sessions étendues et des rapports avancés.'
++            : 'Unlock unlimited habits and tasks, extended sessions, and advanced reports.',
++      );
+     case 'focus_daily':
+       return PremiumMessage(
+         title: isFr ? 'Limite Focus atteinte' : 'Focus Mode Limit',
+         description: isFr
+           ? 'Tu as déjà utilisé ta session Focus quotidienne. Passe en Premium pour des sessions illimitées.'
+*** End Patch

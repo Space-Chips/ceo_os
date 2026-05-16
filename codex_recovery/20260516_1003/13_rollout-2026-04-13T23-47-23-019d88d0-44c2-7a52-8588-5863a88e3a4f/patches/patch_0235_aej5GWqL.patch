@@ -1,0 +1,47 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/providers/focus_provider.dart
+@@
+ import 'dart:async';
+ import 'dart:convert';
++import 'dart:io';
+ import 'package:flutter/material.dart';
+ import 'package:shared_preferences/shared_preferences.dart';
+ import '../models/block_list_model.dart';
+ import '../models/premium_models.dart';
+ import '../models/task_models.dart';
++import '../repositories/feature_repository.dart';
+ import '../repositories/premium_repository.dart';
++import '../services/classic_blocking_coordinator.dart';
++import '../services/classic_blocking_local_store.dart';
+ import '../services/focus_service.dart';
+ import '../repositories/focus_repository.dart';
+ import '../services/stats_engine.dart';
+ import '../utils/app_logger.dart';
++import '../utils/domain_utils.dart';
+@@
+ enum FocusState {
+   idle,
+   focusing,
++  exitPending,
+   shortBreak,
+   longBreak,
+   requestingBreak,
+   breakOptionsMenu,
+ }
++
++class _FocusShieldSnapshot {
++  final List<String> selectors;
++  final List<String> websiteDomains;
++  final int blockedAppCount;
++  final int blockedWebsiteCount;
++
++  const _FocusShieldSnapshot({
++    required this.selectors,
++    required this.websiteDomains,
++    required this.blockedAppCount,
++    required this.blockedWebsiteCount,
++  });
++
++  bool get hasAnyTarget => blockedAppCount > 0 || blockedWebsiteCount > 0;
++}
+*** End Patch

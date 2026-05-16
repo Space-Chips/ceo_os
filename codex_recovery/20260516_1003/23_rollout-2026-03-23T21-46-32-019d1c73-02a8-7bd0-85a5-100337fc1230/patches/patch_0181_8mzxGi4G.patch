@@ -1,0 +1,54 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/router/app_router.dart
+@@
+ import '../../features/screen_time_manager/screen_time_manager_screen.dart';
+ import '../../features/screen_time_manager/family_time_screen.dart';
++import '../../features/screen_time_setup/screen_time_setup_screen.dart';
+ import '../../features/legacy/event_types_screen.dart';
+ import '../../features/legacy/biannual_report_screen.dart';
+ import '../../features/legacy/app_modules_screen.dart';
+ import '../../features/setup/setup_gate_screen.dart';
+ import '../../features/setup/setup_flow_screen.dart';
+@@
+ class AppRouter {
+   static GoRouter create(BuildContext context) {
++    final isAndroid =
++        !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
+     return GoRouter(
+-      initialLocation: '/setup-gate',
++      initialLocation: isAndroid ? '/setup-gate' : '/home',
+       debugLogDiagnostics: false,
+       routes: [
+         GoRoute(
+           path: '/setup-gate',
+           builder: (context, state) => const SetupGateScreen(),
+         ),
+         GoRoute(
+           path: '/setup',
+           builder: (context, state) => const SetupFlowScreen(),
+         ),
++        GoRoute(
++          path: '/screen-time-setup',
++          builder: (context, state) => const ScreenTimeSetupScreen(),
++        ),
+@@
+       redirect: (context, state) {
+         final auth = context.read<AuthProvider>();
+@@
+-        if (auth.isAuthenticated && (loggingIn || onboarding)) {
+-          return '/setup-gate';
++        if (auth.isAuthenticated && (loggingIn || onboarding)) {
++          return isAndroid ? '/setup-gate' : '/home';
+         }
+ 
+-        if (auth.isAuthenticated && (setupFlow || setupGate)) {
++        if (auth.isAuthenticated && (setupFlow || setupGate)) {
++          if (!isAndroid) {
++            return '/home';
++          }
+           return null;
+         }
+ 
+         return null;
+       },
+*** End Patch

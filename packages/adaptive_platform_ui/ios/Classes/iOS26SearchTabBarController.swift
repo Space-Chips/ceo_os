@@ -40,7 +40,8 @@ class iOS26SearchTabBarController: UITabBarController, UISearchResultsUpdating, 
     }
 
     required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+        assertionFailure("init(coder:) is not supported for iOS26SearchTabBarController")
+        return nil
     }
 
     override func viewDidLoad() {

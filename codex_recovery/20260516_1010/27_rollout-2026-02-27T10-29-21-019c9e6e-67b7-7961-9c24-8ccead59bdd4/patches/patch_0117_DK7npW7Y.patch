@@ -1,0 +1,19 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/leaderboard/leaderboard_screen.dart
+@@
+             onValueChanged: (value) {
+               if (value == null) return;
+-              setState(() => _activeTab = value);
++              if (value == _LeaderboardTab.friends) {
++                setState(() {
++                  _activeTab = value;
++                  _friendsLoading = true;
++                });
++                _syncAndLoadFriends();
++                return;
++              }
++              setState(() => _activeTab = value);
+             },
+           ),
+         ),
+*** End Patch

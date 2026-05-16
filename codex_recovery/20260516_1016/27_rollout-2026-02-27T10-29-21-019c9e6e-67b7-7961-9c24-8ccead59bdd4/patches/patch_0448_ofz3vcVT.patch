@@ -1,0 +1,95 @@
+*** Begin Patch
+*** Add File: /Users/timo/ceo_os/lib/core/services/stats_insight_generator.dart
++import '../models/advanced_stats_models.dart';
++
++class StatsInsightGenerator {
++  const StatsInsightGenerator();
++
++  List<WeeklyInsight> build({
++    required WeeklyStats? weekly,
++    required List<DailyStats> recentDaily,
++  }) {
++    if (weekly == null) return const [];
++
++    final insights = <WeeklyInsight>[];
++
++    if (weekly.bestFocusWindow != null && weekly.bestFocusWindow!.isNotEmpty) {
++      insights.add(
++        WeeklyInsight(
++          title: 'Peak Focus Window',
++          message: 'You focus best between ${weekly.bestFocusWindow}.',
++        ),
++      );
++    }
++
++    if (weekly.mostDistractingTimeWindow != null &&
++        weekly.mostDistractingTimeWindow!.isNotEmpty) {
++      insights.add(
++        WeeklyInsight(
++          title: 'Distraction Window',
++          message:
++              'You are most distracted between ${weekly.mostDistractingTimeWindow}.',
++        ),
++      );
++    }
++
++    if (weekly.mostDistractingApp != null && weekly.mostDistractingApp!.isNotEmpty) {
++      insights.add(
++        WeeklyInsight(
++          title: 'Most Distracting App',
++          message: '${weekly.mostDistractingApp} is generating the most friction this week.',
++        ),
++      );
++    }
++
++    if (weekly.screenTimeTrend < 0) {
++      insights.add(
++        WeeklyInsight(
++          title: 'Screen Time Drop',
++          message:
++              'You reduced your screen time by ${weekly.screenTimeTrend.abs().toStringAsFixed(1)}% this week.',
++        ),
++      );
++    } else if (weekly.screenTimeTrend > 0) {
++      insights.add(
++        WeeklyInsight(
++          title: 'Screen Time Alert',
++          message:
++              'Your screen time increased by ${weekly.screenTimeTrend.toStringAsFixed(1)}% versus last week.',
++        ),
++      );
++    }
++
++    if (recentDaily.isNotEmpty) {
++      final best = recentDaily.reduce(
++        (a, b) => a.attentionScore >= b.attentionScore ? a : b,
++      );
++      insights.add(
++        WeeklyInsight(
++          title: 'Best Day',
++          message: 'Your strongest day hit ${best.attentionScore}/100 on ${_fmtDay(best.date)}.',
++        ),
++      );
++
++      final weakest = recentDaily.reduce(
++        (a, b) => a.attentionScore <= b.attentionScore ? a : b,
++      );
++      insights.add(
++        WeeklyInsight(
++          title: 'Lowest Day',
++          message:
++              'Your weakest day was ${weakest.attentionScore}/100 on ${_fmtDay(weakest.date)}. Protect that window next week.',
++        ),
++      );
++    }
++
++    return insights.take(5).toList(growable: false);
++  }
++
++  String _fmtDay(DateTime date) {
++    return '${date.year.toString().padLeft(4, '0')}-'
++        '${date.month.toString().padLeft(2, '0')}-'
++        '${date.day.toString().padLeft(2, '0')}';
++  }
++}
+*** End Patch

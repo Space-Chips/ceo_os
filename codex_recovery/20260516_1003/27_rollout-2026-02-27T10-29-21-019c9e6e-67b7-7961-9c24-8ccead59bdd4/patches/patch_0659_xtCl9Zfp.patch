@@ -1,0 +1,143 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/theme/app_colors.dart
+@@
+   static Color get glassShadow =>
+       switch (themeId) {
+         'modern_desert' => const Color(0x2E7B5A35),
+-        'cloud_studio' => const Color(0x16465D74),
++        'cloud_studio' => const Color(0x1F42586F),
+         _ => isDark ? const Color(0xB1000000) : const Color(0x260E1A2A),
+       };
+   static Color get glassShadowSoft =>
+       switch (themeId) {
+         'modern_desert' => const Color(0x1C8A6440),
+-        'cloud_studio' => const Color(0x103E556D),
++        'cloud_studio' => const Color(0x143E556D),
+         _ => isDark ? const Color(0x6E000000) : const Color(0x180E1A2A),
+       };
+*** Update File: /Users/timo/ceo_os/lib/core/theme/theme_catalog.dart
+@@
+-    final cardBorder = switch (id) {
+-      'cloud_studio' => palette.borderStrong.withValues(alpha: 0.58),
+-      _ => palette.borderSubtle,
+-    };
+-
+-    final cardBorderStrong = switch (id) {
+-      'cloud_studio' => palette.borderStrong.withValues(alpha: 0.82),
+-      _ => palette.borderStrong,
+-    };
+-
+     final semantic = AppThemeSemanticTokens(
+       appBackground: palette.bgPrimary,
+       sectionBackground: palette.bgSecondary,
+       cardBackground: palette.surfacePrimary,
+       cardBackgroundAlt: palette.surfaceSecondary,
+       cardBackgroundStrong: palette.surfaceTertiary,
+-      cardBorder: cardBorder,
+-      cardBorderStrong: cardBorderStrong,
++      cardBorder: palette.borderSubtle,
++      cardBorderStrong: palette.borderStrong,
+@@
+-      topBarControlBorder: cardBorderStrong,
++      topBarControlBorder: palette.borderStrong,
+       pillBackground: pillBackground,
+-      pillBorder: cardBorderStrong,
++      pillBorder: palette.borderStrong,
+       inputBackground: inputBackground,
+-      inputBorder: cardBorderStrong,
++      inputBorder: palette.borderStrong,
+*** Update File: /Users/timo/ceo_os/lib/components/glass_card.dart
+@@
+   @override
+   Widget build(BuildContext context) {
+-    final effectiveBlur = switch (AppColors.themeId) {
+-      'cloud_studio' => blur.clamp(0, 8),
+-      'modern_desert' => blur.clamp(0, 10),
+-      _ => blur,
+-    };
+     final baseGradient = gradientColors ?? [
+       AppColors.cardBackgroundAlt,
+       AppColors.cardBase,
+     ];
+     final shadowSpec = switch (level) {
+       GlassCardLevel.subtle => (
+-          alpha: AppColors.isDark ? 0.12 : (AppColors.themeId == 'cloud_studio' ? 0.06 : 0.08),
+-          blur: AppColors.themeId == 'cloud_studio' ? 9.0 : 12.0,
+-          offsetY: AppColors.themeId == 'cloud_studio' ? 4.0 : 6.0,
++          alpha: AppColors.isDark ? 0.12 : 0.08,
++          blur: 12.0,
++          offsetY: 6.0,
+           spread: -8.0,
+         ),
+       GlassCardLevel.standard => (
+-          alpha: AppColors.isDark ? 0.16 : (AppColors.themeId == 'cloud_studio' ? 0.075 : 0.095),
+-          blur: AppColors.themeId == 'cloud_studio' ? 11.0 : 14.0,
+-          offsetY: AppColors.themeId == 'cloud_studio' ? 5.0 : 7.0,
++          alpha: AppColors.isDark ? 0.16 : 0.095,
++          blur: 14.0,
++          offsetY: 7.0,
+           spread: -10.0,
+         ),
+       GlassCardLevel.elevated => (
+-          alpha: AppColors.isDark ? 0.22 : (AppColors.themeId == 'cloud_studio' ? 0.095 : 0.12),
+-          blur: AppColors.themeId == 'cloud_studio' ? 14.0 : 18.0,
+-          offsetY: AppColors.themeId == 'cloud_studio' ? 6.0 : 9.0,
++          alpha: AppColors.isDark ? 0.22 : 0.12,
++          blur: 18.0,
++          offsetY: 9.0,
+           spread: -12.0,
+         ),
+     };
+@@
+         child: BackdropFilter(
+-          filter: ImageFilter.blur(sigmaX: effectiveBlur.toDouble(), sigmaY: effectiveBlur.toDouble()),
++          filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
+           child: DecoratedBox(
+             decoration: BoxDecoration(
+               borderRadius: BorderRadius.circular(borderRadius),
+-              border: border ??
+-                  Border.all(
+-                    color: AppColors.themeId == 'cloud_studio'
+-                        ? AppColors.borderStrong.withValues(alpha: 0.74)
+-                        : AppColors.border,
+-                    width: AppColors.themeId == 'cloud_studio' ? 1 : 0.9,
+-                  ),
++              border: border ?? Border.all(color: AppColors.border, width: 0.9),
+*** Update File: /Users/timo/ceo_os/lib/features/screen_time_manager/screen_time_manager_screen.dart
+@@
+   BoxDecoration _moduleDecoration({
+     double radius = 18,
+     Color? borderColor,
+     double borderWidth = 1,
+     Color? overlay,
+   }) {
+-    final isCloud = AppColors.themeId == 'cloud_studio';
+     return BoxDecoration(
+       borderRadius: BorderRadius.circular(radius),
+       gradient: LinearGradient(
+         begin: Alignment.topCenter,
+         end: Alignment.bottomCenter,
+@@
+       ),
+       border: Border.all(
+-        color: borderColor ??
+-            (isCloud
+-                ? AppColors.borderStrong.withValues(alpha: 0.82)
+-                : AppColors.border),
+-        width: isCloud ? (borderWidth < 1.1 ? 1.1 : borderWidth) : borderWidth,
++        color: borderColor ?? AppColors.border,
++        width: borderWidth,
+       ),
+       boxShadow: [
+         BoxShadow(
+           color: AppColors.glassShadow.withValues(
+-            alpha: AppColors.isDark ? 0.18 : (isCloud ? 0.075 : 0.1),
++            alpha: AppColors.isDark ? 0.18 : 0.1,
+           ),
+-          blurRadius: AppColors.isDark ? 18 : (isCloud ? 10 : 14),
+-          offset: Offset(0, AppColors.isDark ? 8 : (isCloud ? 5 : 6)),
++          blurRadius: AppColors.isDark ? 18 : 14,
++          offset: Offset(0, AppColors.isDark ? 8 : 6),
+         ),
+       ],
+*** End Patch

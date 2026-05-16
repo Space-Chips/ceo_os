@@ -1,0 +1,78 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/calendar/calendar_screen.dart
+@@
+   bool _loadingHabits = true;
+   bool _loadingEventTypes = true;
+   List<Habit> _habits = const [];
+   List<HabitCompletion> _habitCompletions = const [];
+-  List<EventType> _eventTypes = const [];
+@@
+   Future<void> _loadEventTypes() async {
+     setState(() => _loadingEventTypes = true);
+     try {
+-      final types = await _featureRepository.getEventTypes();
++      await _featureRepository.getEventTypes();
+       if (!mounted) return;
+       setState(() {
+-        _eventTypes = types;
+         _loadingEventTypes = false;
+       });
+     } catch (_) {
+       if (!mounted) return;
+       setState(() {
+-        _eventTypes = const [];
+         _loadingEventTypes = false;
+       });
+     }
+   }
+@@
+-  Color _fallbackColorByPriority(_EventPriority priority) {
+-    switch (priority) {
+-      case _EventPriority.important:
+-        return const Color(0xFFEF4444);
+-      case _EventPriority.normal:
+-        return const Color(0xFF60A5FA);
+-      case _EventPriority.secondary:
+-        return const Color(0xFFF59E0B);
+-    }
+-  }
+-
+-  Color _colorByNamedType(String? colorName) {
+-    switch ((colorName ?? '').toLowerCase().trim()) {
+-      case 'blue':
+-        return const Color(0xFF60A5FA);
+-      case 'green':
+-        return const Color(0xFF34D399);
+-      case 'purple':
+-        return const Color(0xFFA78BFA);
+-      case 'pink':
+-        return const Color(0xFFF472B6);
+-      case 'orange':
+-        return const Color(0xFFFB923C);
+-      case 'red':
+-        return const Color(0xFFEF4444);
+-      case 'yellow':
+-        return const Color(0xFFFACC15);
+-      case 'teal':
+-        return const Color(0xFF2DD4BF);
+-      default:
+-        return AppColors.primaryOrange;
+-    }
+-  }
+-
+-  Color _colorFromHex(String? raw, {Color fallback = const Color(0xFF60A5FA)}) {
+-    if (raw == null || raw.isEmpty) return fallback;
+-    var value = raw.trim().replaceAll('#', '');
+-    if (value.length == 3) {
+-      value = value.split('').map((c) => '$c$c').join();
+-    }
+-    if (value.length == 6) {
+-      value = 'FF$value';
+-    }
+-    if (value.length != 8) return fallback;
+-    final parsed = int.tryParse(value, radix: 16);
+-    if (parsed == null) return fallback;
+-    return Color(parsed);
+-  }
+-
+*** End Patch

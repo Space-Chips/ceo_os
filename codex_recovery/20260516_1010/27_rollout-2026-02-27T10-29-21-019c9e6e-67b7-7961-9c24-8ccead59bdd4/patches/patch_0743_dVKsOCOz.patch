@@ -1,0 +1,31 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/home/stats_screen.dart
+@@
+             items: [
+               _DetailItem('Execution Score', '${scores.wake.executionScore}'),
+               _DetailItem(
+                 'Consistency Score',
+                 '${scores.wake.consistencyScore}',
+               ),
+-              _DetailItem('Attention Score', '${scores.wake.attentionScore}'),
++              _DetailItem('Focus & Control', '${scores.wake.attentionScore}'),
+             ],
+           ),
+@@
+-          _ScoreSectionCard(
+-            title: 'Attention Score',
+-            score: scores.attention.score,
+-            accent: AppColors.accent,
++          _DetailListCard(
++            title: 'Focus & Control',
+             items: [
+               _DetailItem(
+                 'Focus sessions completed',
+@@
+               _DetailItem(
+                 'Recovered time',
+                 '${scores.attention.recoveredTimeMinutes}m',
+               ),
+             ],
+           ),
+*** End Patch

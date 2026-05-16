@@ -1,0 +1,58 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/focus/focus_screen.dart
+@@
+                           gradient: provider.focusDurationMinutes == preset
+-                              ? const LinearGradient(
++                              ? LinearGradient(
+                                   begin: Alignment.topLeft,
+                                   end: Alignment.bottomRight,
+                                   colors: [
+-                                    Color(0xFF7E2BF1),
+-                                    Color(0xFFA03CF4),
++                                    AppColors.accentSecondary.withValues(
++                                      alpha: 0.96,
++                                    ),
++                                    AppColors.primaryOrange.withValues(
++                                      alpha: 0.9,
++                                    ),
+                                   ],
+                                 )
+                               : LinearGradient(
+@@
+                           border: Border.all(
+                             color: provider.focusDurationMinutes == preset
+-                                ? const Color(0xFFBC8CFF)
++                                ? AppColors.accentSecondary.withValues(
++                                    alpha: 0.92,
++                                  )
+                                 : AppColors.glassBorder.withValues(alpha: 0.7),
+                             width: 0.8,
+                           ),
+                           boxShadow: [
+                             BoxShadow(
+                               color:
+                                   (provider.focusDurationMinutes == preset
+-                                          ? const Color(0xFF9D45F4)
++                                          ? AppColors.primaryOrange
+                                           : AppColors.glassShadow)
+                                       .withValues(alpha: 0.24),
+@@
+         LiquidButton(
+           label: 'BEGIN FOCUS MODE',
+           fullWidth: true,
+-          gradient: const [Color(0xFF8A31F4), Color(0xFF9D45F4)],
++          gradient: [
++            AppColors.primaryOrange.withValues(alpha: 0.96),
++            AppColors.accentSecondary.withValues(alpha: 0.9),
++          ],
+           onPressed: () => _start(provider),
+         ),
+@@
+                 child: _miniStat(
+                   icon: CupertinoIcons.check_mark_circled,
+-                  color: const Color(0xFFA78BFA),
++                  color: const Color(0xFF60A5FA),
+                   value: '${_streak?.totalCompletedSessions ?? 0}',
+                   label: 'COMPLETE',
+                 ),
+*** End Patch

@@ -1,0 +1,22 @@
+*** Begin Patch
+*** Update File: lib/features/tasks/add_task_sheet.dart
+@@
+     showCupertinoDialog(
+       context: context,
+-      builder: (context) => BackdropFilter(
++      builder: (dialogContext) => BackdropFilter(
+         filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+         child: CupertinoAlertDialog(
+@@
+               onPressed: () async {
+                 if (_groupCtrl.text.isNotEmpty) {
+                   await context.read<TaskProvider>().addTaskGroup(
+                     _groupCtrl.text,
+                   );
+                   _groupCtrl.clear();
+-                  if (mounted) Navigator.pop(context);
++                  if (dialogContext.mounted) Navigator.pop(dialogContext);
+                 }
+               },
+             ),
+*** End Patch

@@ -1,0 +1,76 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/screen_time_screen.dart
+@@
+       final upgradedApps = await _upgradeIosBlockedAppNames(
+         apps: apps,
+         appBindings: appBindings,
+       );
+       final upgradedWebsites = await _upgradeIosBlockedWebsiteDomains(
+         websites: websites,
+         websiteBindings: websiteBindings,
+       );
+-      final effectiveApps = upgradedApps ?? apps;
+-      final effectiveWebsites = upgradedWebsites ?? websites;
++      var effectiveApps = upgradedApps ?? apps;
++      var effectiveWebsites = upgradedWebsites ?? websites;
+       final adultEnabled = effectiveWebsites.any(
+         (site) =>
+             (site.urlDomain ?? '').trim() ==
+             FeatureRepository.adultContentShieldMarker,
+       );
+@@
+       await _syncClassicNative(
+         apps: effectiveApps,
+         websites: filteredWebsites,
+         rests: rests,
+       );
+-      final validAppIds = effectiveApps.map((item) => item.id).toSet();
++      final refreshedAppBindings = await _classicLocalStore.loadAppBindings();
++      final refreshedWebsiteBindings = await _classicLocalStore
++          .loadWebsiteBindings();
++      final postSyncUpgradedApps = await _upgradeIosBlockedAppNames(
++        apps: effectiveApps,
++        appBindings: refreshedAppBindings,
++      );
++      if (postSyncUpgradedApps != null) {
++        effectiveApps = postSyncUpgradedApps;
++      }
++      final postSyncUpgradedWebsites = await _upgradeIosBlockedWebsiteDomains(
++        websites: filteredWebsites,
++        websiteBindings: refreshedWebsiteBindings,
++      );
++      if (postSyncUpgradedWebsites != null) {
++        effectiveWebsites = postSyncUpgradedWebsites;
++      }
++      final effectiveFilteredWebsites = effectiveWebsites
++          .where(
++            (site) =>
++                (site.urlDomain ?? '').trim() !=
++                FeatureRepository.adultContentShieldMarker,
++          )
++          .toList(growable: false);
++      final validAppIds = effectiveApps.map((item) => item.id).toSet();
+ 
+       if (!mounted) return;
+       setState(() {
+         _blockedApps = effectiveApps;
+-        _blockedWebsites = filteredWebsites;
++        _blockedWebsites = effectiveFilteredWebsites;
+         _restPeriods = rests;
+         _appBindings = Map<String, ClassicBlockBinding>.fromEntries(
+-          appBindings.entries.where((entry) => validAppIds.contains(entry.key)),
++          refreshedAppBindings.entries.where(
++            (entry) => validAppIds.contains(entry.key),
++          ),
+         );
+         _websiteBindings = Map<String, ClassicBlockBinding>.fromEntries(
+-          websiteBindings.entries.where(
+-            (entry) => filteredWebsites.any((site) => site.id == entry.key),
++          refreshedWebsiteBindings.entries.where(
++            (entry) => effectiveFilteredWebsites.any(
++              (site) => site.id == entry.key,
++            ),
+           ),
+         );
+         _adultContentShieldEnabled = adultEnabled;
+*** End Patch

@@ -1,0 +1,24 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/home/home_screen.dart
+@@
+               _ActionCapsule(
+                 onTap: onOpenFocus,
+                 icon: CupertinoIcons.bolt_fill,
+-                iconColor: AppColors.accentIcon,
++                iconColor: AppColors.focusControlAccent,
+               ),
+               const SizedBox(width: 8),
+               _ActionCapsule(
+                 onTap: onOpenNotes,
+                 icon: CupertinoIcons.doc_text_fill,
+-                iconColor: AppColors.accentIcon,
++                iconColor: AppColors.notesControlAccent,
+               ),
+@@
+             Icon(
+               CupertinoIcons.flame_fill,
+               size: 14,
+-              color: AppColors.rankAccent,
++              color: AppColors.streakAccent,
+             ),
+*** End Patch

@@ -1,0 +1,106 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/services/focus_service.dart
+@@
+   void _markMissingMethod(String method) {
+     if (_missingNativeMethods.add(method)) {
+       AppLogger.warning(
+         "Native $method method missing in the current runtime. Stop the app completely and relaunch it; hot restart does not load new native channel methods.",
+       );
+     }
+   }
++
++  Never _throwMissingMethod(String method) {
++    _markMissingMethod(method);
++    throw StateError(
++      "Native method '$method' is unavailable in this runtime. Fully restart the app.",
++    );
++  }
+@@
+   Future<void> syncClassicShieldConfig(
+     List<String> packageNames,
+     List<String> categories, {
+     List<String> websiteDomains = const [],
+   }) async {
+     const method = 'syncClassicShieldConfig';
+-    if (_shouldSkipMissingMethod(method)) return;
++    if (_shouldSkipMissingMethod(method)) {
++      _throwMissingMethod(method);
++    }
+     try {
+       await _channel.invokeMethod(method, {
+         'packages': packageNames,
+         'categories': categories,
+         'websites': websiteDomains,
+       });
+     } on PlatformException catch (e) {
+       AppLogger.error("Failed to sync classic shield config: '${e.message}'.");
++      rethrow;
+     } on MissingPluginException {
+-      _markMissingMethod(method);
++      _throwMissingMethod(method);
+     }
+   }
+ 
+   Future<void> setClassicShieldEnabled(bool enabled) async {
+     const method = 'setClassicShieldEnabled';
+-    if (_shouldSkipMissingMethod(method)) return;
++    if (_shouldSkipMissingMethod(method)) {
++      _throwMissingMethod(method);
++    }
+     try {
+       await _channel.invokeMethod(method, {'enabled': enabled});
+     } on PlatformException catch (e) {
+       AppLogger.error("Failed to toggle classic shield: '${e.message}'.");
++      rethrow;
+     } on MissingPluginException {
+-      _markMissingMethod(method);
++      _throwMissingMethod(method);
+     }
+   }
+@@
+   Future<void> syncClassicPauseSchedule(
+     List<String> packageNames,
+     List<String> categories,
+     List<Map<String, dynamic>> periods, {
+     List<String> websiteDomains = const [],
+   }) async {
+     const method = 'syncClassicPauseSchedule';
+-    if (_shouldSkipMissingMethod(method)) return;
++    if (_shouldSkipMissingMethod(method)) {
++      _throwMissingMethod(method);
++    }
+     try {
+       await _channel.invokeMethod(method, {
+         'packages': packageNames,
+         'categories': categories,
+         'websites': websiteDomains,
+         'periods': periods,
+       });
+     } on PlatformException catch (e) {
+       AppLogger.error("Failed to sync classic pause schedule: '${e.message}'.");
++      rethrow;
+     } on MissingPluginException {
+-      _markMissingMethod(method);
++      _throwMissingMethod(method);
+     }
+   }
+@@
+   Future<void> syncClassicDailyLimits(
+     List<Map<String, dynamic>> entries,
+   ) async {
+     const method = 'syncClassicDailyLimits';
+-    if (_shouldSkipMissingMethod(method)) return;
++    if (_shouldSkipMissingMethod(method)) {
++      _throwMissingMethod(method);
++    }
+     try {
+       await _channel.invokeMethod(method, {'entries': entries});
+     } on PlatformException catch (e) {
+       AppLogger.error("Failed to sync classic daily limits: '${e.message}'.");
++      rethrow;
+     } on MissingPluginException {
+-      _markMissingMethod(method);
++      _throwMissingMethod(method);
+     }
+   }
+*** End Patch

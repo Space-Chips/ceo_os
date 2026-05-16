@@ -1,0 +1,74 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/calendar/calendar_screen.dart
+@@
+-  int _completedTasksForMonth(DateTime monthDate, List<ParetoTask> tasks) {
+-    return tasks.where((task) {
+-      if (!task.completed) return false;
+-      final completedAt = task.completedDate;
+-      if (completedAt == null) return false;
+-      return completedAt.year == monthDate.year &&
+-          completedAt.month == monthDate.month;
+-    }).length;
+-  }
+-
+-  int _completedHabitsForMonth(DateTime monthDate) {
+-    return _habitCompletions.where((completion) {
+-      if (!completion.completed) return false;
+-      final date = DateTime.tryParse(completion.date);
+-      if (date == null) return false;
+-      return date.year == monthDate.year && date.month == monthDate.month;
+-    }).length;
+-  }
+-
+-  double _monthlyProductivityRawScore(
+-    DateTime monthDate,
+-    List<CalendarEvent> events,
+-    List<ParetoTask> tasks,
+-  ) {
+-    final eventScore = _eventCountForMonth(monthDate, events) * 0.4;
+-    final taskScore = _completedTasksForMonth(monthDate, tasks) * 2.2;
+-    final habitScore = _completedHabitsForMonth(monthDate) * 0.85;
+-    return eventScore + taskScore + habitScore;
+-  }
+-
+-  int _monthlyProductivityLevel(
+-    DateTime monthDate,
+-    List<CalendarEvent> events,
+-    List<ParetoTask> tasks,
+-  ) {
+-    final values = List<double>.generate(
+-      12,
+-      (index) => _monthlyProductivityRawScore(
+-        DateTime(_currentDate.year, index + 1, 1),
+-        events,
+-        tasks,
+-      ),
+-    );
+-    final current = _monthlyProductivityRawScore(monthDate, events, tasks);
+-    final maxValue = values.fold<double>(0, (best, value) => value > best ? value : best);
+-    if (current <= 0 || maxValue <= 0) return 0;
+-    final normalized = current / maxValue;
+-    if (normalized < 0.25) return 1;
+-    if (normalized < 0.5) return 2;
+-    if (normalized < 0.75) return 3;
+-    return 4;
+-  }
+-
+-  Color _monthHeatColor(int level) {
+-    switch (level) {
+-      case 1:
+-        return const Color(0x104C7DFF);
+-      case 2:
+-        return const Color(0x1A4C7DFF);
+-      case 3:
+-        return const Color(0x294C7DFF);
+-      case 4:
+-        return const Color(0x384C7DFF);
+-      case 0:
+-      default:
+-        return AppColors.white.withValues(alpha: 0.02);
+-    }
+-  }
+-
+   bool _isBirthdayEvent(CalendarEvent event) {
+*** End Patch

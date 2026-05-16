@@ -1,0 +1,82 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/ios/Runner/AppDelegate.swift
+@@
+     private func syncClassicShieldConfig(args: [String: Any]?, result: FlutterResult) {
+         let packages = (args?["packages"] as? [String] ?? []).filter { !$0.isEmpty }
+         sharedDefaults()?.set(packages, forKey: classicSelectionStorageKey)
+         applyEffectiveShield()
+         result(nil)
+@@
+         sharedDefaults()?.set(enabled, forKey: classicEnabledStorageKey)
+         applyEffectiveShield()
+         result(nil)
+     }
++
++    private func parseClassicRest(_ raw: [String: Any]) -> PlannedClassicRest? {
++        guard let id = raw["id"] as? String else {
++            return nil
++        }
++        let startMillis = (raw["startMillis"] as? NSNumber)?.int64Value
++            ?? (raw["startMillis"] as? Int64)
++            ?? Int64(raw["startMillis"] as? Int ?? -1)
++        let endMillis = (raw["endMillis"] as? NSNumber)?.int64Value
++            ?? (raw["endMillis"] as? Int64)
++            ?? Int64(raw["endMillis"] as? Int ?? -1)
++        guard startMillis > 0, endMillis > startMillis else {
++            return nil
++        }
++        return PlannedClassicRest(id: id, startMillis: startMillis, endMillis: endMillis)
++    }
++
++    private func clearClassicRestDeviceActivities() {
++        let active = deviceActivityCenter.activities
++        let names = active.filter { $0.rawValue.hasPrefix(classicRestActivityPrefix) }
++        guard !names.isEmpty else { return }
++        deviceActivityCenter.stopMonitoring(Array(names))
++    }
++
++    private func startClassicRestDeviceActivity(for rest: PlannedClassicRest, startDate: Date) {
++        let endDate = Date(timeIntervalSince1970: TimeInterval(rest.endMillis) / 1000.0)
++        guard endDate > startDate else { return }
++
++        let calendar = Calendar.current
++        let startComponents = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: startDate)
++        let endComponents = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: endDate)
++        let schedule = DeviceActivitySchedule(
++            intervalStart: startComponents,
++            intervalEnd: endComponents,
++            repeats: false
++        )
++
++        do {
++            let name = DeviceActivityName("\(classicRestActivityPrefix)\(rest.id)")
++            try deviceActivityCenter.startMonitoring(name, during: schedule)
++        } catch {
++            print("Failed to schedule classic pause for \(rest.id): \(error)")
++        }
++    }
++
++    private func syncClassicPauseSchedule(args: [String: Any]?, result: FlutterResult) {
++        let payloads = (args?["packages"] as? [String] ?? []).filter { !$0.isEmpty }
++        let rawPeriods = args?["periods"] as? [[String: Any]] ?? []
++        let parsed = rawPeriods.compactMap(parseClassicRest)
++        sharedDefaults()?.set(payloads, forKey: classicPauseSelectionStorageKey)
++        saveClassicRestPeriods(parsed)
++        clearClassicRestDeviceActivities()
++
++        let now = Date()
++        let pauseEnabled = !payloads.isEmpty && classicPauseActiveNow(at: now, periods: parsed)
++        sharedDefaults()?.set(pauseEnabled, forKey: classicPauseEnabledStorageKey)
++        applyEffectiveShield()
++
++        for rest in parsed {
++            let endDate = Date(timeIntervalSince1970: TimeInterval(rest.endMillis) / 1000.0)
++            guard endDate > now else { continue }
++            let requestedStart = Date(timeIntervalSince1970: TimeInterval(rest.startMillis) / 1000.0)
++            let effectiveStart = requestedStart > now ? requestedStart : now
++            startClassicRestDeviceActivity(for: rest, startDate: effectiveStart)
++        }
++
++        result(true)
++    }
+*** End Patch

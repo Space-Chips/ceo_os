@@ -1,0 +1,13 @@
+*** Begin Patch
+*** Update File: lib/features/ceo_mode/ceo_mode_screen.dart
+@@
+-        final provider = context.read<CeoModeProvider>();
+-        provider.setDuration(duration.clamp(15, 240));
++        final provider = context.read<CeoModeProvider>();
++        final clamped = duration.clamp(15, 240);
++        provider.setDuration(clamped);
++        unawaited(_persistWidgetDuration(clamped));
+       });
+     }
+   }
+*** End Patch

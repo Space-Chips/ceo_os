@@ -1,0 +1,154 @@
+*** Begin Patch
+*** Update File: lib/features/widget_configuration/widget_configuration_screen.dart
+@@
+ class _WidgetConfigurationScreenState extends State<WidgetConfigurationScreen> {
+@@
+   bool _enabledTodo = true;
+   bool _enabledDashboard = true;
+-  bool _enabledHabits = true;
++  bool _enabledHabitsToday = true;
++  bool _enabledHabitsTable = true;
+   CeoWidgetMode? _defaultMode;
+@@
+     final enabledHabits = await HomeWidget.getWidgetData<bool>(
+-      CeoHomeWidgetService.keyEnabledHabits,
++      CeoHomeWidgetService.keyEnabledHabitsToday,
+       defaultValue: false,
+     );
++    final enabledHabitsTable = await HomeWidget.getWidgetData<bool>(
++      CeoHomeWidgetService.keyEnabledHabitsTable,
++      defaultValue: false,
++    );
+     setState(() {
+       _defaultMode = CeoWidgetModeParsing.tryParse(rawDefault);
+       _enabledTodo = enabledTodo ?? false;
+       _enabledDashboard = enabledDashboard ?? false;
+-      _enabledHabits = enabledHabits ?? false;
++      _enabledHabitsToday = enabledHabits ?? false;
++      _enabledHabitsTable = enabledHabitsTable ?? false;
+       _loading = false;
+     });
+   }
+@@
+-  Future<void> _setEnabled({bool? todo, bool? dashboard, bool? habits}) async {
++  Future<void> _setEnabled({
++    bool? todo,
++    bool? dashboard,
++    bool? habitsToday,
++    bool? habitsTable,
++  }) async {
+@@
+     setState(() {
+       _saving = true;
+       if (todo != null) _enabledTodo = todo;
+       if (dashboard != null) _enabledDashboard = dashboard;
+-      if (habits != null) _enabledHabits = habits;
++      if (habitsToday != null) _enabledHabitsToday = habitsToday;
++      if (habitsTable != null) _enabledHabitsTable = habitsTable;
+     });
+     try {
+       await Future.wait([
+         if (todo != null)
+@@
+         if (dashboard != null)
+           HomeWidget.saveWidgetData<bool>(
+             CeoHomeWidgetService.keyEnabledDashboard,
+             dashboard,
+           ),
+-        if (habits != null)
++        if (habitsToday != null)
+           HomeWidget.saveWidgetData<bool>(
+-            CeoHomeWidgetService.keyEnabledHabits,
+-            habits,
++            CeoHomeWidgetService.keyEnabledHabitsToday,
++            habitsToday,
+           ),
++        if (habitsTable != null)
++          HomeWidget.saveWidgetData<bool>(
++            CeoHomeWidgetService.keyEnabledHabitsTable,
++            habitsTable,
++          ),
+       ]);
+@@
+   @override
+   Widget build(BuildContext context) {
+@@
+                         children: [
+                           const SizedBox(height: 6),
+                           _sectionTitle(_t('widget_configuration_widgets')),
+                           const SizedBox(height: 12),
+@@
+                           _widgetToggleCard(
+                             label: _t('widget_mode_habits'),
+                             icon: CupertinoIcons.flame_fill,
+-                            value: _enabledHabits,
+-                            onChanged: (value) => _setEnabled(habits: value),
++                            value: _enabledHabitsToday,
++                            onChanged: (value) =>
++                                _setEnabled(habitsToday: value),
+                           ),
++                          const SizedBox(height: 10),
++                          _widgetToggleCard(
++                            label: _t('widget_mode_habits_table'),
++                            icon: CupertinoIcons.square_grid_3x2_fill,
++                            value: _enabledHabitsTable,
++                            onChanged: (value) =>
++                                _setEnabled(habitsTable: value),
++                          ),
+                           const SizedBox(height: 22),
+-                          _sectionTitle(_t('widget_configuration_default')),
+-                          const SizedBox(height: 12),
+-                          _defaultModeCard(
+-                            mode: null,
+-                            label: _t('widget_default_none'),
+-                            icon: CupertinoIcons.xmark_circle_fill,
+-                          ),
+-                          const SizedBox(height: 10),
+-                          _defaultModeCard(
+-                            mode: CeoWidgetMode.todo,
+-                            label: _t('widget_mode_todo'),
+-                            icon: CupertinoIcons.check_mark_circled_solid,
+-                          ),
+-                          const SizedBox(height: 10),
+-                          _defaultModeCard(
+-                            mode: CeoWidgetMode.dashboard,
+-                            label: _t('widget_mode_dashboard'),
+-                            icon: CupertinoIcons.rectangle_3_offgrid_fill,
+-                          ),
+-                          const SizedBox(height: 10),
+-                          _defaultModeCard(
+-                            mode: CeoWidgetMode.habits,
+-                            label: _t('widget_mode_habits'),
+-                            icon: CupertinoIcons.flame_fill,
+-                          ),
+-                          const SizedBox(height: 22),
++                          if (Platform.isAndroid) ...[
++                            _sectionTitle(_t('widget_configuration_default')),
++                            const SizedBox(height: 12),
++                            _defaultModeCard(
++                              mode: null,
++                              label: _t('widget_default_none'),
++                              icon: CupertinoIcons.xmark_circle_fill,
++                            ),
++                            const SizedBox(height: 10),
++                            _defaultModeCard(
++                              mode: CeoWidgetMode.todo,
++                              label: _t('widget_mode_todo'),
++                              icon: CupertinoIcons.check_mark_circled_solid,
++                            ),
++                            const SizedBox(height: 10),
++                            _defaultModeCard(
++                              mode: CeoWidgetMode.dashboard,
++                              label: _t('widget_mode_dashboard'),
++                              icon: CupertinoIcons.rectangle_3_offgrid_fill,
++                            ),
++                            const SizedBox(height: 10),
++                            _defaultModeCard(
++                              mode: CeoWidgetMode.habits,
++                              label: _t('widget_mode_habits'),
++                              icon: CupertinoIcons.flame_fill,
++                            ),
++                            const SizedBox(height: 22),
++                          ],
+                           _sectionTitle(_t('widget_configuration_actions')),
+*** End Patch

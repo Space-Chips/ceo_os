@@ -1,0 +1,50 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/calendar/calendar_screen.dart
+@@
+ import '../../components/components.dart';
+ import '../../core/models/habit_models.dart';
+ import '../../core/models/task_models.dart';
+@@
+   bool _loadingHabits = true;
+   bool _loadingEventTypes = true;
+   List<Habit> _habits = const [];
+-  List<HabitCompletion> _habitCompletions = const [];
+@@
+     await Future.wait([
+       context.read<TaskProvider>().loadEvents(),
+       context.read<TaskProvider>().loadTasksWithCompleted(includeCompleted: true),
+       _loadHabits(),
+       _loadEventTypes(),
+-      _loadHabitCompletionsForYear(_currentDate.year),
+     ]);
+   }
+@@
+-  Future<void> _loadHabitCompletionsForYear(int year) async {
+-    try {
+-      final start = DateTime(year, 1, 1);
+-      final end = DateTime(year, 12, 31, 23, 59, 59);
+-      final completions = await _habitRepository.getCompletionsForDateRange(
+-        start,
+-        end,
+-      );
+-      if (!mounted) return;
+-      setState(() {
+-        _habitCompletions = completions;
+-      });
+-    } catch (_) {
+-      if (!mounted) return;
+-      setState(() {
+-        _habitCompletions = const [];
+-      });
+-    }
+-  }
+-
+@@
+-      await _loadHabitCompletionsForYear(_currentDate.year);
+     }
+   }
+@@
+-      await _loadHabitCompletionsForYear(_currentDate.year);
+     }
+   }
+*** End Patch

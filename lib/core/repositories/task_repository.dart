@@ -1,6 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/task_models.dart';
 import '../services/supabase_service.dart';
+import '../utils/app_logger.dart';
 
 class TaskRepository {
   final SupabaseService _supabaseService;
@@ -28,7 +29,7 @@ class TaskRepository {
           .map((data) => ParetoTask.fromJson(data))
           .toList();
     } catch (e) {
-      print('Error getting tasks: $e');
+      AppLogger.error('Error getting tasks.', e);
       return [];
     }
   }
@@ -37,11 +38,16 @@ class TaskRepository {
     await _client
         .from('pareto_tasks')
         .update({'completed': false, 'completed_date': null})
-        .eq('id', taskId);
+        .eq('id', taskId)
+        .eq('created_by', _currentUserId);
   }
 
   Future<void> deleteTask(String taskId) async {
-    await _client.from('pareto_tasks').delete().eq('id', taskId);
+    await _client
+        .from('pareto_tasks')
+        .delete()
+        .eq('id', taskId)
+        .eq('created_by', _currentUserId);
   }
 
   Future<void> addTask(
@@ -122,7 +128,8 @@ class TaskRepository {
           'completed': true,
           'completed_date': DateTime.now().toIso8601String(),
         })
-        .eq('id', taskId);
+        .eq('id', taskId)
+        .eq('created_by', _currentUserId);
   }
 
   // --- Task Groups ---
@@ -139,7 +146,7 @@ class TaskRepository {
           .map((data) => TaskGroup.fromJson(data))
           .toList();
     } catch (e) {
-      print('Error getting task groups: $e');
+      AppLogger.error('Error getting task groups.', e);
       return [];
     }
   }
@@ -173,7 +180,7 @@ class TaskRepository {
           .map((data) => CalendarEvent.fromJson(data))
           .toList();
     } catch (e) {
-      print('Error getting events: $e');
+      AppLogger.error('Error getting events.', e);
       return [];
     }
   }
@@ -182,20 +189,38 @@ class TaskRepository {
     String title,
     String date, {
     String? time,
+    int? durationMinutes,
     String? description,
     String? sourceType,
     String? sourceId,
     String? recurrenceRule,
+    String? eventTypeId,
   }) async {
-    await _client.from('calendar_events').insert({
+    final payload = <String, dynamic>{
       'created_by': _currentUserId,
       'title': title,
       'description': description,
       'event_date': date,
       'event_time': time,
+      'duration_minutes': durationMinutes,
       'source_type': sourceType ?? 'manual',
       'source_id': sourceId,
+      'event_type_id': eventTypeId,
       'recurrence_rule': recurrenceRule,
-    });
+    };
+
+    try {
+      await _client.from('calendar_events').insert(payload);
+    } on PostgrestException catch (e) {
+      final missingDuration =
+          e.code == 'PGRST204' ||
+          e.code == '42703' ||
+          e.message.contains('duration_minutes');
+      if (!missingDuration) rethrow;
+
+      final fallbackPayload = Map<String, dynamic>.from(payload)
+        ..remove('duration_minutes');
+      await _client.from('calendar_events').insert(fallbackPayload);
+    }
   }
 }

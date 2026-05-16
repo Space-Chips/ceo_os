@@ -1,0 +1,106 @@
+*** Begin Patch
+*** Update File: lib/core/services/home_widget_service.dart
+@@
+   static const String _keyFocusSmall = 'ceo_widget_focus_small';
+   static const String _keyFocusLarge = 'ceo_widget_focus_large';
+   static const String _keyBlackoutSmall = 'ceo_widget_blackout_small';
+   static const String _keyBlackoutLarge = 'ceo_widget_blackout_large';
++  static const String keyFocusDurationMinutes = 'ceo_widget_focus_duration';
++  static const String keyBlackoutDurationMinutes =
++      'ceo_widget_blackout_duration';
+@@
+     final enabledBlackout =
+         await HomeWidget.getWidgetData<bool>(
+           keyEnabledBlackout,
+           defaultValue: false,
+         ) ??
+         false;
+@@
+     if (enabledFocus) {
++      final focusDuration =
++          (await HomeWidget.getWidgetData<int>(
++            keyFocusDurationMinutes,
++            defaultValue: 25,
++          )) ??
++          25;
+       futures.addAll([
+         HomeWidget.renderFlutterWidget(
+-          _CeoShortcutCard.small(
+-            title: language.t('widget_mode_focus'),
+-            buttonLabel: language.t('widget_start_focus'),
+-            buttonValue: language.t('widget_focus_25m'),
+-            footer: language.t('widget_tap_to_open'),
+-            accent: AppColors.accent,
++          FocusWidgetSquareView(
++            language: language,
++            durationMinutes: focusDuration.clamp(5, 180),
+           ),
+           key: _keyFocusSmall,
+           logicalSize: const Size(170, 170),
+           pixelRatio: 2,
+         ),
+-        HomeWidget.renderFlutterWidget(
+-          _CeoShortcutCard.large(
+-            title: language.t('widget_mode_focus'),
+-            presetLeft: language.t('widget_focus_25m_short'),
+-            presetRight: language.t('widget_focus_50m_short'),
+-            footer: language.t('widget_open_focus_to_start'),
+-            accent: AppColors.accent,
+-          ),
+-          key: _keyFocusLarge,
+-          logicalSize: const Size(360, 180),
+-          pixelRatio: 2,
+-        ),
++        HomeWidget.saveWidgetData<String>(_keyFocusLarge, null),
+       ]);
+     } else {
+       futures.addAll([
+         HomeWidget.saveWidgetData<String>(_keyFocusSmall, null),
+         HomeWidget.saveWidgetData<String>(_keyFocusLarge, null),
+       ]);
+     }
+ 
+     if (enabledBlackout) {
++      final blackoutDuration =
++          (await HomeWidget.getWidgetData<int>(
++            keyBlackoutDurationMinutes,
++            defaultValue: 120,
++          )) ??
++          120;
+       futures.addAll([
+         HomeWidget.renderFlutterWidget(
+-          _CeoShortcutCard.small(
+-            title: language.t('widget_mode_blackout'),
+-            buttonLabel: language.t('widget_start_blackout'),
+-            buttonValue: language.t('widget_blackout_2h'),
+-            footer: language.t('widget_tap_to_open'),
+-            accent: AppColors.primaryOrange,
++          BlackoutWidgetSquareView(
++            language: language,
++            durationMinutes: blackoutDuration.clamp(15, 240),
+           ),
+           key: _keyBlackoutSmall,
+           logicalSize: const Size(170, 170),
+           pixelRatio: 2,
+         ),
+-        HomeWidget.renderFlutterWidget(
+-          _CeoShortcutCard.large(
+-            title: language.t('widget_mode_blackout'),
+-            presetLeft: language.t('widget_blackout_2h_short'),
+-            presetRight: language.t('widget_blackout_4h_short'),
+-            footer: language.t('widget_open_blackout_to_start'),
+-            accent: AppColors.primaryOrange,
+-          ),
+-          key: _keyBlackoutLarge,
+-          logicalSize: const Size(360, 180),
+-          pixelRatio: 2,
+-        ),
++        HomeWidget.saveWidgetData<String>(_keyBlackoutLarge, null),
+       ]);
+     } else {
+       futures.addAll([
+         HomeWidget.saveWidgetData<String>(_keyBlackoutSmall, null),
+         HomeWidget.saveWidgetData<String>(_keyBlackoutLarge, null),
+       ]);
+     }
+*** End Patch

@@ -1,0 +1,69 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/android/app/src/main/kotlin/com/example/ceo_os/MainActivity.kt
+@@
+ package com.example.ceo_os
+ 
++import android.app.AppOpsManager
+ import android.content.Intent
+ import android.content.ComponentName
+ import android.provider.Settings
+ import android.net.Uri
+ import android.content.Context
++import android.os.Build
++import android.os.Process
+ import io.flutter.embedding.android.FlutterActivity
+ import io.flutter.embedding.engine.FlutterEngine
+ import io.flutter.plugin.common.MethodChannel
+@@
+     private fun hasBlockingPermissions(): Boolean {
+-        return isAccessibilityServiceEnabled() && Settings.canDrawOverlays(this)
++        return isAccessibilityServiceEnabled()
++            && Settings.canDrawOverlays(this)
++            && hasUsageStatsPermission()
++    }
++
++    private fun hasUsageStatsPermission(): Boolean {
++        val appOps = getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
++        val mode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
++            appOps.unsafeCheckOpNoThrow(
++                AppOpsManager.OPSTR_GET_USAGE_STATS,
++                Process.myUid(),
++                packageName
++            )
++        } else {
++            @Suppress("DEPRECATION")
++            appOps.checkOpNoThrow(
++                AppOpsManager.OPSTR_GET_USAGE_STATS,
++                Process.myUid(),
++                packageName
++            )
++        }
++        return mode == AppOpsManager.MODE_ALLOWED
+     }
+@@
+                     if (!Settings.canDrawOverlays(this)) {
+                         val overlayIntent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, 
+                             Uri.parse("package:$packageName"))
+                         startActivity(overlayIntent)
+                     }
++
++                    if (!hasUsageStatsPermission()) {
++                        val usageIntent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
++                        startActivity(usageIntent)
++                    }
+                     result.success(hasBlockingPermissions())
+                 }
+@@
+                 "syncClassicPauseSchedule" -> {
+@@
+                     ClassicPauseScheduler.syncPauseSchedule(this, periods)
+                     result.success(null)
+                 }
++                "syncClassicDailyLimits" -> {
++                    @Suppress("UNCHECKED_CAST")
++                    val entries = call.argument<List<Map<String, Any?>>>("entries") ?: emptyList()
++                    ClassicDailyLimitTracker.syncDailyLimits(this, entries)
++                    result.success(null)
++                }
+                 "setClassicShieldEnabled" -> {
+*** End Patch

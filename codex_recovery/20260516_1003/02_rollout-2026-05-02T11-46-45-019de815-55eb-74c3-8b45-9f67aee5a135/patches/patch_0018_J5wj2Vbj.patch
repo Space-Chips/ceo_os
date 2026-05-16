@@ -1,0 +1,98 @@
+*** Begin Patch
+*** Add File: android/app/src/main/kotlin/com/wakeapp/ceoos/CeoHomeWidgetProvider.kt
++package com.wakeapp.ceoos
++
++import android.appwidget.AppWidgetManager
++import android.content.Context
++import android.content.SharedPreferences
++import android.graphics.BitmapFactory
++import android.net.Uri
++import android.widget.RemoteViews
++import es.antonborri.home_widget.HomeWidgetLaunchIntent
++import es.antonborri.home_widget.HomeWidgetProvider
++
++class CeoHomeWidgetProvider : HomeWidgetProvider() {
++
++  override fun onUpdate(
++      context: Context,
++      appWidgetManager: AppWidgetManager,
++      appWidgetIds: IntArray,
++      widgetData: SharedPreferences
++  ) {
++    for (widgetId in appWidgetIds) {
++      val options = appWidgetManager.getAppWidgetOptions(widgetId)
++      val minWidth = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH)
++      val large = minWidth >= 240
++
++      val mode = resolveMode(context, widgetId, widgetData)
++      val imageKey = imageKeyFor(mode, large)
++      val imagePath = widgetData.getString(imageKey, null)
++
++      val views = RemoteViews(context.packageName, R.layout.ceo_home_widget)
++
++      if (imagePath != null) {
++        val bmp = BitmapFactory.decodeFile(imagePath)
++        if (bmp != null) {
++          views.setImageViewBitmap(R.id.ceo_widget_image, bmp)
++        }
++      }
++
++      val route = routeFor(mode)
++      val pendingIntent = HomeWidgetLaunchIntent.getActivity(
++          context,
++          MainActivity::class.java,
++          Uri.parse(route)
++      )
++      views.setOnClickPendingIntent(R.id.ceo_widget_image, pendingIntent)
++
++      appWidgetManager.updateAppWidget(widgetId, views)
++    }
++  }
++
++  private fun resolveMode(
++      context: Context,
++      widgetId: Int,
++      widgetData: SharedPreferences
++  ): String {
++    val instancePrefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
++    val perWidget = instancePrefs.getString("${PREF_MODE_PREFIX}${widgetId}", null)
++    if (!perWidget.isNullOrBlank()) return perWidget
++    return widgetData.getString(KEY_DEFAULT_MODE, MODE_DASHBOARD) ?: MODE_DASHBOARD
++  }
++
++  private fun imageKeyFor(mode: String, large: Boolean): String {
++    return when (mode) {
++      MODE_TODO -> if (large) KEY_TODO_LARGE else KEY_TODO_SMALL
++      MODE_HABITS -> if (large) KEY_HABITS_LARGE else KEY_HABITS_SMALL
++      else -> if (large) KEY_DASHBOARD_LARGE else KEY_DASHBOARD_SMALL
++    }
++  }
++
++  private fun routeFor(mode: String): String {
++    return when (mode) {
++      MODE_TODO -> "/tasks"
++      MODE_HABITS -> "/habits"
++      else -> "/home"
++    }
++  }
++
++  companion object {
++    const val PREFS = "ceo_home_widget_prefs"
++    const val PREF_MODE_PREFIX = "ceo_widget_mode_"
++
++    const val KEY_DEFAULT_MODE = "ceo_widget_default_mode"
++
++    const val MODE_TODO = "todo"
++    const val MODE_DASHBOARD = "dashboard"
++    const val MODE_HABITS = "habits"
++
++    const val KEY_TODO_SMALL = "ceo_widget_todo_small"
++    const val KEY_TODO_LARGE = "ceo_widget_todo_large"
++    const val KEY_DASHBOARD_SMALL = "ceo_widget_dashboard_small"
++    const val KEY_DASHBOARD_LARGE = "ceo_widget_dashboard_large"
++    const val KEY_HABITS_SMALL = "ceo_widget_habits_small"
++    const val KEY_HABITS_LARGE = "ceo_widget_habits_large"
++  }
++}
++
+*** End Patch

@@ -1,0 +1,17 @@
+*** Begin Patch
+*** Update File: lib/core/providers/language_provider.dart
+@@
+   Future<void> setLanguage(String code, {bool persistToCloud = true}) async {
+     final normalized = _normalize(code);
+     _setLanguage(normalized, notify: true);
+     await _persistToLocalPrefs(
+       normalized,
+-      markPendingCloudSync: persistToCloud && _client.auth.currentUser != null
+-          ? true
+-          : null,
++      markPendingCloudSync: persistToCloud,
+     );
+     if (!persistToCloud || _client.auth.currentUser == null) return;
+     await _syncLanguageToCloudBestEffort(normalized);
+   }
+*** End Patch

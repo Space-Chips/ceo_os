@@ -1,0 +1,24 @@
+*** Begin Patch
+*** Update File: lib/features/premium/upgrade_screen.dart
+@@
+                   try {
+                     final result = await BillingService().purchasePremium();
+-                    if (!mounted) return;
++                    if (!context.mounted) return;
+                     final title = result.succeeded
+                         ? 'Premium activated'
+                         : 'Activation pending';
+                     final message = result.succeeded
+                         ? 'Your purchase was confirmed. Premium is now active.'
+                         : 'Store confirmed your purchase. Premium is still syncing.';
+@@
+                         try {
+                           final result = await BillingService().restorePurchases();
+-                          if (!mounted) return;
++                          if (!context.mounted) return;
+                           final title = result.succeeded
+                               ? 'Restored'
+                               : 'Restore failed';
+                           showCupertinoDialog<void>(
+                             context: context,
+*** End Patch

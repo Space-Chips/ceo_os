@@ -1,0 +1,27 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/ios/Runner.xcodeproj/project.pbxproj
+@@
+-				8578F98A2F4379B50038063F /* Embed Foundation Extensions */,
+-				A1B2C3D4E5F60718293A4B5C /* Strip ScreenTimeReportExtension For Simulator */,
++				8578F98A2F4379B50038063F /* Embed Foundation Extensions */,
+ 				223D14C456615BC4CA4FB525 /* [CP] Embed Pods Frameworks */,
+ 				3B06AD1E1E4923F5004D2608 /* Thin Binary */,
+ 				639693E368918B242CACF454 /* [CP] Copy Pods Resources */,
+@@
+-		A1B2C3D4E5F60718293A4B5C /* Strip ScreenTimeReportExtension For Simulator */ = {
+-			isa = PBXShellScriptBuildPhase;
+-			buildActionMask = 2147483647;
+-			files = (
+-			);
+-			inputPaths = (
+-			);
+-			name = "Strip ScreenTimeReportExtension For Simulator";
+-			outputPaths = (
+-			);
+-			runOnlyForDeploymentPostprocessing = 0;
+-			shellPath = /bin/sh;
+-			shellScript = "if [ \"$PLATFORM_NAME\" = \"iphonesimulator\" ]; then\n  rm -rf \"${TARGET_BUILD_DIR}/${WRAPPER_NAME}/PlugIns/ScreenTimeReportExtension.appex\"\nfi\n";
+-			showEnvVarsInLog = 0;
+-		};
+ /* End PBXShellScriptBuildPhase section */
+*** End Patch

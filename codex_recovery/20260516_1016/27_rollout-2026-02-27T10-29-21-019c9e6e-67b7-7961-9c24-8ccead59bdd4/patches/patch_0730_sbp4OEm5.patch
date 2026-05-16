@@ -1,0 +1,17 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/habits/habits_screen.dart
+@@
+ import '../../core/repositories/feature_repository.dart';
+ import '../../core/repositories/premium_repository.dart';
+ import '../../core/theme/app_colors.dart';
+ import '../../core/theme/app_typography.dart';
+-import 'habit_gallery_sheet.dart';
++import 'add_habit_sheet.dart';
+@@
+     showCupertinoModalPopup(
+       context: context,
+-      builder: (_) => const HabitGallerySheet(),
++      builder: (_) => const AddHabitSheet(),
+     );
+   }
+*** End Patch

@@ -1,0 +1,295 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/habits/habits_screen.dart
+@@
+ class _GoalsTabState extends State<_GoalsTab> {
+   final FeatureRepository _repo = FeatureRepository();
+-  final TextEditingController _goalCtrl = TextEditingController();
++  final TextEditingController _goalNameCtrl = TextEditingController();
++  final TextEditingController _goalNoteCtrl = TextEditingController();
+   final TextEditingController _rewardCtrl = TextEditingController();
+   final TextEditingController _sanctionCtrl = TextEditingController();
++  static const String _goalSeparator = '|||';
++  static const List<String> _goalIcons = [
++    'target',
++    'briefcase',
++    'bolt',
++    'book',
++    'heart',
++    'dumbbell',
++    'chart',
++    'star',
++  ];
+@@
+-  String _objectiveTitle(Objective objective) {
+-    final value = objective.title?.trim() ?? '';
+-    if (value.isEmpty) return 'UNTITLED_GOAL';
+-    return value;
++  _GoalMeta _objectiveMeta(Objective objective) {
++    final raw = objective.title?.trim() ?? '';
++    if (raw.isEmpty) {
++      return const _GoalMeta(name: 'UNTITLED_GOAL');
++    }
++    final parts = raw.split(_goalSeparator);
++    if (parts.isEmpty) {
++      return _GoalMeta(name: raw);
++    }
++    final name = parts.first.trim().isEmpty
++        ? 'UNTITLED_GOAL'
++        : parts.first.trim();
++    final icon = parts.length > 1 ? parts[1].trim() : '';
++    final note = parts.length > 2 ? parts.sublist(2).join(_goalSeparator) : '';
++    return _GoalMeta(name: name, icon: icon, note: note.trim());
++  }
++
++  String _serializeGoal({
++    required String name,
++    String icon = '',
++    String note = '',
++  }) {
++    final cleanName = name.replaceAll(_goalSeparator, ' ').trim();
++    final cleanIcon = icon.replaceAll(_goalSeparator, ' ').trim();
++    final cleanNote = note.replaceAll(_goalSeparator, ' ').trim();
++    if (cleanIcon.isEmpty && cleanNote.isEmpty) {
++      return cleanName;
++    }
++    return '$cleanName$_goalSeparator$cleanIcon$_goalSeparator$cleanNote';
++  }
++
++  IconData _goalIconData(String? iconName) {
++    switch ((iconName ?? '').toLowerCase()) {
++      case 'briefcase':
++        return CupertinoIcons.briefcase_fill;
++      case 'bolt':
++        return CupertinoIcons.bolt_fill;
++      case 'book':
++        return CupertinoIcons.book_fill;
++      case 'heart':
++        return CupertinoIcons.heart_fill;
++      case 'dumbbell':
++        return CupertinoIcons.sportscourt_fill;
++      case 'chart':
++        return CupertinoIcons.chart_bar_fill;
++      case 'star':
++        return CupertinoIcons.star_fill;
++      case 'target':
++      default:
++        return CupertinoIcons.scope;
++    }
+   }
+ 
+   void _showCreateGoalDialog() {
+-    showCupertinoDialog(
++    _goalNameCtrl.clear();
++    _goalNoteCtrl.clear();
++    var selectedIcon = 'target';
++    var creating = false;
++
++    showCupertinoModalPopup(
+       context: context,
+-      builder: (_) => CupertinoAlertDialog(
+-        title: Text(
+-          'NEW_GOAL',
+-          style: AppTypography.mono.copyWith(fontSize: 13),
+-        ),
+-        content: Padding(
+-          padding: const EdgeInsets.only(top: 10),
+-          child: CupertinoTextField(
+-            controller: _goalCtrl,
+-            placeholder: 'GOAL_NAME...',
+-            style: AppTypography.mono.copyWith(color: AppColors.label),
+-            decoration: BoxDecoration(
+-              color: AppColors.backgroundLight,
+-              borderRadius: BorderRadius.circular(8),
+-            ),
+-          ),
+-        ),
+-        actions: [
+-          CupertinoDialogAction(
+-            onPressed: () {
+-              _goalCtrl.clear();
+-              Navigator.of(context).pop();
+-            },
+-            child: const Text('CANCEL'),
+-          ),
+-          CupertinoDialogAction(
+-            onPressed: () async {
+-              final title = _goalCtrl.text.trim();
+-              if (title.isEmpty) return;
+-              await _repo.createObjective(title);
+-              _goalCtrl.clear();
+-              if (!mounted) return;
+-              Navigator.of(context).pop();
+-              await _load();
+-            },
+-            child: const Text('CREATE'),
+-          ),
+-        ],
++      builder: (sheetContext) => StatefulBuilder(
++        builder: (context, setModalState) => SafeArea(
++          top: false,
++          child: Padding(
++            padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
++            child: GlassCard(
++              padding: const EdgeInsets.all(14),
++              borderRadius: 20,
++              border: Border.all(
++                color: AppColors.glassBorder.withValues(alpha: 0.85),
++                width: 0.6,
++              ),
++              child: Column(
++                mainAxisSize: MainAxisSize.min,
++                crossAxisAlignment: CrossAxisAlignment.start,
++                children: [
++                  Text(
++                    'Create Goal',
++                    style: AppTypography.mono.copyWith(
++                      fontSize: 18,
++                      color: AppColors.label,
++                      fontWeight: FontWeight.w800,
++                    ),
++                  ),
++                  const SizedBox(height: 10),
++                  GlassInputField(
++                    controller: _goalNameCtrl,
++                    placeholder: 'Goal name (required)',
++                    autofocus: true,
++                  ),
++                  const SizedBox(height: 8),
++                  GlassInputField(
++                    controller: _goalNoteCtrl,
++                    placeholder: 'Small precision (optional)',
++                    maxLines: 2,
++                  ),
++                  const SizedBox(height: 10),
++                  Text(
++                    'Icon (optional)',
++                    style: AppTypography.mono.copyWith(
++                      fontSize: 11,
++                      color: AppColors.secondaryLabel,
++                    ),
++                  ),
++                  const SizedBox(height: 8),
++                  Wrap(
++                    spacing: 8,
++                    runSpacing: 8,
++                    children: _goalIcons.map((iconName) {
++                      final selected = selectedIcon == iconName;
++                      return GestureDetector(
++                        onTap: () =>
++                            setModalState(() => selectedIcon = iconName),
++                        child: Container(
++                          width: 40,
++                          height: 40,
++                          decoration: BoxDecoration(
++                            borderRadius: BorderRadius.circular(12),
++                            color: selected
++                                ? AppColors.primaryOrange.withValues(alpha: 0.2)
++                                : AppColors.backgroundLight.withValues(
++                                    alpha: 0.55,
++                                  ),
++                            border: Border.all(
++                              color: selected
++                                  ? AppColors.primaryOrange
++                                  : AppColors.glassBorder,
++                              width: 0.7,
++                            ),
++                          ),
++                          child: Icon(
++                            _goalIconData(iconName),
++                            size: 18,
++                            color: selected
++                                ? AppColors.primaryOrange
++                                : AppColors.secondaryLabel,
++                          ),
++                        ),
++                      );
++                    }).toList(),
++                  ),
++                  const SizedBox(height: 12),
++                  Row(
++                    children: [
++                      Expanded(
++                        child: CupertinoButton(
++                          padding: const EdgeInsets.symmetric(
++                            horizontal: 12,
++                            vertical: 10,
++                          ),
++                          color: AppColors.backgroundLight.withValues(
++                            alpha: 0.75,
++                          ),
++                          borderRadius: BorderRadius.circular(12),
++                          onPressed: creating
++                              ? null
++                              : () => Navigator.of(sheetContext).pop(),
++                          child: Text(
++                            'Cancel',
++                            style: AppTypography.mono.copyWith(
++                              color: AppColors.secondaryLabel,
++                              fontSize: 14,
++                              fontWeight: FontWeight.w700,
++                            ),
++                          ),
++                        ),
++                      ),
++                      const SizedBox(width: 8),
++                      Expanded(
++                        child: CupertinoButton(
++                          padding: const EdgeInsets.symmetric(
++                            horizontal: 12,
++                            vertical: 10,
++                          ),
++                          color: const Color(0xFFECECEE),
++                          borderRadius: BorderRadius.circular(12),
++                          onPressed: creating
++                              ? null
++                              : () async {
++                                  final name = _goalNameCtrl.text.trim();
++                                  if (name.isEmpty) return;
++                                  setModalState(() => creating = true);
++                                  try {
++                                    await _repo.createObjective(
++                                      _serializeGoal(
++                                        name: name,
++                                        icon: selectedIcon,
++                                        note: _goalNoteCtrl.text.trim(),
++                                      ),
++                                    );
++                                    if (!mounted) return;
++                                    Navigator.of(sheetContext).pop();
++                                    await _load();
++                                  } finally {
++                                    if (mounted) {
++                                      setModalState(() => creating = false);
++                                    }
++                                  }
++                                },
++                          child: Text(
++                            creating ? 'Creating...' : 'Create',
++                            style: AppTypography.mono.copyWith(
++                              color: AppColors.background,
++                              fontSize: 14,
++                              fontWeight: FontWeight.w900,
++                            ),
++                          ),
++                        ),
++                      ),
++                    ],
++                  ),
++                ],
++              ),
++            ),
++          ),
++        ),
+       ),
+     );
+   }
+@@
+   @override
+   void dispose() {
+-    _goalCtrl.dispose();
++    _goalNameCtrl.dispose();
++    _goalNoteCtrl.dispose();
+     _rewardCtrl.dispose();
+     _sanctionCtrl.dispose();
+     super.dispose();
+*** End Patch

@@ -1,0 +1,26 @@
+*** Begin Patch
+*** Update File: lib/features/widget_configuration/widget_configuration_screen.dart
+@@
+                           _widgetToggleCard(
+                             label: _t('widget_mode_habits_table'),
+                             icon: CupertinoIcons.square_grid_3x2_fill,
+                             value: _enabledHabitsTable,
+                             onChanged: (value) =>
+                                 _setEnabled(habitsTable: value),
+                           ),
++                          const SizedBox(height: 10),
++                          _widgetToggleCard(
++                            label: _t('widget_mode_focus'),
++                            icon: CupertinoIcons.timer,
++                            value: _enabledFocus,
++                            onChanged: (value) => _setEnabled(focus: value),
++                          ),
++                          const SizedBox(height: 10),
++                          _widgetToggleCard(
++                            label: _t('widget_mode_blackout'),
++                            icon: CupertinoIcons.moon_stars_fill,
++                            value: _enabledBlackout,
++                            onChanged: (value) => _setEnabled(blackout: value),
++                          ),
+                           const SizedBox(height: 22),
+*** End Patch

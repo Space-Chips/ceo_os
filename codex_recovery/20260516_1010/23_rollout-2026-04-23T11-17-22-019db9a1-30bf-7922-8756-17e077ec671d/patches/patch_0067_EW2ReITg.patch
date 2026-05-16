@@ -1,0 +1,14 @@
+*** Begin Patch
+*** Update File: lib/features/profile/profile_screen.dart
+@@
+                               _metric(
+                                 language.t('rank'),
+-                                RankArt.displayName(
+-                                  _rank?.rankName ?? language.t('asleep'),
+-                                ),
++                                _localizedRankDisplay(
++                                  language,
++                                  _rank?.rankName ?? language.t('asleep'),
++                                ),
+                               ),
+*** End Patch

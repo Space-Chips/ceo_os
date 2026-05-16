@@ -1,0 +1,40 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/habits/habits_screen.dart
+@@
+   void _showCreateGoalDialog() {
++    final language = context.read<LanguageProvider>();
+     _goalNameCtrl.clear();
+@@
+                   Text(
+-                    'Create Goal',
++                    language.t('habits_create_goal'),
+@@
+                   _contractTextField(
+                     controller: _goalNameCtrl,
+-                    placeholder: 'Goal name (required)',
++                    placeholder: language.t('habits_goal_name_required'),
+                     autofocus: true,
+                   ),
+@@
+                   _contractTextField(
+                     controller: _goalNoteCtrl,
+-                    placeholder: 'Small precision (optional)',
++                    placeholder: language.t('habits_goal_precision_optional'),
+                     maxLines: 2,
+                   ),
+@@
+                   Text(
+-                    'Icon (optional)',
++                    language.t('habits_icon_optional'),
+@@
+                         child: _ModalActionButton(
+-                          label: 'Cancel',
++                          label: language.t('cancel'),
+                           dark: true,
+@@
+                         child: _ModalActionButton(
+-                          label: creating ? 'Creating...' : 'Create',
++                          label: creating
++                              ? language.t('habits_creating')
++                              : language.t('habits_create'),
+*** End Patch

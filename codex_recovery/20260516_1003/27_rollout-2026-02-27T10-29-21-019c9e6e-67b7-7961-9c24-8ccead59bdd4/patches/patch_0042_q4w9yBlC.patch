@@ -1,0 +1,12 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/dashboard/dashboard_screen.dart
+@@
+-                  _metric('STREAK', '${_snapshot!.winStreak}d'),
++                  _metric('STREAK', '${_snapshot!.currentHabitStreak}d'),
+@@
+-                              minSize: 0,
++                              minimumSize: 0,
+@@
+-                                event.title ?? 'Untitled',
++                                event.title,
+*** End Patch

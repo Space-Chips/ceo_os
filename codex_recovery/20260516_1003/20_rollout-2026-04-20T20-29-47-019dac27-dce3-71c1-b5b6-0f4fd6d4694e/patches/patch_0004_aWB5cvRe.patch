@@ -1,0 +1,6 @@
+*** Begin Patch
+*** Update File: android/app/src/main/res/xml/accessibility_service_config.xml
+@@
+-    android:accessibilityEventTypes="typeWindowStateChanged|typeWindowsChanged|typeWindowContentChanged"
++    android:accessibilityEventTypes="typeWindowStateChanged|typeWindowsChanged|typeWindowContentChanged|typeViewTextChanged|typeViewFocused"
+*** End Patch

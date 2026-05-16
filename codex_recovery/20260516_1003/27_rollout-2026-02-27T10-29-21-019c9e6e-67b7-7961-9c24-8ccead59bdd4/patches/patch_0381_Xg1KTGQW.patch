@@ -1,0 +1,100 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/notes_screen.dart
+@@
+                           Expanded(
+                             child: Padding(
+                               padding: const EdgeInsets.fromLTRB(6, 8, 8, 8),
+                               child: Stack(
+                                 children: [
+-                                  Container(
++                                  GlassCard(
+                                     padding: const EdgeInsets.fromLTRB(
+                                       16,
+                                       12,
+                                       16,
+                                       12,
+                                     ),
+-                                    decoration: BoxDecoration(
+-                                      borderRadius: BorderRadius.circular(14),
+-                                      color: const Color(
+-                                        0xFF05070D,
+-                                      ).withValues(alpha: 0.96),
+-                                      border: Border.all(
+-                                        color: AppColors.glassBorder.withValues(
+-                                          alpha: 0.78,
+-                                        ),
+-                                        width: 0.6,
+-                                      ),
+-                                    ),
++                                    borderRadius: 14,
++                                    level: GlassCardLevel.elevated,
++                                    showEdgeGlow: true,
++                                    gradientColors: [
++                                      AppColors.floatingGlassGradient.first
++                                          .withValues(alpha: 0.76),
++                                      AppColors.floatingGlassGradient.last
++                                          .withValues(alpha: 0.88),
++                                    ],
++                                    border: Border.all(
++                                      color: AppColors.glassBorder.withValues(
++                                        alpha: 0.78,
++                                      ),
++                                      width: 0.6,
++                                    ),
+                                     child: Column(
+                                       crossAxisAlignment:
+                                           CrossAxisAlignment.start,
+@@
+     return Container(
+       width: width,
+       decoration: BoxDecoration(
++        gradient: LinearGradient(
++          begin: Alignment.topLeft,
++          end: Alignment.bottomRight,
++          colors: [
++            AppColors.floatingGlassGradient.first.withValues(alpha: 0.82),
++            AppColors.floatingGlassGradient.last.withValues(alpha: 0.72),
++          ],
++        ),
+         border: Border(
+           top: BorderSide(color: AppColors.glassBorder, width: 0.6),
+           right: BorderSide(color: AppColors.glassBorder, width: 0.6),
+         ),
++        boxShadow: [
++          BoxShadow(
++            color: AppColors.glassShadow.withValues(alpha: 0.24),
++            blurRadius: 14,
++            offset: const Offset(0, 8),
++            spreadRadius: -10,
++          ),
++        ],
+       ),
+       child: ListView(
+@@
+       child: Container(
+         width: 70,
+         height: 70,
+         decoration: BoxDecoration(
+           borderRadius: BorderRadius.circular(24),
+-          color: AppColors.backgroundLight.withValues(alpha: 0.72),
++          gradient: LinearGradient(
++            begin: Alignment.topLeft,
++            end: Alignment.bottomRight,
++            colors: AppColors.floatingGlassGradient,
++          ),
+           border: Border.all(
+             color: AppColors.glassBorder.withValues(alpha: 0.86),
+             width: 0.7,
+           ),
++          boxShadow: [
++            BoxShadow(
++              color: AppColors.glassShadow.withValues(alpha: 0.2),
++              blurRadius: 14,
++              offset: const Offset(0, 8),
++              spreadRadius: -10,
++            ),
++          ],
+         ),
+         child: Icon(icon, color: AppColors.secondaryLabel, size: 30),
+       ),
+*** End Patch

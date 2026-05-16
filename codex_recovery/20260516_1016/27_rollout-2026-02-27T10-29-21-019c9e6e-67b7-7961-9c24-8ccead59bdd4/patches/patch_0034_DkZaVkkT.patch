@@ -1,0 +1,17 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/router/app_router.dart
+@@
+ import '../../features/home/home_screen.dart';
+ import '../../features/home/stats_screen.dart';
+ import '../../features/profile/profile_screen.dart';
++import '../../features/settings/settings_screen.dart';
+ import '../../features/leaderboard/leaderboard_screen.dart';
+ import '../../features/rank/rank_screen.dart';
+@@
+             GoRoute(
+               path: '/settings',
+               pageBuilder: (context, state) =>
+-                  const NoTransitionPage(child: ProfileScreen()),
++                  const NoTransitionPage(child: SettingsScreen()),
+             ),
+*** End Patch

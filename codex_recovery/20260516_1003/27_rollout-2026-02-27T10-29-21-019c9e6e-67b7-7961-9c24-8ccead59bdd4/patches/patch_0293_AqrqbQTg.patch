@@ -1,0 +1,11 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/ios/Runner.xcodeproj/project.pbxproj
+@@
+ 			8578F98A2F4379B50038063F /* Embed Foundation Extensions */ = {
+ 				isa = PBXCopyFilesBuildPhase;
+@@
+ 				files = (
+ 					8578F9892F4379B50038063F /* CeoWidgetsExtension.appex in Embed Foundation Extensions */,
++					20C92EFE0F474936BC58C038 /* FocusActivityMonitor.appex in Embed Foundation Extensions */,
+ 				);
+*** End Patch

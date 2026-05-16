@@ -1,0 +1,88 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/components/glass_input_field.dart
+@@
+         child: Container(
+           decoration: BoxDecoration(
+             gradient: LinearGradient(
+               begin: Alignment.topLeft,
+               end: Alignment.bottomRight,
+               colors: AppColors.inputGlassGradient,
+             ),
+             borderRadius: BorderRadius.circular(18),
+-            border: Border.all(color: AppColors.glassBorder, width: 0.7),
++            border: Border.all(color: AppColors.glassBorder, width: 0.76),
+             boxShadow: [
++              BoxShadow(
++                color: AppColors.glassHighlightSoft.withValues(
++                  alpha: AppColors.isDark ? 0.08 : 0.05,
++                ),
++                blurRadius: 12,
++                offset: const Offset(0, -3),
++                spreadRadius: -10,
++              ),
+               BoxShadow(
+-                color: AppColors.glassShadow.withValues(alpha: 0.18),
+-                blurRadius: 14,
+-                offset: const Offset(0, 8),
+-                spreadRadius: -10,
++                color: AppColors.glassShadow.withValues(alpha: 0.24),
++                blurRadius: 16,
++                offset: const Offset(0, 9),
++                spreadRadius: -9,
+               ),
+             ],
+           ),
+           child: Stack(
+             children: [
++              Positioned.fill(
++                child: IgnorePointer(
++                  child: DecoratedBox(
++                    decoration: BoxDecoration(
++                      borderRadius: BorderRadius.circular(18),
++                      gradient: LinearGradient(
++                        begin: const Alignment(-0.9, -1),
++                        end: const Alignment(1, 1),
++                        colors: [
++                          AppColors.glassHighlight.withValues(alpha: 0.13),
++                          Colors.transparent,
++                          AppColors.glassShadowSoft.withValues(alpha: 0.12),
++                        ],
++                        stops: const [0, 0.48, 1],
++                      ),
++                    ),
++                  ),
++                ),
++              ),
+               Positioned(
+                 top: 1,
+                 left: 8,
+                 right: 8,
+                 child: Container(
+@@
+                       colors: [
+                         Colors.transparent,
+-                        AppColors.glassHighlight.withValues(alpha: 0.34),
++                        AppColors.glassHighlight.withValues(alpha: 0.38),
+                         Colors.transparent,
+                       ],
+                     ),
+                   ),
+                 ),
+               ),
++              Positioned(
++                left: 1.4,
++                right: 1.4,
++                bottom: 1.4,
++                child: IgnorePointer(
++                  child: Container(
++                    height: 1,
++                    decoration: BoxDecoration(
++                      borderRadius: BorderRadius.circular(999),
++                      color: AppColors.glassShadowSoft.withValues(alpha: 0.32),
++                    ),
++                  ),
++                ),
++              ),
+               CupertinoTextField(
+                 controller: controller,
+*** End Patch

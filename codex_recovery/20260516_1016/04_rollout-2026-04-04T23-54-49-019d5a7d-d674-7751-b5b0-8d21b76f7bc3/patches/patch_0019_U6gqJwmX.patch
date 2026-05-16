@@ -1,0 +1,52 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/ceo_mode/ceo_mode_screen.dart
+@@
+ import '../../components/components.dart';
+ import '../../core/providers/ceo_mode_provider.dart';
+ import '../../core/theme/app_colors.dart';
+ import '../../core/theme/app_typography.dart';
++import '../../core/utils/android_protection_disclosure.dart';
+@@
+   Future<void> _startSession(CeoModeProvider provider) async {
+     final confirmed = await _showStartConfirmation(provider);
+     if (confirmed != true) return;
++
++    if (_isAndroid && !provider.isAuthorized) {
++      final permissionConfirmed = await showAndroidProtectionDisclosure(
++        context: context,
++        nextStep: provider.getNextAndroidProtectionStep,
++      );
++      if (!permissionConfirmed) return;
++    }
+ 
+     await HapticFeedback.mediumImpact();
+     final success = await provider.startSession();
+@@
+             if (issue == 'permissions_denied')
+               CupertinoDialogAction(
+                 isDefaultAction: true,
+                 onPressed: () async {
+                   Navigator.of(ctx).pop();
++                  if (_isAndroid) {
++                    final confirmed = await showAndroidProtectionDisclosure(
++                      context: context,
++                      nextStep: provider.getNextAndroidProtectionStep,
++                    );
++                    if (!confirmed) return;
++                  }
+                   await provider.openSystemSettings();
+                 },
+                 child: const Text('Open Settings'),
+@@
+   Future<void> _handleProtectionAction(CeoModeProvider provider) async {
++    if (_isAndroid) {
++      final confirmed = await showAndroidProtectionDisclosure(
++        context: context,
++        nextStep: provider.getNextAndroidProtectionStep,
++      );
++      if (!confirmed) return;
++    }
+     if (provider.protectionStatus.shouldOpenSettings) {
+       await provider.openSystemSettings();
+       if (!mounted) return;
+*** End Patch

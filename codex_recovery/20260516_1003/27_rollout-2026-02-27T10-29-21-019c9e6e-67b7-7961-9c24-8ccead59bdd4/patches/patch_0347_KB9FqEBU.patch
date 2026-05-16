@@ -1,0 +1,150 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/tasks/add_task_sheet.dart
+@@
+ import 'dart:ui';
+ import 'package:flutter/cupertino.dart';
+ import 'package:flutter/material.dart';
+-import 'package:provider/provider.dart';
+ import '../../components/components.dart';
+-import '../../core/models/task_models.dart';
+-import '../../core/providers/task_provider.dart';
+ import '../../core/theme/app_colors.dart';
+ import '../../core/theme/app_typography.dart';
+@@
+ class _AddTaskSheetState extends State<AddTaskSheet> {
+   final _titleCtrl = TextEditingController();
+   final _descCtrl = TextEditingController();
+-  final _groupCtrl = TextEditingController();
+   String _importance = 'crucial';
+   String _duration = '1_hour';
+-  TaskGroup? _selectedGroup;
+   DateTime? _deadline;
+   bool _syncToCalendar = true;
+@@
+-  @override
+-  void initState() {
+-    super.initState();
+-    WidgetsBinding.instance.addPostFrameCallback((_) {
+-      context.read<TaskProvider>().loadGroups();
+-    });
+-  }
+-
+   @override
+   void dispose() {
+     _titleCtrl.dispose();
+     _descCtrl.dispose();
+-    _groupCtrl.dispose();
+     super.dispose();
+   }
+@@
+     final result = await context.read<TaskProvider>().addTask(
+       _titleCtrl.text.trim(),
+       importance: _importance,
+       duration: _duration,
+-      groupId: _selectedGroup?.id,
++      groupId: null,
+       deadline: _deadline,
+       description: _descCtrl.text.trim().isEmpty ? null : _descCtrl.text.trim(),
+       syncToCalendar: _deadline != null && _syncToCalendar,
+@@
+-  void _showAddGroup() {
+-    showCupertinoDialog(
+-      context: context,
+-      builder: (dialogContext) => BackdropFilter(
+-        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+-        child: CupertinoAlertDialog(
+-          title: Text(
+-            'NEW_GROUP_PROTOCOL',
+-            style: AppTypography.mono.copyWith(fontSize: 14),
+-          ),
+-          content: Padding(
+-            padding: const EdgeInsets.only(top: 12),
+-            child: CupertinoTextField(
+-              controller: _groupCtrl,
+-              placeholder: 'GROUP_NAME',
+-              style: AppTypography.mono.copyWith(color: Colors.white),
+-              placeholderStyle: AppTypography.mono.copyWith(
+-                color: AppColors.tertiaryLabel,
+-              ),
+-              decoration: BoxDecoration(
+-                color: AppColors.backgroundLight,
+-                borderRadius: BorderRadius.circular(8),
+-              ),
+-            ),
+-          ),
+-          actions: [
+-            CupertinoDialogAction(
+-              child: Text(
+-                'CANCEL',
+-                style: TextStyle(color: AppColors.secondaryLabel),
+-              ),
+-              onPressed: () => Navigator.pop(context),
+-            ),
+-            CupertinoDialogAction(
+-              isDefaultAction: true,
+-              child: Text(
+-                'CREATE',
+-                style: TextStyle(color: AppColors.primaryOrange),
+-              ),
+-              onPressed: () async {
+-                if (_groupCtrl.text.isNotEmpty) {
+-                  await context.read<TaskProvider>().addTaskGroup(
+-                    _groupCtrl.text,
+-                  );
+-                  _groupCtrl.clear();
+-                  if (dialogContext.mounted) Navigator.pop(dialogContext);
+-                }
+-              },
+-            ),
+-          ],
+-        ),
+-      ),
+-    );
+-  }
+-
+@@
+-                // Group Selection
+-                _sectionLabel('ASSIGN_GROUP'),
+-                const SizedBox(height: 12),
+-                Consumer<TaskProvider>(
+-                  builder: (context, prov, _) => SingleChildScrollView(
+-                    scrollDirection: Axis.horizontal,
+-                    child: Row(
+-                      children: [
+-                        _GroupChip(
+-                          label: 'NONE',
+-                          isSelected: _selectedGroup == null,
+-                          onTap: () => setState(() => _selectedGroup = null),
+-                        ),
+-                        ...prov.groups.map(
+-                          (g) => _GroupChip(
+-                            label: g.name.toUpperCase(),
+-                            isSelected: _selectedGroup?.id == g.id,
+-                            onTap: () => setState(() => _selectedGroup = g),
+-                          ),
+-                        ),
+-                        GestureDetector(
+-                          onTap: _showAddGroup,
+-                          child: Container(
+-                            padding: const EdgeInsets.all(8),
+-                            decoration: BoxDecoration(
+-                              shape: BoxShape.circle,
+-                              border: Border.all(
+-                                color: AppColors.primaryOrange.withOpacity(0.5),
+-                              ),
+-                            ),
+-                            child: Icon(
+-                              CupertinoIcons.plus,
+-                              size: 14,
+-                              color: AppColors.primaryOrange,
+-                            ),
+-                          ),
+-                        ),
+-                      ],
+-                    ),
+-                  ),
+-                ),
+-                const SizedBox(height: 24),
+-
+                 Row(
+*** End Patch

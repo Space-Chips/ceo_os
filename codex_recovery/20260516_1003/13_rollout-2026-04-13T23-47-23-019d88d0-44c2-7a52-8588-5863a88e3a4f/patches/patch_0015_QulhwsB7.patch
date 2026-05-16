@@ -1,0 +1,23 @@
+*** Begin Patch
+*** Update File: android/app/src/main/kotlin/com/wakeapp/ceoos/BrowserBlockCoordinator.kt
+@@
+     fun evaluate(
+         snapshot: ForegroundSnapshot,
+         state: BlockPolicyState,
+     ): BlockDecision {
+         if (!snapshot.isBrowser) return BlockDecision.Allow
+         val browserPackage = snapshot.packageName?.trim().orEmpty()
+         if (browserPackage.isEmpty()) return BlockDecision.IgnoreTransient
+         val domain = snapshot.detectedBrowserUrl ?: return BlockDecision.IgnoreTransient
+-        val blockedDomain = matchingConfiguredDomain(domain, state.blockedDomains) ?: return BlockDecision.Allow
++        val activeDomains = if (state.blockedDomains.isNotEmpty()) {
++            state.blockedDomains
++        } else {
++            buildSet {
++                addAll(state.classicBlockedDomains)
++                addAll(state.classicPauseBlockedDomains)
++                addAll(state.exceededDomains)
++            }
++        }
++        val blockedDomain = matchingConfiguredDomain(domain, activeDomains) ?: return BlockDecision.Allow
+*** End Patch

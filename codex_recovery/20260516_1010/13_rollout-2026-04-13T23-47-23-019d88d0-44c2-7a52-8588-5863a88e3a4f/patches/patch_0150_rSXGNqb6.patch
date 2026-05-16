@@ -1,0 +1,87 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/services/focus_service.dart
+@@
+ class IosFamilyActivitySelection {
+@@
+ }
++
++class IosWebsiteSelection {
++  final String payload;
++  final String? domain;
++
++  const IosWebsiteSelection({
++    required this.payload,
++    this.domain,
++  });
++}
+@@
+-  Future<List<String>?> openFamilyActivityWebsitePicker() async {
++  Future<List<IosWebsiteSelection>?> openFamilyActivityWebsitePickerWithMetadata() async {
+     const method = 'openFamilyActivityWebsitePicker';
+     if (_shouldSkipMissingMethod(method)) return null;
+     try {
+       final List<dynamic>? result = await _channel.invokeMethod(method);
+-      return result?.cast<String>();
++      if (result == null) return null;
++      final selections = <IosWebsiteSelection>[];
++      for (final item in result) {
++        if (item is String) {
++          final payload = item.trim();
++          if (payload.isEmpty) continue;
++          selections.add(IosWebsiteSelection(payload: payload));
++          continue;
++        }
++        if (item is Map) {
++          final payload = (item['payload'] as String?)?.trim();
++          if (payload == null || payload.isEmpty) continue;
++          final domain = (item['domain'] as String?)?.trim();
++          selections.add(
++            IosWebsiteSelection(
++              payload: payload,
++              domain: domain?.isNotEmpty == true ? domain : null,
++            ),
++          );
++        }
++      }
++      return selections;
+     } on PlatformException catch (e) {
+       AppLogger.error("Failed to open website picker: '${e.message}'.");
+       return null;
+@@
+     }
+   }
++
++  Future<List<String>?> openFamilyActivityWebsitePicker() async {
++    final detailed = await openFamilyActivityWebsitePickerWithMetadata();
++    if (detailed == null) return null;
++    return detailed.map((entry) => entry.payload).toList(growable: false);
++  }
+@@
+   Future<IosFamilyActivitySelection?> describeAppSelectionPayload(
+@@
+   }
++
++  Future<IosWebsiteSelection?> describeWebsiteSelectionPayload(
++    String payload,
++  ) async {
++    const method = 'describeWebsiteSelectionPayload';
++    if (_shouldSkipMissingMethod(method)) return null;
++    try {
++      final result = await _channel.invokeMapMethod<String, dynamic>(method, {
++        'payload': payload,
++      });
++      if (result == null) return null;
++      final domain = (result['domain'] as String?)?.trim();
++      return IosWebsiteSelection(
++        payload: payload.trim(),
++        domain: domain?.isNotEmpty == true ? domain : null,
++      );
++    } on PlatformException catch (e) {
++      AppLogger.error("Failed to describe website payload: '${e.message}'.");
++      return null;
++    } on MissingPluginException {
++      _markMissingMethod(method);
++      return null;
++    }
++  }
+*** End Patch

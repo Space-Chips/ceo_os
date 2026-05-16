@@ -1,0 +1,13 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/ios/Runner.xcodeproj/project.pbxproj
+@@
+ /* Begin PBXContainerItemProxy section */
++			1EB7A90D866B4BBD97051971 /* PBXContainerItemProxy */ = {
++				isa = PBXContainerItemProxy;
++				containerPortal = 97C146E61CF9000F007C117D /* Project object */;
++				proxyType = 1;
++				remoteGlobalIDString = 84C0EEF5E0064471B8DD0227;
++				remoteInfo = FocusActivityMonitorExtension;
++			};
+ 			331C8085294A63A400263BE5 /* PBXContainerItemProxy */ = {
+*** End Patch

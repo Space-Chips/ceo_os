@@ -1,0 +1,32 @@
+*** Begin Patch
+*** Update File: android/app/src/main/kotlin/com/wakeapp/ceoos/BlockingAccessibilityService.kt
+@@
+     private fun handleLauncherTap(packageName: String) {
+         val decision = blockStateCache.decisionFor(packageName)
+         if (!decision.blocked) return
+-        blockingOverlay.show()
++        if (decision.reason != BlockReason.BLACKOUT_SESSION) {
++            blockingOverlay.show()
++        } else {
++            blockingOverlay.hide()
++        }
+         val launched = blockingNavigator.showBlockedScreen(
+             context = this,
+             packageName = packageName,
+             reason = decision.reason,
+             reasonKey = decision.reasonKey,
+         )
+@@
+             is BlockDecision.BlockApp -> {
+-                blockingOverlay.show()
++                if (decision.reason != "blackout") {
++                    blockingOverlay.show()
++                } else {
++                    blockingOverlay.hide()
++                }
+                 browserBlockingOverlay.hide()
+                 val launched = gateLauncher.launch(this, decision)
+                 if (!launched) blockingOverlay.hide()
+                 launched
+             }
+*** End Patch

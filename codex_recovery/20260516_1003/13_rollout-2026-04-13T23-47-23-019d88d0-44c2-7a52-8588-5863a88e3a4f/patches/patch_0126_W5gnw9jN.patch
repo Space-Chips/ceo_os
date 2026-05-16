@@ -1,0 +1,83 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/screen_time_screen.dart
+@@
+   bool _isGenericAppName(String? value) {
+@@
+         normalized.startsWith('selected app ');
+   }
+ 
++  String _prettyBundleLabel(String bundleIdentifier) {
++    final trimmed = bundleIdentifier.trim();
++    if (trimmed.isEmpty) return '';
++    final tail = trimmed.split('.').last.trim();
++    if (tail.isEmpty) return trimmed;
++    final withSpaces = tail.replaceAllMapped(
++      RegExp(r'([a-z])([A-Z])'),
++      (m) => '${m.group(1)} ${m.group(2)}',
++    );
++    return withSpaces.isEmpty ? trimmed : withSpaces;
++  }
++
++  String _displayNameForBlockedApp(BlockedApp app) {
++    final explicit = app.appName?.trim();
++    if (explicit != null && explicit.isNotEmpty && !_isGenericAppName(explicit)) {
++      return explicit;
++    }
++    final bundle = _appBindings[app.id]?.nativeIdentifier?.trim();
++    if (bundle != null && bundle.isNotEmpty) {
++      return _prettyBundleLabel(bundle);
++    }
++    return explicit?.isNotEmpty == true ? explicit! : 'Unknown app';
++  }
++
+   String _resolvedAppLabel(
+     IosFamilyActivitySelection selection,
+     Set<String> existingLabels,
+   ) {
+     final preferred = selection.preferredLabel?.trim();
+@@
+       final encodedPayload = await _focusService.encodeWebsiteDomainSelection(
+         normalizedDomain,
+       );
+-      if (encodedPayload == null || encodedPayload.trim().isEmpty) {
+-        await _showNotice(
+-          title: 'Website unavailable',
+-          message:
+-              'This domain could not be converted into a Screen Time website token on this iPhone.',
+-        );
+-        return;
+-      }
++      String? websitePayload = encodedPayload?.trim();
++      if (websitePayload == null || websitePayload.isEmpty) {
++        final picked = await _focusService.openFamilyActivityWebsitePicker();
++        final payloads = (picked ?? [])
++            .where((item) => item.trim().isNotEmpty)
++            .toList(growable: false);
++        if (payloads.isEmpty) {
++          await _showNotice(
++            title: 'Website unavailable',
++            message:
++                'Select the website in the Apple picker so WakeApp can enforce blocking on this iPhone.',
++          );
++          return;
++        }
++        websitePayload = payloads.first.trim();
++      }
+       await _runMutation(() async {
+         final record = await _repo.createBlockedWebsiteRecord(normalizedDomain);
+         if (record == null) return;
+         await _classicLocalStore.saveWebsiteBinding(
+           rowId: record.id,
+           nativeIdentifier: normalizedDomain,
+-          nativePayload: encodedPayload.trim(),
++          nativePayload: websitePayload,
+         );
+       });
+@@
+   Widget _blockedAppCard(BlockedApp app) {
+     final limit = app.timeLimitMinutes ?? 0;
+-    final title = app.appName?.trim().isNotEmpty == true
+-        ? app.appName!.trim()
+-        : 'Unknown app';
++    final title = _displayNameForBlockedApp(app);
+*** End Patch

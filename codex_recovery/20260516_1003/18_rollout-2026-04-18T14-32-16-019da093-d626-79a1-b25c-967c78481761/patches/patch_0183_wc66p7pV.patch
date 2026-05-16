@@ -1,0 +1,108 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/auth/onboarding_screen.dart
+@@
+   @override
+   Widget build(BuildContext context) {
++    final language = context.watch<LanguageProvider>();
+     final showingQuestionnaire = _page >= _slides.length;
+     final totalSteps = _slides.length + 1;
+     final currentStep = showingQuestionnaire ? totalSteps : (_page + 1);
+     final progress = currentStep / totalSteps;
+@@
+                         const Spacer(),
+                         Container(
+@@
+                           child: Text(
+-                            'Step $currentStep of $totalSteps',
++                            _t(
++                              'onboarding_step_of',
++                            ).replaceAll('{step}', '$currentStep').replaceAll(
++                              '{total}',
++                              '$totalSteps',
++                            ),
+                             style: AppTypography.footnote.copyWith(
+                               fontSize: 11,
+@@
+                         const SizedBox(width: 10),
++                        CupertinoButton(
++                          padding: EdgeInsets.zero,
++                          minimumSize: Size.zero,
++                          onPressed: _showLanguagePicker,
++                          child: Text(
++                            _languageDisplayLabel(language.languageCode),
++                            style: AppTypography.footnote.copyWith(
++                              fontSize: 12,
++                              color: AppColors.tertiaryLabel,
++                              fontWeight: FontWeight.w600,
++                            ),
++                          ),
++                        ),
++                        const SizedBox(width: 10),
+                         CupertinoButton(
+                           padding: EdgeInsets.zero,
+                           minimumSize: Size.zero,
+                           onPressed: () => context.go('/login'),
+                           child: Text(
+-                            'Log in',
++                            _t('onboarding_log_in'),
+                             style: AppTypography.footnote.copyWith(
+                               fontSize: 12,
+@@
+                                 return _Questionnaire(
+                                   goal: _goal,
+                                   discipline: _discipline,
+                                   focusChallenge: _focusChallenge,
+                                   selectedThemePresetId: _selectedThemePresetId,
+                                   premiumRuntime: runtime,
++                                  language: language,
+                                   onGoal: (v) => setState(() => _goal = v),
+                                   onDiscipline: (v) =>
+                                       setState(() => _discipline = v),
+@@
+                                 final s = _slides[i];
+                                 return _Slide(
+                                   icon: s.icon,
+-                                  title: s.title,
+-                                  subtitle: s.subtitle,
++                                  title: _t(s.titleKey),
++                                  subtitle: _t(s.subtitleKey),
++                                  isFocusSlide: i == _slides.length - 1,
+                                 );
+                               },
+                             ),
+@@
+                           _OnboardingPrimaryButton(
+-                            label: 'Enter WakeApp',
++                            label: _t('onboarding_enter_wakeapp'),
+                             onTap: () {
+                               final setup = OnboardingSetupData(
+-                                goal: _goal,
+-                                discipline: _discipline,
+-                                focusChallenge: _focusChallenge,
++                                goal: _localizedGoal(language, _goal),
++                                discipline: _localizedDiscipline(
++                                  language,
++                                  _discipline,
++                                ),
++                                focusChallenge: _localizedConstraint(
++                                  language,
++                                  _focusChallenge,
++                                ),
+                                 themePresetId: _selectedThemePresetId,
+                               );
+@@
+                           Text(
+-                            'You can adjust this later in Settings',
++                            _t('onboarding_adjust_later_settings'),
+                             style: AppTypography.caption1.copyWith(
+                               fontSize: 11,
+@@
+                       _OnboardingPrimaryButton(
+                         label: _page == _slides.length - 1
+-                            ? 'Continue'
+-                            : 'Next',
++                            ? _t('onboarding_continue')
++                            : _t('onboarding_next'),
+                         onTap: _next,
+                       ),
+*** End Patch

@@ -1,0 +1,19 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/services/focus_service.dart
+@@
+   // Check if shield is active
+   Future<bool> isShieldActive() async {
+@@
+   }
++
++  // Sync planned focus sessions to native iOS scheduler (notifications + reminders).
++  Future<void> syncPlannedSessions(List<Map<String, dynamic>> sessions) async {
++    try {
++      await _channel.invokeMethod('syncPlannedSessions', {'sessions': sessions});
++    } on PlatformException catch (e) {
++      print("Failed to sync planned sessions: '${e.message}'.");
++    } on MissingPluginException {
++      // Ignore on unsupported platforms/runtimes.
++    }
++  }
+*** End Patch

@@ -1,0 +1,17 @@
+*** Begin Patch
+*** Update File: lib/components/premium_paywall.dart
+@@
+-            _MicroProofRow(isFr: widget.isFr),
++            _MicroProofRow(isFr: widget.isFr, textColor: palette.secondary),
+@@
+             Text(
+               widget.isFr
+                   ? (widget.showRestoreButton
+@@
+               style: AppTypography.caption1.copyWith(
+-                color: AppColors.secondaryLabel.withValues(alpha: 0.72),
++                color: palette.secondary.withValues(alpha: 0.72),
+                 height: 1.35,
+               ),
+             ),
+*** End Patch

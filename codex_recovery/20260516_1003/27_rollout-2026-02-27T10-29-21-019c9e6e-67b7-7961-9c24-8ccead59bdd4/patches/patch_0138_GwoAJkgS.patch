@@ -1,0 +1,16 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/docs/ceov1_feature_parity_report.md
+@@
+-| Leaderboard | `/leaderboard` | Implemented | rank-level ordering + self highlighting |
++| Leaderboard | `/leaderboard` | Implemented | global top ranking + friends connections (add/remove/sync) + invite flow |
+@@
+-| Rank | `/profile` + `/leaderboard` | Implemented | rank metadata in profile and leaderboard |
+-| Settings | `/settings` | Implemented | profile/focus/system preferences |
++| Rank | `/profile` + `/rank` + `/leaderboard` | Implemented | rank metadata + global position cues + tier map |
++| Settings | `/settings` | Implemented | profile/focus/system preferences + legal controls + data deletion flow |
+@@
+-- Notes/rewards/event-types/win-streak/screen-time use live backend tables with RLS-compatible user scoping.
++- Notes/rewards/event-types/win-streak/screen-time/leaderboard friends use live backend tables with RLS-compatible user scoping.
++- Profile settings include persisted language and notification channels in `app_settings`.
++- Account deletion flow supports Supabase RPC (`delete_my_account_data`) with repository fallback deletes.
+*** End Patch

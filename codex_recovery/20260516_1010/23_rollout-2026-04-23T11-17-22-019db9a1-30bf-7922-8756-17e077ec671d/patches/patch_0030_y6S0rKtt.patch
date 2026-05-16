@@ -1,0 +1,40 @@
+*** Begin Patch
+*** Update File: lib/features/screen_time_manager/screen_time_manager_screen.dart
+@@
+   int _classicBlockedTargets = 0;
+   int _plannedPauseCount = 0;
+-  String _privateRankLabel = 'Asleep';
++  String _privateRankName = 'Asleep';
+   PrivateScreenTimeSummaryStatus _privateUsageSummaryStatus =
+       PrivateScreenTimeSummaryStatus.requiresFullRelaunch;
+   bool _privateUsageSummaryAvailable = false;
+   bool _loading = true;
+@@
+   bool get _isAndroid =>
+       !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
+ 
+-  String _t(String key) => context.read<LanguageProvider>().t(key);
++  String _t(String key) => context.watch<LanguageProvider>().t(key);
++
++  String _localizedRankName(String rawRankName) {
++    switch (RankArt.canonicalKey(rawRankName)) {
++      case 'awakened':
++        return _t('rank_awakened');
++      case 'immortal':
++        return _t('rank_immortal');
++      case 'diamond':
++        return _t('rank_diamond');
++      case 'platinum':
++        return _t('rank_platinum');
++      case 'gold':
++        return _t('rank_gold');
++      case 'silver':
++        return _t('rank_silver');
++      case 'bronze':
++        return _t('rank_bronze');
++      case 'sleeping':
++      default:
++        return _t('rank_asleep');
++    }
++  }
+*** End Patch

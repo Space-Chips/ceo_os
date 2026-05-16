@@ -1,0 +1,32 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/tasks/tasks_screen.dart
+@@
+   String _swipeHint() {
+@@
+   }
++
++  double _taskCardBorderWidth(String? importanceRaw) {
++    switch ((importanceRaw ?? '').toLowerCase()) {
++      case 'essential':
++      case 'high':
++        return AppColors.isDark ? 0.96 : 1.04;
++      case 'average':
++      case 'medium':
++        return AppColors.isDark ? 0.94 : 1.02;
++      default:
++        return AppColors.isDark ? 1 : 1.1;
++    }
++  }
+@@
+               border: Border.all(
+                 color: palette.border,
+-                width: AppColors.isDark ? 1 : 1.1,
++                width: _taskCardBorderWidth(task.importanceLevel),
+               ),
+@@
+           border: Border.all(
+             color: AppColors.border,
+-            width: AppColors.isDark ? 1 : 1.08,
++            width: _taskCardBorderWidth(task.importanceLevel),
+           ),
+*** End Patch

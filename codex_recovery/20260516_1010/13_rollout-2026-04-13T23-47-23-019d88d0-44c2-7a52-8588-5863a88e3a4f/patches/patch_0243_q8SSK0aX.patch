@@ -1,0 +1,28 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/focus/focus_screen.dart
+@@
+-        ] else if (provider.blockLists.isEmpty ||
+-            provider.activeBlockListId == null) ...[
++        ] else if (!provider.hasConfiguredBlockingTargets) ...[
+           const SizedBox(height: 8),
+           Text(
+-            'No block list is active yet.\nFocus will run, but nothing will be blocked until you choose apps or categories.',
++            'No restricted app/site found in Blocked apps & sites.\nFocus timer will run, but nothing can be blocked until you add targets there.',
+             textAlign: TextAlign.center,
+             style: AppTypography.mono.copyWith(
+               fontSize: 11,
+               color: AppColors.warning,
+             ),
+           ),
++        ] else ...[
++          const SizedBox(height: 8),
++          Text(
++            'Focus will block ${provider.configuredBlockedAppCount} app(s) and ${provider.configuredBlockedWebsiteCount} website(s) from Blocked apps & sites for the full session.',
++            textAlign: TextAlign.center,
++            style: AppTypography.mono.copyWith(
++              fontSize: 11,
++              color: AppColors.secondaryLabel.withValues(alpha: 0.8),
++            ),
++          ),
+         ],
+*** End Patch

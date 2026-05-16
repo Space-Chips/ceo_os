@@ -1,0 +1,58 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/screen_time_setup/screen_time_setup_screen.dart
+@@
+ class _IntroStep extends StatelessWidget {
+@@
+   @override
+   Widget build(BuildContext context) {
++    final t = context.read<LanguageProvider>().t;
+     return _SetupStepScaffold(
+-      progressLabel: 'Step 1 of 2',
++      progressLabel: t('ios_setup_step_1_of_2'),
+       child: Column(
+@@
+           Text(
+-            'Set up Screen Time',
++            t('ios_setup_intro_title'),
+             style: AppTypography.largeTitle.copyWith(
+@@
+           Text(
+-            'This takes less than a minute. We’ll request one Apple permission so Screen Time can enforce focus rules on this iPhone.',
++            t('ios_setup_intro_subtitle'),
+             style: AppTypography.body.copyWith(
+@@
+-                Text('What you’ll get', style: AppTypography.title3),
++                Text(t('ios_setup_what_get'), style: AppTypography.title3),
+                 const SizedBox(height: 10),
+                 _BenefitRow(
+-                  title: 'Instant blocking',
+-                  subtitle: 'Blocked apps close immediately during sessions.',
++                  title: t('ios_setup_benefit_instant_blocking_title'),
++                  subtitle: t('ios_setup_benefit_instant_blocking_subtitle'),
+                 ),
+                 const SizedBox(height: 10),
+                 _BenefitRow(
+-                  title: 'Private by design',
+-                  subtitle:
+-                      'Screen Time data stays on-device and isn’t shared.',
++                  title: t('ios_setup_benefit_private_title'),
++                  subtitle: t('ios_setup_benefit_private_subtitle'),
+                 ),
+                 const SizedBox(height: 10),
+                 _BenefitRow(
+-                  title: 'Reliable focus sessions',
+-                  subtitle: 'Blackout and focus rules stay active in real time.',
++                  title: t('ios_setup_benefit_reliable_title'),
++                  subtitle: t('ios_setup_benefit_reliable_subtitle'),
+                 ),
+               ],
+             ),
+           ),
+         ],
+       ),
+-      footer: LiquidButton(label: 'Start setup', onPressed: onContinue),
++      footer: LiquidButton(label: t('ios_setup_start'), onPressed: onContinue),
+     );
+   }
+ }
+*** End Patch

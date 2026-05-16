@@ -1,0 +1,24 @@
+*** Begin Patch
+*** Update File: lib/features/habits/add_habit_sheet.dart
+@@
+-  void _addHabit() {
++  Future<void> _addHabit() async {
+     if (_nameCtrl.text.trim().isEmpty) return;
+@@
+-    context.read<HabitProvider>().createHabit(
++    final result = await context.read<HabitProvider>().createHabit(
+       _nameCtrl.text.trim(),
+       isDaily: _frequencyType == 'daily',
+@@
+       syncToCalendar: _syncToCalendar,
+     );
+-    Navigator.of(context).pop();
++
++    if (!mounted) return;
++    if (!result.allowed) {
++      await showPremiumGateDialog(context, result);
++      return;
++    }
++    Navigator.of(context).pop();
+   }
+*** End Patch

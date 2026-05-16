@@ -1,0 +1,46 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/screen_time_screen.dart
+@@
+-      final selection = await _focusService.openFamilyActivityPicker();
+-      final payload = _firstNonEmpty(selection);
+-      if (payload == null) {
++      final selection = await _focusService.openFamilyActivityPicker();
++      final payloads =
++          (selection ?? []).where((item) => item.trim().isNotEmpty).toList();
++      if (payloads.isEmpty) {
+         await _showNotice(
+           title: 'Selection canceled',
+           message:
+-              'Select at least one website in the Apple picker, then tap Done to save your block.',
++              'Select at least one app in the Apple picker, then tap Done to save your block.',
+         );
+         return;
+       }
+ 
+       await _runMutation(() async {
+-        final record = await _repo.createBlockedAppRecord(
+-          _nextAppSelectionLabel(),
+-        );
+-        if (record == null) return;
+-        await _classicLocalStore.saveAppBinding(
+-          rowId: record.id,
+-          nativePayload: payload,
+-        );
++        final existing = _blockedApps
++            .map((app) => (app.appName ?? '').trim())
++            .where((name) => name.isNotEmpty)
++            .toSet();
++        for (final payload in payloads) {
++          final label = _nextAppSelectionLabelFrom(existing);
++          existing.add(label);
++          final record = await _repo.createBlockedAppRecord(label);
++          if (record == null) continue;
++          await _classicLocalStore.saveAppBinding(
++            rowId: record.id,
++            nativePayload: payload,
++          );
++        }
+       });
+       return;
+     }
+*** End Patch

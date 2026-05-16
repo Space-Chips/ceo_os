@@ -1,0 +1,116 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/home/home_screen.dart
+@@
+               final rankName = (data?.rankName.trim().isNotEmpty ?? false)
+                   ? data!.rankName
+                   : 'Bronze';
+               final habitsCount =
+                   data?.totalHabits ?? habitProvider.habits.length;
++              final allCards = <_PrimaryAppCardData>[
++                _PrimaryAppCardData(
++                  moduleId: 'Pareto',
++                  title: 'To-Do',
++                  icon: CupertinoIcons.check_mark_circled,
++                  active: _isEnabled('Pareto'),
++                  badgeValue: pendingTasks,
++                  onTap: () => context.push('/tasks'),
++                  onQuickAdd: _openQuickAddTask,
++                ),
++                _PrimaryAppCardData(
++                  moduleId: 'Habits',
++                  title: 'Habits',
++                  icon: CupertinoIcons.checkmark_circle,
++                  active: _isEnabled('Habits'),
++                  badgeValue: habitsCount,
++                  onTap: () => context.push('/habits'),
++                  onQuickAdd: _openQuickAddHabit,
++                ),
++                _PrimaryAppCardData(
++                  moduleId: 'Calendar',
++                  title: 'Schedule',
++                  icon: CupertinoIcons.calendar,
++                  active: _isEnabled('Calendar'),
++                  onTap: () => context.push('/calendar'),
++                  onQuickAdd: _openQuickAddEvent,
++                ),
++                _PrimaryAppCardData(
++                  moduleId: 'ScreenTimeManager',
++                  title: 'Screen Time',
++                  icon: CupertinoIcons.shield,
++                  active: _isEnabled('ScreenTimeManager'),
++                  onTap: () => context.push('/screen-time-manager'),
++                ),
++              ];
++              final visibleCards = allCards
++                  .where((card) => card.active)
++                  .toList(growable: false);
+ 
+               return ListView(
+                 padding: const EdgeInsets.fromLTRB(20, 10, 20, 120),
+                 children: [
+@@
+                   _DashboardMainCard(
+                     userLabel: _userLabel,
+                     habitsCount: habitsCount,
+                     onOpenDashboard: () => context.push('/dashboard'),
+                   ),
+                   const SizedBox(height: 16),
+-                  _PrimaryAppsGrid(
+-                    cards: [
+-                      _PrimaryAppCardData(
+-                        moduleId: 'Pareto',
+-                        title: 'To-Do',
+-                        icon: CupertinoIcons.check_mark_circled,
+-                        active: _isEnabled('Pareto'),
+-                        badgeValue: pendingTasks,
+-                        onTap: () => context.push('/tasks'),
+-                        onQuickAdd: _openQuickAddTask,
+-                      ),
+-                      _PrimaryAppCardData(
+-                        moduleId: 'Habits',
+-                        title: 'Habits',
+-                        icon: CupertinoIcons.checkmark_circle,
+-                        active: _isEnabled('Habits'),
+-                        badgeValue: habitsCount,
+-                        onTap: () => context.push('/habits'),
+-                        onQuickAdd: _openQuickAddHabit,
+-                      ),
+-                      _PrimaryAppCardData(
+-                        moduleId: 'Calendar',
+-                        title: 'Schedule',
+-                        icon: CupertinoIcons.calendar,
+-                        active: _isEnabled('Calendar'),
+-                        onTap: () => context.push('/calendar'),
+-                        onQuickAdd: _openQuickAddEvent,
+-                      ),
+-                      _PrimaryAppCardData(
+-                        moduleId: 'ScreenTimeManager',
+-                        title: 'Screen Time',
+-                        icon: CupertinoIcons.shield,
+-                        active: _isEnabled('ScreenTimeManager'),
+-                        onTap: () => context.push('/screen-time-manager'),
+-                      ),
+-                    ],
+-                  ),
++                  if (visibleCards.isEmpty)
++                    GlassCard(
++                      padding: const EdgeInsets.all(14),
++                      borderRadius: 18,
++                      border: Border.all(
++                        color: AppColors.glassBorder.withValues(alpha: 0.64),
++                        width: 0.65,
++                      ),
++                      child: Text(
++                        'No mini-app enabled. Use profile menu to activate at least one.',
++                        style: AppTypography.mono.copyWith(
++                          fontSize: 11,
++                          color: AppColors.secondaryLabel,
++                        ),
++                      ),
++                    )
++                  else
++                    _PrimaryAppsGrid(cards: visibleCards),
+                   const SizedBox(height: 16),
+                   _CeoModeCard(
+                     statusLabel: ceoProvider.homeCardLabel,
+*** End Patch

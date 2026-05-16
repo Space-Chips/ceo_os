@@ -1,0 +1,31 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/calendar/add_event_sheet.dart
+@@
+ import 'package:flutter/cupertino.dart';
+ import 'package:flutter/material.dart' show Colors, TimeOfDay;
+ import 'package:go_router/go_router.dart';
+ import 'package:intl/intl.dart';
+ import 'package:provider/provider.dart';
+ 
+-import '../../components/components.dart';
+ import '../../core/models/task_models.dart';
+ import '../../core/providers/task_provider.dart';
+ import '../../core/repositories/feature_repository.dart';
+ import '../../core/theme/app_colors.dart';
+@@
+                         onTap: () {
+                           setState(() {
+                             _isBirthday = false;
+                             _isFocusSession = false;
+                             _focusRepeatsWeekly = false;
+-                            if (_selectedTime == null) {
+-                              _selectedTime = const TimeOfDay(hour: 9, minute: 0);
+-                            }
++                            _selectedTime ??= const TimeOfDay(
++                              hour: 9,
++                              minute: 0,
++                            );
+                           });
+                         },
+                       ),
+*** End Patch

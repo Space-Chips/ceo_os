@@ -1,0 +1,404 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/calendar/calendar_screen.dart
+@@
+   Widget _buildTopHeader() {
+     return SizedBox(
+       height: 44,
+       child: Stack(
+         children: [
+@@
+           Align(
+             alignment: Alignment.center,
+             child: Text(
+               'Schedule',
+               style: AppTypography.mono.copyWith(
+-                fontSize: 20,
+-                fontWeight: FontWeight.w900,
+-                color: AppColors.label,
++                fontSize: 15,
++                fontWeight: FontWeight.w700,
++                color: AppColors.secondaryLabel.withValues(alpha: 0.72),
++                letterSpacing: 1,
+               ),
+             ),
+           ),
+           Align(
+             alignment: Alignment.centerRight,
+@@
+                 decoration: BoxDecoration(
+-                  color: AppColors.white.withValues(alpha: 0.05),
++                  color: AppColors.topBarControlBackground,
+                   borderRadius: BorderRadius.circular(14),
+                   border: Border.all(
+-                    color: AppColors.white.withValues(alpha: 0.06),
++                    color: AppColors.topBarControlBorder,
+                     width: 1,
+                   ),
+                 ),
+                 child: Text(
+@@
+   Widget _squareControlButton({
+@@
+       child: Container(
+         width: size,
+         height: size,
+         decoration: BoxDecoration(
+-          color: AppColors.white.withValues(alpha: filled ? 0.08 : 0.05),
++          color: filled
++              ? AppColors.pillBackground
++              : AppColors.topBarControlBackground,
+           borderRadius: BorderRadius.circular(14),
+           border: Border.all(
+-            color: AppColors.white.withValues(alpha: 0.06),
++            color: filled
++                ? AppColors.pillBorder
++                : AppColors.topBarControlBorder,
+             width: 1,
+           ),
++          boxShadow: [
++            BoxShadow(
++              color: AppColors.glassShadowSoft.withValues(
++                alpha: AppColors.isDark ? 0.12 : 0.08,
++              ),
++              blurRadius: AppColors.isDark ? 12 : 10,
++              offset: Offset(0, AppColors.isDark ? 5 : 4),
++              spreadRadius: -8,
++            ),
++          ],
+         ),
+         alignment: Alignment.center,
+         child: Icon(
+@@
+     return GlassCard(
+       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+       borderRadius: 22,
+-      level: GlassCardLevel.standard,
++      level: GlassCardLevel.elevated,
+       showEdgeGlow: canStart,
+-      border: Border.all(color: AppColors.glassBorder, width: 0.75),
++      border: Border.all(
++        color: canStart ? AppColors.borderStrong : AppColors.border,
++        width: 0.9,
++      ),
+       child: Row(
+         children: [
+-          Icon(
+-            CupertinoIcons.bolt_fill,
+-            color: AppColors.secondaryLabel,
+-            size: 26,
++          Container(
++            width: 48,
++            height: 48,
++            decoration: BoxDecoration(
++              borderRadius: BorderRadius.circular(14),
++              color: AppColors.moduleIconBackground,
++              border: Border.all(
++                color: canStart
++                    ? AppColors.activeBorder.withValues(alpha: 0.48)
++                    : AppColors.border,
++                width: 0.9,
++              ),
++            ),
++            alignment: Alignment.center,
++            child: Icon(
++              CupertinoIcons.bolt_fill,
++              color: canStart ? AppColors.accentIcon : AppColors.secondaryLabel,
++              size: 24,
++            ),
+           ),
+           const SizedBox(width: 12),
+           Expanded(
+             child: Column(
+@@
+                 Text(
+                   'Focus Opportunity',
+                   style: AppTypography.mono.copyWith(
+-                    fontSize: 20,
++                    fontSize: 21,
+                     fontWeight: FontWeight.w900,
+                     color: AppColors.label,
+                   ),
+                 ),
+@@
+           GestureDetector(
+             onTap: canStart ? () => context.push('/focus') : null,
+             child: Opacity(
+               opacity: canStart ? 1 : 0.55,
+               child: Container(
+-                padding: const EdgeInsets.symmetric(
+-                  horizontal: 16,
+-                  vertical: 12,
+-                ),
++                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                 decoration: BoxDecoration(
+                   borderRadius: BorderRadius.circular(14),
+-                  color: AppColors.backgroundLight.withValues(alpha: 0.72),
+-                  border: Border.all(color: AppColors.glassBorder, width: 0.7),
++                  gradient: LinearGradient(
++                    begin: Alignment.topCenter,
++                    end: Alignment.bottomCenter,
++                    colors: [
++                      AppColors.cardBackgroundStrong,
++                      AppColors.cardBackgroundAlt,
++                    ],
++                  ),
++                  border: Border.all(
++                    color: canStart
++                        ? AppColors.activeBorder.withValues(alpha: 0.44)
++                        : AppColors.border,
++                    width: 0.85,
++                  ),
++                  boxShadow: [
++                    BoxShadow(
++                      color: AppColors.glassShadowSoft.withValues(
++                        alpha: AppColors.isDark ? 0.14 : 0.08,
++                      ),
++                      blurRadius: AppColors.isDark ? 12 : 10,
++                      offset: Offset(0, AppColors.isDark ? 5 : 4),
++                      spreadRadius: -8,
++                    ),
++                  ],
+                 ),
+-                child: Text(
+-                  'Start ${focusSuggestion.recommendedDuration}min',
+-                  style: AppTypography.mono.copyWith(
+-                    fontSize: 11,
+-                    fontWeight: FontWeight.w900,
+-                    color: AppColors.label,
++                child: Column(
++                  crossAxisAlignment: CrossAxisAlignment.start,
++                  mainAxisSize: MainAxisSize.min,
++                  children: [
++                    Text(
++                      'Start Focus',
++                      style: AppTypography.mono.copyWith(
++                        fontSize: 11,
++                        fontWeight: FontWeight.w900,
++                        color: AppColors.label,
++                      ),
++                    ),
++                    const SizedBox(height: 2),
++                    Text(
++                      '${focusSuggestion.recommendedDuration} min',
++                      style: AppTypography.mono.copyWith(
++                        fontSize: 10,
++                        fontWeight: FontWeight.w700,
++                        color: AppColors.secondaryLabel.withValues(alpha: 0.78),
++                        letterSpacing: 0.6,
++                      ),
++                    ),
++                  ],
++                ),
++              ),
++            ),
++          ),
++        ],
++      ),
++    );
++  }
++
++  Widget _freeTimeCard(_FreeTimeInfo freeTime) {
++    final timeLabel =
++        '${freeTime.freeTimeHours}h${freeTime.freeTimeRemainingMinutes > 0 ? '${freeTime.freeTimeRemainingMinutes}m' : ''}';
++    return GlassCard(
++      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
++      borderRadius: 22,
++      level: GlassCardLevel.standard,
++      showEdgeGlow: false,
++      border: Border.all(color: AppColors.glassBorder, width: 0.8),
++      child: Row(
++        crossAxisAlignment: CrossAxisAlignment.center,
++        children: [
++          Container(
++            width: 44,
++            height: 44,
++            decoration: BoxDecoration(
++              borderRadius: BorderRadius.circular(14),
++              color: AppColors.moduleIconBackground,
++              border: Border.all(color: AppColors.border, width: 0.8),
++            ),
++            alignment: Alignment.center,
++            child: Icon(
++              CupertinoIcons.clock,
++              color: AppColors.secondaryLabel,
++              size: 22,
++            ),
++          ),
++          const SizedBox(width: 12),
++          Expanded(
++            child: Column(
++              crossAxisAlignment: CrossAxisAlignment.start,
++              mainAxisAlignment: MainAxisAlignment.center,
++              children: [
++                Text(
++                  'Real Free Time',
++                  style: AppTypography.mono.copyWith(
++                    fontSize: 14,
++                    fontWeight: FontWeight.w700,
++                    color: AppColors.secondaryLabel.withValues(alpha: 0.82),
++                    letterSpacing: 0.8,
+                   ),
+                 ),
+-              ),
+-            ),
+-          ),
+-        ],
+-      ),
+-    );
+-  }
+-
+-  Widget _freeTimeCard(_FreeTimeInfo freeTime) {
+-    final timeLabel =
+-        '${freeTime.freeTimeHours}h${freeTime.freeTimeRemainingMinutes > 0 ? '${freeTime.freeTimeRemainingMinutes}m' : ''}';
+-    return GlassCard(
+-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+-      borderRadius: 22,
+-      level: GlassCardLevel.standard,
+-      showEdgeGlow: true,
+-      border: Border.all(color: AppColors.glassBorder, width: 0.75),
+-      child: Row(
+-        children: [
+-          Icon(CupertinoIcons.clock, color: AppColors.secondaryLabel, size: 26),
+-          const SizedBox(width: 12),
+-          Expanded(
+-            child: Column(
+-              crossAxisAlignment: CrossAxisAlignment.start,
+-              children: [
+-                Text(
+-                  'Real Free Time',
+-                  style: AppTypography.mono.copyWith(
+-                    fontSize: 20,
+-                    fontWeight: FontWeight.w900,
+-                    color: AppColors.label,
+-                  ),
+-                ),
+                 const SizedBox(height: 4),
+                 Text(
+                   'After events & sleep',
+                   style: AppTypography.mono.copyWith(
+@@
+           Text(
+             timeLabel,
+             style: AppTypography.mono.copyWith(
+-              fontSize: 44,
++              fontSize: 48,
+               fontWeight: FontWeight.w900,
+               color: AppColors.label,
+               height: 1.0,
+             ),
+           ),
+@@
+       child: Column(
+         crossAxisAlignment: CrossAxisAlignment.start,
+         children: [
+           Row(
+             children: [
+-              Icon(
+-                CupertinoIcons.chart_bar_alt_fill,
+-                color: AppColors.accentIcon,
+-                size: 22,
++              Container(
++                width: 38,
++                height: 38,
++                decoration: BoxDecoration(
++                  borderRadius: BorderRadius.circular(12),
++                  color: AppColors.moduleIconBackground,
++                  border: Border.all(color: AppColors.border, width: 0.8),
++                ),
++                alignment: Alignment.center,
++                child: Icon(
++                  CupertinoIcons.chart_bar_alt_fill,
++                  color: AppColors.accentIcon,
++                  size: 18,
++                ),
+               ),
+               const SizedBox(width: 10),
+               Text(
+                 'Week Overview',
+@@
+           const SizedBox(height: 12),
+-          Center(
+-            child: Text(
+-              '${weekAnalysis.percentageFree}% of waking hours remain free',
+-              style: AppTypography.mono.copyWith(
+-                fontSize: 11,
+-                color: AppColors.accentText,
+-                fontWeight: FontWeight.w600,
+-              ),
++          Container(
++            width: double.infinity,
++            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
++            decoration: BoxDecoration(
++              borderRadius: BorderRadius.circular(14),
++              color: AppColors.pillBackground,
++              border: Border.all(color: AppColors.pillBorder, width: 0.8),
++            ),
++            child: Text(
++              '${weekAnalysis.percentageFree}% of waking hours remain free',
++              textAlign: TextAlign.center,
++              style: AppTypography.mono.copyWith(
++                fontSize: 11,
++                color: AppColors.secondaryLabel.withValues(alpha: 0.86),
++                fontWeight: FontWeight.w700,
++                letterSpacing: 0.6,
++              ),
+             ),
+           ),
+         ],
+       ),
+@@
+       child: Container(
+         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+         decoration: BoxDecoration(
+           borderRadius: BorderRadius.circular(18),
+-          border: Border.all(color: color.withValues(alpha: 0.5), width: 0.8),
++          border: Border.all(
++            color: label == 'Important' || label == 'Free Time'
++                ? color.withValues(alpha: 0.34)
++                : AppColors.borderStrong.withValues(alpha: 0.72),
++            width: 0.85,
++          ),
+           gradient: LinearGradient(
+-            begin: Alignment.topLeft,
+-            end: Alignment.bottomRight,
++            begin: Alignment.topCenter,
++            end: Alignment.bottomCenter,
+             colors: gradient,
+           ),
++          boxShadow: [
++            BoxShadow(
++              color: AppColors.glassShadowSoft.withValues(
++                alpha: AppColors.isDark ? 0.14 : 0.08,
++              ),
++              blurRadius: AppColors.isDark ? 12 : 10,
++              offset: Offset(0, AppColors.isDark ? 5 : 4),
++              spreadRadius: -8,
++            ),
++          ],
+         ),
+         child: Column(
+           children: [
+-            Icon(icon, color: color, size: 24),
++            Icon(icon, color: color, size: 22),
+             const SizedBox(height: 8),
+             Text(
+               value,
+               style: AppTypography.mono.copyWith(
+-                fontSize: 28,
++                fontSize: 31,
+                 fontWeight: FontWeight.w900,
+-                color: color,
++                color: AppColors.label,
+               ),
+             ),
+             const SizedBox(height: 6),
+             Text(
+               label.toUpperCase(),
+               style: AppTypography.mono.copyWith(
+                 fontSize: 9,
+-                color: color.withValues(alpha: 0.88),
++                color: color.withValues(alpha: 0.84),
+                 fontWeight: FontWeight.w800,
+                 letterSpacing: 1.3,
+               ),
+*** End Patch

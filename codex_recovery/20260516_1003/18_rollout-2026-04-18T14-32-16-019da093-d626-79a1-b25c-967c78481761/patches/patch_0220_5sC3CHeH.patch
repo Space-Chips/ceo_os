@@ -1,0 +1,144 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/tasks/tasks_screen.dart
+@@
+   Widget _buildListTab({
+     required Key key,
++    required LanguageProvider language,
+     required List<ParetoTask> topFive,
+     required List<ParetoTask> others,
+@@
+               child: Text(
+-                'YOUR PRIORITIES',
++                language.t('tasks_your_priorities'),
+@@
+                 Text(
+-                  'No priorities yet',
++                  language.t('tasks_no_priorities'),
+@@
+                 Text(
+-                  'Add a task to start your execution list.',
++                  language.t('tasks_no_priorities_subtitle'),
+@@
+               child: _priorityCard(
+                 rank: index + 1,
++                language: language,
+                 task: task,
+                 widthFactor: widthFactor,
+                 onTap: () => onComplete(task),
+@@
+               Text(
+-                'OTHER TASKS',
++                language.t('tasks_other_tasks'),
+@@
+               child: _otherTaskCard(
+                 rank: idx + 6,
++                language: language,
+                 task: task,
+                 onTap: () => onComplete(task),
+@@
+             child: SizedBox(
+               width: 188,
+-              child: _FloatingPrimaryAddTaskButton(onTap: onAdd),
++              child: _FloatingPrimaryAddTaskButton(
++                label: language.t('tasks_add_task'),
++                onTap: onAdd,
++              ),
+             ),
+           ),
+         ],
+@@
+   Widget _priorityCard({
+     required int rank,
++    required LanguageProvider language,
+     required ParetoTask task,
+@@
+                           _importanceBadge(task, palette),
+                           const SizedBox(width: 8),
+                           Text(
+-                            _durationLabel(task.timeDuration),
++                            _durationLabel(task.timeDuration, language),
+@@
+   Widget _otherTaskCard({
+     required int rank,
++    required LanguageProvider language,
+     required ParetoTask task,
+@@
+                       _importanceBadge(task, palette, compact: true),
+                       const SizedBox(width: 6),
+                       Text(
+-                        _durationLabel(task.timeDuration),
++                        _durationLabel(task.timeDuration, language),
+@@
+   Widget _buildMatrixTab({
+     required Key key,
++    required LanguageProvider language,
+     required List<ParetoTask> quickImportant,
+@@
+             child: Text(
+-              'IMPACT ↑',
++              language.t('tasks_matrix_impact_axis'),
+@@
+               child: _matrixQuadrant(
+-                title: 'DO NOW',
+-                subtitle: 'Quick • High Impact',
++                title: language.t('tasks_matrix_do_now'),
++                subtitle: language.t('tasks_matrix_do_now_subtitle'),
+@@
+               child: _matrixQuadrant(
+-                title: 'PLAN',
+-                subtitle: 'Takes Time • High Impact',
++                title: language.t('tasks_matrix_plan'),
++                subtitle: language.t('tasks_matrix_plan_subtitle'),
+@@
+               child: _matrixQuadrant(
+-                title: 'IF TIME',
+-                subtitle: 'Quick • Low Impact',
++                title: language.t('tasks_matrix_if_time'),
++                subtitle: language.t('tasks_matrix_if_time_subtitle'),
+@@
+               child: _matrixQuadrant(
+-                title: 'ELIMINATE',
+-                subtitle: 'Takes Time • Low Impact',
++                title: language.t('tasks_matrix_eliminate'),
++                subtitle: language.t('tasks_matrix_eliminate_subtitle'),
+@@
+             child: Text(
+-              'TIME INVESTMENT →',
++              language.t('tasks_matrix_time_axis'),
+@@
+                       child: Text(
+-                        'Empty',
++                        language.t('tasks_empty'),
+@@
+   Widget _buildHistoryTab({
+     required Key key,
++    required LanguageProvider language,
+     required List<ParetoTask> tasks,
+@@
+             child: Text(
+-              'No task history in the last 7 days.',
++              language.t('tasks_history_empty'),
+@@
+-              child: _historyCard(task: task, onToggle: () => onToggle(task)),
++              child: _historyCard(
++                language: language,
++                task: task,
++                onToggle: () => onToggle(task),
++              ),
+             ),
+           ),
+       ],
+@@
+   Widget _historyCard({
++    required LanguageProvider language,
+     required ParetoTask task,
+@@
+                         _HistoryBadge(
+                           label: _importanceLabel(task.importanceLevel),
+                           style: badgeStyle,
+                         ),
+                         const SizedBox(width: 8),
+                         Text(
+-                          _durationLabel(task.timeDuration),
++                          _durationLabel(task.timeDuration, language),
+*** End Patch

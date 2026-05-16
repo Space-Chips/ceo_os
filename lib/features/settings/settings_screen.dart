@@ -14,7 +14,7 @@ class SettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
       backgroundColor: AppColors.background,
-      navigationBar: const CupertinoNavigationBar(
+      navigationBar: CupertinoNavigationBar(
         middle: NeoMonoText(
           'SYSTEM_CONFIG',
           fontSize: 18,
@@ -150,7 +150,7 @@ class SettingsScreen extends StatelessWidget {
                             children: [
                               _SettingRow(
                                 label: 'INTERFACE_APPEARANCE',
-                                trailing: const Icon(
+                                trailing: Icon(
                                   CupertinoIcons.chevron_right,
                                   size: 16,
                                   color: AppColors.tertiaryLabel,
@@ -159,7 +159,7 @@ class SettingsScreen extends StatelessWidget {
                               _divider(),
                               _SettingRow(
                                 label: 'NOTIFICATION_CHANNELS',
-                                trailing: const Icon(
+                                trailing: Icon(
                                   CupertinoIcons.chevron_right,
                                   size: 16,
                                   color: AppColors.tertiaryLabel,

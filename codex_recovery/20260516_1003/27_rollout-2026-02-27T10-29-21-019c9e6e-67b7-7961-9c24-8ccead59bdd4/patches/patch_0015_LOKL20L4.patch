@@ -1,0 +1,9 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/settings/settings_screen.dart
+@@
+-      navigationBar: const CupertinoNavigationBar(
++      navigationBar: CupertinoNavigationBar(
+         middle: NeoMonoText(
+           'SYSTEM_CONFIG',
+           fontSize: 18,
+*** End Patch

@@ -1,0 +1,55 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/screen_time_screen.dart
+@@
+   RestPeriod? _activeRestPeriod() {
+@@
+     }
+     return null;
+   }
++
++  List<RestPeriod> _scheduledRestPeriods() {
++    final now = DateTime.now();
++    return _restPeriods.where((period) {
++      if (period.active) return false;
++      final start = period.startTime;
++      if (start == null) return false;
++      return start.isAfter(now) || start.isAtSameMomentAs(now);
++    }).toList();
++  }
+@@
+   Future<void> _startRestPeriod(int minutes) {
+@@
+     });
+   }
++
++  Future<void> _scheduleRestPeriod({
++    required int startsInMinutes,
++    required int durationMinutes,
++  }) {
++    final now = DateTime.now();
++    final start = now.add(Duration(minutes: startsInMinutes));
++    final end = start.add(Duration(minutes: durationMinutes));
++    return _runMutation(() {
++      return _repo.createRestPeriod(startTime: start, endTime: end, active: false);
++    });
++  }
++
++  Future<void> _activateScheduledRest(RestPeriod period) {
++    final now = DateTime.now();
++    final start = period.startTime;
++    final end = period.endTime;
++    var durationMinutes = 30;
++    if (start != null && end != null) {
++      durationMinutes = end.difference(start).inMinutes;
++      if (durationMinutes < 5) durationMinutes = 5;
++    }
++    return _runMutation(() {
++      return _repo.updateRestPeriod(
++        id: period.id,
++        startTime: now,
++        endTime: now.add(Duration(minutes: durationMinutes)),
++        active: true,
++      );
++    });
++  }
+*** End Patch

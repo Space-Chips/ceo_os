@@ -1,0 +1,300 @@
+*** Begin Patch
+*** Update File: android/app/src/main/kotlin/com/wakeapp/ceoos/BlockingAccessibilityService.kt
+@@
+ import android.app.AppOpsManager
++import android.app.usage.UsageEvents
++import android.app.usage.UsageStatsManager
+ import android.content.ComponentName
+ import android.content.Context
+ import android.content.Intent
+ import android.net.Uri
+ import android.os.Build
+ import android.content.SharedPreferences
+ import android.os.Process
++import android.os.Handler
++import android.os.Looper
+ import android.provider.Settings
+ import android.os.SystemClock
+ import android.util.Log
+ import android.view.accessibility.AccessibilityEvent
+ import com.wakeapp.ceoos.blocking.BlockStateCache
+@@
+     private var browserHomeGracePackage: String? = null
+ 
+     @Volatile
+     private var browserHomeGraceUntilElapsed: Long = 0L
+ 
++    @Volatile
++    private var browserHomeGraceDomain: String? = null
++
++    @Volatile
++    private var lastUsageFallbackAtElapsed: Long = 0L
++
+     private var homePackagesCache: Set<String> = emptySet()
+ 
+     private var prefsListener: SharedPreferences.OnSharedPreferenceChangeListener? = null
++
++    private val mainHandler = Handler(Looper.getMainLooper())
++
++    private var shield: InterceptionShield? = null
+@@
+         fun onBrowserHomeRequested(browserPackage: String?) {
+-            instance?.registerBrowserHomeRedirect(browserPackage)
++            instance?.registerBrowserHomeRedirect(browserPackage, null)
++        }
++
++        fun onBrowserHomeRequested(browserPackage: String?, blockedDomain: String?) {
++            instance?.registerBrowserHomeRedirect(browserPackage, blockedDomain)
+         }
+@@
+         foregroundInterceptor = ForegroundBlockInterceptor(blockStateCache)
+         homePackagesCache = BlockPolicyRepository.homePackages(this)
++        shield = InterceptionShield(this)
+         registerPolicyListener()
+         evaluateCurrentState()
+         maybeReturnToAppFromSettings(SystemClock.elapsedRealtime())
+     }
+@@
+         val snapshot = foregroundAppDetector.createSnapshot(
+             event,
+             snapshotRoot,
+         )
+ 
+-        handleSnapshot(snapshot, startedAtWall, startedAtElapsed)
++        val stabilizedSnapshot = stabilizeSnapshotIfNeeded(snapshot, startedAtElapsed)
++        handleSnapshot(stabilizedSnapshot, startedAtWall, startedAtElapsed, event.eventTime)
+     }
+@@
+         gateLauncher.dismiss(this)
+         browserHomeGracePackage = null
+         browserHomeGraceUntilElapsed = 0L
++        browserHomeGraceDomain = null
++        shield?.hide()
++        shield = null
+     }
+@@
+             handleSnapshot(
+                 snapshot = snapshot,
+                 startedAt = System.currentTimeMillis(),
+                 startedAtElapsed = SystemClock.elapsedRealtime(),
++                eventTimeMillis = syntheticEvent.eventTime,
+             )
+         } finally {
+             syntheticEvent.recycle()
+         }
+     }
+ 
+     private fun handleSnapshot(
+         snapshot: ForegroundSnapshot,
+         startedAt: Long,
+         startedAtElapsed: Long,
++        eventTimeMillis: Long,
+     ) {
+         if (foregroundAppDetector.isGateSnapshot(snapshot)) {
+             return
+         }
+         if (BlockGateActivity.isVisible) {
+             return
+         }
+ 
+         val policyState = getPolicyStateFast()
+         blockStateCache.update(policyState)
+@@
+         val decision = foregroundInterceptor.decisionForSnapshot(
+             snapshot = snapshot,
+             policyState = policyState,
+             evaluateBrowser = { snap, state ->
+                 appBlockEngine.evaluate(
+@@
+             },
+         )
+-        val effectiveDecision = if (
+-            decision is BlockDecision.BlockUrl &&
+-            isBrowserHomeGraceActive(snapshot.packageName, startedAtElapsed)
+-        ) {
+-            BlockDecision.IgnoreTransient
+-        } else {
+-            decision
+-        }
++        val effectiveDecision = when (decision) {
++            is BlockDecision.BlockUrl -> {
++                if (shouldIgnoreDuringBrowserHomeGrace(decision, snapshot, startedAtElapsed)) {
++                    BlockDecision.IgnoreTransient
++                } else {
++                    decision
++                }
++            }
++            else -> decision
++        }
+ 
+         var gateFailureReason: String? = null
+         val gateLaunched = when (effectiveDecision) {
+             BlockDecision.Allow -> {
+                 if (!BlockGateActivity.isVisible) {
+                     blockingNavigator.dismiss(this)
+                 }
++                shield?.hide()
+                 false
+             }
+             BlockDecision.IgnoreTransient -> false
+             is BlockDecision.BlockApp -> {
++                shield?.show()
+                 val launchResult = gateLauncher.launch(this, effectiveDecision)
+                 if (!launchResult.launched) {
+                     gateFailureReason = launchResult.reason
+                     if (shouldForceFallback(launchResult.reason)) {
+                         enforceFallback(effectiveDecision)
+                     }
++                    shield?.hide()
+                 }
+                 launchResult.launched
+             }
+             is BlockDecision.BlockUrl -> {
++                shield?.show()
+                 val launchResult = gateLauncher.launch(this, effectiveDecision)
+                 if (!launchResult.launched) {
+                     gateFailureReason = launchResult.reason
+                     if (shouldForceFallback(launchResult.reason)) {
+                         enforceFallback(effectiveDecision)
+                     }
++                    shield?.hide()
+                 }
+                 launchResult.launched
+             }
+         }
+@@
+         if (gateLaunched || effectiveDecision !is BlockDecision.Allow) {
++            val eventDelay = if (eventTimeMillis > 0L) {
++                (startedAtElapsed - eventTimeMillis).coerceAtLeast(0L)
++            } else {
++                0L
++            }
+             BlockingLogger.record(
+                 eventType = snapshot.eventType,
+                 packageName = snapshot.packageName,
+                 className = snapshot.className,
+                 detectedUrl = snapshot.detectedBrowserUrl,
+                 decision = effectiveDecision.javaClass.simpleName + when (effectiveDecision) {
+                     is BlockDecision.BlockApp -> ":${effectiveDecision.reason}"
+                     is BlockDecision.BlockUrl -> ":${effectiveDecision.reason}"
+                     else -> ""
+                 },
+                 gateLaunched = gateLaunched,
+                 gateFailureReason = gateFailureReason,
+                 latencyMillis = (System.currentTimeMillis() - startedAt).coerceAtLeast(0L),
++                eventDelayMillis = eventDelay,
+                 mode = policyState.currentMode.name.lowercase(),
+             )
+         }
+     }
+@@
+     private fun enforceFallback(decision: BlockDecision) {
+         when (decision) {
+             is BlockDecision.BlockApp -> {
+                 performGlobalAction(GLOBAL_ACTION_HOME)
+             }
+             is BlockDecision.BlockUrl -> {
+-                openBrowserHome(decision.browserPackage)
++                openBrowserHome(decision.browserPackage, decision.target)
+             }
+             else -> Unit
+         }
+     }
+ 
+-    private fun openBrowserHome(browserPackage: String?) {
++    private fun openBrowserHome(browserPackage: String?, blockedDomain: String?) {
+         val pkg = browserPackage?.trim().orEmpty()
+         if (pkg.isEmpty()) {
+             performGlobalAction(GLOBAL_ACTION_HOME)
+             return
+         }
+ 
+-        registerBrowserHomeRedirect(pkg)
++        registerBrowserHomeRedirect(pkg, blockedDomain)
+@@
+     private fun registerBrowserHomeRedirect(browserPackage: String?) {
+         val pkg = browserPackage?.trim().orEmpty()
+         if (pkg.isEmpty()) return
+         foregroundAppDetector.clearRecentDomain(pkg)
+         browserHomeGracePackage = pkg
+         browserHomeGraceUntilElapsed = SystemClock.elapsedRealtime() + 1_200L
++        browserHomeGraceDomain = null
+     }
+ 
++    private fun registerBrowserHomeRedirect(browserPackage: String?, blockedDomain: String?) {
++        val pkg = browserPackage?.trim().orEmpty()
++        if (pkg.isEmpty()) return
++        foregroundAppDetector.clearRecentDomain(pkg)
++        browserHomeGracePackage = pkg
++        browserHomeGraceUntilElapsed = SystemClock.elapsedRealtime() + 700L
++        browserHomeGraceDomain = blockedDomain?.trim()?.ifEmpty { null }
++    }
++
+     private fun isBrowserHomeGraceActive(
+         browserPackage: String?,
+         nowElapsed: Long,
+     ): Boolean {
+@@
+         if (!active) {
+             browserHomeGracePackage = null
+             browserHomeGraceUntilElapsed = 0L
++            browserHomeGraceDomain = null
+         }
+         return active
+     }
++
++    private fun shouldIgnoreDuringBrowserHomeGrace(
++        decision: BlockDecision.BlockUrl,
++        snapshot: ForegroundSnapshot,
++        nowElapsed: Long,
++    ): Boolean {
++        if (!isBrowserHomeGraceActive(snapshot.packageName, nowElapsed)) return false
++        val graceDomain = browserHomeGraceDomain ?: return false
++        if (decision.target != graceDomain) return false
++        val current = snapshot.detectedBrowserUrl
++        return current == null || current == graceDomain
++    }
++
++    private fun stabilizeSnapshotIfNeeded(
++        snapshot: ForegroundSnapshot,
++        nowElapsed: Long,
++    ): ForegroundSnapshot {
++        val pkg = snapshot.packageName?.trim().orEmpty()
++        if (pkg.isNotEmpty() && !homePackagesCache.contains(pkg)) return snapshot
++        if (snapshot.isBrowser) return snapshot
++        if (nowElapsed - lastUsageFallbackAtElapsed < 250L) return snapshot
++
++        val resolved = resolveForegroundFromUsageStats() ?: return snapshot
++        lastUsageFallbackAtElapsed = nowElapsed
++        return snapshot.copy(packageName = resolved)
++    }
++
++    private fun resolveForegroundFromUsageStats(): String? {
++        if (!hasUsageStatsPermission()) return null
++        val usage = getSystemService(Context.USAGE_STATS_SERVICE) as? UsageStatsManager ?: return null
++        val end = System.currentTimeMillis()
++        val begin = end - 2_000L
++        return try {
++            val events = usage.queryEvents(begin, end)
++            var lastPkg: String? = null
++            val event = UsageEvents.Event()
++            while (events.hasNextEvent()) {
++                events.getNextEvent(event)
++                val type = event.eventType
++                val isForeground = type == UsageEvents.Event.MOVE_TO_FOREGROUND ||
++                    type == UsageEvents.Event.ACTIVITY_RESUMED
++                if (!isForeground) continue
++                val candidate = event.packageName?.trim().orEmpty()
++                if (candidate.isEmpty()) continue
++                if (candidate == packageName) continue
++                if (homePackagesCache.contains(candidate)) continue
++                if (ModeResolver.isSystemExemptPackage(candidate, getPolicyStateFast())) continue
++                lastPkg = candidate
++            }
++            lastPkg
++        } catch (_: Exception) {
++            null
++        }
++    }
+ }
+*** End Patch

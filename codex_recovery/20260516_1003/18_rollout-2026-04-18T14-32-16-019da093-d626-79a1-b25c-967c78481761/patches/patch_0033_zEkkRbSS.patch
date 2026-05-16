@@ -1,0 +1,10 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/packages/home_widget/ios/Classes/HomeWidgetBackgroundWorker.swift
+@@
+     if registerPlugins != nil {
+       registerPlugins?(createdEngine)
+     } else {
+-      HomeWidgetPlugin.register(with: createdEngine.registrar(forPlugin: "home_widget"))
++      SwiftHomeWidgetPlugin.register(with: createdEngine.registrar(forPlugin: "home_widget"))
+     }
+*** End Patch

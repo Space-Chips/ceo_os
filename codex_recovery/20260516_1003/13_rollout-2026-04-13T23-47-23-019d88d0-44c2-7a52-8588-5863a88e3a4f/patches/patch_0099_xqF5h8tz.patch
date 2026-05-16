@@ -1,0 +1,58 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/screen_time_screen.dart
+@@
+   List<String> _filteredWebsiteSuggestions(String query) {
+     final needle = query.trim().toLowerCase();
+     if (needle.isEmpty) return const [];
+     return _websiteSuggestions
+         .where((domain) => domain.contains(needle))
+         .toList(growable: false);
+   }
++
++  Widget _websiteSuggestionTile(String domain) {
++    return _PressScale(
++      pressedScale: 0.98,
++      child: GestureDetector(
++        onTap: _saving
++            ? null
++            : () async {
++                _siteCtrl.text = domain;
++                await _addBlockedWebsite(overrideDomain: domain);
++              },
++        child: Container(
++          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
++          decoration: BoxDecoration(
++            color: AppColors.pillBackground,
++            borderRadius: BorderRadius.circular(12),
++            border: Border.all(color: AppColors.pillBorder, width: 1),
++          ),
++          child: Row(
++            children: [
++              Icon(
++                CupertinoIcons.globe,
++                size: 14,
++                color: AppColors.secondaryLabel,
++              ),
++              const SizedBox(width: 8),
++              Expanded(
++                child: Text(
++                  domain,
++                  style: AppTypography.callout.copyWith(
++                    fontSize: 14,
++                    color: AppColors.label,
++                    fontWeight: FontWeight.w600,
++                  ),
++                ),
++              ),
++              Icon(
++                CupertinoIcons.add,
++                size: 14,
++                color: AppColors.secondaryLabel.withValues(alpha: 0.8),
++              ),
++            ],
++          ),
++        ),
++      ),
++    );
++  }
+*** End Patch

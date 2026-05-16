@@ -1,0 +1,39 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/leaderboard/leaderboard_screen.dart
+@@
+ import 'package:flutter/cupertino.dart';
++import 'package:flutter/services.dart';
+ import 'package:go_router/go_router.dart';
+@@
+   Future<void> _confirmRemoveFriend(_FriendRankedEntry row) async {
+@@
+     );
+   }
++
++  Future<void> _shareInvite() async {
++    final inviter = _myUserId ?? 'invite';
++    final appStoreUrl = 'https://apps.apple.com/app/id123456789?ref=$inviter';
++    final message =
++        'Join me on CEO Compass to track habits, focus sessions, and leaderboard progress. $appStoreUrl';
++    await Clipboard.setData(ClipboardData(text: message));
++    await _showNotice(
++      'INVITE_READY',
++      'Invitation copied. Share it with your peers.',
++    );
++  }
+@@
+       LiquidButton(
+         label: 'CONNECT_FRIEND',
+         fullWidth: true,
+         onPressed: _friendsLoading ? null : _openAddFriendDialog,
+       ),
++      const SizedBox(height: 8),
++      LiquidButton(
++        label: 'INVITE_FRIENDS',
++        fullWidth: true,
++        onPressed: _friendsLoading ? null : _shareInvite,
++        gradient: const [Color(0xFF3A6CFF), Color(0xFF609BFF)],
++      ),
+       const SizedBox(height: 10),
+     ];
+*** End Patch

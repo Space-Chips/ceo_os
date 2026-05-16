@@ -1,0 +1,45 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/habits/habits_screen.dart
+@@
+             GlassCard(
+               padding: const EdgeInsets.all(12),
+               borderRadius: 18,
++              level: GlassCardLevel.standard,
++              showEdgeGlow: true,
+               child: Column(
+                 children: [
+@@
+             GlassCard(
+               padding: const EdgeInsets.all(16),
+               borderRadius: 18,
++              level: GlassCardLevel.elevated,
++              showEdgeGlow: true,
+               border: Border.all(
+                 color: isOnTrack
+                     ? AppColors.success.withValues(alpha: 0.4)
+@@
+             child: GlassCard(
+               padding: const EdgeInsets.all(14),
+               borderRadius: 20,
++              level: GlassCardLevel.elevated,
++              showEdgeGlow: true,
+               border: Border.all(
+                 color: AppColors.glassBorder.withValues(alpha: 0.85),
+                 width: 0.6,
+@@
+                   child: GlassCard(
+                     padding: const EdgeInsets.all(16),
+                     borderRadius: 18,
++                    level: GlassCardLevel.standard,
++                    showEdgeGlow: true,
+                     child: Column(
+@@
+             GlassCard(
+               padding: const EdgeInsets.all(16),
+               borderRadius: 18,
++              level: GlassCardLevel.standard,
++              showEdgeGlow: true,
+               border: Border.all(
+                 color: AppColors.primaryOrange.withValues(alpha: 0.25),
+                 width: 0.5,
+*** End Patch

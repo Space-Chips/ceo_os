@@ -1,0 +1,157 @@
+*** Begin Patch
+*** Update File: ios/CeoWidgets/CeoHomeWidget.swift
+@@
+ private struct DashboardSmallNativeView: View {
+@@
+   var body: some View {
+     WidgetBackground(padding: WidgetLayout.paddingSmall) {
+       VStack(alignment: .leading, spacing: WidgetLayout.gapL) {
+         Text("Dashboard")
+-          .widgetText(22, .bold, color: WidgetPalette.textPrimary, minScale: 0.82)
++          .widgetText(20.5, .bold, color: WidgetPalette.textPrimary, minScale: 0.82)
+@@
+   private struct StatRow: View {
+@@
+     var body: some View {
+       HStack {
+         Text(label)
+-          .widgetText(13.5, .semibold, color: WidgetPalette.textSecondary, minScale: 0.82)
++          .widgetText(12.5, .semibold, color: WidgetPalette.textSecondary, minScale: 0.82)
+         Spacer(minLength: 8)
+         Text(value)
+-          .widgetText(15.5, .heavy, color: WidgetPalette.textPrimary, minScale: 0.78)
++          .widgetText(14.5, .heavy, color: WidgetPalette.textPrimary, minScale: 0.78)
+       }
+-      .frame(height: 22)
++      .frame(height: 20)
+     }
+   }
+@@
+ private struct DashboardMediumNativeView: View {
+@@
+             VStack(alignment: .leading, spacing: 4) {
+               Text("Dashboard")
+-                .widgetText(26, .bold, color: WidgetPalette.textPrimary, minScale: 0.82)
++                .widgetText(24, .bold, color: WidgetPalette.textPrimary, minScale: 0.82)
+               Text("Today")
+-                .widgetText(14, .semibold, color: WidgetPalette.textSecondary, minScale: 0.82)
++                .widgetText(13, .semibold, color: WidgetPalette.textSecondary, minScale: 0.82)
+             }
+             Spacer(minLength: 10)
+             Text("\(progress)%")
+-              .widgetText(26, .heavy, color: WidgetPalette.textPrimary, minScale: 0.78)
++              .widgetText(24, .heavy, color: WidgetPalette.textPrimary, minScale: 0.78)
+           }
+@@
+   private struct MetricChip: View {
+@@
+     var body: some View {
+       VStack(alignment: .leading, spacing: WidgetLayout.gapXS) {
+         Text(label)
+-          .widgetText(13.5, .semibold, color: WidgetPalette.textSecondary, minScale: 0.82)
++          .widgetText(12.5, .semibold, color: WidgetPalette.textSecondary, minScale: 0.82)
+         Text(value)
+-          .widgetText(17, .heavy, color: WidgetPalette.textPrimary, minScale: 0.78)
++          .widgetText(16, .heavy, color: WidgetPalette.textPrimary, minScale: 0.78)
+       }
+-      .padding(.horizontal, 8)
+-      .padding(.vertical, 6)
++      .padding(.horizontal, 7)
++      .padding(.vertical, 5)
+       .frame(maxWidth: .infinity, alignment: .leading)
+       .background(WidgetPalette.cardFill)
+       .overlay(RoundedRectangle(cornerRadius: 18).stroke(WidgetPalette.borderSubtle2, lineWidth: 1))
+       .clipShape(RoundedRectangle(cornerRadius: 18))
+     }
+   }
+@@
+   private struct NextCard: View {
+@@
+     var body: some View {
+       VStack(alignment: .leading, spacing: WidgetLayout.gapS) {
+         Text("Next")
+-          .widgetText(13.5, .semibold, color: WidgetPalette.textSecondary, minScale: 0.82)
++          .widgetText(12.5, .semibold, color: WidgetPalette.textSecondary, minScale: 0.82)
+         Text(text.isEmpty ? "No events" : text)
+-          .widgetText(15, .bold, color: WidgetPalette.textPrimary, minScale: 0.8)
++          .widgetText(14, .bold, color: WidgetPalette.textPrimary, minScale: 0.8)
+       }
+-      .padding(WidgetLayout.cardPaddingS)
++      .padding(4)
+       .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+       .background(WidgetPalette.cardFill2)
+       .overlay(RoundedRectangle(cornerRadius: 18).stroke(WidgetPalette.borderSubtle, lineWidth: 1))
+       .clipShape(RoundedRectangle(cornerRadius: 18))
+     }
+   }
+@@
+ private struct HabitsTableMediumNativeView: View {
+@@
+   var body: some View {
+     WidgetBackground(padding: WidgetLayout.paddingMediumLarge) {
+       GeometryReader { geo in
+@@
+         VStack(alignment: .leading, spacing: WidgetLayout.gapS) {
+           Text("Habits")
+-            .widgetText(23, .heavy, color: WidgetPalette.textPrimary, minScale: 0.8)
++            .widgetText(20.5, .heavy, color: WidgetPalette.textPrimary, minScale: 0.8)
+ 
+           VStack(spacing: WidgetLayout.gapS) {
+             // Header row
+             HStack(spacing: 0) {
+               Text("Habit")
+                 .frame(width: firstCol, alignment: .leading)
+-                .widgetText(12.5, .bold, color: WidgetPalette.textSecondary, minScale: 0.82)
++                .widgetText(11.5, .bold, color: WidgetPalette.textSecondary, minScale: 0.82)
+               ForEach(Array((dayLabels.isEmpty ? ["M","T","W","T","F","S","S"] : dayLabels).prefix(7)).indices, id: \.self) { i in
+                 Text((dayLabels.isEmpty ? ["M","T","W","T","F","S","S"] : dayLabels)[i])
+                   .frame(width: dayCol, alignment: .center)
+-                  .widgetText(12.5, .bold, color: WidgetPalette.textSecondary, minScale: 0.82)
++                  .widgetText(11.5, .bold, color: WidgetPalette.textSecondary, minScale: 0.82)
+               }
+             }
+-            .frame(height: 20)
++            .frame(height: 16)
+ 
+             ForEach(Array(habits.prefix(3).enumerated()), id: \.offset) { idx, name in
+               HStack(spacing: 0) {
+                 Text(name)
+                   .frame(width: firstCol, alignment: .leading)
+-                  .widgetText(14.5, .bold, color: WidgetPalette.textPrimary, minScale: 0.8)
++                  .widgetText(13, .bold, color: WidgetPalette.textPrimary, minScale: 0.8)
+                 ForEach(0..<7, id: \.self) { j in
+                   let state = (idx < states.count && j < states[idx].count) ? states[idx][j] : 0
+                   CircleCell(state: state)
+-                    .frame(width: dayCol, height: 26, alignment: .center)
++                    .frame(width: dayCol, height: 22, alignment: .center)
+                 }
+               }
+-              .frame(height: 26)
++              .frame(height: 22)
+             }
+ 
+             if more > 0 {
+               Text("+\(more) more")
+-                .widgetText(13.5, .semibold, color: WidgetPalette.textSecondary, minScale: 0.82)
++                .widgetText(12, .semibold, color: WidgetPalette.textSecondary, minScale: 0.82)
+             }
+           }
+-          .padding(WidgetLayout.cardPaddingM)
++          .padding(4)
+           .background(WidgetPalette.cardFill2)
+           .overlay(RoundedRectangle(cornerRadius: 22).stroke(WidgetPalette.borderSubtle2, lineWidth: 1))
+           .clipShape(RoundedRectangle(cornerRadius: 22))
+         }
+       }
+     }
+   }
+@@
+     var body: some View {
+-      let size: CGFloat = 15
++      let size: CGFloat = 12
+       let strokeW: CGFloat = 1.6
+       ZStack {
+         if state == 1 {
+           Circle()
+             .fill(WidgetPalette.red)
+*** End Patch

@@ -1,0 +1,17 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/leaderboard/leaderboard_screen.dart
+@@
+       LiquidButton(
+-        label: 'CONNECT_FRIEND',
++        label: language.t('connect_friend'),
+         fullWidth: true,
+         onPressed: _friendsLoading ? null : _openAddFriendDialog,
+       ),
+       const SizedBox(height: 8),
+       LiquidButton(
+-        label: 'INVITE_FRIENDS',
++        label: language.t('invite_friends'),
+         fullWidth: true,
+         onPressed: _friendsLoading ? null : _shareInvite,
+         gradient: const [Color(0xFF3A6CFF), Color(0xFF609BFF)],
+*** End Patch

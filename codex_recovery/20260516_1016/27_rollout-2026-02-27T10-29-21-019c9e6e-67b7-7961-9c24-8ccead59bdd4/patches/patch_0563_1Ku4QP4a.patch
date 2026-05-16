@@ -1,0 +1,82 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/screen_time_manager/family_time_screen.dart
+@@
+                     if (_groups.isEmpty)
+                       _CardSurface(
+                         padding: const EdgeInsets.all(20),
+                         child: Text(
+                           'No groups yet. Create or join one to start using Family Time.',
+@@
+                         ),
+                       )
+                     else
+-                      ..._groups.map((bundle) {
+-                        return Padding(
+-                          padding: const EdgeInsets.only(bottom: 12),
+-                          child: _PressScale(
+-                            onTap: () => _openGroup(bundle),
+-                            scale: 0.98,
+-                            child: Container(
+-                              height: 64,
+-                              padding: const EdgeInsets.symmetric(
+-                                horizontal: 18,
+-                              ),
+-                              decoration: _cardDecoration(),
+-                              child: Row(
+-                                children: [
+-                                  Expanded(
+-                                    child: Text(
+-                                      bundle.group.name,
+-                                      style: AppTypography.body.copyWith(
+-                                        fontSize: 16,
+-                                        fontWeight: FontWeight.w600,
+-                                        color: AppColors.label,
+-                                      ),
+-                                    ),
+-                                  ),
+-                                  Icon(
+-                                    CupertinoIcons.chevron_right,
+-                                    size: 18,
+-                                    color: AppColors.tertiaryLabel,
+-                                  ),
+-                                ],
+-                              ),
+-                            ),
+-                          ),
+-                        );
+-                      }),
++                      for (final bundle in _groups)
++                        Padding(
++                          padding: const EdgeInsets.only(bottom: 12),
++                          child: _PressScale(
++                            onTap: () => _openGroup(bundle),
++                            scale: 0.98,
++                            child: Container(
++                              height: 64,
++                              padding: const EdgeInsets.symmetric(
++                                horizontal: 18,
++                              ),
++                              decoration: _cardDecoration(),
++                              child: Row(
++                                children: [
++                                  Expanded(
++                                    child: Text(
++                                      bundle.group.name,
++                                      style: AppTypography.body.copyWith(
++                                        fontSize: 16,
++                                        fontWeight: FontWeight.w600,
++                                        color: AppColors.label,
++                                      ),
++                                    ),
++                                  ),
++                                  Icon(
++                                    CupertinoIcons.chevron_right,
++                                    size: 18,
++                                    color: AppColors.tertiaryLabel,
++                                  ),
++                                ],
++                              ),
++                            ),
++                          ),
++                        ),
+*** End Patch

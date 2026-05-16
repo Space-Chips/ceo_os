@@ -1,0 +1,79 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/providers/language_overrides.dart
+@@
+-    'database_write_checks': 'VÉRIFICATIONS D'ÉCRITURE BASE DE DONNÉES',
+-    'focus_blocking_active_until_end': 'Blocage actif jusqu'à la fin',
+-    'focus_no_targets_warning': 'Aucune app/aucun site restreint trouvé dans Apps et sites bloqués.\nLe minuteur Focus va démarrer, mais rien ne pourra être bloqué tant que vous n'ajoutez pas de cibles.',
+-    'focus_notice_android_runtime_unavailable': 'Cet environnement n'expose pas actuellement les services de protection Android. Vous pouvez quand même lancer le minuteur focus, mais les apps et sites ne seront pas bloqués ici.',
+-    'focus_notice_android_settings_off': 'Le mode Focus peut bloquer les apps sélectionnées et les sites pris en charge sur cet appareil Android, mais l'Accessibilité ou l'Accès à l'utilisation est désactivé. Réactivez la protection dans les réglages Android, ou continuez avec une session minuteur uniquement.',
+-    'focus_notice_android_timer_only': 'Le mode Focus peut démarrer un minuteur maintenant, mais les apps et sites bloqués resteront disponibles tant que les permissions de protection Android ne sont pas accordées.',
+-    'focus_notice_ios_runtime_unavailable': 'Cet environnement n'expose pas actuellement la protection Apple Screen Time / Family Controls. Vous pouvez quand même lancer le minuteur focus, mais les apps et sites ne seront pas bloqués.',
+-    'focus_notice_ios_settings_off': 'Le mode Focus peut bloquer les apps et sites sur cet iPhone, mais l'accès Screen Time / Family Controls est désactivé. Vous pouvez le réactiver dans Réglages iOS, ou continuer avec une session minuteur uniquement.',
+-    'focus_notice_ios_timer_only': 'Le mode Focus peut démarrer un minuteur maintenant, mais les apps et sites bloqués resteront disponibles tant que l'accès Screen Time / Family Controls n'est pas accordé.',
+-    'focus_prep_demo_body': 'Les apps ciblées deviennent indisponibles jusqu'à la fin du minuteur. La session reste active même si vous quittez WakeApp.',
+-    'focus_prep_intro_body': 'Pendant une session, WakeApp bloque toutes les apps de votre liste de blocage, même celles pour lesquelles il reste du temps d'écran.',
+-    'focus_return_home': 'RETOUR À L'ACCUEIL',
+-    'focus_skip_for_now': 'Passer pour l'instant',
+-    'focus_turn_on_android_access': 'Activer l'accès protection Android',
+-    'focus_turn_on_screen_time_access': 'Activer l'accès Temps d'écran',
+-    'focus_warning_android_access_off': 'L'accès protection Android est actuellement désactivé.\nOuvrez les réglages Android pour rétablir le blocage des apps et sites pris en charge pendant le mode Focus.',
+-    'focus_warning_android_not_enabled': 'L'accès protection Android n'est pas encore activé.\nAutorisez Accessibilité et Accès à l'utilisation pour permettre au mode Focus de bloquer les apps sélectionnées et les sites pris en charge sur cet appareil.',
+-    'focus_warning_android_runtime_unavailable': 'La protection Android est indisponible dans cet environnement.\nLe minuteur focus fonctionne toujours, mais les apps et sites ne peuvent pas être bloqués ici.',
+-    'focus_warning_ios_access_off': 'L'accès Screen Time / Family Controls est actuellement désactivé.\nOuvrez les réglages iOS pour rétablir le blocage des apps et sites pendant le mode Focus.',
+-    'focus_warning_ios_not_enabled': 'L'accès Screen Time / Family Controls n'est pas encore activé.\nAccordez l'accès pour permettre au mode Focus de bloquer les apps et sites sélectionnés sur cet appareil.',
+-    'focus_warning_ios_runtime_unavailable': 'La protection Apple Screen Time est indisponible dans cet environnement.\nLe minuteur focus fonctionne toujours, mais les apps et sites ne peuvent pas être bloqués ici.',
+-    'habits_confirm_goal_deletion_title': 'Confirmer la suppression de l'objectif',
+-    'habits_confirm_habit_deletion_title': 'Confirmer la suppression de l'habitude',
+-    'habits_create_goal_hint': 'Créez votre premier objectif, puis rattachez-y des habitudes dans le formulaire d'habitude.',
+-    'habits_delete_goal_title': 'Supprimer l'objectif ?',
+-    'habits_delete_habit_title': 'Supprimer l'habitude ?',
+-    'habits_goal_name_required': 'Nom de l'objectif (obligatoire)',
++    'database_write_checks': 'VÉRIFICATIONS D\'ÉCRITURE BASE DE DONNÉES',
++    'focus_blocking_active_until_end': 'Blocage actif jusqu\'à la fin',
++    'focus_no_targets_warning':
++        'Aucune app/aucun site restreint trouvé dans Apps et sites bloqués.\nLe minuteur Focus va démarrer, mais rien ne pourra être bloqué tant que vous n\'ajoutez pas de cibles.',
++    'focus_notice_android_runtime_unavailable':
++        'Cet environnement n\'expose pas actuellement les services de protection Android. Vous pouvez quand même lancer le minuteur focus, mais les apps et sites ne seront pas bloqués ici.',
++    'focus_notice_android_settings_off':
++        'Le mode Focus peut bloquer les apps sélectionnées et les sites pris en charge sur cet appareil Android, mais l\'Accessibilité ou l\'Accès à l\'utilisation est désactivé. Réactivez la protection dans les réglages Android, ou continuez avec une session minuteur uniquement.',
++    'focus_notice_android_timer_only':
++        'Le mode Focus peut démarrer un minuteur maintenant, mais les apps et sites bloqués resteront disponibles tant que les permissions de protection Android ne sont pas accordées.',
++    'focus_notice_ios_runtime_unavailable':
++        'Cet environnement n\'expose pas actuellement la protection Apple Screen Time / Family Controls. Vous pouvez quand même lancer le minuteur focus, mais les apps et sites ne seront pas bloqués.',
++    'focus_notice_ios_settings_off':
++        'Le mode Focus peut bloquer les apps et sites sur cet iPhone, mais l\'accès Screen Time / Family Controls est désactivé. Vous pouvez le réactiver dans Réglages iOS, ou continuer avec une session minuteur uniquement.',
++    'focus_notice_ios_timer_only':
++        'Le mode Focus peut démarrer un minuteur maintenant, mais les apps et sites bloqués resteront disponibles tant que l\'accès Screen Time / Family Controls n\'est pas accordé.',
++    'focus_prep_demo_body':
++        'Les apps ciblées deviennent indisponibles jusqu\'à la fin du minuteur. La session reste active même si vous quittez WakeApp.',
++    'focus_prep_intro_body':
++        'Pendant une session, WakeApp bloque toutes les apps de votre liste de blocage, même celles pour lesquelles il reste du temps d\'écran.',
++    'focus_return_home': 'RETOUR À L\'ACCUEIL',
++    'focus_skip_for_now': 'Passer pour l\'instant',
++    'focus_turn_on_android_access': 'Activer l\'accès protection Android',
++    'focus_turn_on_screen_time_access': 'Activer l\'accès Temps d\'écran',
++    'focus_warning_android_access_off':
++        'L\'accès protection Android est actuellement désactivé.\nOuvrez les réglages Android pour rétablir le blocage des apps et sites pris en charge pendant le mode Focus.',
++    'focus_warning_android_not_enabled':
++        'L\'accès protection Android n\'est pas encore activé.\nAutorisez Accessibilité et Accès à l\'utilisation pour permettre au mode Focus de bloquer les apps sélectionnées et les sites pris en charge sur cet appareil.',
++    'focus_warning_android_runtime_unavailable':
++        'La protection Android est indisponible dans cet environnement.\nLe minuteur focus fonctionne toujours, mais les apps et sites ne peuvent pas être bloqués ici.',
++    'focus_warning_ios_access_off':
++        'L\'accès Screen Time / Family Controls est actuellement désactivé.\nOuvrez les réglages iOS pour rétablir le blocage des apps et sites pendant le mode Focus.',
++    'focus_warning_ios_not_enabled':
++        'L\'accès Screen Time / Family Controls n\'est pas encore activé.\nAccordez l\'accès pour permettre au mode Focus de bloquer les apps et sites sélectionnés sur cet appareil.',
++    'focus_warning_ios_runtime_unavailable':
++        'La protection Apple Screen Time est indisponible dans cet environnement.\nLe minuteur focus fonctionne toujours, mais les apps et sites ne peuvent pas être bloqués ici.',
++    'habits_confirm_goal_deletion_title':
++        'Confirmer la suppression de l\'objectif',
++    'habits_confirm_habit_deletion_title':
++        'Confirmer la suppression de l\'habitude',
++    'habits_create_goal_hint':
++        'Créez votre premier objectif, puis rattachez-y des habitudes dans le formulaire d\'habitude.',
++    'habits_delete_goal_title': 'Supprimer l\'objectif ?',
++    'habits_delete_habit_title': 'Supprimer l\'habitude ?',
++    'habits_goal_name_required': 'Nom de l\'objectif (obligatoire)',
+@@
+-    'habits_sanction_placeholder': 'Sanction en cas d'échec',
++    'habits_sanction_placeholder': 'Sanction en cas d\'échec',
+*** End Patch

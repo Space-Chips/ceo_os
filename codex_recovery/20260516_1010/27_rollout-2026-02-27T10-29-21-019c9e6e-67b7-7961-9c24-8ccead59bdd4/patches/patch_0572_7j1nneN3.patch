@@ -1,0 +1,135 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/home/home_screen.dart
+@@
+ class _TopShortcutsBar extends StatelessWidget {
+@@
+   Widget build(BuildContext context) {
+     return Row(
+       children: [
+         _ShortcutCircle(
+           onTap: onOpenMenu,
+           icon: CupertinoIcons.person_fill,
+           iconColor: AppColors.secondaryLabel,
++          gradientColors: AppColors.floatingGlassGradient,
+         ),
+         const SizedBox(width: 10),
+         _ShortcutPill(
+           onTap: onOpenRank,
+           label: rankName,
+           textColor: AppColors.warning,
+         ),
+         const SizedBox(width: 10),
+         _ShortcutCircle(
+           onTap: onOpenFocus,
+           icon: CupertinoIcons.bolt_fill,
+-          iconColor: AppColors.focusPrimary,
+-          glowColor: AppColors.focusPrimary.withValues(alpha: 0.22),
++          iconColor: CupertinoColors.white,
++          gradientColors: const [Color(0xFFFF8E5A), Color(0xFFFF664B)],
++          glowColor: const Color(0x55FF8A5B),
+         ),
+         const SizedBox(width: 10),
+         _ShortcutCircle(
+           onTap: onOpenNotes,
+           icon: CupertinoIcons.doc_text_fill,
+-          iconColor: AppColors.accent,
+-          glowColor: AppColors.accent.withValues(alpha: 0.22),
++          iconColor: CupertinoColors.white,
++          gradientColors: const [Color(0xFF8E63FF), Color(0xFFB05CFF)],
++          glowColor: const Color(0x558E63FF),
+         ),
+         const SizedBox(width: 10),
+         _StreakPill(
+@@
+ class _ShortcutPill extends StatelessWidget {
+@@
+   Widget build(BuildContext context) {
+-    return Expanded(
+-      child: _InteractiveLift(
+-        onTap: onTap,
+-        borderRadius: 18,
+-        glowColor: AppColors.edgeGlowSoft,
+-        hoverScale: 1.01,
+-        pressedScale: 1.02,
+-        child: Container(
+-          height: 48,
+-          decoration: BoxDecoration(
+-            borderRadius: BorderRadius.circular(18),
+-            gradient: LinearGradient(
+-              begin: Alignment.topCenter,
+-              end: Alignment.bottomCenter,
+-              colors: [AppColors.cardRaised, AppColors.cardBase],
+-            ),
+-            border: Border.all(color: AppColors.borderStrong, width: 1),
+-          ),
+-          alignment: Alignment.center,
+-          child: Text(
+-            label,
+-            maxLines: 1,
+-            overflow: TextOverflow.ellipsis,
+-            style: AppTypography.callout.copyWith(
+-              fontSize: 13,
+-              fontWeight: FontWeight.w700,
+-              color: textColor,
++    return Expanded(
++      child: _InteractiveLift(
++        onTap: onTap,
++        borderRadius: 18,
++        glowColor: AppColors.edgeGlowSoft,
++        hoverScale: 1.01,
++        pressedScale: 1.02,
++        child: Container(
++          height: 48,
++          padding: const EdgeInsets.symmetric(horizontal: 16),
++          decoration: BoxDecoration(
++            borderRadius: BorderRadius.circular(18),
++            gradient: LinearGradient(
++              begin: Alignment.topCenter,
++              end: Alignment.bottomCenter,
++              colors: [AppColors.cardRaised, AppColors.cardBase],
+             ),
++            border: Border.all(color: AppColors.borderStrong, width: 1),
+           ),
++          alignment: Alignment.centerLeft,
++          child: Text(
++            label,
++            maxLines: 1,
++            overflow: TextOverflow.ellipsis,
++            style: AppTypography.callout.copyWith(
++              fontSize: 13,
++              fontWeight: FontWeight.w700,
++              color: textColor,
++            ),
++          ),
+         ),
+       ),
+     );
+@@
+ class _ShortcutCircle extends StatelessWidget {
+   final VoidCallback onTap;
+   final IconData icon;
+   final Color iconColor;
++  final List<Color> gradientColors;
+   final Color? glowColor;
+ 
+   const _ShortcutCircle({
+     required this.onTap,
+     required this.icon,
+     required this.iconColor,
++    required this.gradientColors,
+     this.glowColor,
+   });
+@@
+         width: 48,
+         height: 48,
+         decoration: BoxDecoration(
+           shape: BoxShape.circle,
+           gradient: LinearGradient(
+             begin: Alignment.topLeft,
+             end: Alignment.bottomRight,
+-            colors: AppColors.floatingGlassGradient,
++            colors: gradientColors,
+           ),
+           border: Border.all(color: AppColors.borderStrong, width: 1),
+           boxShadow: [
+*** End Patch

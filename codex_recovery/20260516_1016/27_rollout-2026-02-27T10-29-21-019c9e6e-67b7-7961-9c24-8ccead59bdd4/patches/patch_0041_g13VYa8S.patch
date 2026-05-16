@@ -1,0 +1,9 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/ios/CeoWidgets/CeoWidgetsControl.swift
+@@
+         StaticControlConfiguration(
+-            kind: "com.example.ceoCompass.CeoWidgets",
++            kind: "com.example.ceocompass.timo.ceowidgets.control",
+             provider: Provider()
+         ) { value in
+*** End Patch

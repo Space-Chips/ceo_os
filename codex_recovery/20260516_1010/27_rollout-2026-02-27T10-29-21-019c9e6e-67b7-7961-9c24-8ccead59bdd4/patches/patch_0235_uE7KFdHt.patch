@@ -1,0 +1,15 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/main.dart
+@@
+ import 'core/providers/task_provider.dart';
+ import 'core/providers/habit_provider.dart';
+ import 'core/providers/focus_provider.dart';
++import 'core/providers/ceo_mode_provider.dart';
+ import 'core/providers/language_provider.dart';
+@@
+         ChangeNotifierProvider(create: (_) => TaskProvider()),
+         ChangeNotifierProvider(create: (_) => HabitProvider()),
+         ChangeNotifierProvider(create: (_) => FocusProvider()),
++        ChangeNotifierProvider(create: (_) => CeoModeProvider()),
+       ],
+*** End Patch

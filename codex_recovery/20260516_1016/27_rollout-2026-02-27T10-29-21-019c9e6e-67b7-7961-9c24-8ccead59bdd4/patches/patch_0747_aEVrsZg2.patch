@@ -1,0 +1,22 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/home/stats_screen.dart
+@@
+ class _TodayCard extends StatelessWidget {
+   final TodayShareCard card;
++  final int score;
+ 
+-  const _TodayCard({required this.card});
++  const _TodayCard({required this.card, required this.score});
+@@
+           Text(
+-            '${card.attentionScore}/100',
++            '$score/100',
+             style: AppTypography.title1.copyWith(fontWeight: FontWeight.w700),
+           ),
+@@
+           Text(
+-            '${card.attentionDelta >= 0 ? '+' : ''}${card.attentionDelta.toStringAsFixed(0)} attention',
++            '${card.attentionDelta >= 0 ? '+' : ''}${card.attentionDelta.toStringAsFixed(0)} discipline',
+             style: AppTypography.title3.copyWith(fontWeight: FontWeight.w700),
+           ),
+*** End Patch

@@ -1,0 +1,12 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/ios/FocusActivityMonitor/Info.plist
+@@
+-	<key>CFBundleShortVersionString</key>
+-	<string>1.0</string>
+-	<key>CFBundleVersion</key>
+-	<string>1</string>
++	<key>CFBundleShortVersionString</key>
++	<string>$(MARKETING_VERSION)</string>
++	<key>CFBundleVersion</key>
++	<string>$(CURRENT_PROJECT_VERSION)</string>
+*** End Patch

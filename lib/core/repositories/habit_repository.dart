@@ -2,6 +2,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/intl.dart';
 import '../models/habit_models.dart';
 import '../services/supabase_service.dart';
+import '../utils/app_logger.dart';
 
 class HabitRepository {
   final SupabaseService _supabaseService;
@@ -23,7 +24,7 @@ class HabitRepository {
 
       return (response as List).map((data) => Habit.fromJson(data)).toList();
     } catch (e) {
-      print('Error getting habits: $e');
+      AppLogger.error('Error getting habits.', e);
       return [];
     }
   }
@@ -86,14 +87,25 @@ class HabitRepository {
 
       return habit;
     } catch (e) {
-      print('Error creating habit: $e');
+      AppLogger.error('Error creating habit.', e);
       return null;
     }
   }
 
   Future<void> archiveHabit(String habitId) async {
-    await _client.from('habits').update({'archived': true}).eq('id', habitId);
+    await _client
+        .from('habits')
+        .update({'archived': true})
+        .eq('id', habitId)
+        .eq('created_by', _currentUserId);
   }
+
+  Future<void> deleteHabit(String habitId) async {
+    await archiveHabit(habitId);
+  }
+
+
+
 
   Future<List<HabitCompletion>> getCompletionsForHabit(String habitId) async {
     try {
@@ -108,7 +120,7 @@ class HabitRepository {
           .map((data) => HabitCompletion.fromJson(data))
           .toList();
     } catch (e) {
-      print('Error getting completions: $e');
+      AppLogger.error('Error getting completions.', e);
       return [];
     }
   }
@@ -137,7 +149,7 @@ class HabitRepository {
           .map((data) => HabitCompletion.fromJson(data))
           .toList();
     } catch (e) {
-      print('Error getting completions for date: $e');
+      AppLogger.error('Error getting completions for date.', e);
       return [];
     }
   }
@@ -161,7 +173,7 @@ class HabitRepository {
           .map((data) => HabitCompletion.fromJson(data))
           .toList();
     } catch (e) {
-      print('Error getting completions range: $e');
+      AppLogger.error('Error getting completions range.', e);
       return [];
     }
   }
@@ -179,6 +191,7 @@ class HabitRepository {
         .from('habit_completions')
         .select()
         .eq('habit_id', habitId)
+        .eq('created_by', _currentUserId)
         .eq('date', dateStr)
         .maybeSingle();
 
@@ -192,7 +205,8 @@ class HabitRepository {
             'state': amount
                 ?.toString(), // Use state to store the amount if needed
           })
-          .eq('id', existing['id']);
+          .eq('id', existing['id'])
+          .eq('created_by', _currentUserId);
     } else {
       // Insert
       await _client.from('habit_completions').insert({
@@ -242,7 +256,8 @@ class HabitRepository {
               ? DateTime.now().toIso8601String()
               : null,
         })
-        .eq('id', existing['id']);
+        .eq('id', existing['id'])
+        .eq('created_by', _currentUserId);
   }
 
   // --- Habit Logs (Diary) ---
@@ -258,7 +273,7 @@ class HabitRepository {
 
       return (response as List).map((data) => HabitLog.fromJson(data)).toList();
     } catch (e) {
-      print('Error getting habit logs: $e');
+      AppLogger.error('Error getting habit logs.', e);
       return [];
     }
   }

@@ -1,0 +1,24 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/repositories/feature_repository.dart
+@@
+-  Future<void> createNote(String title, String content) async {
+-    await _client.from('notes').insert({
+-      'created_by': _currentUserId,
+-      'title': title,
+-      'content': content,
+-      'updated_date': DateTime.now().toIso8601String(),
+-    });
++  Future<String> createNote(String title, String content) async {
++    final inserted = await _client
++        .from('notes')
++        .insert({
++          'created_by': _currentUserId,
++          'title': title,
++          'content': content,
++          'updated_date': DateTime.now().toIso8601String(),
++        })
++        .select('id')
++        .single();
++    return inserted['id'] as String;
+   }
+*** End Patch

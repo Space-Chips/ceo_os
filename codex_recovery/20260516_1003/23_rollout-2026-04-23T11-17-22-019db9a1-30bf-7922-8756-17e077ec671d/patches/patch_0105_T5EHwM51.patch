@@ -1,0 +1,12 @@
+*** Begin Patch
+*** Update File: lib/features/focus/focus_starter_sheet.dart
+@@
+   @override
+   Widget build(BuildContext context) {
++    context.watch<LanguageProvider>().languageCode;
+     final focusProv = context.read<FocusProvider>();
+     final taskProv = context.read<TaskProvider>();
+     final activeTasks = taskProv.tasks.where((t) => !t.completed).toList();
+ 
+     return BackdropFilter(
+*** End Patch

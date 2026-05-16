@@ -1,0 +1,14 @@
+*** Begin Patch
+*** Update File: lib/core/widgets/home_widgets/widget_views.dart
+@@
+           _WidgetHeader(
+             title: title,
+             subtitle:
+                 '${language.t('today')} · $completed/$total ${language.t('widget_completed')}',
++            titleStyle: WidgetDesignTokens.section.copyWith(
++              fontSize: 12,
++              letterSpacing: 1.1,
++              color: AppColors.secondaryLabel.withValues(alpha: 0.78),
++            ),
+           ),
+*** End Patch

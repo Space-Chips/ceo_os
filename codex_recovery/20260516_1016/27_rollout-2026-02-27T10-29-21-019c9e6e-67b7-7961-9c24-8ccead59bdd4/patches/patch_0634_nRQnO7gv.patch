@@ -1,0 +1,14 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/components/ambient_backdrop.dart
+@@
+         Positioned.fill(
+           child: IgnorePointer(
+             child: CustomPaint(
+               painter: _BackdropNoisePainter(
+-                strength: AppColors.isDark ? 0.013 : 0.009,
+                 strength: AppColors.isDark ? 0.013 : 0.007,
+               ),
+             ),
+           ),
+         ),
+*** End Patch

@@ -1,0 +1,46 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/ios/FocusActivityMonitor/FocusActivityMonitorExtension.swift
+@@
+     private func normalizedDomains(_ domains: [String]) -> [String] {
+         domains
+             .map { $0.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() }
+             .filter { !$0.isEmpty }
+     }
++
++    private func domainCandidates(for normalizedDomain: String) -> [String] {
++        var candidates: [String] = [normalizedDomain]
++        if normalizedDomain.hasPrefix("www.") {
++            let stripped = String(normalizedDomain.dropFirst(4))
++            if !stripped.isEmpty {
++                candidates.append(stripped)
++            }
++        } else {
++            candidates.append("www.\(normalizedDomain)")
++        }
++        var deduped: [String] = []
++        for domain in candidates where !domain.isEmpty && !deduped.contains(domain) {
++            deduped.append(domain)
++        }
++        return deduped
++    }
++
++    private func webDomainToken(from normalizedDomain: String) -> WebDomainToken? {
++        for candidate in domainCandidates(for: normalizedDomain) {
++            if let token = WebDomain(domain: candidate).token {
++                return token
++            }
++        }
++        return nil
++    }
+ 
+     private func webDomainTokens(from domains: [String]) -> Set<WebDomainToken> {
+         var tokens = Set<WebDomainToken>()
+         for domain in normalizedDomains(domains) {
+-            if let token = WebDomain(domain: domain).token {
++            if let token = webDomainToken(from: domain) {
+                 tokens.insert(token)
+             }
+         }
+         return tokens
+     }
+*** End Patch

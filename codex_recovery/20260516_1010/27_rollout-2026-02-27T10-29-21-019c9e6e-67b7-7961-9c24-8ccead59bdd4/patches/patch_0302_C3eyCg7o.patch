@@ -1,0 +1,11 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/ios/Runner.xcodeproj/project.pbxproj
+@@
+ /* Begin PBXTargetDependency section */
++			61CBCB7B69E447D481CE0C9B /* PBXTargetDependency */ = {
++				isa = PBXTargetDependency;
++				target = 84C0EEF5E0064471B8DD0227 /* FocusActivityMonitorExtension */;
++				targetProxy = 1EB7A90D866B4BBD97051971 /* PBXContainerItemProxy */;
++			};
+ 			331C8086294A63A400263BE5 /* PBXTargetDependency */ = {
+*** End Patch

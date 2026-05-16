@@ -1,0 +1,17 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/screen_time_setup/screen_time_setup_screen.dart
+@@
+-class _ProgressPill extends StatelessWidget {
++class _ProgressPill extends StatelessWidget {
++  final String label;
++
++  const _ProgressPill({required this.label});
++
+   @override
+   Widget build(BuildContext context) {
+@@
+       child: Text(
+-        'Screen Time setup',
++        label,
+         style: AppTypography.caption1.copyWith(
+*** End Patch

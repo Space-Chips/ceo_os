@@ -1,0 +1,14 @@
+*** Begin Patch
+*** Update File: android/app/src/main/kotlin/com/wakeapp/ceoos/BlockingAccessibilityService.kt
+@@
+     override fun onDestroy() {
+         super.onDestroy()
+         instance = null
+@@
+         prefsListener = null
+         serviceScope.cancel()
+-        appBlockingOverlay.hide()
++        appBlockingOverlay.detach()
+         gateShownForPackage = null
+     }
+*** End Patch

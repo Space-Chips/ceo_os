@@ -1,0 +1,64 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/components/floating_add_button.dart
+@@
+         decoration: BoxDecoration(
+           gradient: LinearGradient(
+             begin: Alignment.topLeft,
+             end: Alignment.bottomRight,
+             colors: [AppColors.primaryOrange, AppColors.accentSecondary],
+           ),
+           shape: BoxShape.circle,
+           border: Border.all(
+-            color: AppColors.glassHighlight.withValues(alpha: 0.34),
+-            width: 0.9,
++            color: AppColors.glassHighlight.withValues(alpha: 0.42),
++            width: 1.0,
+           ),
+           boxShadow: [
++            BoxShadow(
++              color: AppColors.glassHighlightSoft.withValues(alpha: 0.12),
++              blurRadius: 12,
++              offset: const Offset(0, -3),
++              spreadRadius: -10,
++            ),
+             BoxShadow(
+-              color: AppColors.primaryOrange.withValues(alpha: 0.35),
+-              blurRadius: 18,
+-              offset: const Offset(0, 10),
+-              spreadRadius: -8,
++              color: AppColors.primaryOrange.withValues(alpha: 0.42),
++              blurRadius: 24,
++              offset: const Offset(0, 12),
++              spreadRadius: -6,
+             ),
+           ],
+         ),
+-        child: Icon(CupertinoIcons.plus, color: AppColors.onAccent, size: 32),
++        child: Stack(
++          children: [
++            Positioned(
++              top: 2,
++              left: 10,
++              right: 10,
++              child: Container(
++                height: 1.2,
++                decoration: BoxDecoration(
++                  borderRadius: BorderRadius.circular(999),
++                  color: AppColors.glassHighlight.withValues(alpha: 0.36),
++                ),
++              ),
++            ),
++            Center(
++              child: Icon(
++                CupertinoIcons.plus,
++                color: AppColors.onAccent,
++                size: 32,
++              ),
++            ),
++          ],
++        ),
+       ),
+     );
+   }
+ }
+*** End Patch

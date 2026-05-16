@@ -1,0 +1,13 @@
+*** Begin Patch
+*** Update File: android/app/src/main/kotlin/com/wakeapp/ceoos/BlockingAccessibilityService.kt
+@@
+         fun onBlockGateHidden() {
+             instance?.gateLauncher?.onGateHidden()
++            instance?.shield?.hide()
+         }
+ 
+         fun onBlockGateVisible() {
+             // Keep hook for lifecycle parity with BlockGateActivity.
++            instance?.shield?.hide()
+         }
+*** End Patch

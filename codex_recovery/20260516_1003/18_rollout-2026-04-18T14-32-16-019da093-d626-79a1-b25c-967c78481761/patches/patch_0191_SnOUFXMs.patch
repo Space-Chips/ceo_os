@@ -1,0 +1,17 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/setup/setup_flow_screen.dart
+@@
+ class _SetupLoadingScreen extends StatelessWidget {
+   const _SetupLoadingScreen();
+ 
+   @override
+   Widget build(BuildContext context) {
++    final t = context.read<LanguageProvider>().t;
+     return AmbientBackdrop(
+       child: Scaffold(
+@@
+                 Text(
+-                  'Preparing setup…',
++                  t('setup_preparing'),
+                   style: AppTypography.body.copyWith(
+*** End Patch

@@ -1,0 +1,20 @@
+*** Begin Patch
+*** Update File: lib/features/debug/widget_gallery_screen.dart
+@@
+           const SizedBox(height: 16),
+-          _PreviewBoxMedium(
+-            title: 'Habits Table (Medium)',
+-            child: HabitsTableWidgetRectangularView(
+-              language: language,
+-              habits: sampleHabits,
+-              days: days,
+-              completionsDone: const {},
+-              completionsFailed: const {},
+-            ),
+-          ),
+         ],
+       ),
+     );
+   }
+ }
+*** End Patch

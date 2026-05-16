@@ -1,0 +1,73 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/theme/app_typography.dart
+@@
+ import 'dart:ui';
+ import 'package:flutter/cupertino.dart';
+ import 'package:flutter/material.dart';
+ import 'package:google_fonts/google_fonts.dart';
+ import 'app_colors.dart';
++import '../providers/theme_provider.dart';
++import 'theme_catalog.dart';
+ 
+-/// CEO OS Typography — Sleek, modern, and monochromatic.
+-/// Uses Space Grotesk for display and Inter for body.
+-/// JetBrains Mono for utility/modern flair.
++/// Dynamic typography bound to the active theme preset.
+ class AppTypography {
+   AppTypography._();
+ 
+-  static TextStyle get _displayBase =>
+-      GoogleFonts.spaceGrotesk(color: AppColors.label, letterSpacing: -0.5);
++  static AppTypographyProfile get _profile => ThemeProvider().currentTypography;
+ 
+-  static TextStyle get _bodyBase =>
+-      GoogleFonts.inter(color: AppColors.label);
++  static TextStyle _displayFont({
++    required Color color,
++    required double letterSpacing,
++  }) {
++    switch (_profile) {
++      case AppTypographyProfile.technical:
++        return GoogleFonts.exo2(color: color, letterSpacing: letterSpacing);
++      case AppTypographyProfile.editorial:
++        return GoogleFonts.sora(color: color, letterSpacing: letterSpacing);
++      case AppTypographyProfile.neo:
++        return GoogleFonts.spaceGrotesk(
++          color: color,
++          letterSpacing: letterSpacing,
++        );
++    }
++  }
+ 
+-  static TextStyle get mono => GoogleFonts.jetBrainsMono(
+-    color: AppColors.label,
+-  );
++  static TextStyle _bodyFont({required Color color}) {
++    switch (_profile) {
++      case AppTypographyProfile.technical:
++        return GoogleFonts.ibmPlexSans(color: color);
++      case AppTypographyProfile.editorial:
++        return GoogleFonts.manrope(color: color);
++      case AppTypographyProfile.neo:
++        return GoogleFonts.inter(color: color);
++    }
++  }
++
++  static TextStyle _monoFont({required Color color}) {
++    switch (_profile) {
++      case AppTypographyProfile.technical:
++        return GoogleFonts.spaceMono(color: color);
++      case AppTypographyProfile.editorial:
++        return GoogleFonts.ibmPlexMono(color: color);
++      case AppTypographyProfile.neo:
++        return GoogleFonts.jetBrainsMono(color: color);
++    }
++  }
++
++  static TextStyle get _displayBase =>
++      _displayFont(color: AppColors.label, letterSpacing: -0.5);
++
++  static TextStyle get _bodyBase => _bodyFont(color: AppColors.label);
++
++  static TextStyle get mono => _monoFont(color: AppColors.label);
+*** End Patch

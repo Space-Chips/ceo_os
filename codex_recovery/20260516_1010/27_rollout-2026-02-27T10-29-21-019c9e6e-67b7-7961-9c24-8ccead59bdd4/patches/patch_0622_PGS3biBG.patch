@@ -1,0 +1,8 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/theme/app_colors.dart
+@@
+   static Color get border => ThemeRuntime.preset.semantic.cardBorder;
+   static Color get borderStrong => ThemeRuntime.preset.semantic.cardBorderStrong;
++  static Color get cardBorder => border;
++  static Color get cardBorderStrong => borderStrong;
+*** End Patch

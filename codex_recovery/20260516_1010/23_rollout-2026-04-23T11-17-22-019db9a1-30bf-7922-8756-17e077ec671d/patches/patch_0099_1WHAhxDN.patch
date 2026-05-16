@@ -1,0 +1,10 @@
+*** Begin Patch
+*** Update File: lib/core/providers/language_overrides.dart
+@@
+     'screen_time_website_picker_unavailable':
+         'Selector de sitios web no disponible',
+-    'screen_time_no_website_selected': 'Ningún sitio web seleccionado',
+ 
+     // Calendar
+     'calendar_schedule_title': 'Agenda',
+*** End Patch

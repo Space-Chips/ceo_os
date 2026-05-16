@@ -1,0 +1,13 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/supabase_rank_bronze_requirement_update.sql
+@@
+-  if v_points >= 1500 then
+-    v_rank_level := 6; v_rank_name := 'Immortal';
+-  elsif v_points >= 1000 then
++  if v_points >= 2200 then
++    v_rank_level := 7; v_rank_name := 'Awakened';
++  elsif v_points >= 1500 then
++    v_rank_level := 6; v_rank_name := 'Immortal';
++  elsif v_points >= 1000 then
+     v_rank_level := 5; v_rank_name := 'Diamond';
+*** End Patch

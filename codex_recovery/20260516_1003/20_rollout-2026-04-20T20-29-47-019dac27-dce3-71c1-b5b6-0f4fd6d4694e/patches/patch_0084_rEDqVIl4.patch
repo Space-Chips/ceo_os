@@ -1,0 +1,30 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/android/app/src/main/kotlin/com/wakeapp/ceoos/BlockGateActivity.kt
+@@
+     private lateinit var subtitleView: TextView
+     private lateinit var homeLabel: TextView
+     private lateinit var primaryButton: TextView
+     private var primaryAction: String = "go_home"
++    private var blockedType: String? = null
++    private var blockedPackageName: String? = null
++    private var blockedDomain: String? = null
+@@
+     private fun goHome() {
+         isVisible = false
+-        BlockingAccessibilityService.navigateHomeFromBlockGate()
++        BlockingAccessibilityService.navigateHomeFromBlockGate(
++            blockType = blockedType,
++            browserPackage = blockedPackageName,
++            blockedDomain = blockedDomain,
++        )
+         finish()
+         overridePendingTransition(0, 0)
+     }
+@@
+     private fun applyIntent(intent: Intent?) {
++        blockedType = intent?.getStringExtra(EXTRA_BLOCK_TYPE)?.trim()?.ifEmpty { null }
++        blockedPackageName = intent?.getStringExtra(EXTRA_PACKAGE_NAME)?.trim()?.ifEmpty { null }
++        blockedDomain = intent?.getStringExtra(EXTRA_DOMAIN)?.trim()?.ifEmpty { null }
+         kickerView.text = intent?.getStringExtra(EXTRA_KICKER)?.uppercase() ?: "BLOCKED"
+         titleView.text = intent?.getStringExtra(EXTRA_TITLE) ?: "This app is blocked"
+*** End Patch

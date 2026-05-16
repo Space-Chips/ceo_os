@@ -1,0 +1,147 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/screen_time_manager/screen_time_manager_screen.dart
+@@
+ import 'package:flutter/foundation.dart';
+ import 'package:flutter/cupertino.dart';
+@@
+ class _ScreenTimeManagerScreenState extends State<ScreenTimeManagerScreen> {
+@@
+   bool _privateUsageSummaryAvailable = false;
+   bool _loading = true;
++
++  bool get _isAndroid =>
++      !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
+@@
+                 Text(
+-                  'Screen Time',
++                  _isAndroid ? 'Focus Protection' : 'Screen Time',
+                   style: AppTypography.callout.copyWith(
+*** Update File: /Users/timo/ceo_os/lib/features/focus/focus_screen.dart
+@@
++import 'package:flutter/foundation.dart';
+ import 'package:flutter/cupertino.dart';
+ import 'package:flutter/material.dart' show TimeOfDay;
+@@
+ class _FocusScreenState extends State<FocusScreen> {
+@@
+   WinStreak? _streak;
+   bool _loading = true;
++
++  bool get _isAndroid =>
++      !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
+@@
+   Future<bool?> _showProtectionNotice(FocusProvider provider) {
+     final status = provider.protectionStatus;
+     final title = status.isSupported
+-        ? (status.shouldOpenSettings
+-              ? 'Turn On Screen Time Access'
+-              : 'Blocking Not Active Yet')
++        ? (status.shouldOpenSettings
++              ? (_isAndroid
++                    ? 'Turn On Android Protection Access'
++                    : 'Turn On Screen Time Access')
++              : 'Blocking Not Active Yet')
+         : 'Blocking Unavailable Here';
+     final message = status.isSupported
+-        ? (status.shouldOpenSettings
+-              ? 'Focus Mode can block apps and websites on this iPhone, but Screen Time / Family Controls access is currently off. You can re-enable it in iOS Settings, or continue with a timer-only session.'
+-              : 'Focus Mode can still start a timer right now, but blocked apps and websites will remain available until Screen Time / Family Controls access is granted.')
+-        : 'This runtime does not currently expose Apple Screen Time / Family Controls protection. You can still run the focus timer, but apps and websites will not be blocked.';
++        ? (status.shouldOpenSettings
++              ? (_isAndroid
++                    ? 'Focus Mode can block selected apps and supported websites on this Android device, but Accessibility, Usage Access, or overlay permission is currently off. Re-enable protection in Android settings, or continue with a timer-only session.'
++                    : 'Focus Mode can block apps and websites on this iPhone, but Screen Time / Family Controls access is currently off. You can re-enable it in iOS Settings, or continue with a timer-only session.')
++              : (_isAndroid
++                    ? 'Focus Mode can still start a timer right now, but blocked apps and supported websites will remain available until Android protection permissions are granted.'
++                    : 'Focus Mode can still start a timer right now, but blocked apps and websites will remain available until Screen Time / Family Controls access is granted.'))
++        : (_isAndroid
++              ? 'This runtime does not currently expose Android protection services. You can still run the focus timer, but apps and websites will not be blocked here.'
++              : 'This runtime does not currently expose Apple Screen Time / Family Controls protection. You can still run the focus timer, but apps and websites will not be blocked.');
+@@
+   String _protectionWarningMessage(FocusProvider provider) {
+     final status = provider.protectionStatus;
+     if (!status.isSupported) {
+-      return 'Apple Screen Time protection is unavailable on this runtime.\nThe focus timer still works, but apps and websites cannot be blocked here.';
++      return _isAndroid
++          ? 'Android protection is unavailable on this runtime.\nThe focus timer still works, but apps and websites cannot be blocked here.'
++          : 'Apple Screen Time protection is unavailable on this runtime.\nThe focus timer still works, but apps and websites cannot be blocked here.';
+     }
+     if (status.shouldOpenSettings) {
+-      return 'Screen Time / Family Controls access is currently off.\nOpen iOS Settings to restore blocked apps and websites during Focus Mode.';
++      return _isAndroid
++          ? 'Android protection access is currently off.\nOpen Android settings to restore blocked apps and supported websites during Focus Mode.'
++          : 'Screen Time / Family Controls access is currently off.\nOpen iOS Settings to restore blocked apps and websites during Focus Mode.';
+     }
+-    return 'Screen Time / Family Controls access is not enabled yet.\nGrant access to let Focus Mode block selected apps and websites on this device.';
++    return _isAndroid
++        ? 'Android protection access is not enabled yet.\nGrant Accessibility, Usage Access, and overlay permission to let Focus Mode block selected apps and supported websites on this device.'
++        : 'Screen Time / Family Controls access is not enabled yet.\nGrant access to let Focus Mode block selected apps and websites on this device.';
+   }
+@@
+-        _header(title: 'Screen Time', showHome: true),
++        _header(title: _isAndroid ? 'Focus Protection' : 'Screen Time', showHome: true),
+*** Update File: /Users/timo/ceo_os/lib/features/ceo_mode/ceo_mode_screen.dart
+@@
++import 'package:flutter/foundation.dart';
+ import 'package:flutter/cupertino.dart';
+ import 'package:flutter/services.dart';
+@@
+ class _CeoModeScreenState extends State<CeoModeScreen> {
+@@
+   static const List<int> _durationOptions = [
+@@
+   ];
++
++  bool get _isAndroid =>
++      !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
+@@
+       final (title, message) = switch (issue) {
+         'block_list' => (
+           'Block List Required',
+           'Choose at least one blocked app or category before starting CEO Mode so the session can be enforced.',
+         ),
+         'permissions_denied' => (
+-          'Turn On Screen Time Access',
+-          'CEO Mode can enforce blocking on this iPhone, but Screen Time / Family Controls access is currently off. Re-enable it in iOS Settings before starting a protected session.',
++          _isAndroid ? 'Turn On Android Protection Access' : 'Turn On Screen Time Access',
++          _isAndroid
++              ? 'CEO Mode can enforce blocking on this Android device, but Accessibility, Usage Access, or overlay permission is currently off. Re-enable Android protection access before starting a protected session.'
++              : 'CEO Mode can enforce blocking on this iPhone, but Screen Time / Family Controls access is currently off. Re-enable it in iOS Settings before starting a protected session.',
+         ),
+         'unsupported' => (
+           'Unsupported Runtime',
+-          'This build does not currently expose Apple Screen Time / Family Controls protection, so CEO Mode cannot enforce the session here.',
++          _isAndroid
++              ? 'This build does not currently expose the Android protection services required for CEO Mode, so the session cannot be enforced here.'
++              : 'This build does not currently expose Apple Screen Time / Family Controls protection, so CEO Mode cannot enforce the session here.',
+         ),
+         _ => (
+           'Setup Required',
+-          'Enable Screen Time / Family Controls permissions to enforce CEO Mode protections.',
++          _isAndroid
++              ? 'Enable Android protection permissions to enforce CEO Mode protections.'
++              : 'Enable Screen Time / Family Controls permissions to enforce CEO Mode protections.',
+         ),
+       };
+@@
+     if (provider.isAuthorized) {
+       return 'Protection access granted';
+     }
+     if (!status.isSupported) {
+-      return 'Apple Screen Time protection is unavailable on this runtime';
++      return _isAndroid
++          ? 'Android protection is unavailable on this runtime'
++          : 'Apple Screen Time protection is unavailable on this runtime';
+     }
+     if (status.shouldOpenSettings) {
+-      return 'Screen Time access is off. Re-enable it in iOS Settings for enforced CEO Mode';
++      return _isAndroid
++          ? 'Android protection access is off. Re-enable it in Android settings for enforced CEO Mode'
++          : 'Screen Time access is off. Re-enable it in iOS Settings for enforced CEO Mode';
+     }
+-    return 'Grant Screen Time permissions to enable protected CEO Mode sessions';
++    return _isAndroid
++        ? 'Grant Android protection permissions to enable protected CEO Mode sessions'
++        : 'Grant Screen Time permissions to enable protected CEO Mode sessions';
+   }
+*** End Patch

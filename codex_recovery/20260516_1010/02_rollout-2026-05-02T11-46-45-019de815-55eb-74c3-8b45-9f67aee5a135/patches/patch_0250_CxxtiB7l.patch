@@ -1,0 +1,75 @@
+*** Begin Patch
+*** Add File: supabase/functions/grant-beta-premium/index.ts
++import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
++
++const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
++const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
++const anonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
++
++// Secret gate to avoid turning this into a public premium toggle.
++// Set in Supabase Function env vars.
++const betaKey = Deno.env.get('TESTFLIGHT_BETA_PREMIUM_KEY') ?? '';
++
++if (!supabaseUrl || !serviceRoleKey || !anonKey) {
++  throw new Error('Supabase environment is missing required keys.');
++}
++
++const admin = createClient(supabaseUrl, serviceRoleKey, {
++  auth: { persistSession: false },
++});
++
++Deno.serve(async (request) => {
++  if (request.method !== 'POST') {
++    return new Response('Method not allowed', { status: 405 });
++  }
++
++  if (!betaKey) {
++    return new Response('Beta key missing', { status: 403 });
++  }
++
++  const provided = request.headers.get('x-beta-premium-key') ?? '';
++  if (provided !== betaKey) {
++    return new Response('Unauthorized', { status: 401 });
++  }
++
++  const authorization = request.headers.get('authorization');
++  if (!authorization) {
++    return new Response('Missing authorization header', { status: 401 });
++  }
++
++  const userClient = createClient(supabaseUrl, anonKey, {
++    auth: { persistSession: false },
++    global: { headers: { Authorization: authorization } },
++  });
++
++  const {
++    data: { user },
++    error: userError,
++  } = await userClient.auth.getUser();
++
++  if (userError || !user) {
++    return new Response('Unauthorized', { status: 401 });
++  }
++
++  // Keep it renewable & reversible: short-ish expiry, extended on each call.
++  const now = new Date();
++  const expiresAt = new Date(now.getTime() + 1000 * 60 * 60 * 24 * 30); // 30 days
++
++  const { error } = await admin.from('user_entitlements').upsert(
++    {
++      created_by: user.id,
++      premium_override: true,
++      premium_override_reason: 'testflight',
++      premium_override_expires_at: expiresAt.toISOString(),
++    },
++    { onConflict: 'created_by' },
++  );
++
++  if (error) {
++    return Response.json({ ok: false, error: error.message }, { status: 500 });
++  }
++
++  return Response.json({ ok: true, expires_at: expiresAt.toISOString() });
++});
++
+*** End Patch

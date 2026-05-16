@@ -1,0 +1,206 @@
+*** Begin Patch
+*** Update File: lib/core/widgets/home_widgets/widget_views.dart
+@@
+ class FocusWidgetSquareView extends StatelessWidget {
+   final LanguageProvider language;
+   final int durationMinutes;
+@@
+   @override
+   Widget build(BuildContext context) {
+     return WidgetRoot(
+       padding: WidgetDesignTokens.padSquare,
+       decorationOverride: BoxDecoration(
+         borderRadius: BorderRadius.circular(WidgetDesignTokens.radiusOuter),
+         gradient: WidgetDesignTokens.focusGradient,
+         border: Border.all(
+           color: AppColors.borderStrong.withValues(alpha: 0.85),
+           width: 1,
+         ),
+       ),
+       child: Column(
+         crossAxisAlignment: CrossAxisAlignment.start,
+         children: [
+-          Text('Focus', style: WidgetDesignTokens.title.copyWith(fontSize: 22)),
+-          const SizedBox(height: 10),
+-          Expanded(
+-            child: WidgetActionButton(
+-              icon: CupertinoIcons.play_fill,
+-              title: language.t('widget_start_focus'),
+-              subtitle: 'Start session',
+-              variant: WidgetActionVariant.focus,
+-              prominentValue: '$durationMinutes min',
+-            ),
+-          ),
++          Text(
++            'Focus',
++            maxLines: 1,
++            overflow: TextOverflow.ellipsis,
++            style: WidgetDesignTokens.title.copyWith(fontSize: 22),
++          ),
++          const Spacer(),
++          Center(
++            child: FractionallySizedBox(
++              widthFactor: 0.78,
++              child: _ActionPill(
++                icon: CupertinoIcons.play_fill,
++                title: 'Start',
++                subtitle: '$durationMinutes min',
++                variant: WidgetActionVariant.focus,
++              ),
++            ),
++          ),
++          const Spacer(),
+         ],
+       ),
+     );
+   }
+ }
+@@
+ class BlackoutWidgetSquareView extends StatelessWidget {
+   final LanguageProvider language;
+   final int durationMinutes;
+@@
+   @override
+   Widget build(BuildContext context) {
+     final hours = durationMinutes ~/ 60;
+     final label = hours >= 1 ? '$hours h' : '$durationMinutes min';
+     return WidgetRoot(
+       padding: WidgetDesignTokens.padSquare,
+       decorationOverride: BoxDecoration(
+         borderRadius: BorderRadius.circular(WidgetDesignTokens.radiusOuter),
+         gradient: WidgetDesignTokens.blackoutGradient,
+         border: Border.all(
+           color: AppColors.borderStrong.withValues(alpha: 0.85),
+           width: 1,
+         ),
+       ),
+       child: Column(
+         crossAxisAlignment: CrossAxisAlignment.start,
+         children: [
+-          Text(
+-            'Blackout',
+-            style: WidgetDesignTokens.title.copyWith(fontSize: 22),
+-          ),
+-          const SizedBox(height: 10),
+-          Expanded(
+-            child: WidgetActionButton(
+-              icon: CupertinoIcons.lock_fill,
+-              title: language.t('widget_start_blackout'),
+-              subtitle: 'Start session',
+-              variant: WidgetActionVariant.blackout,
+-              prominentValue: label,
+-            ),
+-          ),
++          Text(
++            'Blackout',
++            maxLines: 1,
++            overflow: TextOverflow.ellipsis,
++            style: WidgetDesignTokens.title.copyWith(fontSize: 22),
++          ),
++          const Spacer(),
++          Center(
++            child: FractionallySizedBox(
++              widthFactor: 0.78,
++              child: _ActionPill(
++                icon: CupertinoIcons.lock_fill,
++                title: 'Start',
++                subtitle: label,
++                variant: WidgetActionVariant.blackout,
++              ),
++            ),
++          ),
++          const Spacer(),
+         ],
+       ),
+     );
+   }
+ }
++
++class _ActionPill extends StatelessWidget {
++  final IconData icon;
++  final String title;
++  final String subtitle;
++  final WidgetActionVariant variant;
++
++  const _ActionPill({
++    required this.icon,
++    required this.title,
++    required this.subtitle,
++    required this.variant,
++  });
++
++  @override
++  Widget build(BuildContext context) {
++    final accent = variant == WidgetActionVariant.focus
++        ? AppColors.accent
++        : AppColors.error;
++    return Container(
++      height: 66,
++      padding: const EdgeInsets.symmetric(horizontal: 14),
++      decoration: BoxDecoration(
++        borderRadius: BorderRadius.circular(22),
++        color: Color.alphaBlend(
++          accent.withValues(alpha: 0.14),
++          const Color(0xFF12141A),
++        ),
++        border: Border.all(color: accent.withValues(alpha: 0.28)),
++        boxShadow: [
++          BoxShadow(
++            color: accent.withValues(alpha: 0.14),
++            blurRadius: 18,
++            offset: const Offset(0, 10),
++            spreadRadius: -10,
++          ),
++        ],
++      ),
++      child: Row(
++        children: [
++          Container(
++            width: 38,
++            height: 38,
++            decoration: BoxDecoration(
++              borderRadius: BorderRadius.circular(14),
++              color: accent.withValues(alpha: 0.18),
++              border: Border.all(color: accent.withValues(alpha: 0.28)),
++            ),
++            alignment: Alignment.center,
++            child: Icon(icon, size: 18, color: accent.withValues(alpha: 0.95)),
++          ),
++          const SizedBox(width: 12),
++          Expanded(
++            child: Column(
++              mainAxisAlignment: MainAxisAlignment.center,
++              crossAxisAlignment: CrossAxisAlignment.start,
++              children: [
++                Text(
++                  title,
++                  maxLines: 1,
++                  overflow: TextOverflow.ellipsis,
++                  style: AppTypography.callout.copyWith(
++                    fontSize: 16,
++                    fontWeight: FontWeight.w800,
++                    color: WidgetDesignTokens.primaryText,
++                    height: 1,
++                  ),
++                ),
++                const SizedBox(height: 4),
++                Text(
++                  subtitle,
++                  maxLines: 1,
++                  overflow: TextOverflow.ellipsis,
++                  style: AppTypography.caption1.copyWith(
++                    fontSize: 14,
++                    fontWeight: FontWeight.w700,
++                    color: WidgetDesignTokens.secondaryText,
++                    height: 1,
++                  ),
++                ),
++              ],
++            ),
++          ),
++        ],
++      ),
++    );
++  }
++}
+*** End Patch

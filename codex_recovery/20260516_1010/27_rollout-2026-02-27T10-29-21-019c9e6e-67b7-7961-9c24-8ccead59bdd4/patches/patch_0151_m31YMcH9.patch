@@ -1,0 +1,50 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/leaderboard/leaderboard_screen.dart
+@@
+   Future<void> _saveFriend(String email, String? name) async {
++    final language = context.read<LanguageProvider>();
+     setState(() => _friendsLoading = true);
+     try {
+       await _repository.upsertFriendConnection(
+         friendEmail: email,
+         friendName: name,
+       );
+       await _loadFriendsOnly();
+       await _showNotice(
+-        context.read<LanguageProvider>().t('friend_connected'),
+-        context.read<LanguageProvider>().t('friend_connected_message'),
++        language.t('friend_connected'),
++        language.t('friend_connected_message'),
+       );
+     } catch (e) {
+       if (!mounted) return;
+       setState(() => _friendsLoading = false);
+       await _showNotice(
+-        context.read<LanguageProvider>().t('connection_failed'),
++        language.t('connection_failed'),
+         _friendErrorMessage(e),
+       );
+     }
+   }
+@@
+   Future<void> _shareInvite() async {
++    final language = context.read<LanguageProvider>();
+     final inviter = _myUserId ?? 'invite';
+     final appStoreUrl = 'https://apps.apple.com/app/id123456789?ref=$inviter';
+     final message =
+         'Join me on CEO Compass to track habits, focus sessions, and leaderboard progress. $appStoreUrl';
+     await Clipboard.setData(ClipboardData(text: message));
+     await _showNotice(
+-      context.read<LanguageProvider>().t('invite_ready'),
+-      context.read<LanguageProvider>().t('invitation_copied'),
++      language.t('invite_ready'),
++      language.t('invitation_copied'),
+     );
+   }
+@@
+   Widget _buildGlobalRow(_RankedEntry row, int rank) {
++    final language = context.watch<LanguageProvider>();
+     final entry = row.entry;
+     final mine = _myUserId != null && entry.createdBy == _myUserId;
+     final rankAccent = _rankAccentColor(rank);
+*** End Patch

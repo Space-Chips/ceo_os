@@ -1,0 +1,11 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/packages/path_provider_foundation/darwin/path_provider_foundation/Sources/path_provider_foundation/PathProviderPlugin.swift
+@@
+ public class PathProviderPlugin: NSObject, FlutterPlugin, PathProviderApi {
+-  public static func register(with registrar: FlutterPluginRegistrar) {
++  public static func register(with registrar: FlutterPluginRegistrar?) {
++    guard let registrar else {
++      return
++    }
+     let instance = PathProviderPlugin()
+*** End Patch

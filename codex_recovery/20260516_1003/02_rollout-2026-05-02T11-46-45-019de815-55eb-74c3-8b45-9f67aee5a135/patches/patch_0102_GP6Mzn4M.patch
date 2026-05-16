@@ -1,0 +1,16 @@
+*** Begin Patch
+*** Update File: ios/CeoWidgets/CeoHomeWidget.swift
+@@
+ private extension View {
+   @ViewBuilder
+   func applyWidgetBackground() -> some View {
+     if #available(iOSApplicationExtension 17.0, *) {
+-      self.containerBackground(.fill.tertiary, for: .widget)
++      self.containerBackground(Color.black, for: .widget)
+     } else {
+-      self.padding()
++      self.background(Color.black)
+     }
+   }
+ }
+*** End Patch

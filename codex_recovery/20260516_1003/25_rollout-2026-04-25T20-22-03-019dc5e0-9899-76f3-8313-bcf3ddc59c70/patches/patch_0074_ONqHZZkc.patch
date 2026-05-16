@@ -1,0 +1,29 @@
+*** Begin Patch
+*** Update File: lib/features/control_center_setup/control_center_setup_screen.dart
+@@
+-  Future<void> _finish(BuildContext context) async {
++  Future<void> _finish() async {
+     await _viewModel.completeSetup();
+     if (!mounted) return;
+     context.go('/home');
+   }
+ 
+-  Future<void> _openAndroidPermissions(BuildContext context) async {
++  Future<void> _openAndroidPermissions() async {
+     final setup = context.read<SetupFlowController>();
+     await setup.initialize();
+-    if (!context.mounted) return;
++    if (!mounted) return;
+     context.push('/setup?origin=screen-time');
+   }
+@@
+       case SetupStep.permissions:
+         return PermissionsScreen(
+           state: state,
+           isPersisting: viewModel.isPersisting,
+-          onOpenAndroidPermissions: () => _openAndroidPermissions(context),
+-          onFinish: () => _finish(context),
++          onOpenAndroidPermissions: _openAndroidPermissions,
++          onFinish: _finish,
+         );
+*** End Patch

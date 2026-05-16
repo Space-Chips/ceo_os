@@ -1,0 +1,109 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/calendar/calendar_screen.dart
+@@
+ class _CalendarScreenState extends State<CalendarScreen> {
+   final HabitRepository _habitRepository = HabitRepository();
+@@
+   DateTime _focusedDay = DateTime.now();
+   DateTime? _selectedDay;
+   _CalendarTab _activeTab = _CalendarTab.calendar;
++  int _tabDirection = -1;
+@@
+   Future<void> _loadAll() async {
+@@
+   void _showAddEvent() {
+@@
+   }
++
++  void _setCalendarTab(_CalendarTab tab) {
++    if (tab == _activeTab) return;
++    final direction = tab.index > _activeTab.index ? -1 : 1;
++    setState(() {
++      _tabDirection = direction;
++      _activeTab = tab;
++    });
++  }
+@@
+-      child: SafeArea(
+-        child: Consumer<TaskProvider>(
+-          builder: (context, provider, _) {
++      child: AmbientBackdrop(
++        child: SafeArea(
++          child: Consumer<TaskProvider>(
++            builder: (context, provider, _) {
+@@
+-                if (velocity < -300 && _activeTab == _CalendarTab.calendar) {
+-                  setState(() => _activeTab = _CalendarTab.intelligence);
++                if (velocity < -300 && _activeTab == _CalendarTab.calendar) {
++                  _setCalendarTab(_CalendarTab.intelligence);
+                 } else if (velocity > 300 &&
+                     _activeTab == _CalendarTab.intelligence) {
+-                  setState(() => _activeTab = _CalendarTab.calendar);
++                  _setCalendarTab(_CalendarTab.calendar);
+                 }
+               },
+@@
+-                      onValueChanged: (value) {
+-                        if (value == null) return;
+-                        setState(() => _activeTab = value);
+-                      },
++                      onValueChanged: (value) {
++                        if (value == null) return;
++                        _setCalendarTab(value);
++                      },
+                     ),
+                   ),
+                   const SizedBox(height: 12),
+@@
+-                  if (_activeTab == _CalendarTab.calendar) ...[
+-                    _buildCalendarSection(provider, dayEvents),
+-                  ] else ...[
+-                    _buildIntelligenceSection(
+-                      overloadInfo: overloadInfo,
+-                      focusSuggestion: focusSuggestion,
+-                      freeTime: freeTime,
+-                      habitConflict: habitConflict,
+-                      weekAnalysis: weekAnalysis,
++                  AnimatedSwitcher(
++                    duration: const Duration(milliseconds: 260),
++                    switchInCurve: Curves.easeOutCubic,
++                    switchOutCurve: Curves.easeInCubic,
++                    transitionBuilder: (child, animation) {
++                      final begin = _tabDirection < 0
++                          ? const Offset(0.16, 0)
++                          : const Offset(-0.16, 0);
++                      final slide = Tween<Offset>(
++                        begin: begin,
++                        end: Offset.zero,
++                      ).animate(animation);
++                      return FadeTransition(
++                        opacity: animation,
++                        child: SlideTransition(position: slide, child: child),
++                      );
++                    },
++                    child: Container(
++                      key: ValueKey(_activeTab),
++                      child: _activeTab == _CalendarTab.calendar
++                          ? _buildCalendarSection(provider, dayEvents)
++                          : _buildIntelligenceSection(
++                              overloadInfo: overloadInfo,
++                              focusSuggestion: focusSuggestion,
++                              freeTime: freeTime,
++                              habitConflict: habitConflict,
++                              weekAnalysis: weekAnalysis,
++                            ),
+                     ),
+-                  ],
++                  ),
+                 ],
+               ),
+-            );
+-          },
++            );
++            },
++          ),
+         ),
+       ),
+     );
+   }
+*** End Patch

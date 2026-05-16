@@ -1,0 +1,13 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/android/app/src/main/kotlin/com/wakeapp/ceoos/blocking/BlockStateCache.kt
+@@
+         if (current.blackoutEnabled && !current.blackoutAllowedPackages.contains(packageName)) {
+             return CachedBlockDecision(true, BlockReason.BLACKOUT_SESSION, "blackout")
+         }
++        if (current.focusEnabled && current.focusBlockedPackages.contains(packageName)) {
++            return CachedBlockDecision(true, BlockReason.FOCUS_SESSION, "focus")
++        }
+         if (current.exceededPackages.contains(packageName)) {
+             return CachedBlockDecision(true, BlockReason.CLASSIC_LIMIT_REACHED, "daily_limit")
+         }
+*** End Patch

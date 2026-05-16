@@ -1,0 +1,49 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/ios/Runner/AppDelegate.swift
+@@
+ import SwiftUI
+ import UserNotifications
++import ObjectiveC.runtime
+@@
+ @main
+ @objc class AppDelegate: FlutterAppDelegate {
++  private static var flutterTouchRateNoopBlock: AnyObject?
++  private var didInstallFlutterVSyncCrashWorkaround = false
++
++  private func installFlutterIOS26VSyncCrashWorkaroundIfNeeded() {
++    guard #available(iOS 26.0, *) else { return }
++    guard !didInstallFlutterVSyncCrashWorkaround else { return }
++
++    guard let flutterViewControllerClass = NSClassFromString("FlutterViewController") else {
++      NSLog("[iOS26-VSync] FlutterViewController class not found; skip workaround")
++      return
++    }
++
++    let selector = NSSelectorFromString("createTouchRateCorrectionVSyncClientIfNeeded")
++    guard let targetMethod = class_getInstanceMethod(flutterViewControllerClass, selector) else {
++      NSLog("[iOS26-VSync] target method missing; skip workaround")
++      return
++    }
++
++    let noopBlock: @convention(block) (AnyObject) -> Void = { _ in
++      // Intentionally no-op on iOS 26+ to avoid Flutter VSyncClient startup crash.
++    }
++    let blockObject = unsafeBitCast(noopBlock, to: AnyObject.self)
++    Self.flutterTouchRateNoopBlock = blockObject
++    let noopIMP = imp_implementationWithBlock(blockObject)
++    method_setImplementation(targetMethod, noopIMP)
++
++    didInstallFlutterVSyncCrashWorkaround = true
++    NSLog("[iOS26-VSync] installed touch-rate correction workaround")
++  }
++
+   private func registerPlugin(_ name: String, action: (FlutterPluginRegistrar) -> Void) {
+@@
+   ) -> Bool {
+     
+     print("WakeApp Native Launching...")
++    installFlutterIOS26VSyncCrashWorkaroundIfNeeded()
+     if #available(iOS 26.0, *) {
+       registerPluginsDeterministically()
+     } else {
+*** End Patch

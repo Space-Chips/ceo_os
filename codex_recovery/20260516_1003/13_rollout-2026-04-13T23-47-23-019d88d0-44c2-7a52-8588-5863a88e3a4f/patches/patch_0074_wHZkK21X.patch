@@ -1,0 +1,31 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/profile/profile_screen.dart
+@@
+           ],
+           Expanded(
+-            child: Text(
+-              label,
+-              style: AppTypography.callout.copyWith(
+-                fontSize: 13,
+-                color: isDanger ? AppColors.error : AppColors.label,
+-                fontWeight: FontWeight.w500,
++            child: SizedBox(
++              height: 18,
++              child: FittedBox(
++                alignment: Alignment.centerLeft,
++                fit: BoxFit.scaleDown,
++                child: Text(
++                  label,
++                  maxLines: 1,
++                  overflow: TextOverflow.ellipsis,
++                  softWrap: false,
++                  style: AppTypography.callout.copyWith(
++                    fontSize: 13,
++                    color: isDanger ? AppColors.error : AppColors.label,
++                    fontWeight: FontWeight.w500,
++                  ),
++                ),
+               ),
+             ),
+           ),
+*** End Patch

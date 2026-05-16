@@ -1,0 +1,19 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/screen_time_manager/screen_time_manager_screen.dart
+@@
+           radius: 22,
+           borderColor: AppColors.isDark
+               ? (AppColors.isCarbonSystem
+-                    ? AppColors.focusControlAccent.withValues(alpha: 0.44)
++                    ? AppColors.focusControlAccent.withValues(alpha: 0.62)
+                     : AppColors.activeBorder)
+               : AppColors.selectionOutline.withValues(alpha: 0.98),
+@@
+                     border: Border.all(
+                       color: AppColors.isCarbonSystem
+-                          ? AppColors.focusControlAccent.withValues(alpha: 0.52)
++                          ? AppColors.focusControlAccent.withValues(alpha: 0.66)
+                           : AppColors.activeBorder,
+                       width: 1,
+                     ),
+*** End Patch

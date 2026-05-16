@@ -1,0 +1,160 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/providers/focus_provider.dart
+@@
+   Future<bool> startFocus() async {
+@@
+     _state = FocusState.focusing;
+     _remainingSeconds = focusDurationMinutes * 60;
+     _isFocusModeActive = true;
+     _sessionStartTime = DateTime.now();
+-
+-    // _syncToNative handles both SharedPreferences and the active shield if focusing
+-    await _syncToNative();
++    _focusExitReadyAt = null;
++    await _applyFocusShieldOverrideFromBlockedAppsSites();
+ 
+     _startTimer();
+@@
+   void stopFocus() {
++    unawaited(_endSessionEarly());
++  }
++
++  Future<void> _endSessionEarly() async {
+     if (_sessionStartTime != null) {
+       final elapsed = DateTime.now().difference(_sessionStartTime!).inMinutes;
+       if (elapsed > 0) {
+         unawaited(
+           _statsEngine.recordFocusSessionBroken(elapsedMinutes: elapsed),
+@@
+     }
+     _logSession(completed: false);
+-    _focusService.stopShield();
+-    reset();
++    await _resetAfterSession();
+   }
+ 
+   void requestBreak() {
+-    if (_state != FocusState.focusing) return;
+-    final now = DateTime.now();
+-    _lastBreakAttempts.removeWhere((d) => now.difference(d).inHours >= 2);
+-    final waitSec = 5 + (_lastBreakAttempts.length * 15);
+-    _lastBreakAttempts.add(now);
+-    _state = FocusState.requestingBreak;
+-    _waitRemainingSeconds = waitSec;
+-    _startWaitTimer();
+-    notifyListeners();
++    // Pauses are intentionally disabled in Focus Mode.
++    return;
+   }
+ 
+   void cancelBreakRequest() {
+-    _waitTimer?.cancel();
+-    _state = FocusState.focusing;
+-    notifyListeners();
++    // Pauses are intentionally disabled in Focus Mode.
++    return;
+   }
+@@
+   void takeCustomBreak(int minutes) {
+-    _logSession(completed: true);
+-    _state = FocusState.shortBreak;
+-    _remainingSeconds = minutes * 60;
+-    _isFocusModeActive = false;
+-    _focusService.stopShield();
+-    _startTimer();
+-    notifyListeners();
++    // Pauses are intentionally disabled in Focus Mode.
++    return;
++  }
++
++  void requestEarlyExit() {
++    if (_state != FocusState.focusing) return;
++    _state = FocusState.exitPending;
++    _focusExitReadyAt = DateTime.now().add(
++      const Duration(seconds: _focusExitCountdownSeconds),
++    );
++    notifyListeners();
++  }
++
++  void returnToSession() {
++    if (_state != FocusState.exitPending) return;
++    _state = FocusState.focusing;
++    _focusExitReadyAt = null;
++    notifyListeners();
++  }
++
++  Future<void> finalizeEarlyExit() async {
++    if (!canFinalizeEarlyExit) return;
++    await _endSessionEarly();
+   }
+@@
+   void cancelBlocking() {
+-    stopFocus();
++    requestEarlyExit();
+   }
+ 
+   void reset() {
+     _timer?.cancel();
+     _waitTimer?.cancel();
+     _state = FocusState.idle;
+     _isFocusModeActive = false;
+-    _focusService.stopShield();
++    _focusExitReadyAt = null;
+     _remainingSeconds = focusDurationMinutes * 60;
+     notifyListeners();
+   }
+@@
+   void _startTimer() {
+     _timer?.cancel();
+     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+       if (_remainingSeconds > 0) {
+         _remainingSeconds--;
+         notifyListeners();
+       } else {
+         timer.cancel();
+-        _onTimerComplete();
++        unawaited(_onTimerComplete());
+       }
+     });
+   }
+ 
+-  void _onTimerComplete() {
+-    if (_state == FocusState.focusing) {
++  Future<void> _onTimerComplete() async {
++    if (_endingSession) return;
++    if (_state == FocusState.focusing || _state == FocusState.exitPending) {
++      _endingSession = true;
+       _logSession(completed: true);
+       _completedSessions++;
+       _totalFocusMinutesToday += focusDurationMinutes;
+@@
+       unawaited(
+         _statsEngine.recordProductiveTime(minutes: focusDurationMinutes),
+       );
+-      _isFocusModeActive = false;
+-      _focusService.stopShield();
+-
+-      if (_completedSessions % sessionsBeforeLongBreak == 0) {
+-        _state = FocusState.longBreak;
+-        _remainingSeconds = longBreakMinutes * 60;
+-      } else {
+-        _state = FocusState.shortBreak;
+-        _remainingSeconds = shortBreakMinutes * 60;
+-      }
+-      if (autoStartBreaks) _startTimer();
++      await _resetAfterSession();
++      _endingSession = false;
+     } else {
+       startFocus();
+     }
+     notifyListeners();
+   }
+@@
+       durationMinutes: duration,
+-      blockListId: _activeBlockListId,
++      blockListId: null,
+       completed: completed,
+     );
+     _sessionStartTime = null;
+   }
+*** End Patch

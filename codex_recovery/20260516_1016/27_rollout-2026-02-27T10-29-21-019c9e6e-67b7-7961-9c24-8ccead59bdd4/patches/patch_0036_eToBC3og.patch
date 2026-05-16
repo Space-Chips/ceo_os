@@ -1,0 +1,8 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/screen_time_manager/screen_time_manager_screen.dart
+@@
+                                       focus.activeBlockListId == null
+                                           ? 'Tap to configure your first list'
+-                                          : '${blockedTargets} targets protected',
++                                          : '$blockedTargets targets protected',
+*** End Patch

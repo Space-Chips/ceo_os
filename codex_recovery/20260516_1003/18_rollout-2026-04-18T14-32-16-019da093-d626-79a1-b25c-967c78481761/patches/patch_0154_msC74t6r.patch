@@ -1,0 +1,85 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/habits/habits_screen.dart
+@@
+   @override
+   Widget build(BuildContext context) {
++    final language = context.watch<LanguageProvider>();
+     return Consumer<HabitProvider>(
+@@
+                       NeoMonoText(
+-                        'NO_GOALS',
++                        language.t('no_goals'),
+@@
+                       Text(
+-                        'Create your first goal, then attach habits in the habit form.',
++                        language.t('habits_create_goal_hint'),
+@@
+                           if (linkedHabits.isEmpty)
+                             Text(
+-                              'No habits attached yet.',
++                              language.t('habits_no_attached_habits'),
+@@
+                         child: Text(
+-                          'WEEK CONTRACT',
++                          language.t('habits_week_contract'),
+@@
+                     Text(
+-                      'CONTRACT COMMITTED FOR THIS WEEK',
++                      language.t('habits_contract_committed'),
+@@
+                           child: _contractPill(
+-                            label: 'Reward',
++                            label: language.t('habits_reward'),
+                             value: _rewardCtrl.text.trim().isNotEmpty
+                                 ? _rewardCtrl.text.trim()
+-                                : 'Not set',
++                                : language.t('not_set'),
+                             positive: true,
+                           ),
+@@
+                           child: _contractPill(
+-                            label: 'Sanction',
++                            label: language.t('habits_sanction'),
+                             value: _sanctionCtrl.text.trim().isNotEmpty
+                                 ? _sanctionCtrl.text.trim()
+-                                : 'Not set',
++                                : language.t('not_set'),
+                             positive: false,
+                           ),
+@@
+                     Text(
+-                      'Threshold $_threshold% • Locked until next week',
++                      language
++                          .t('habits_threshold_locked')
++                          .replaceAll('{threshold}', _threshold.toString()),
+@@
+                       child: Text(
+-                        'UNLOCK_EDIT',
++                        language.t('habits_unlock_edit'),
+@@
+                     _contractTextField(
+                       controller: _rewardCtrl,
+-                      placeholder: 'Reward if successful',
++                      placeholder: language.t('habits_reward_placeholder'),
+                     ),
+@@
+                     _contractTextField(
+                       controller: _sanctionCtrl,
+-                      placeholder: 'Sanction if failed',
++                      placeholder: language.t('habits_sanction_placeholder'),
+                     ),
+@@
+                         Text(
+-                          'THRESHOLD',
++                          language.t('habits_threshold'),
+@@
+                     Text(
+-                      'Locked after commitment for the current week.',
++                      language.t('habits_locked_after_commitment'),
+@@
+                     _CommitContractButton(
+-                      label: _saving ? 'Saving...' : 'Commit Contract',
++                      label: _saving
++                          ? language.t('saving')
++                          : language.t('habits_commit_contract'),
+*** End Patch

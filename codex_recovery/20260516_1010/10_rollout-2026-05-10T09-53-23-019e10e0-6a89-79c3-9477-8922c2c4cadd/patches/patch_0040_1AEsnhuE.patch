@@ -1,0 +1,15 @@
+*** Begin Patch
+*** Update File: lib/features/premium/upgrade_screen.dart
+@@
+                     child: PremiumPaywallContent(
+                       runtime: runtime,
+                       message: premiumMessageForReason(
+                         'upgrade',
+                         languageCode: languageCode,
+                       ),
+                       reason: 'upgrade',
+                       isFr: isFr,
+-                      showRestoreButton: false,
+                     ),
+                   ),
+*** End Patch

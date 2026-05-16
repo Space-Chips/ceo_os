@@ -1,0 +1,128 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/focus/focus_screen.dart
+@@
+   Widget _miniStat({
+@@
+       ),
+     );
+   }
+ }
++
++class _FocusPressScale extends StatefulWidget {
++  final Widget child;
++  final VoidCallback onTap;
++  final double scaleWhenPressed;
++
++  const _FocusPressScale({
++    required this.child,
++    required this.onTap,
++    this.scaleWhenPressed = 1.01,
++  });
++
++  @override
++  State<_FocusPressScale> createState() => _FocusPressScaleState();
++}
++
++class _FocusPressScaleState extends State<_FocusPressScale> {
++  bool _pressed = false;
++
++  void _setPressed(bool value) {
++    if (!mounted || _pressed == value) return;
++    setState(() => _pressed = value);
++  }
++
++  @override
++  Widget build(BuildContext context) {
++    return Listener(
++      onPointerDown: (_) => _setPressed(true),
++      onPointerUp: (_) => _setPressed(false),
++      onPointerCancel: (_) => _setPressed(false),
++      child: AnimatedScale(
++        scale: _pressed ? widget.scaleWhenPressed : 1,
++        duration: const Duration(milliseconds: 120),
++        curve: Curves.easeOutCubic,
++        child: GestureDetector(
++          behavior: HitTestBehavior.translucent,
++          onTap: widget.onTap,
++          child: widget.child,
++        ),
++      ),
++    );
++  }
++}
++
++class _FocusPrimaryButton extends StatelessWidget {
++  final String label;
++  final VoidCallback onTap;
++
++  const _FocusPrimaryButton({required this.label, required this.onTap});
++
++  @override
++  Widget build(BuildContext context) {
++    return _FocusPressScale(
++      onTap: onTap,
++      scaleWhenPressed: 0.97,
++      child: Container(
++        width: double.infinity,
++        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
++        decoration: BoxDecoration(
++          gradient: const LinearGradient(
++            begin: Alignment.topCenter,
++            end: Alignment.bottomCenter,
++            colors: [Color(0xFFE5E5E5), Color(0xFFCFCFCF)],
++          ),
++          borderRadius: BorderRadius.circular(18),
++          border: Border.all(
++            color: AppColors.white.withValues(alpha: 0.14),
++            width: 1,
++          ),
++        ),
++        child: Text(
++          label,
++          textAlign: TextAlign.center,
++          style: AppTypography.callout.copyWith(
++            fontSize: 16,
++            fontWeight: FontWeight.w600,
++            color: AppColors.background,
++          ),
++        ),
++      ),
++    );
++  }
++}
++
++class _FocusSecondaryButton extends StatelessWidget {
++  final String label;
++  final VoidCallback onTap;
++
++  const _FocusSecondaryButton({required this.label, required this.onTap});
++
++  @override
++  Widget build(BuildContext context) {
++    return _FocusPressScale(
++      onTap: onTap,
++      child: Container(
++        width: double.infinity,
++        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
++        decoration: BoxDecoration(
++          color: AppColors.white.withValues(alpha: 0.04),
++          borderRadius: BorderRadius.circular(16),
++          border: Border.all(
++            color: AppColors.white.withValues(alpha: 0.08),
++            width: 1,
++          ),
++        ),
++        child: Text(
++          label,
++          textAlign: TextAlign.center,
++          style: AppTypography.callout.copyWith(
++            fontSize: 15,
++            fontWeight: FontWeight.w600,
++            color: AppColors.label,
++          ),
++        ),
++      ),
++    );
++  }
++}
+*** End Patch

@@ -1,0 +1,200 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/extractor.py
+@@
+ from datetime import datetime
+ from collections import defaultdict
++
++MISSING = object()
+@@
+ def parse_codex_patch(patch_text):
+@@
+         elif line.startswith("*** Delete File:"):
+             if current_op:
+                 current_op["raw_lines"] = current_lines
+                 operations.append(current_op)
+             filepath = line[len("*** Delete File:"):].strip()
+             current_op = {"action": "delete", "path": filepath}
+             current_lines = []
++        elif line.startswith("*** Move to:"):
++            if current_op and current_op["action"] == "update":
++                current_op["move_to"] = line[len("*** Move to:"):].strip()
+         else:
+             current_lines.append(line)
+@@
+-        if line.strip() == "@@":
++        if line.startswith("@@"):
+             if current_hunk:
+                 hunks.append(current_hunk)
+             current_hunk = []
+@@
+ def apply_codex_patch_to_file(op, repo_path: Path):
+@@
+-    filepath = repo_path / op["path"]
++    filepath = resolve_patch_path(repo_path, op["path"])
+ 
+     if op["action"] == "delete":
+         if filepath.exists():
+             filepath.unlink()
+-            return True, f"Deleted {op['path']}"
+-        return True, f"Already absent: {op['path']}"
++            return True, f"Deleted {display_patch_path(repo_path, filepath)}"
++        return True, f"Already absent: {display_patch_path(repo_path, filepath)}"
+ 
+     if op["action"] == "add":
++        if filepath.exists() and filepath.read_text(encoding="utf-8") == op["content"]:
++            return True, f"Already exists: {display_patch_path(repo_path, filepath)}"
+         filepath.parent.mkdir(parents=True, exist_ok=True)
+         filepath.write_text(op["content"], encoding="utf-8")
+-        return True, f"Created {op['path']}"
++        return True, f"Created {display_patch_path(repo_path, filepath)}"
+ 
+     if op["action"] == "update":
++        move_to = op.get("move_to")
++        destination = resolve_patch_path(repo_path, move_to) if move_to else None
++
++        # If a previous recovery already moved the file, continue from the
++        # destination rather than failing on the old source path.
++        if not filepath.exists() and destination and destination.exists():
++            filepath = destination
++
+         if not filepath.exists():
+             return False, f"File not found for update: {op['path']}"
+ 
+@@
+             if match_start is None:
+                 # Try fuzzy match (strip whitespace)
+                 match_start = _find_sequence_fuzzy(file_lines, expected_sequence)
+ 
++            # Build replacement lines
++            replacement = []
++            for ptype, ptext in hunk_parts:
++                if ptype == "context":
++                    replacement.append(ptext)
++                elif ptype == "add":
++                    replacement.append(ptext)
++                # 'remove' lines are omitted
++
+             if match_start is None:
+-                return False, f"Cannot locate hunk context in {op['path']}"
+-
+-            # Build replacement lines
+-            replacement = []
+-            for ptype, ptext in hunk_parts:
+-                if ptype == "context":
+-                    replacement.append(ptext)
+-                elif ptype == "add":
+-                    replacement.append(ptext)
+-                # 'remove' lines are omitted
++                already_applied_at = _find_sequence(file_lines, replacement)
++                if already_applied_at is None:
++                    already_applied_at = _find_sequence_fuzzy(file_lines, replacement)
++                if already_applied_at is not None:
++                    continue
++                return False, f"Cannot locate hunk context in {display_patch_path(repo_path, filepath)}"
+ 
+             # Apply the replacement
+             match_end = match_start + len(expected_sequence)
+             file_lines[match_start:match_end] = replacement
+ 
+         # Write back
+         new_content = "\n".join(file_lines)
+         filepath.write_text(new_content, encoding="utf-8")
+-        return True, f"Updated {op['path']}"
++
++        if destination and filepath != destination:
++            destination.parent.mkdir(parents=True, exist_ok=True)
++            if destination.exists():
++                return False, f"Move destination already exists: {display_patch_path(repo_path, destination)}"
++            filepath.replace(destination)
++            return True, f"Updated and moved {display_patch_path(repo_path, filepath)} -> {display_patch_path(repo_path, destination)}"
++
++        return True, f"Updated {display_patch_path(repo_path, filepath)}"
+ 
+     return False, f"Unknown action: {op['action']}"
++
++
++def resolve_patch_path(repo_path: Path, patch_path: str) -> Path:
++    """Resolve a Codex patch path while keeping operations inside repo_path."""
++    raw = Path(patch_path).expanduser()
++    resolved = raw.resolve() if raw.is_absolute() else (repo_path / raw).resolve()
++    repo_resolved = repo_path.resolve()
++    try:
++        resolved.relative_to(repo_resolved)
++    except ValueError as exc:
++        raise ValueError(f"Patch path escapes target repository: {patch_path}") from exc
++    return resolved
++
++
++def display_patch_path(repo_path: Path, filepath: Path) -> str:
++    try:
++        return str(filepath.resolve().relative_to(repo_path.resolve()))
++    except ValueError:
++        return str(filepath)
++
++
++def touched_files_for_operation(op, repo_path: Path):
++    paths = [resolve_patch_path(repo_path, op["path"])]
++    if op.get("move_to"):
++        paths.append(resolve_patch_path(repo_path, op["move_to"]))
++    return paths
++
++
++def snapshot_files(paths):
++    snapshot = {}
++    for path in paths:
++        if path in snapshot:
++            continue
++        if path.exists():
++            snapshot[path] = path.read_text(encoding="utf-8")
++        else:
++            snapshot[path] = MISSING
++    return snapshot
++
++
++def restore_snapshot(snapshot):
++    for path, content in snapshot.items():
++        if content is MISSING:
++            if path.exists():
++                path.unlink()
++        else:
++            path.parent.mkdir(parents=True, exist_ok=True)
++            path.write_text(content, encoding="utf-8")
+@@
+     for patch_file in patch_files:
+         patch_text = patch_file.read_text(encoding="utf-8")
+         operations = parse_codex_patch(patch_text)
+@@
+         patch_ok = True
+         patch_messages = []
++        touched_paths = []
++
++        try:
++            for op in operations:
++                touched_paths.extend(touched_files_for_operation(op, repo_path))
++            before_patch = snapshot_files(touched_paths)
++        except Exception as e:
++            failed.append((patch_file, str(e)))
++            print(f"   [FAIL] {e}")
++            continue
+ 
+         for op in operations:
+-            success, msg = apply_codex_patch_to_file(op, repo_path)
++            try:
++                success, msg = apply_codex_patch_to_file(op, repo_path)
++            except Exception as e:
++                success, msg = False, str(e)
+             patch_messages.append(msg)
+             if not success:
+                 patch_ok = False
++                break
+ 
+         if patch_ok:
+             applied.append(patch_file)
+             for msg in patch_messages:
+                 print(f"   [OK] {msg}")
+         else:
++            restore_snapshot(before_patch)
+             failed.append((patch_file, "; ".join(patch_messages)))
+             for msg in patch_messages:
+                 print(f"   [FAIL] {msg}")
+*** End Patch

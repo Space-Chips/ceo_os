@@ -1,3 +1,4 @@
 <resources>
-    <string name="accessibility_service_description">CEO OS Focus Mode Blocker</string>
+    <string name="app_name">WakeApp</string>
+    <string name="accessibility_service_description">WakeApp Focus Mode Blocker</string>
 </resources>

@@ -1,0 +1,12 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/screen_time_manager/screen_time_manager_screen.dart
+@@
+                         _actionCard(
+                           icon: CupertinoIcons.person_3_fill,
+                           iconColor: AppColors.rankAccent,
+-                          title: 'Family Time',
++                          title: 'Offline Together',
+                           subtitle: 'Shared no-phone sessions',
+                           onTap: () => context.push('/family-time'),
+                         ),
+*** End Patch

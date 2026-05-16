@@ -1,0 +1,14 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/docs/store_submission_checklist_blocking_stack.md
+@@
+ Checklist:
+ - [x] Review notes explain clearly that the app uses Apple’s Screen Time APIs for self-control / blocking / scheduling.
++- [x] Review notes explain clearly that Screen Time / Device Activity usage data stays on-device for the individual user and is not server-logged or shared.
+ - [x] Review notes explain how to trigger:
+@@
+ Checklist:
+ - [ ] The app does not claim stronger lockout than Apple’s Screen Time APIs actually enforce.
+ - [ ] The app does not claim the user can never disable restrictions if iOS system-authorized flows still allow disable paths.
+ - [ ] Marketing and onboarding copy remain technically accurate.
++- [ ] No iOS Screen Time / Device Activity usage data or blocking-attempt data is synced, exported, compared, or server-logged beyond the individual user flow.
+*** End Patch

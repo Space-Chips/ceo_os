@@ -1,0 +1,227 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/tasks/tasks_screen.dart
+@@
+         decoration: BoxDecoration(
+           borderRadius: BorderRadius.circular(18),
+-          gradient: const LinearGradient(
++          gradient: LinearGradient(
+             begin: Alignment.topCenter,
+             end: Alignment.bottomCenter,
+-            colors: [Color(0xFF1A1A1A), Color(0xFF111111)],
++            colors: [AppColors.cardBackgroundAlt, AppColors.cardBase],
+           ),
+           border: Border.all(
+-            color: AppColors.white.withValues(alpha: 0.06),
++            color: AppColors.border,
+             width: 1,
+           ),
+@@
+               decoration: BoxDecoration(
+                 shape: BoxShape.circle,
+-                color: Colors.white.withValues(alpha: 0.06),
++                color: AppColors.topBarControlBackground,
+                 border: Border.all(
+-                  color: Colors.white.withValues(alpha: 0.08),
++                  color: AppColors.topBarControlBorder,
+                   width: 1,
+                 ),
+               ),
+@@
+                 title: 'DO NOW',
+                 subtitle: 'Quick • High Impact',
+-                accent: const Color(0x59FF5050),
+-                overlay: const Color(0x14FF5050),
++                accent: AppColors.error.withValues(alpha: 0.35),
++                overlay: AppColors.error.withValues(alpha: 0.08),
+                 tasks: quickImportant,
+                 onTapTask: onComplete,
+               ),
+@@
+                 title: 'PLAN',
+                 subtitle: 'Takes Time • High Impact',
+-                accent: const Color(0x59508CFF),
+-                overlay: const Color(0x14508CFF),
++                accent: AppColors.activeBorder,
++                overlay: AppColors.accentSurfaceSoft.withValues(alpha: 0.5),
+                 tasks: slowImportant,
+                 onTapTask: onComplete,
+               ),
+@@
+                 title: 'IF TIME',
+                 subtitle: 'Quick • Low Impact',
+-                accent: const Color(0x59FFB43C),
+-                overlay: const Color(0x14FFB43C),
++                accent: AppColors.warning.withValues(alpha: 0.35),
++                overlay: AppColors.warning.withValues(alpha: 0.08),
+                 tasks: quickNotImportant,
+                 onTapTask: onComplete,
+               ),
+@@
+                 title: 'ELIMINATE',
+                 subtitle: 'Takes Time • Low Impact',
+-                accent: const Color(0x40B4B4B4),
+-                overlay: const Color(0x0FB4B4B4),
++                accent: AppColors.borderStrong,
++                overlay: AppColors.label.withValues(alpha: 0.04),
+                 tasks: slowNotImportant,
+                 onTapTask: onComplete,
+               ),
+@@
+         decoration: BoxDecoration(
+           borderRadius: BorderRadius.circular(22),
+-          gradient: const LinearGradient(
++          gradient: LinearGradient(
+             begin: Alignment.topCenter,
+             end: Alignment.bottomCenter,
+-            colors: [Color(0xFF1A1A1A), Color(0xFF111111)],
++            colors: [AppColors.cardBackgroundAlt, AppColors.cardBase],
+           ),
+           border: Border.all(color: accent, width: 1),
+@@
+             gradient: LinearGradient(
+               begin: Alignment.topCenter,
+               end: Alignment.bottomCenter,
+-              colors: [overlay, CupertinoColors.transparent],
++              colors: [overlay, overlay.withValues(alpha: 0)],
+             ),
+           ),
+@@
+                           decoration: BoxDecoration(
+                             borderRadius: BorderRadius.circular(14),
+-                            color: const Color(0xFF1C1C1C),
++                            color: AppColors.surfaceMuted,
+                             border: Border.all(
+-                              color: AppColors.white.withValues(alpha: 0.06),
++                              color: AppColors.border,
+                               width: 1,
+                             ),
+                           ),
+@@
+             decoration: BoxDecoration(
+-              gradient: const LinearGradient(
++              gradient: LinearGradient(
+                 begin: Alignment.topCenter,
+                 end: Alignment.bottomCenter,
+-                colors: [Color(0xFF1A1A1A), Color(0xFF111111)],
++                colors: [AppColors.cardBackgroundAlt, AppColors.cardBase],
+               ),
+               borderRadius: BorderRadius.circular(18),
+               border: Border.all(
+-                color: AppColors.white.withValues(alpha: 0.06),
++                color: AppColors.border,
+                 width: 1,
+               ),
+@@
+           decoration: BoxDecoration(
+-            gradient: const LinearGradient(
++            gradient: LinearGradient(
+               begin: Alignment.topCenter,
+               end: Alignment.bottomCenter,
+-              colors: [Color(0xFF1A1A1A), Color(0xFF111111)],
++              colors: [AppColors.cardBackgroundAlt, AppColors.cardBase],
+             ),
+             borderRadius: BorderRadius.circular(18),
+             border: Border.all(
+-              color: AppColors.white.withValues(alpha: 0.06),
++              color: AppColors.border,
+               width: 1,
+             ),
+@@
+                   decoration: BoxDecoration(
+                     shape: BoxShape.circle,
+-                    color: CupertinoColors.transparent,
++                    color: AppColors.label.withValues(alpha: 0),
+                     border: Border.all(
+                       color: task.completed
+-                          ? const Color(0xFF3DDC84)
++                          ? AppColors.success
+                           : AppColors.white.withValues(alpha: 0.12),
+                       width: 2,
+                     ),
+@@
+                     child: Icon(
+                       CupertinoIcons.check_mark,
+                       size: 16,
+                       color: task.completed
+-                          ? const Color(0xFF3DDC84)
++                          ? AppColors.success
+                           : AppColors.white.withValues(alpha: 0.16),
+                     ),
+                   ),
+*** Update File: /Users/timo/ceo_os/lib/features/habits/habits_screen.dart
+@@
+         decoration: BoxDecoration(
+           shape: BoxShape.circle,
+-          color: CupertinoColors.transparent,
++          color: AppColors.label.withValues(alpha: 0),
+           border: Border.all(color: AppColors.error, width: 1.4),
+         ),
+@@
+       decoration: BoxDecoration(
+         shape: BoxShape.circle,
+-        color: CupertinoColors.transparent,
++        color: AppColors.label.withValues(alpha: 0),
+         border: Border.all(
+           color: AppColors.white.withValues(alpha: 0.25),
+           width: 1,
+@@
+               decoration: BoxDecoration(
+-                gradient: const LinearGradient(
++                gradient: LinearGradient(
+                   begin: Alignment.topCenter,
+                   end: Alignment.bottomCenter,
+-                  colors: [Color(0xFF1A1A1A), Color(0xFF111111)],
++                  colors: [AppColors.cardBackgroundAlt, AppColors.cardBase],
+                 ),
+                 borderRadius: BorderRadius.circular(22),
+                 border: Border.all(
+-                  color: AppColors.white.withValues(alpha: 0.06),
++                  color: AppColors.border,
+                   width: 1,
+                 ),
+*** Update File: /Users/timo/ceo_os/lib/features/rank/rank_screen.dart
+@@
+                       Icon(
+                         CupertinoIcons.bolt,
+                         size: 18,
+-                        color: const Color(0xFFFACC15),
++                        color: AppColors.rankAccent,
+                       ),
+@@
+               color: label == 'Streak'
+-                  ? const Color(0xFFFF9D43)
++                  ? AppColors.warning
+                   : AppColors.label,
+               fontWeight: FontWeight.w700,
+             ),
+@@
+               borderColor: isCurrent
+-                  ? const Color(0xFFFFB450).withValues(alpha: 0.35)
+-                  : AppColors.white.withValues(alpha: 0.06),
++                  ? AppColors.activeBorder
++                  : AppColors.border,
+             ),
+@@
+                 if (isCurrent)
+                   Icon(
+                     CupertinoIcons.rosette,
+-                    color: const Color(0xFFFACC15),
++                    color: AppColors.rankAccent,
+                     size: 24,
+                   )
+@@
+     return BoxDecoration(
+-      gradient: const LinearGradient(
++      gradient: LinearGradient(
+         begin: Alignment.topCenter,
+         end: Alignment.bottomCenter,
+-        colors: [Color(0xFF1A1A1A), Color(0xFF111111)],
++        colors: [AppColors.cardBackgroundAlt, AppColors.cardBase],
+       ),
+       borderRadius: BorderRadius.circular(radius),
+       border: Border.all(
+-        color: borderColor ?? AppColors.white.withValues(alpha: 0.06),
++        color: borderColor ?? AppColors.border,
+         width: 1,
+       ),
+*** End Patch

@@ -1,0 +1,9 @@
+*** Begin Patch
+*** Update File: lib/main.dart
+@@
+ void main() async {
+   WidgetsFlutterBinding.ensureInitialized();
++  await ThemeProvider.bootstrapRuntimeFromPrefs();
+ 
+   FlutterError.onError = (FlutterErrorDetails details) {
+*** End Patch

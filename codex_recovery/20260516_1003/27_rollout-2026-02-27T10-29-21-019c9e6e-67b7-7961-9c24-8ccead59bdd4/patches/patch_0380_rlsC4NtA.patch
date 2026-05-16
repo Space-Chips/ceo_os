@@ -1,0 +1,72 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/screen_time_manager/screen_time_manager_screen.dart
+@@
+         child: GlassCard(
+           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
+           borderRadius: 28,
++          level: GlassCardLevel.elevated,
++          showEdgeGlow: true,
+           border: Border.all(
+             color: AppColors.primaryOrange.withValues(alpha: 0.62),
+             width: 1.0,
+@@
+     return GlassCard(
+       padding: const EdgeInsets.all(14),
+       borderRadius: 24,
++      level: GlassCardLevel.standard,
++      showEdgeGlow: true,
+       border: Border.all(
+         color: AppColors.glassBorder.withValues(alpha: 0.8),
+         width: 0.7,
+       ),
+@@
+     return Container(
+       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+       decoration: BoxDecoration(
+         borderRadius: BorderRadius.circular(20),
+-        color: AppColors.backgroundLight.withValues(
+-          alpha: highlighted ? 0.82 : 0.64,
+-        ),
++        gradient: LinearGradient(
++          begin: Alignment.topLeft,
++          end: Alignment.bottomRight,
++          colors: highlighted
++              ? [
++                  AppColors.floatingGlassGradient.first.withValues(alpha: 0.95),
++                  AppColors.floatingGlassGradient.last.withValues(alpha: 0.88),
++                ]
++              : [
++                  AppColors.floatingGlassGradient.first.withValues(alpha: 0.82),
++                  AppColors.floatingGlassGradient.last.withValues(alpha: 0.7),
++                ],
++        ),
+         border: Border.all(
+           color: highlighted
+               ? const Color(0xFF2563EB).withValues(alpha: 0.92)
+@@
+       child: Container(
+         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+         decoration: BoxDecoration(
+           borderRadius: BorderRadius.circular(18),
+-          color: AppColors.backgroundLight.withValues(alpha: 0.62),
++          gradient: LinearGradient(
++            begin: Alignment.topLeft,
++            end: Alignment.bottomRight,
++            colors: [
++              AppColors.floatingGlassGradient.first.withValues(alpha: 0.86),
++              AppColors.floatingGlassGradient.last.withValues(alpha: 0.74),
++            ],
++          ),
+           border: Border.all(
+             color: AppColors.glassBorder.withValues(alpha: 0.56),
+             width: 0.7,
+@@
+       child: GlassCard(
+         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+         borderRadius: 20,
++        level: GlassCardLevel.standard,
++        showEdgeGlow: true,
+         border: Border.all(
+           color: AppColors.glassBorder.withValues(alpha: 0.72),
+           width: 0.7,
+*** End Patch

@@ -1,0 +1,26 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/screen_time_screen.dart
+@@
+       for (final selected in picked) {
+         final payload = selected.payload.trim();
+         if (payload.isEmpty || existingPayloads.contains(payload)) continue;
+-        final resolved = selected.domain?.trim();
++        var resolved = selected.domain?.trim();
++        if (resolved == null || resolved.isEmpty) {
++          resolved = (await _focusService.describeWebsiteSelectionPayload(payload))
++              ?.domain
++              ?.trim();
++        }
+         final domain = (resolved != null && resolved.isNotEmpty)
+             ? normalizeDomainInput(resolved) ?? resolved.toLowerCase()
+             : null;
+-        final label = (domain != null && domain.isNotEmpty)
+-            ? domain
+-            : 'selected-website-${DateTime.now().microsecondsSinceEpoch}';
++        if (domain == null || domain.isEmpty) {
++          continue;
++        }
++        final label = domain;
+         final record = await _repo.createBlockedWebsiteRecord(label);
+         if (record == null) continue;
+*** End Patch

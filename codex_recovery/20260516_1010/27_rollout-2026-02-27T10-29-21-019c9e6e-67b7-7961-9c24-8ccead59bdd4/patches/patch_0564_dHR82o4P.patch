@@ -1,0 +1,149 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/screen_time_manager/family_time_screen.dart
+@@
+               : ListView(
+                   padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+-                  children: [
+-                    _header(),
+-                    const SizedBox(height: 20),
+-                    _groupAccessCard(),
+-                    const SizedBox(height: 24),
+-                    Text(
+-                      'YOUR GROUPS',
+-                      style: AppTypography.mono.copyWith(
+-                        fontSize: 11,
+-                        letterSpacing: 2,
+-                        color: AppColors.secondaryLabel.withValues(alpha: 0.5),
+-                        fontWeight: FontWeight.w700,
+-                      ),
+-                    ),
+-                    const SizedBox(height: 12),
+-                    if (_groups.isEmpty)
+-                      _CardSurface(
+-                        padding: const EdgeInsets.all(20),
+-                        child: Text(
+-                          'No groups yet. Create or join one to start using Family Time.',
+-                          style: AppTypography.body.copyWith(
+-                            fontSize: 14,
+-                            color: AppColors.secondaryLabel,
+-                            height: 1.4,
+-                          ),
+-                        ),
+-                      )
+-                    else
+-                      for (final bundle in _groups)
+-                        Padding(
+-                          padding: const EdgeInsets.only(bottom: 12),
+-                          child: _PressScale(
+-                            onTap: () => _openGroup(bundle),
+-                            scale: 0.98,
+-                            child: Container(
+-                              height: 64,
+-                              padding: const EdgeInsets.symmetric(
+-                                horizontal: 18,
+-                              ),
+-                              decoration: _cardDecoration(),
+-                              child: Row(
+-                                children: [
+-                                  Expanded(
+-                                    child: Text(
+-                                      bundle.group.name,
+-                                      style: AppTypography.body.copyWith(
+-                                        fontSize: 16,
+-                                        fontWeight: FontWeight.w600,
+-                                        color: AppColors.label,
+-                                      ),
+-                                    ),
+-                                  ),
+-                                  Icon(
+-                                    CupertinoIcons.chevron_right,
+-                                    size: 18,
+-                                    color: AppColors.tertiaryLabel,
+-                                  ),
+-                                ],
+-                              ),
+-                            ),
+-                          ),
+-                        ),
+-                ),
++                  children: _buildHomeChildren(),
++                ),
+         ),
+       ),
+     );
+   }
++
++  List<Widget> _buildHomeChildren() {
++    final children = <Widget>[
++      _header(),
++      const SizedBox(height: 20),
++      _groupAccessCard(),
++      const SizedBox(height: 24),
++      Text(
++        'YOUR GROUPS',
++        style: AppTypography.mono.copyWith(
++          fontSize: 11,
++          letterSpacing: 2,
++          color: AppColors.secondaryLabel.withValues(alpha: 0.5),
++          fontWeight: FontWeight.w700,
++        ),
++      ),
++      const SizedBox(height: 12),
++    ];
++
++    if (_groups.isEmpty) {
++      children.add(
++        _CardSurface(
++          padding: const EdgeInsets.all(20),
++          child: Text(
++            'No groups yet. Create or join one to start using Family Time.',
++            style: AppTypography.body.copyWith(
++              fontSize: 14,
++              color: AppColors.secondaryLabel,
++              height: 1.4,
++            ),
++          ),
++        ),
++      );
++      return children;
++    }
++
++    for (final bundle in _groups) {
++      children.add(
++        Padding(
++          padding: const EdgeInsets.only(bottom: 12),
++          child: _PressScale(
++            onTap: () => _openGroup(bundle),
++            scale: 0.98,
++            child: Container(
++              height: 64,
++              padding: const EdgeInsets.symmetric(horizontal: 18),
++              decoration: _cardDecoration(),
++              child: Row(
++                children: [
++                  Expanded(
++                    child: Text(
++                      bundle.group.name,
++                      style: AppTypography.body.copyWith(
++                        fontSize: 16,
++                        fontWeight: FontWeight.w600,
++                        color: AppColors.label,
++                      ),
++                    ),
++                  ),
++                  Icon(
++                    CupertinoIcons.chevron_right,
++                    size: 18,
++                    color: AppColors.tertiaryLabel,
++                  ),
++                ],
++              ),
++            ),
++          ),
++        ),
++      );
++    }
++
++    return children;
++  }
+*** End Patch

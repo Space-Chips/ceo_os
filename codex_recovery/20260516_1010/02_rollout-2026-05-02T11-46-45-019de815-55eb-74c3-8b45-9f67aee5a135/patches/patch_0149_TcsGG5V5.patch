@@ -1,0 +1,27 @@
+*** Begin Patch
+*** Update File: lib/core/widgets/home_widgets/widget_views.dart
+@@
+ class _WidgetHeader extends StatelessWidget {
+   final String title;
+   final String subtitle;
+-  final TextStyle? titleStyle;
+ 
+   const _WidgetHeader({
+     required this.title,
+     required this.subtitle,
+-    this.titleStyle,
+   });
+@@
+   Widget build(BuildContext context) {
+     return Column(
+       crossAxisAlignment: CrossAxisAlignment.start,
+       children: [
+-        Text(title, style: titleStyle ?? WidgetDesignTokens.title),
++        Text(title, style: WidgetDesignTokens.title),
+         const SizedBox(height: 4),
+         Text(subtitle, style: WidgetDesignTokens.subtitle),
+       ],
+     );
+   }
+ }
+*** End Patch

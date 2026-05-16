@@ -1,0 +1,64 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/setup/setup_flow_screen.dart
+@@
+   @override
+   Widget build(BuildContext context) {
+     return _SetupStepScaffold(
+       child: Column(
+         crossAxisAlignment: CrossAxisAlignment.start,
+         children: [
+           _StepProgressPill(step: stepIndex, total: 3),
+           const SizedBox(height: 16),
+-          Text(title, style: AppTypography.title1),
+-          const SizedBox(height: 12),
++          Text(title, style: AppTypography.title1),
++          const SizedBox(height: 10),
+           Text(
+             subtitle,
+             style: AppTypography.body.copyWith(
+               color: AppColors.secondaryLabel,
+             ),
+           ),
+           if (reassurance != null) ...[
+             const SizedBox(height: 12),
+             GlassCard(
+               level: GlassCardLevel.subtle,
+               child: Padding(
+                 padding: const EdgeInsets.all(14),
+                 child: Text(
+                   reassurance!,
+                   style: AppTypography.footnote.copyWith(
+                     color: AppColors.secondaryLabel,
+                   ),
+                 ),
+               ),
+             ),
+           ],
+-          const SizedBox(height: 18),
+-          Text('Steps', style: AppTypography.headline),
+-          const SizedBox(height: 8),
+-          for (int i = 0; i < instructions.length; i++)
+-            _InstructionRow(index: i + 1, text: instructions[i]),
+-          const SizedBox(height: 20),
++          const SizedBox(height: 18),
++          GlassCard(
++            level: GlassCardLevel.elevated,
++            child: Padding(
++              padding: const EdgeInsets.all(16),
++              child: Column(
++                crossAxisAlignment: CrossAxisAlignment.start,
++                children: [
++                  Text('Quick steps', style: AppTypography.headline),
++                  const SizedBox(height: 10),
++                  for (int i = 0; i < instructions.length; i++)
++                    _InstructionRow(index: i + 1, text: instructions[i]),
++                ],
++              ),
++            ),
++          ),
++          const SizedBox(height: 16),
+           ValueListenableBuilder<bool>(
+             valueListenable: showSuccess,
+             builder: (context, success, _) {
+               if (!isGranted && !success) return const SizedBox.shrink();
+*** End Patch

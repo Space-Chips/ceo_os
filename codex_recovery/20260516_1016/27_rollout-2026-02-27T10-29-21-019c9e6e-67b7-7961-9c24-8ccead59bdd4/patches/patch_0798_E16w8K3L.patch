@@ -1,0 +1,10 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/ios/Runner/AppDelegate.swift
+@@
+         if classicPauseEnabled {
+             payloads.append(contentsOf: storedClassicPausePayloads())
+         }
++        payloads.append(contentsOf: payloadsForTriggeredClassicDailyLimits())
+ 
+         let merged = mergeSelections(encodedPayloads: payloads)
+*** End Patch

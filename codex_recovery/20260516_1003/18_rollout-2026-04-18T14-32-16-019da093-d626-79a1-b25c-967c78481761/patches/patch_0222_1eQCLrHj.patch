@@ -1,0 +1,27 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/tasks/tasks_screen.dart
+@@
+               child: _matrixQuadrant(
++                language: language,
+                 title: language.t('tasks_matrix_do_now'),
+                 subtitle: language.t('tasks_matrix_do_now_subtitle'),
+@@
+               child: _matrixQuadrant(
++                language: language,
+                 title: language.t('tasks_matrix_plan'),
+                 subtitle: language.t('tasks_matrix_plan_subtitle'),
+@@
+               child: _matrixQuadrant(
++                language: language,
+                 title: language.t('tasks_matrix_if_time'),
+                 subtitle: language.t('tasks_matrix_if_time_subtitle'),
+@@
+               child: _matrixQuadrant(
++                language: language,
+                 title: language.t('tasks_matrix_eliminate'),
+                 subtitle: language.t('tasks_matrix_eliminate_subtitle'),
+@@
+   Widget _matrixQuadrant({
++    required LanguageProvider language,
+     required String title,
+*** End Patch

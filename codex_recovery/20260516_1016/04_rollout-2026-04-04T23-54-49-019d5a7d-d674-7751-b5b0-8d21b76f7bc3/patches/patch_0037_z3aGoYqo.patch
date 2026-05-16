@@ -1,0 +1,130 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/screen_time_screen.dart
+@@
+   Widget _actionLauncherCard({
+     required IconData icon,
+     required String title,
+     required String subtitle,
+@@
+                 children: [
+                   Text(
+                     title,
+                     style: AppTypography.headline.copyWith(
+                       fontSize: 16,
+                       color: AppColors.label,
+                     ),
+                   ),
+-                  const SizedBox(height: 4),
+-                  Text(
+-                    subtitle,
+-                    style: AppTypography.footnote.copyWith(
+-                      fontSize: 13,
+-                      height: 1.35,
+-                      color: AppColors.secondaryLabel.withValues(alpha: 0.8),
+-                    ),
+-                  ),
++                  if (subtitle.trim().isNotEmpty) ...[
++                    const SizedBox(height: 4),
++                    Text(
++                      subtitle,
++                      style: AppTypography.footnote.copyWith(
++                        fontSize: 13,
++                        height: 1.35,
++                        color: AppColors.secondaryLabel.withValues(alpha: 0.8),
++                      ),
++                    ),
++                  ],
+                 ],
+               ),
+             ),
+@@
+   Widget _blockedAppCard(BlockedApp app) {
+     final limit = app.timeLimitMinutes ?? 0;
+-    final packageName = _appBindings[app.id]?.nativeIdentifier?.trim();
+     final title = app.appName?.trim().isNotEmpty == true
+         ? app.appName!.trim()
+         : 'Unknown app';
+@@
+                     children: [
+                       Text(
+                         title,
+                         maxLines: 1,
+                         overflow: TextOverflow.ellipsis,
+@@
+                           color: AppColors.label,
+                         ),
+                       ),
+-                      const SizedBox(height: 4),
+-                      Text(
+-                        packageName?.isNotEmpty == true
+-                            ? packageName!
+-                            : 'Blocked on this device',
+-                        maxLines: 1,
+-                        overflow: TextOverflow.ellipsis,
+-                        style: AppTypography.footnote.copyWith(
+-                          fontSize: 12,
+-                          color: AppColors.secondaryLabel.withValues(
+-                            alpha: 0.76,
+-                          ),
+-                        ),
+-                      ),
+                     ],
+                   ),
+                 ),
+@@
+                     children: [
+                       Text(
+                         title,
+                         maxLines: 1,
+                         overflow: TextOverflow.ellipsis,
+@@
+                           color: AppColors.label,
+                         ),
+                       ),
+-                      const SizedBox(height: 4),
+-                      Text(
+-                        'Applies in supported browsers on this device',
+-                        maxLines: 1,
+-                        overflow: TextOverflow.ellipsis,
+-                        style: AppTypography.footnote.copyWith(
+-                          fontSize: 12,
+-                          color: AppColors.secondaryLabel.withValues(
+-                            alpha: 0.76,
+-                          ),
+-                        ),
+-                      ),
+                     ],
+                   ),
+                 ),
+@@
+                 Text(
+                   title,
+                   style: AppTypography.headline.copyWith(
+                     fontSize: 15,
+                     color: AppColors.label,
+                   ),
+                 ),
+-                const SizedBox(height: 4),
+-                Text(
+-                  message,
+-                  style: AppTypography.footnote.copyWith(
+-                    fontSize: 13,
+-                    height: 1.35,
+-                    color: AppColors.secondaryLabel.withValues(alpha: 0.76),
+-                  ),
+-                ),
++                if (message.trim().isNotEmpty) ...[
++                  const SizedBox(height: 4),
++                  Text(
++                    message,
++                    style: AppTypography.footnote.copyWith(
++                      fontSize: 13,
++                      height: 1.35,
++                      color: AppColors.secondaryLabel.withValues(alpha: 0.76),
++                    ),
++                  ),
++                ],
+               ],
+             ),
+           ),
+*** End Patch

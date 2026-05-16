@@ -1,0 +1,13 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/screen_time_setup/screen_time_setup_screen.dart
+@@
+ class _SetupStepScaffold extends StatelessWidget {
+@@
+   @override
+   Widget build(BuildContext context) {
++    final t = context.read<LanguageProvider>().t;
+     return Padding(
+@@
+-              _ProgressPill(label: progressLabel ?? 'Screen Time'),
++              _ProgressPill(label: progressLabel ?? t('ios_setup_progress_label')),
+*** End Patch

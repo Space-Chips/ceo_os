@@ -1,0 +1,21 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/repositories/feature_repository.dart
+@@
+   Future<void> updateRestPeriod({
+     required String id,
+     DateTime? startTime,
+     DateTime? endTime,
+     bool? active,
+@@
+         .eq('id', id)
+         .eq('created_by', _currentUserId);
+   }
++
++  Future<void> deleteRestPeriod(String id) async {
++    await _client
++        .from('rest_periods')
++        .delete()
++        .eq('id', id)
++        .eq('created_by', _currentUserId);
++  }
+*** End Patch

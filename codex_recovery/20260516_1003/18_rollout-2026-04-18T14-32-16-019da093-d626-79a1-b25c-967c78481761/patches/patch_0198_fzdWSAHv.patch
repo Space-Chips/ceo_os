@@ -1,0 +1,72 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/screen_time_setup/screen_time_setup_screen.dart
+@@
+   @override
+   Widget build(BuildContext context) {
++    final t = context.read<LanguageProvider>().t;
+     final isAuthorized = status.isAuthorized;
+@@
+-    final title = isSupported
+-        ? 'Allow Screen Time access'
+-        : 'Screen Time unavailable';
++    final title = isSupported
++        ? t('ios_setup_permission_allow_title')
++        : t('ios_setup_permission_unavailable_title');
+     final subtitle = !isSupported
+-        ? 'This device cannot grant Apple Screen Time access.'
+-        : 'Screen Time access lets WakeApp enforce blocks and focus rules using Apple’s on-device APIs.';
++        ? t('ios_setup_permission_unavailable_subtitle')
++        : t('ios_setup_permission_allow_subtitle');
+ 
+     final actionLabel = isAuthorized
+-        ? 'Continue'
++        ? t('ios_setup_continue')
+         : shouldOpenSettings
+-        ? 'Open Settings'
+-        : 'Allow Screen Time';
++        ? t('setup_open_settings')
++        : t('ios_setup_permission_allow_title');
+@@
+     return _SetupStepScaffold(
+-      progressLabel: 'Step 2 of 2',
++      progressLabel: t('ios_setup_step_2_of_2'),
+       showBack: true,
+@@
+                 Text(
+-                  'Steps',
++                  t('ios_setup_steps_title'),
+                   style: AppTypography.caption1.copyWith(
+@@
+-                const _InstructionRow(index: 1, text: 'Tap “Open Settings”.'),
++                _InstructionRow(index: 1, text: t('ios_setup_instruction_1')),
+                 const SizedBox(height: 8),
+-                const _InstructionRow(
+-                  index: 2,
+-                  text: 'Choose WakeApp in the list.',
+-                ),
++                _InstructionRow(index: 2, text: t('ios_setup_instruction_2')),
+                 const SizedBox(height: 8),
+-                const _InstructionRow(
+-                  index: 3,
+-                  text: 'Enable Screen Time access.',
+-                ),
++                _InstructionRow(index: 3, text: t('ios_setup_instruction_3')),
+                 const SizedBox(height: 8),
+-                const _InstructionRow(index: 4, text: 'Return to WakeApp.'),
++                _InstructionRow(index: 4, text: t('ios_setup_instruction_4')),
+                 const SizedBox(height: 12),
+                 if (!isSupported)
+                   Text(
+-                    'Screen Time access is only available on supported iPhone builds.',
++                    t('ios_setup_unsupported_build'),
+                     style: AppTypography.caption1.copyWith(
+                       color: AppColors.secondaryLabel,
+                     ),
+                   ),
+@@
+-      footer: LiquidButton(label: actionLabel, onPressed: action),
++      footer: LiquidButton(label: actionLabel, onPressed: action),
+     );
+   }
+ }
+*** End Patch

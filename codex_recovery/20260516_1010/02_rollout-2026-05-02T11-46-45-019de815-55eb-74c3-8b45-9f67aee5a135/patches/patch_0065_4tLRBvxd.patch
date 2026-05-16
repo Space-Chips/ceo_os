@@ -1,0 +1,33 @@
+*** Begin Patch
+*** Update File: lib/core/services/home_widget_service.dart
+@@
+-    final todoLines = pendingTasks.take(3).map((t) => t.title).toList();
++    final todoLines = pendingTasks.map((t) => t.title).toList();
+@@
+     if (enabledTodo) {
+       futures.addAll([
+         HomeWidget.renderFlutterWidget(
+           _CeoWidgetCard.smallTodo(
+             title: language.t('widget_mode_todo'),
+             subtitle: language.t('today'),
+-            lines: todoLines,
++            lines: todoLines.take(4).toList(),
+           ),
+           key: _keyTodoSmall,
+           logicalSize: const Size(170, 170),
+           pixelRatio: 2,
+         ),
+         HomeWidget.renderFlutterWidget(
+           _CeoWidgetCard.largeTodo(
+             title: language.t('widget_mode_todo'),
+             subtitle: language.t('today'),
+-            lines: todoLines,
++            lines: todoLines.take(7).toList(),
+           ),
+           key: _keyTodoLarge,
+           logicalSize: const Size(360, 180),
+           pixelRatio: 2,
+         ),
+       ]);
+     } else {
+*** End Patch

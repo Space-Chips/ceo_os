@@ -1,0 +1,27 @@
+*** Begin Patch
+*** Update File: lib/core/providers/language_overrides.dart
+@@
+     'habits_week_score': 'सप्ताह स्कोर',
+     'home_dashboard_load_failed': 'डैशबोर्ड लोड नहीं हुआ',
+     'home_dashboard_retry_hint': 'डैशबोर्ड फिर से लोड करने के लिए टैप करें।',
++    'dashboard_control_center': 'कंट्रोल सेंटर',
++    'dashboard_unavailable': 'डैशबोर्ड उपलब्ध नहीं',
++    'dashboard_wake_score': 'Wake स्कोर',
++    'dashboard_habits_from_yesterday': 'कल की आदतें',
++    'dashboard_complete_validation_to_continue':
++        'जारी रखने के लिए सत्यापन पूरा करें',
++    'dashboard_confirming': 'पुष्टि हो रही है…',
++    'dashboard_confirm': 'पुष्टि करें',
++    'dashboard_no_open_tasks': 'कोई खुला कार्य नहीं।',
++    'dashboard_habits_for_today': 'आज की आदतें',
++    'dashboard_no_habits_today': 'आज कोई आदत तय नहीं है।',
++    'dashboard_no_events_today': 'आज कोई इवेंट तय नहीं है।',
++    'dashboard_view_all': 'सब देखें',
++    'dashboard_duration_30m': '30मि',
++    'dashboard_duration_1h': '1 घंटा',
++    'dashboard_duration_2h': '2 घंटे',
++    'dashboard_duration_half_day': 'आधा दिन',
++    'dashboard_duration_1_day': '1 दिन',
++    'dashboard_duration_several_days': 'कई दिन',
+     'leaderboard': 'लीडरबोर्ड',
+*** End Patch

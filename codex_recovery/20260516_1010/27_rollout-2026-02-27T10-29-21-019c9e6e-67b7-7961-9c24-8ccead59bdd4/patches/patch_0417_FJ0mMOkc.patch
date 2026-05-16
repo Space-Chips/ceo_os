@@ -1,0 +1,210 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/screen_time_screen.dart
+@@
+   Future<void> _scheduleRestPeriod({
+     required int startsInMinutes,
+     required int durationMinutes,
+   }) {
+@@
+     return _runMutation(() {
+       return _repo.createRestPeriod(
+         startTime: start,
+         endTime: end,
+         active: false,
+       );
+     });
+   }
++
++  DateTime _roundToNextFive(DateTime dt) {
++    final floored = DateTime(dt.year, dt.month, dt.day, dt.hour, dt.minute);
++    final remainder = floored.minute % 5;
++    if (remainder == 0) return floored;
++    return floored.add(Duration(minutes: 5 - remainder));
++  }
++
++  Future<void> _openPausePlanner() async {
++    final now = DateTime.now();
++    final minStart = _roundToNextFive(now.add(const Duration(hours: 2)));
++    var selectedStart = minStart;
++    var selectedDuration = 30;
++
++    final shouldSave = await showCupertinoModalPopup<bool>(
++      context: context,
++      builder: (ctx) {
++        return StatefulBuilder(
++          builder: (context, setModalState) {
++            return Container(
++              height: 430,
++              decoration: BoxDecoration(
++                color: AppColors.background.withValues(alpha: 0.96),
++                borderRadius: const BorderRadius.vertical(
++                  top: Radius.circular(26),
++                ),
++                border: Border(
++                  top: BorderSide(color: AppColors.glassBorder, width: 0.7),
++                ),
++              ),
++              child: SafeArea(
++                top: false,
++                child: Padding(
++                  padding: const EdgeInsets.fromLTRB(14, 12, 14, 10),
++                  child: Column(
++                    children: [
++                      Container(
++                        width: 42,
++                        height: 4,
++                        decoration: BoxDecoration(
++                          color: AppColors.glassBorder,
++                          borderRadius: BorderRadius.circular(999),
++                        ),
++                      ),
++                      const SizedBox(height: 10),
++                      Text(
++                        'PLAN A PAUSE',
++                        style: AppTypography.mono.copyWith(
++                          fontSize: 13,
++                          fontWeight: FontWeight.w900,
++                          letterSpacing: 1.3,
++                          color: AppColors.label,
++                        ),
++                      ),
++                      const SizedBox(height: 6),
++                      Text(
++                        'Earliest start: ${DateFormat('MMM d, HH:mm').format(minStart)}',
++                        style: AppTypography.mono.copyWith(
++                          fontSize: 10,
++                          color: AppColors.secondaryLabel,
++                        ),
++                      ),
++                      const SizedBox(height: 10),
++                      Expanded(
++                        child: CupertinoDatePicker(
++                          mode: CupertinoDatePickerMode.dateAndTime,
++                          use24hFormat: true,
++                          minimumDate: minStart,
++                          initialDateTime: selectedStart,
++                          onDateTimeChanged: (value) {
++                            setModalState(() {
++                              selectedStart = value;
++                            });
++                          },
++                        ),
++                      ),
++                      const SizedBox(height: 8),
++                      Row(
++                        children: [30, 45, 60, 90, 120].map((minutes) {
++                          final active = selectedDuration == minutes;
++                          return Expanded(
++                            child: Padding(
++                              padding: const EdgeInsets.symmetric(horizontal: 3),
++                              child: CupertinoButton(
++                                padding: const EdgeInsets.symmetric(
++                                  vertical: 8,
++                                ),
++                                color: active
++                                    ? AppColors.primaryOrange.withValues(
++                                        alpha: 0.28,
++                                      )
++                                    : AppColors.backgroundLight.withValues(
++                                        alpha: 0.72,
++                                      ),
++                                borderRadius: BorderRadius.circular(10),
++                                onPressed: () => setModalState(
++                                  () => selectedDuration = minutes,
++                                ),
++                                child: Text(
++                                  '${minutes}m',
++                                  style: AppTypography.mono.copyWith(
++                                    fontSize: 10,
++                                    color: active
++                                        ? AppColors.primaryOrange
++                                        : AppColors.secondaryLabel,
++                                    fontWeight: FontWeight.w800,
++                                  ),
++                                ),
++                              ),
++                            ),
++                          );
++                        }).toList(growable: false),
++                      ),
++                      const SizedBox(height: 10),
++                      Row(
++                        children: [
++                          Expanded(
++                            child: CupertinoButton(
++                              padding: const EdgeInsets.symmetric(vertical: 10),
++                              color: AppColors.backgroundLight.withValues(
++                                alpha: 0.7,
++                              ),
++                              borderRadius: BorderRadius.circular(10),
++                              onPressed: () => Navigator.pop(ctx, false),
++                              child: Text(
++                                'Cancel',
++                                style: AppTypography.mono.copyWith(
++                                  fontSize: 11,
++                                  color: AppColors.secondaryLabel,
++                                  fontWeight: FontWeight.w700,
++                                ),
++                              ),
++                            ),
++                          ),
++                          const SizedBox(width: 8),
++                          Expanded(
++                            child: CupertinoButton(
++                              padding: const EdgeInsets.symmetric(vertical: 10),
++                              color: AppColors.primaryOrange.withValues(
++                                alpha: 0.24,
++                              ),
++                              borderRadius: BorderRadius.circular(10),
++                              onPressed: () => Navigator.pop(ctx, true),
++                              child: Text(
++                                'Plan',
++                                style: AppTypography.mono.copyWith(
++                                  fontSize: 11,
++                                  color: AppColors.primaryOrange,
++                                  fontWeight: FontWeight.w900,
++                                ),
++                              ),
++                            ),
++                          ),
++                        ],
++                      ),
++                    ],
++                  ),
++                ),
++              ),
++            );
++          },
++        );
++      },
++    );
++
++    if (!mounted || shouldSave != true) return;
++
++    final startsInMinutes = selectedStart.difference(DateTime.now()).inMinutes;
++    await _scheduleRestPeriod(
++      startsInMinutes: startsInMinutes,
++      durationMinutes: selectedDuration,
++    );
++  }
+@@
+                     GlassCard(
+                       padding: const EdgeInsets.all(14),
+                       borderRadius: 14,
+                       child: Column(
+                         children: [
+                           SizedBox(
+                             width: double.infinity,
+                             child: _quickPill(
+-                              label: 'PLAN PAUSE (IN 2h)',
+-                              onTap: _saving
+-                                  ? null
+-                                  : () => _scheduleRestPeriod(
+-                                      startsInMinutes: 120,
+-                                      durationMinutes: 30,
+-                                    ),
++                              label: 'PLAN PAUSE',
++                              onTap: _saving ? null : _openPausePlanner,
+                             ),
+                           ),
+*** End Patch

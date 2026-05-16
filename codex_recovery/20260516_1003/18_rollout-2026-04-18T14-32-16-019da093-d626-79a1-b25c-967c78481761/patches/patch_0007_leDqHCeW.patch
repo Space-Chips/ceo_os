@@ -1,0 +1,10 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/packages/home_widget/ios/Classes/SwiftHomeWidgetPlugin.swift
+@@
+-  public static func register(with registrar: FlutterPluginRegistrar) {
++  public static func register(with registrar: FlutterPluginRegistrar?) {
++    guard let registrar else {
++      return
++    }
+     let instance = SwiftHomeWidgetPlugin()
+*** End Patch

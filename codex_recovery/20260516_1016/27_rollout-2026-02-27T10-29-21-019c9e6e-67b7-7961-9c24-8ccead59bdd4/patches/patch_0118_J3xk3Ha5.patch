@@ -1,0 +1,165 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/leaderboard/leaderboard_screen.dart
+@@
+   String _identityLabel(LeaderboardEntry entry, {required bool mine}) {
+@@
+     return entry.createdBy.substring(0, 8).toUpperCase();
+   }
++
++  String _rankIconByName(String? rankName) {
++    switch ((rankName ?? '').trim().toLowerCase()) {
++      case 'mythic':
++        return '🐉';
++      case 'legend':
++        return '🦁';
++      case 'diamond':
++        return '💎';
++      case 'platinum':
++        return '🛡️';
++      case 'gold':
++        return '🥇';
++      case 'silver':
++        return '🥈';
++      default:
++        return '🐼';
++    }
++  }
++
++  Widget _buildMyPositionCard() {
++    if (_myUserId == null) return const SizedBox.shrink();
++    final myIndex = _entries.indexWhere((row) => row.entry.createdBy == _myUserId);
++    if (myIndex < 0) return const SizedBox.shrink();
++    final mine = _entries[myIndex].entry;
++    final topPercent = (100 - (mine.percentile ?? 50)).clamp(0, 100);
++
++    return GlassCard(
++      padding: const EdgeInsets.all(16),
++      borderRadius: 16,
++      border: Border.all(
++        color: AppColors.warning.withValues(alpha: 0.28),
++        width: 0.8,
++      ),
++      child: Row(
++        children: [
++          Text(_rankIconByName(mine.rankName), style: const TextStyle(fontSize: 28)),
++          const SizedBox(width: 10),
++          Expanded(
++            child: Column(
++              crossAxisAlignment: CrossAxisAlignment.start,
++              children: [
++                Text(
++                  'YOUR_POSITION',
++                  style: AppTypography.mono.copyWith(
++                    fontSize: 9,
++                    color: AppColors.warning,
++                    fontWeight: FontWeight.bold,
++                  ),
++                ),
++                const SizedBox(height: 3),
++                Text(
++                  (mine.rankName ?? 'Starter').toUpperCase(),
++                  style: AppTypography.mono.copyWith(
++                    fontSize: 12,
++                    fontWeight: FontWeight.bold,
++                  ),
++                ),
++                const SizedBox(height: 2),
++                Text(
++                  '#${myIndex + 1} • ${mine.winStreak ?? 0}d streak',
++                  style: AppTypography.mono.copyWith(
++                    fontSize: 10,
++                    color: AppColors.secondaryLabel,
++                  ),
++                ),
++              ],
++            ),
++          ),
++          Column(
++            crossAxisAlignment: CrossAxisAlignment.end,
++            children: [
++              Text(
++                'Top $topPercent%',
++                style: AppTypography.mono.copyWith(
++                  fontSize: 14,
++                  fontWeight: FontWeight.bold,
++                  color: AppColors.warning,
++                ),
++              ),
++              Text(
++                'GLOBAL',
++                style: AppTypography.mono.copyWith(
++                  fontSize: 9,
++                  color: AppColors.tertiaryLabel,
++                ),
++              ),
++            ],
++          ),
++        ],
++      ),
++    );
++  }
+@@
+   List<Widget> _buildGlobalCards() {
+@@
+-    final widgets = <Widget>[];
+-    for (var i = 0; i < _entries.length; i++) {
+-      widgets.add(_buildGlobalRow(_entries[i], i + 1));
+-      if (i != _entries.length - 1) {
++    final topRows = _entries.take(10).toList();
++    final widgets = <Widget>[];
++    final myCard = _buildMyPositionCard();
++    if (myCard is! SizedBox) {
++      widgets.add(myCard);
++      widgets.add(const SizedBox(height: 10));
++    }
++    for (var i = 0; i < topRows.length; i++) {
++      widgets.add(_buildGlobalRow(topRows[i], i + 1));
++      if (i != topRows.length - 1) {
+         widgets.add(const SizedBox(height: 10));
+       }
+     }
+     return widgets;
+   }
+@@
+                 Text(
+                   entry.rankName ?? 'Starter',
+                   style: AppTypography.mono.copyWith(
+                     fontSize: 13,
+                     fontWeight: FontWeight.bold,
+                   ),
+                 ),
+                 const SizedBox(height: 3),
+-                Text(
+-                  _identityLabel(entry, mine: mine),
+-                  style: AppTypography.mono.copyWith(
+-                    fontSize: 10,
+-                    color: AppColors.tertiaryLabel,
+-                  ),
+-                ),
++                Row(
++                  children: [
++                    Text(_rankIconByName(entry.rankName)),
++                    const SizedBox(width: 4),
++                    Expanded(
++                      child: Text(
++                        _identityLabel(entry, mine: mine),
++                        style: AppTypography.mono.copyWith(
++                          fontSize: 10,
++                          color: AppColors.tertiaryLabel,
++                        ),
++                      ),
++                    ),
++                  ],
++                ),
+               ],
+             ),
+           ),
+@@
+                   Text(
+                     (friend.friendRankName ?? 'Starter').toUpperCase(),
+                     style: AppTypography.mono.copyWith(
+                       fontSize: 9,
+                       color: AppColors.secondaryLabel,
+                     ),
+                   ),
+*** End Patch

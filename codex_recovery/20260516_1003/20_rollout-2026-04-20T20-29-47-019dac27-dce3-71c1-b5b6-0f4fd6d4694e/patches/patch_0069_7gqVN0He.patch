@@ -1,0 +1,17 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/android/app/src/main/kotlin/com/wakeapp/ceoos/BlockingAccessibilityService.kt
+@@
+     companion object {
+@@
+         fun navigateBackFromBlockGate() {
+             instance?.performGlobalAction(GLOBAL_ACTION_BACK)
+         }
+ 
++        fun navigateHomeFromBlockGate() {
++            instance?.performGlobalAction(GLOBAL_ACTION_HOME)
++        }
++
+         fun requestImmediateEvaluation() {
+             instance?.evaluateCurrentState()
+         }
+*** End Patch

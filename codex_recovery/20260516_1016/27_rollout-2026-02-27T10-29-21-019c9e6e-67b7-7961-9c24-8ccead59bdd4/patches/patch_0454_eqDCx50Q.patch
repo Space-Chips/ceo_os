@@ -1,0 +1,137 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/services/stats_engine.dart
+@@
+   Future<AdvancedStatsSnapshot> buildSnapshot({DateTime? now}) async {
+     final today = _day(now ?? DateTime.now());
+     final daily = await _repository.getDailyStats(today);
+@@
+     final monthly = await _repository.getMonthlyStats(monthKey);
+ 
+     final lifetime = await _repository.getLifetimeStats();
+     final recent = await _repository.getRecentDailyStats(days: 30);
+ 
+-    final insights = _generateWeeklyInsights(weekly: weekly, recentDaily: recent);
+-    final heatmap = recent
+-        .map((d) => HeatmapCell.fromScore(d.date, d.attentionScore))
+-        .toList();
++    final insights = _insightGenerator.build(weekly: weekly, recentDaily: recent);
++    final heatmap = _heatmapGenerator.build(recent);
++    final heatmapCard = _heatmapGenerator.buildCard(recent);
+ 
+     final todayCard = daily == null
+         ? null
+         : TodayShareCard(
+             attentionScore: daily.attentionScore,
+@@
+           );
+ 
+     WeeklyTransformationCard? weeklyCard;
+     if (weekly != null) {
+       final previousWeek = await _repository.getWeeklyStats(
+@@
+       weeklyCard = WeeklyTransformationCard(
+         screenTimeBeforeMinutes: previousWeek?.totalScreenTimeMinutes ?? 0,
+         screenTimeNowMinutes: weekly.totalScreenTimeMinutes,
+         timeRecoveredMinutes: weekly.totalTimeRecoveredMinutes,
+         consistencyPercent: weekly.consistencyPercent,
+         rankProgressPercent: weekly.percentile,
++        attentionDelta: weekly.weeklyTransformationDelta,
++        screenTimeDeltaPercent: weekly.screenTimeTrend,
+       );
+     }
++
++    final ceoCard = daily == null || daily.longestCeoSessionMinutes == 0
++        ? null
++        : CeoCompletionCard(
++            sessionDurationMinutes: daily.longestCeoSessionMinutes,
++            completedWithoutExit: daily.ceoSessionsBroken == 0 &&
++                daily.ceoSessionsCompleted > 0,
++            streakImpact: daily.ceoStreakValue,
++          );
++
++    final milestoneCards = _buildMilestoneCards(lifetime);
++    final highlights = _buildHighlights(
++      daily: daily,
++      weekly: weekly,
++      monthly: monthly,
++      lifetime: lifetime,
++    );
+ 
+     return AdvancedStatsSnapshot(
+       daily: daily,
+       weekly: weekly,
+       monthly: monthly,
+       lifetime: lifetime,
+       insights: insights,
+       heatmap: heatmap,
+       todayCard: todayCard,
+       weeklyCard: weeklyCard,
++      ceoCard: ceoCard,
++      milestoneCards: milestoneCards,
++      heatmapCard: heatmapCard,
++      highlights: highlights,
+     );
+   }
+-
+-  List<WeeklyInsight> _generateWeeklyInsights({
+-    required WeeklyStats? weekly,
+-    required List<DailyStats> recentDaily,
+-  }) {
+-    if (weekly == null) return const [];
+-
+-    final insights = <WeeklyInsight>[];
+-
+-    if (weekly.bestFocusWindow != null && weekly.bestFocusWindow!.isNotEmpty) {
+-      insights.add(
+-        WeeklyInsight(
+-          title: 'Peak Focus Window',
+-          message: 'You focus best between ${weekly.bestFocusWindow}.',
+-        ),
+-      );
+-    }
+-
+-    if (weekly.mostDistractingTimeWindow != null &&
+-        weekly.mostDistractingTimeWindow!.isNotEmpty) {
+-      insights.add(
+-        WeeklyInsight(
+-          title: 'Distraction Window',
+-          message:
+-              'You are most distracted between ${weekly.mostDistractingTimeWindow}.',
+-        ),
+-      );
+-    }
+-
+-    if (weekly.screenTimeTrend < 0) {
+-      insights.add(
+-        WeeklyInsight(
+-          title: 'Screen Time Drop',
+-          message:
+-              'Screen time is down ${weekly.screenTimeTrend.abs().toStringAsFixed(1)}% versus last week.',
+-        ),
+-      );
+-    } else if (weekly.screenTimeTrend > 0) {
+-      insights.add(
+-        WeeklyInsight(
+-          title: 'Screen Time Alert',
+-          message:
+-              'Screen time is up ${weekly.screenTimeTrend.toStringAsFixed(1)}% versus last week.',
+-        ),
+-      );
+-    }
+-
+-    if (recentDaily.isNotEmpty) {
+-      final best = recentDaily.reduce(
+-        (a, b) => a.attentionScore >= b.attentionScore ? a : b,
+-      );
+-      insights.add(
+-        WeeklyInsight(
+-          title: 'Best Day',
+-          message:
+-              'Your strongest day scored ${best.attentionScore}/100 on ${_fmtDay(best.date)}.',
+-        ),
+-      );
+-    }
+-
+-    return insights.take(4).toList();
+-  }
+*** End Patch

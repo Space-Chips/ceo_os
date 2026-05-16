@@ -1,0 +1,57 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/ios/FocusActivityMonitor/FocusActivityMonitorExtension.swift
+@@
+     static let classicPauseSelectionStorageKey = "classic_pause_selection_payloads_v1"
+     static let classicPauseEnabledStorageKey = "classic_pause_enabled_v1"
+     static let classicRestPeriodsStorageKey = "classic_rest_periods_v1"
+     static let classicDailyLimitEntriesStorageKey = "classic_daily_limit_entries_v1"
+     static let classicDailyLimitTriggeredIdsStorageKey = "classic_daily_limit_triggered_ids_v1"
++    static let classicWebsiteDomainsStorageKey = "classic_website_domains_v1"
++    static let classicPauseWebsiteDomainsStorageKey =
++        "classic_pause_website_domains_v1"
+@@
+     private func mergeSelections(encodedPayloads: [String]) -> FamilyActivitySelection {
+         var merged = FamilyActivitySelection()
+         for payload in encodedPayloads {
+             guard let data = payload.data(using: .utf8),
+                   let decoded = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data) else {
+                 continue
+             }
+             merged.applicationTokens.formUnion(decoded.applicationTokens)
+             merged.categoryTokens.formUnion(decoded.categoryTokens)
+             merged.webDomainTokens.formUnion(decoded.webDomainTokens)
+         }
+         return merged
+     }
++
++    private func normalizedDomains(_ domains: [String]) -> [String] {
++        domains
++            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() }
++            .filter { !$0.isEmpty }
++    }
++
++    private func webDomainTokens(from domains: [String]) -> Set<WebDomainToken> {
++        var tokens = Set<WebDomainToken>()
++        for domain in normalizedDomains(domains) {
++            tokens.insert(WebDomain(domain: domain).token)
++        }
++        return tokens
++    }
+@@
+-        let selection = payloads.isEmpty ? FamilyActivitySelection() : mergeSelections(encodedPayloads: payloads)
++        var selection = payloads.isEmpty ? FamilyActivitySelection() : mergeSelections(encodedPayloads: payloads)
++        if defaults?.bool(forKey: FocusMonitorShared.classicEnabledStorageKey) ?? false {
++            selection.webDomainTokens.formUnion(
++                webDomainTokens(
++                    from: defaults?.stringArray(forKey: FocusMonitorShared.classicWebsiteDomainsStorageKey) ?? []
++                )
++            )
++        }
++        if defaults?.bool(forKey: FocusMonitorShared.classicPauseEnabledStorageKey) ?? false {
++            selection.webDomainTokens.formUnion(
++                webDomainTokens(
++                    from: defaults?.stringArray(forKey: FocusMonitorShared.classicPauseWebsiteDomainsStorageKey) ?? []
++                )
++            )
++        }
+*** End Patch

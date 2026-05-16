@@ -1,0 +1,119 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/router/app_router.dart
+@@
+ import '../providers/auth_provider.dart';
++import '../providers/ceo_mode_provider.dart';
+ import '../providers/focus_provider.dart';
+@@
+ import '../../features/focus/focus_screen.dart';
++import '../../features/ceo_mode/ceo_mode_screen.dart';
+@@
+             GoRoute(
+               path: '/focus',
+               pageBuilder: (context, state) =>
+                   const NoTransitionPage(child: FocusScreen()),
+             ),
++            GoRoute(
++              path: '/ceo-mode',
++              pageBuilder: (context, state) =>
++                  const NoTransitionPage(child: CeoModeScreen()),
++            ),
+@@
+           Positioned(
+             left: 16,
+             right: 16,
+             bottom: 16,
+             child: Consumer<FocusProvider>(
+@@
+                 return const SizedBox.shrink();
+               },
+             ),
+           ),
++          Positioned.fill(
++            child: Consumer<CeoModeProvider>(
++              builder: (context, ceo, _) {
++                final lockActive =
++                    ceo.isSessionActive && location != '/ceo-mode';
++                if (!lockActive) return const SizedBox.shrink();
++
++                return Container(
++                  color: AppColors.background.withValues(alpha: 0.94),
++                  child: SafeArea(
++                    child: Center(
++                      child: Padding(
++                        padding: const EdgeInsets.symmetric(horizontal: 24),
++                        child: GestureDetector(
++                          onTap: () => context.go('/ceo-mode'),
++                          child: ClipRRect(
++                            borderRadius: BorderRadius.circular(24),
++                            child: BackdropFilter(
++                              filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
++                              child: Container(
++                                padding: const EdgeInsets.all(22),
++                                decoration: BoxDecoration(
++                                  color: AppColors.backgroundLight.withValues(
++                                    alpha: 0.82,
++                                  ),
++                                  borderRadius: BorderRadius.circular(24),
++                                  border: Border.all(
++                                    color: AppColors.primaryOrange.withValues(
++                                      alpha: 0.35,
++                                    ),
++                                    width: 0.7,
++                                  ),
++                                ),
++                                child: Column(
++                                  mainAxisSize: MainAxisSize.min,
++                                  children: [
++                                    Icon(
++                                      CupertinoIcons.lock_shield_fill,
++                                      size: 30,
++                                      color: AppColors.primaryOrange,
++                                    ),
++                                    const SizedBox(height: 10),
++                                    Text(
++                                      'CEO MODE ACTIVE',
++                                      style: AppTypography.mono.copyWith(
++                                        fontSize: 13,
++                                        fontWeight: FontWeight.bold,
++                                        color: AppColors.primaryOrange,
++                                        letterSpacing: 1.4,
++                                      ),
++                                    ),
++                                    const SizedBox(height: 6),
++                                    Text(
++                                      ceo.homeCardLabel,
++                                      textAlign: TextAlign.center,
++                                      style: AppTypography.mono.copyWith(
++                                        fontSize: 14,
++                                        color: AppColors.secondaryLabel,
++                                        fontWeight: FontWeight.w700,
++                                      ),
++                                    ),
++                                    const SizedBox(height: 12),
++                                    Text(
++                                      'Tap to return to locked session',
++                                      style: AppTypography.mono.copyWith(
++                                        fontSize: 11,
++                                        color: AppColors.tertiaryLabel,
++                                      ),
++                                    ),
++                                  ],
++                                ),
++                              ),
++                            ),
++                          ),
++                        ),
++                      ),
++                    ),
++                  ),
++                );
++              },
++            ),
++          ),
+         ],
+       ),
+     );
+   }
+ }
+*** End Patch

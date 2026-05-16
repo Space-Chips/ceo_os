@@ -1,0 +1,111 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/tasks/tasks_screen.dart
+@@
+           return SafeArea(
+             child: GestureDetector(
+               onHorizontalDragEnd: _handleTabSwipe,
+               child: ListView(
+                 padding: const EdgeInsets.fromLTRB(20, 14, 20, 120),
+                 children: [
++                  _glowSurface(
++                    glowColor: AppColors.primaryOrange.withValues(alpha: 0.16),
++                    borderRadius: 20,
++                    child: GlassCard(
++                      padding: const EdgeInsets.all(16),
++                      borderRadius: 20,
++                      border: Border.all(
++                        color: AppColors.primaryOrange.withValues(alpha: 0.22),
++                        width: 0.7,
++                      ),
++                      child: Column(
++                        crossAxisAlignment: CrossAxisAlignment.start,
++                        children: [
++                          Row(
++                            children: [
++                              Icon(
++                                CupertinoIcons.bolt_fill,
++                                size: 14,
++                                color: AppColors.primaryOrange,
++                              ),
++                              const SizedBox(width: 7),
++                              Text(
++                                'PARETO_EXECUTION',
++                                style: AppTypography.mono.copyWith(
++                                  fontSize: 9,
++                                  color: AppColors.primaryOrange,
++                                  fontWeight: FontWeight.bold,
++                                  letterSpacing: 1.2,
++                                ),
++                              ),
++                            ],
++                          ),
++                          const SizedBox(height: 8),
++                          Text(
++                            nextBestTask == null
++                                ? 'No priority task selected yet.'
++                                : 'Next best: ${nextBestTask.title}',
++                            maxLines: 1,
++                            overflow: TextOverflow.ellipsis,
++                            style: AppTypography.mono.copyWith(
++                              fontSize: 12,
++                              fontWeight: FontWeight.bold,
++                              color: AppColors.label,
++                            ),
++                          ),
++                          const SizedBox(height: 4),
++                          Text(
++                            overdue.isNotEmpty
++                                ? 'Overdue items detected. Clear these first.'
++                                : 'Use LIST / MATRIX / HISTORY to execute and review.',
++                            style: AppTypography.mono.copyWith(
++                              fontSize: 10,
++                              color: AppColors.secondaryLabel,
++                            ),
++                          ),
++                        ],
++                      ),
++                    ),
++                  ),
++                  const SizedBox(height: 10),
+                   GlassCard(
+                     padding: const EdgeInsets.all(16),
+                     borderRadius: 18,
+                     child: Row(
+@@
+                   GlassCard(
+                     padding: const EdgeInsets.all(12),
+                     borderRadius: 14,
++                    border: Border.all(
++                      color: overdue.isNotEmpty
++                          ? AppColors.error.withValues(alpha: 0.24)
++                          : AppColors.glassBorder,
++                      width: 0.55,
++                    ),
+                     child: Row(
+                       children: [
+                         Icon(
+@@
+                   ),
+                   const SizedBox(height: 12),
+-                  Row(
+-                    children: [
+-                      _tabChip('LIST', _TaskTab.list),
+-                      const SizedBox(width: 8),
+-                      _tabChip('MATRIX', _TaskTab.matrix),
+-                      const SizedBox(width: 8),
+-                      _tabChip('HISTORY', _TaskTab.history),
+-                    ],
++                  GlassCard(
++                    padding: const EdgeInsets.all(6),
++                    borderRadius: 12,
++                    child: Row(
++                      children: [
++                        _tabChip('LIST', _TaskTab.list),
++                        const SizedBox(width: 8),
++                        _tabChip('MATRIX', _TaskTab.matrix),
++                        const SizedBox(width: 8),
++                        _tabChip('HISTORY', _TaskTab.history),
++                      ],
++                    ),
+                   ),
+*** End Patch

@@ -1,0 +1,17 @@
+*** Begin Patch
+*** Update File: lib/features/control_center_setup/widgets/permissions_screen.dart
+@@
+           if (_isAndroid)
+             LiquidButton(
+-              text: setup.allPermissionsGranted
++              label: setup.allPermissionsGranted
+                   ? 'Permissions OK'
+                   : 'Activer les accès',
+               onPressed: setup.allPermissionsGranted
+                   ? null
+                   : onOpenAndroidPermissions,
+             )
+           else
+-            LiquidButton(text: 'Continuer', onPressed: onFinish),
++            LiquidButton(label: 'Continuer', onPressed: onFinish),
+*** End Patch

@@ -1,0 +1,107 @@
+*** Begin Patch
+*** Update File: ios/CeoWidgets/CeoHomeWidget.swift
+@@
+ private let keyHabitsTableSmall = "ceo_widget_habits_table_small"
+ private let keyHabitsTableLarge = "ceo_widget_habits_table_large"
++private let keyFocusSmall = "ceo_widget_focus_small"
++private let keyFocusLarge = "ceo_widget_focus_large"
++private let keyBlackoutSmall = "ceo_widget_blackout_small"
++private let keyBlackoutLarge = "ceo_widget_blackout_large"
+@@
+ private let keyEnabledHabitsToday = "ceo_widget_enabled_habits_today"
+ private let keyEnabledHabitsTable = "ceo_widget_enabled_habits_table"
++private let keyEnabledFocus = "ceo_widget_enabled_focus"
++private let keyEnabledBlackout = "ceo_widget_enabled_blackout"
+@@
+ enum CeoWidgetResolvedMode {
+   case todo
+   case dashboard
+   case habits
+   case habitsTable
++  case focus
++  case blackout
+ }
+ 
+ // MARK: - Fixed widgets (no “Edit Widget” required)
+@@
+ struct CeoHabitsTableWidget: Widget {
+   let kind: String = "com.wakeapp.ceoos.widget.habits.table"
+@@
+   }
+ }
+ 
++@available(iOSApplicationExtension 16.0, *)
++struct CeoFocusWidget: Widget {
++  let kind: String = "com.wakeapp.ceoos.widget.focus"
++
++  var body: some WidgetConfiguration {
++    StaticConfiguration(kind: kind, provider: CeoFixedProvider(mode: .focus)) { entry in
++      CeoFixedWidgetView(entry: entry)
++    }
++    .configurationDisplayName("WakeApp — Focus")
++    .description("Start a Focus session quickly.")
++    .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
++  }
++}
++
++@available(iOSApplicationExtension 16.0, *)
++struct CeoBlackoutWidget: Widget {
++  let kind: String = "com.wakeapp.ceoos.widget.blackout"
++
++  var body: some WidgetConfiguration {
++    StaticConfiguration(kind: kind, provider: CeoFixedProvider(mode: .blackout)) { entry in
++      CeoFixedWidgetView(entry: entry)
++    }
++    .configurationDisplayName("WakeApp — Blackout")
++    .description("Start a Blackout session quickly.")
++    .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
++  }
++}
++
+ // MARK: - Timeline
+ 
+ @available(iOSApplicationExtension 16.0, *)
+ struct CeoFixedEntry: TimelineEntry {
+@@
+   private func isEnabled(_ mode: CeoWidgetResolvedMode) -> Bool {
+     let defaults = UserDefaults(suiteName: appGroupId) ?? .standard
+     switch mode {
+     case .todo:
+       return defaults.object(forKey: keyEnabledTodo) as? Bool ?? false
+     case .dashboard:
+       return defaults.object(forKey: keyEnabledDashboard) as? Bool ?? false
+     case .habits:
+       return defaults.object(forKey: keyEnabledHabitsToday) as? Bool ?? false
+     case .habitsTable:
+       return defaults.object(forKey: keyEnabledHabitsTable) as? Bool ?? false
++    case .focus:
++      return defaults.object(forKey: keyEnabledFocus) as? Bool ?? false
++    case .blackout:
++      return defaults.object(forKey: keyEnabledBlackout) as? Bool ?? false
+     }
+   }
+ }
+@@
+   private func imageKeyFor(_ mode: CeoWidgetResolvedMode, large: Bool) -> String {
+     switch mode {
+     case .todo: return large ? keyTodoLarge : keyTodoSmall
+     case .habits: return large ? keyHabitsLarge : keyHabitsSmall
+     case .dashboard: return large ? keyDashboardLarge : keyDashboardSmall
+     case .habitsTable: return large ? keyHabitsTableLarge : keyHabitsTableSmall
++    case .focus: return large ? keyFocusLarge : keyFocusSmall
++    case .blackout: return large ? keyBlackoutLarge : keyBlackoutSmall
+     }
+   }
+ 
+   private func routeUrlFor(_ mode: CeoWidgetResolvedMode) -> String {
+     switch mode {
+     case .todo: return "ceoos:///tasks"
+     case .habits: return "ceoos:///habits"
+     case .dashboard: return "ceoos:///home"
+     case .habitsTable: return "ceoos:///habits"
++    case .focus: return "ceoos:///focus?start=1&duration=25"
++    case .blackout: return "ceoos:///ceo-mode?start=1&duration=120"
+     }
+   }
+ }
+*** End Patch

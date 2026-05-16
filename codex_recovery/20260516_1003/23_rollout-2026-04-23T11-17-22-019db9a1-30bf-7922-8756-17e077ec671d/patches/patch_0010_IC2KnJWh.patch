@@ -1,0 +1,14 @@
+*** Begin Patch
+*** Update File: lib/features/ceo_mode/ceo_mode_screen.dart
+@@
+                   await provider.openSystemSettings();
+                 },
+-                child: const Text('Open Settings'),
++                child: Text(context.read<LanguageProvider>().t('open_settings')),
+               ),
+             CupertinoDialogAction(
+               onPressed: () => Navigator.of(ctx).pop(),
+-              child: const Text('OK'),
++              child: Text(context.read<LanguageProvider>().t('ok')),
+             ),
+*** End Patch

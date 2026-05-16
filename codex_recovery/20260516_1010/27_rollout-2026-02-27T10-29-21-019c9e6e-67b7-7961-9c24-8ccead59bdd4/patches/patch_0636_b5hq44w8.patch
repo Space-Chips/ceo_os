@@ -1,0 +1,30 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/home/home_screen.dart
+@@
+-            colors: [
+-              AppColors.topBarControlBackground,
+-              AppColors.pillBackground,
+-            ],
++            colors: [
++              AppColors.cardBackgroundAlt,
++              AppColors.cardBackgroundStrong,
++            ],
+@@
+-            colors: [
+-              AppColors.pillBackground,
+-              AppColors.topBarControlBackground,
+-            ],
++            colors: [
++              AppColors.cardBackgroundAlt,
++              AppColors.cardBackgroundStrong,
++            ],
+@@
+-            colors: [
+-              AppColors.topBarControlBackground,
+-              AppColors.sectionBackground.withValues(alpha: 0.94),
+-            ],
++            colors: [
++              AppColors.cardBackgroundAlt,
++              AppColors.cardBackgroundStrong,
++            ],
+*** End Patch

@@ -1,0 +1,21 @@
+*** Begin Patch
+*** Update File: ios/CeoWidgets/CeoHomeWidget.swift
+@@
+     Group {
+       if !entry.enabled {
+         disabledView
+       } else if let path, let image = UIImage(contentsOfFile: path) {
+         Image(uiImage: image)
+           .resizable()
+           .scaledToFill()
++          .frame(maxWidth: .infinity, maxHeight: .infinity)
+       } else {
+         emptyView
+       }
+     }
+     .applyWidgetBackground()
++    .ignoresSafeArea()
+     .widgetURL(URL(string: routeUrlFor(entry.mode)))
+     .clipped()
+   }
+*** End Patch

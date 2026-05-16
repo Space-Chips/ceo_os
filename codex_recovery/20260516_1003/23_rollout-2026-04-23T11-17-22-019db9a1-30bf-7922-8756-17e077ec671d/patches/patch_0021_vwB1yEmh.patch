@@ -1,0 +1,29 @@
+*** Begin Patch
+*** Update File: ios/Runner.xcodeproj/project.pbxproj
+@@
+ 		1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */ = {isa = PBXBuildFile; fileRef = 1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */; };
+ 		20C92EFE0F474936BC58C038 /* FocusActivityMonitorExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = E9A5CEDA2259476E98F0C12E /* FocusActivityMonitorExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+-		250736760F4F6742748E9976 /* Pods_Runner.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 09F0395CC1F442FD2445B945 /* Pods_Runner.framework */; };
+ 		331C808B294A63AB00263BE5 /* RunnerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 331C807B294A618700263BE5 /* RunnerTests.swift */; };
+@@
+-		09F0395CC1F442FD2445B945 /* Pods_Runner.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Runner.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+ 		13156029D06FF191BC615C91 /* Pods-RunnerTests.profile.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.profile.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.profile.xcconfig"; sourceTree = "<group>"; };
+@@
+ 		97C146EB1CF9000F007C117D /* Frameworks */ = {
+ 			isa = PBXFrameworksBuildPhase;
+ 			buildActionMask = 2147483647;
+ 			files = (
+-				250736760F4F6742748E9976 /* Pods_Runner.framework in Frameworks */,
+ 			);
+ 			runOnlyForDeploymentPostprocessing = 0;
+ 		};
+@@
+ 		8578F9762F4379B20038063F /* Frameworks */ = {
+ 			isa = PBXGroup;
+ 			children = (
+ 				8578F9772F4379B20038063F /* WidgetKit.framework */,
+ 				8578F9792F4379B20038063F /* SwiftUI.framework */,
+-				09F0395CC1F442FD2445B945 /* Pods_Runner.framework */,
+ 				70795A5A87C09A24574BBC43 /* Pods_RunnerTests.framework */,
+ 			);
+*** End Patch

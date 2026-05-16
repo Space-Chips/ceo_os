@@ -1,0 +1,30 @@
+*** Begin Patch
+*** Update File: android/app/src/main/kotlin/com/wakeapp/ceoos/BlockGateActivity.kt
+@@
+     companion object {
+         const val ACTION_DISMISS = "com.wakeapp.ceoos.action.DISMISS_BLOCK_GATE"
++        const val EXTRA_BLOCK_TYPE = "extra_block_type"
++        const val EXTRA_PACKAGE_NAME = "extra_package_name"
++        const val EXTRA_DOMAIN = "extra_domain"
++        const val EXTRA_REASON = "extra_reason"
+         const val EXTRA_KICKER = "extra_kicker"
+         const val EXTRA_TITLE = "extra_title"
+         const val EXTRA_SUBTITLE = "extra_subtitle"
+@@
+     override fun onStop() {
+         super.onStop()
+         isVisible = false
+-        AppBlockingService.onBlockGateHidden()
++        WakeAccessibilityService.onBlockGateHidden()
+         try {
+             unregisterReceiver(dismissReceiver)
+         } catch (_: Exception) {
+@@
+     private fun goBackToBrowser() {
+         isVisible = false
+-        AppBlockingService.navigateBackFromBlockGate()
++        WakeAccessibilityService.navigateBackFromBlockGate()
+         finish()
+         overridePendingTransition(0, 0)
+     }
+*** End Patch

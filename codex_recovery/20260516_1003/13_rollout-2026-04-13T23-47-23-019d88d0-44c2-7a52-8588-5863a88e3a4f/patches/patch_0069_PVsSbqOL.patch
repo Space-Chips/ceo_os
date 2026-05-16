@@ -1,0 +1,28 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/ios/Runner/AppDelegate.swift
+@@
+ @available(iOS 16.0, *)
+ struct PickerWrapperView: View {
+     @State var selection: FamilyActivitySelection
++    var title: String
++    var subtitle: String?
+     var onComplete: (FamilyActivitySelection) -> Void
+     var onCancel: () -> Void
+     @Environment(\.presentationMode) var presentationMode
+ 
+     var body: some View {
+         NavigationView {
+             VStack {
++                if let subtitle {
++                    Text(subtitle)
++                        .font(.system(size: 13, weight: .medium, design: .rounded))
++                        .foregroundStyle(Color.secondary)
++                        .padding(.top, 6)
++                }
+                 FamilyActivityPicker(selection: $selection)
+             }
+-            .navigationTitle("Select Distractions")
++            .navigationTitle(title)
+             .navigationBarTitleDisplayMode(.inline)
+             .toolbar {
+*** End Patch

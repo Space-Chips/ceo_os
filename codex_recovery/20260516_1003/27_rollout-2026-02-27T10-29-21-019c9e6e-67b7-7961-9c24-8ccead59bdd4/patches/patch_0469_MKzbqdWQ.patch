@@ -1,0 +1,1213 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/dashboard/dashboard_screen.dart
+@@
+   @override
+   Widget build(BuildContext context) {
+     return CupertinoPageScaffold(
+       backgroundColor: AppColors.background,
+       child: AmbientBackdrop(
+-        child: SafeArea(
+-          child: Padding(
+-            padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
+-            child: Column(
+-              crossAxisAlignment: CrossAxisAlignment.start,
+-              children: [
+-                _topBar(),
+-                const SizedBox(height: 10),
+-                Text(
+-                  'Control Center',
+-                  style: AppTypography.largeTitle.copyWith(
+-                    fontSize: 42,
+-                    height: 1,
+-                    color: AppColors.label,
+-                    fontWeight: FontWeight.w700,
+-                  ),
+-                ),
+-                const SizedBox(height: 22),
+-                Expanded(child: _buildBody()),
+-              ],
+-            ),
++        child: Stack(
++          children: [
++            Positioned.fill(
++              child: IgnorePointer(
++                child: DecoratedBox(
++                  decoration: BoxDecoration(
++                    gradient: RadialGradient(
++                      center: const Alignment(0.92, -0.96),
++                      radius: 0.44,
++                      colors: [
++                        const Color(0xFF5078FF).withValues(alpha: 0.12),
++                        CupertinoColors.transparent,
++                      ],
++                      stops: const [0, 1],
++                    ),
++                  ),
++                ),
++              ),
++            ),
++            SafeArea(
++              child: Padding(
++                padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
++                child: Column(
++                  crossAxisAlignment: CrossAxisAlignment.start,
++                  children: [
++                    _topBar(),
++                    const SizedBox(height: 12),
++                    Text(
++                      'Control Center',
++                      style: AppTypography.largeTitle.copyWith(
++                        fontSize: 42,
++                        height: 0.95,
++                        letterSpacing: -1.4,
++                        color: AppColors.label,
++                        fontWeight: FontWeight.w700,
++                      ),
++                    ),
++                    const SizedBox(height: 28),
++                    Expanded(child: _buildBody()),
++                  ],
++                ),
++              ),
++            ),
++          ],
++        ),
++      ),
++    );
++  }
++
++  Widget _buildBody() {
++    if (_loading) {
++      return Center(
++        child: CupertinoActivityIndicator(color: AppColors.primaryOrange),
++      );
++    }
++
++    if (_error != null &&
++        _topTasks.isEmpty &&
++        _todayHabits.isEmpty &&
++        _todayEvents.isEmpty &&
++        _yesterdayHabits.isEmpty) {
++      return Center(
++        child: _PressScale(
++          child: Container(
++            padding: const EdgeInsets.all(18),
++            decoration: _panelDecoration(),
++            child: Column(
++              mainAxisSize: MainAxisSize.min,
++              children: [
++                Text(
++                  'Dashboard unavailable',
++                  style: AppTypography.headline.copyWith(
++                    fontWeight: FontWeight.w600,
++                    color: AppColors.label,
++                  ),
++                ),
++                const SizedBox(height: 8),
++                Text(
++                  _error!,
++                  textAlign: TextAlign.center,
++                  style: AppTypography.caption1.copyWith(
++                    fontSize: 11,
++                    color: AppColors.tertiaryLabel,
++                  ),
++                ),
++                const SizedBox(height: 12),
++                LiquidButton(label: 'Retry', onPressed: _load, fullWidth: true),
++              ],
++            ),
+           ),
+         ),
+       ),
+     );
+   }
+ 
+-  Widget _buildBody() {
+-    if (_loading) {
+-      return Center(
+-        child: CupertinoActivityIndicator(color: AppColors.primaryOrange),
+-      );
+-    }
+-
+-    if (_error != null &&
+-        _topTasks.isEmpty &&
+-        _todayHabits.isEmpty &&
+-        _todayEvents.isEmpty &&
+-        _yesterdayHabits.isEmpty) {
+-      return Center(
+-        child: GlassCard(
+-          padding: const EdgeInsets.all(16),
+-          borderRadius: 16,
+-          child: Column(
+-            mainAxisSize: MainAxisSize.min,
+-            children: [
+-              Text(
+-                'Dashboard unavailable',
+-                style: AppTypography.mono.copyWith(
+-                  fontSize: 13,
+-                  fontWeight: FontWeight.w800,
+-                  color: AppColors.label,
+-                ),
+-              ),
+-              const SizedBox(height: 8),
+-              Text(
+-                _error!,
+-                textAlign: TextAlign.center,
+-                style: AppTypography.mono.copyWith(
+-                  fontSize: 10,
+-                  color: AppColors.tertiaryLabel,
+-                ),
+-              ),
+-              const SizedBox(height: 10),
+-              LiquidButton(label: 'Retry', onPressed: _load, fullWidth: true),
+-            ],
+-          ),
+-        ),
+-      );
+-    }
+-
+     return ListView(
+       padding: const EdgeInsets.only(bottom: 120),
+       children: [
+         _attentionScoreCard(),
+-        const SizedBox(height: 16),
++        const SizedBox(height: 18),
+         if (_yesterdayHabits.isNotEmpty) ...[
+           _yesterdayValidationCard(),
+-          const SizedBox(height: 16),
++          const SizedBox(height: 18),
+         ],
+         _prioritiesCard(),
+-        const SizedBox(height: 16),
++        const SizedBox(height: 18),
+         _todayHabitsCard(),
+-        const SizedBox(height: 16),
++        const SizedBox(height: 18),
+         _todayScheduleCard(),
+       ],
+     );
+@@
+               Text(
+                 'Home',
+-                style: AppTypography.mono.copyWith(
+-                  fontSize: 16,
+-                  color: AppColors.secondaryLabel,
+-                  fontWeight: FontWeight.w600,
++                style: AppTypography.subhead.copyWith(
++                  fontSize: 14,
++                  color: AppColors.secondaryLabel.withValues(alpha: 0.72),
++                  fontWeight: FontWeight.w500,
+                 ),
+               ),
+             ],
+@@
+   Widget _attentionScoreCard() {
+-    return Container(
+-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 22),
+-      decoration: _panelDecoration(accentColor: AppColors.accent.withValues(alpha: 0.22)),
+-      child: Column(
+-        crossAxisAlignment: CrossAxisAlignment.center,
+-        children: [
+-          Text(
+-            'Attention Score',
+-            style: AppTypography.title3.copyWith(
+-              color: AppColors.secondaryLabel,
+-              fontWeight: FontWeight.w600,
+-            ),
+-          ),
+-          const SizedBox(height: 12),
+-          Text(
+-            '$_attentionScore',
+-            style: AppTypography.heroNumber.copyWith(
+-              fontSize: 64,
+-              fontWeight: FontWeight.w700,
+-              color: AppColors.label,
+-            ),
+-          ),
+-        ],
+-      ),
++    return _PressScale(
++      child: Container(
++        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
++        decoration: _panelDecoration(
++          accentColor: AppColors.accent.withValues(alpha: 0.14),
++        ),
++        child: Center(
++          child: Column(
++            children: [
++              TweenAnimationBuilder<double>(
++                tween: Tween<double>(begin: 0, end: _attentionScore.toDouble()),
++                duration: const Duration(milliseconds: 420),
++                curve: Curves.easeOutCubic,
++                builder: (context, value, child) {
++                  return Text(
++                    value.round().toString(),
++                    style: AppTypography.heroNumber.copyWith(
++                      fontSize: 64,
++                      fontWeight: FontWeight.w700,
++                      height: 1,
++                      color: AppColors.label,
++                    ),
++                  );
++                },
++              ),
++              const SizedBox(height: 6),
++              Text(
++                'Attention Score',
++                style: AppTypography.callout.copyWith(
++                  fontSize: 14,
++                  color: AppColors.secondaryLabel.withValues(alpha: 0.7),
++                  fontWeight: FontWeight.w500,
++                ),
++              ),
++            ],
++          ),
++        ),
++      ),
+     );
+   }
+ 
+   Widget _yesterdayValidationCard() {
+-    return Container(
+-      padding: const EdgeInsets.all(18),
+-      decoration: _panelDecoration(
+-        accentColor: AppColors.primaryOrange.withValues(alpha: 0.18),
+-      ),
+-      child: Column(
+-        crossAxisAlignment: CrossAxisAlignment.start,
+-        children: [
+-          Text(
+-            'Habits from yesterday',
+-            style: AppTypography.title2.copyWith(
+-              fontSize: 25,
+-              color: const Color(0xFFFFE0BC),
+-              fontWeight: FontWeight.w700,
+-            ),
+-          ),
+-          const SizedBox(height: 6),
+-          Text(
+-            'Complete validation to continue',
+-            style: AppTypography.callout.copyWith(
+-              fontSize: 14,
+-              color: AppColors.primaryOrange.withValues(alpha: 0.84),
+-              fontWeight: FontWeight.w600,
+-            ),
+-          ),
+-          const SizedBox(height: 14),
+-          ..._yesterdayHabits.map(
+-            (habit) => Padding(
+-              padding: const EdgeInsets.only(bottom: 8),
+-              child: GestureDetector(
+-                onTap: _isConfirmingYesterday
+-                    ? null
+-                    : () => setState(() {
+-                        _yesterdayStates[habit.id] =
+-                            !(_yesterdayStates[habit.id] ?? false);
+-                      }),
+-                child: Container(
+-                  padding: const EdgeInsets.symmetric(
+-                    horizontal: 14,
+-                    vertical: 14,
+-                  ),
+-                  decoration: BoxDecoration(
+-                    borderRadius: BorderRadius.circular(16),
+-                    color: const Color(0xFF161616),
+-                    border: Border.all(
+-                      color: AppColors.white.withValues(alpha: 0.07),
+-                      width: 1,
+-                    ),
+-                  ),
+-                  child: Row(
+-                    children: [
+-                      Icon(
+-                        (_yesterdayStates[habit.id] ?? false)
+-                            ? CupertinoIcons.check_mark_circled_solid
+-                            : CupertinoIcons.circle,
+-                        size: 24,
+-                        color: (_yesterdayStates[habit.id] ?? false)
+-                            ? const Color(0xFF3B82F6)
+-                            : AppColors.tertiaryLabel,
+-                      ),
+-                      const SizedBox(width: 12),
+-                      Expanded(
+-                        child: Text(
+-                          habit.title,
+-                          style: AppTypography.headline.copyWith(
+-                            fontSize: 17,
+-                            color: AppColors.label,
+-                            fontWeight: FontWeight.w600,
+-                          ),
+-                        ),
+-                      ),
+-                    ],
+-                  ),
+-                ),
+-              ),
+-            ),
+-          ),
+-          const SizedBox(height: 10),
+-          LiquidButton(
+-            label: _isConfirmingYesterday ? 'Confirming...' : 'Confirm',
+-            fullWidth: true,
+-            isLoading: _isConfirmingYesterday,
+-            icon: CupertinoIcons.check_mark,
+-            gradient: const [Color(0xFF3C82FF), Color(0xFF3262E3)],
+-            onPressed: _confirmYesterday,
+-          ),
+-        ],
+-      ),
++    return _PressScale(
++      child: Container(
++        padding: const EdgeInsets.all(18),
++        decoration: _panelDecoration(
++          accentColor: AppColors.primaryOrange.withValues(alpha: 0.12),
++        ),
++        child: Column(
++          crossAxisAlignment: CrossAxisAlignment.start,
++          children: [
++            _sectionHeader(title: 'HABITS FROM YESTERDAY'),
++            const SizedBox(height: 8),
++            Text(
++              'Complete validation to continue',
++              style: AppTypography.callout.copyWith(
++                fontSize: 14,
++                color: AppColors.primaryOrange.withValues(alpha: 0.8),
++                fontWeight: FontWeight.w500,
++              ),
++            ),
++            const SizedBox(height: 14),
++            ..._yesterdayHabits.asMap().entries.map((entry) {
++              final habit = entry.value;
++              final isLast = entry.key == _yesterdayHabits.length - 1;
++              return GestureDetector(
++                onTap: _isConfirmingYesterday
++                    ? null
++                    : () => setState(() {
++                        _yesterdayStates[habit.id] =
++                            !(_yesterdayStates[habit.id] ?? false);
++                      }),
++                child: Container(
++                  constraints: const BoxConstraints(minHeight: 56),
++                  decoration: BoxDecoration(
++                    border: Border(
++                      bottom: isLast
++                          ? BorderSide.none
++                          : BorderSide(
++                              color: AppColors.white.withValues(alpha: 0.04),
++                              width: 1,
++                            ),
++                    ),
++                  ),
++                  child: Row(
++                    children: [
++                      Icon(
++                        (_yesterdayStates[habit.id] ?? false)
++                            ? CupertinoIcons.check_mark_circled_solid
++                            : CupertinoIcons.circle,
++                        size: 22,
++                        color: (_yesterdayStates[habit.id] ?? false)
++                            ? const Color(0xFF3B82F6)
++                            : AppColors.tertiaryLabel,
++                      ),
++                      const SizedBox(width: 12),
++                      Expanded(
++                        child: Text(
++                          habit.title,
++                          style: AppTypography.headline.copyWith(
++                            fontSize: 16,
++                            fontWeight: FontWeight.w600,
++                          ),
++                        ),
++                      ),
++                    ],
++                  ),
++                ),
++              );
++            }),
++            const SizedBox(height: 14),
++            LiquidButton(
++              label: _isConfirmingYesterday ? 'Confirming...' : 'Confirm',
++              fullWidth: true,
++              isLoading: _isConfirmingYesterday,
++              icon: CupertinoIcons.check_mark,
++              gradient: const [Color(0xFF3C82FF), Color(0xFF3262E3)],
++              onPressed: _confirmYesterday,
++            ),
++          ],
++        ),
++      ),
+     );
+   }
+ 
+   Widget _prioritiesCard() {
+-    return Container(
+-      padding: const EdgeInsets.all(18),
+-      decoration: _panelDecoration(),
+-      child: Column(
+-        crossAxisAlignment: CrossAxisAlignment.start,
+-        children: [
+-          _sectionHeader(
+-            title: 'Priorities',
+-            onViewAll: () => context.push('/tasks'),
+-          ),
+-          const SizedBox(height: 14),
+-          if (_topTasks.isEmpty)
+-            Text(
+-              'No open tasks.',
+-              style: AppTypography.subhead.copyWith(
+-                fontSize: 12,
+-                color: AppColors.tertiaryLabel,
+-              ),
+-            )
+-          else
+-            ..._topTasks.asMap().entries.map((entry) {
+-              final rank = entry.key + 1;
+-              final task = entry.value;
+-              final badgeStyle = _priorityBadgeStyle(task.importanceLevel);
+-              return Padding(
+-                padding: const EdgeInsets.only(bottom: 10),
+-                child: GestureDetector(
+-                  onTap: () => _completeTask(task),
+-                  child: Container(
+-                    constraints: const BoxConstraints(minHeight: 56),
+-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+-                    decoration: BoxDecoration(
+-                      borderRadius: BorderRadius.circular(16),
+-                      gradient: LinearGradient(
+-                        begin: Alignment.topLeft,
+-                        end: Alignment.bottomRight,
+-                        colors: const [Color(0xFF181818), Color(0xFF121212)],
+-                      ),
+-                      border: Border.all(
+-                        color: AppColors.white.withValues(alpha: 0.06),
+-                        width: 1,
+-                      ),
+-                      boxShadow: [
+-                        BoxShadow(
+-                          color: AppColors.black.withValues(alpha: 0.38),
+-                          blurRadius: 18,
+-                          offset: const Offset(0, 8),
+-                          spreadRadius: -12,
+-                        ),
+-                      ],
+-                    ),
+-                    child: Row(
+-                      crossAxisAlignment: CrossAxisAlignment.center,
+-                      children: [
+-                        Container(
+-                          width: 30,
+-                          height: 30,
+-                          decoration: BoxDecoration(
+-                            shape: BoxShape.circle,
+-                            color: AppColors.white.withValues(alpha: 0.05),
+-                            border: Border.all(
+-                              color: AppColors.white.withValues(alpha: 0.06),
+-                              width: 1,
+-                            ),
+-                          ),
+-                          child: Center(
+-                            child: Text(
+-                              '$rank',
+-                              style: AppTypography.footnote.copyWith(
+-                                fontSize: 12,
+-                                color: AppColors.secondaryLabel,
+-                                fontWeight: FontWeight.w700,
+-                              ),
+-                            ),
+-                          ),
+-                        ),
+-                        const SizedBox(width: 12),
+-                        Expanded(
+-                          child: Text(
+-                            task.title,
+-                            maxLines: 1,
+-                            overflow: TextOverflow.ellipsis,
+-                            style: AppTypography.headline.copyWith(
+-                              fontSize: 16,
+-                              color: AppColors.label,
+-                              fontWeight: FontWeight.w600,
+-                            ),
+-                          ),
+-                        ),
+-                        const SizedBox(width: 10),
+-                        Column(
+-                          mainAxisAlignment: MainAxisAlignment.center,
+-                          crossAxisAlignment: CrossAxisAlignment.end,
+-                          children: [
+-                            _PriorityBadge(
+-                              label: _importanceLabel(task.importanceLevel),
+-                              style: badgeStyle,
+-                            ),
+-                            const SizedBox(height: 4),
+-                            Text(
+-                              _durationLabel(task.timeDuration),
+-                              style: AppTypography.caption1.copyWith(
+-                                fontSize: 11,
+-                                color: AppColors.tertiaryLabel,
+-                              ),
+-                            ),
+-                          ],
+-                        ),
+-                      ],
+-                    ),
+-                  ),
+-                ),
+-              );
+-            }),
+-        ],
+-      ),
++    return _PressScale(
++      child: Container(
++        padding: const EdgeInsets.all(18),
++        decoration: _panelDecoration(),
++        child: Column(
++          crossAxisAlignment: CrossAxisAlignment.start,
++          children: [
++            _sectionHeader(
++              title: 'PRIORITIES',
++              onViewAll: () => context.push('/tasks'),
++            ),
++            const SizedBox(height: 12),
++            if (_topTasks.isEmpty)
++              Padding(
++                padding: const EdgeInsets.symmetric(vertical: 18),
++                child: Text(
++                  'No open tasks.',
++                  style: AppTypography.subhead.copyWith(
++                    fontSize: 12,
++                    color: AppColors.tertiaryLabel.withValues(alpha: 0.8),
++                  ),
++                ),
++              )
++            else
++              ..._topTasks.asMap().entries.map((entry) {
++                final rank = entry.key + 1;
++                final task = entry.value;
++                final badgeStyle = _priorityBadgeStyle(task.importanceLevel);
++                final isLast = entry.key == _topTasks.length - 1;
++                return _PressScale(
++                  onTap: () => _completeTask(task),
++                  child: Container(
++                    constraints: const BoxConstraints(minHeight: 56),
++                    padding: const EdgeInsets.symmetric(vertical: 8),
++                    decoration: BoxDecoration(
++                      border: Border(
++                        bottom: isLast
++                            ? BorderSide.none
++                            : BorderSide(
++                                color: AppColors.white.withValues(alpha: 0.04),
++                                width: 1,
++                              ),
++                      ),
++                    ),
++                    child: Row(
++                      children: [
++                        Container(
++                          width: 30,
++                          height: 30,
++                          decoration: BoxDecoration(
++                            shape: BoxShape.circle,
++                            color: AppColors.white.withValues(alpha: 0.05),
++                            border: Border.all(
++                              color: AppColors.white.withValues(alpha: 0.06),
++                              width: 1,
++                            ),
++                          ),
++                          child: Center(
++                            child: Text(
++                              '$rank',
++                              style: AppTypography.footnote.copyWith(
++                                fontSize: 14,
++                                fontWeight: FontWeight.w600,
++                                color: AppColors.secondaryLabel,
++                              ),
++                            ),
++                          ),
++                        ),
++                        const SizedBox(width: 12),
++                        Expanded(
++                          child: Column(
++                            mainAxisAlignment: MainAxisAlignment.center,
++                            crossAxisAlignment: CrossAxisAlignment.start,
++                            children: [
++                              Text(
++                                task.title,
++                                maxLines: 1,
++                                overflow: TextOverflow.ellipsis,
++                                style: AppTypography.headline.copyWith(
++                                  fontSize: 16,
++                                  fontWeight: FontWeight.w600,
++                                  color: AppColors.label,
++                                ),
++                              ),
++                              const SizedBox(height: 5),
++                              Row(
++                                children: [
++                                  _PriorityBadge(
++                                    label: _importanceLabel(task.importanceLevel),
++                                    style: badgeStyle,
++                                  ),
++                                  const SizedBox(width: 8),
++                                  Text(
++                                    _durationLabel(task.timeDuration),
++                                    style: AppTypography.caption1.copyWith(
++                                      fontSize: 11,
++                                      color: AppColors.tertiaryLabel.withValues(
++                                        alpha: 0.72,
++                                      ),
++                                    ),
++                                  ),
++                                ],
++                              ),
++                            ],
++                          ),
++                        ),
++                      ],
++                    ),
++                  ),
++                );
++              }),
++          ],
++        ),
++      ),
+     );
+   }
+ 
+   Widget _todayHabitsCard() {
+-    return Container(
+-      padding: const EdgeInsets.all(18),
+-      decoration: _panelDecoration(),
+-      child: Column(
+-        crossAxisAlignment: CrossAxisAlignment.start,
+-        children: [
+-          _sectionHeader(
+-            title: 'Habits for today',
+-            trailingIcon: CupertinoIcons.add,
+-            onTrailingTap: () => context.push('/habits'),
+-          ),
+-          const SizedBox(height: 10),
+-          if (_todayHabits.isEmpty)
+-            Text(
+-              'No habits scheduled today.',
+-              style: AppTypography.subhead.copyWith(
+-                fontSize: 12,
+-                color: AppColors.tertiaryLabel,
+-              ),
+-            )
+-          else
+-            ..._todayHabits.asMap().entries.map((entry) {
+-              final habit = entry.value;
+-              final index = entry.key + 1;
+-              final marked = _todayHabitMarks.contains(habit.id);
+-              return Padding(
+-                padding: const EdgeInsets.only(bottom: 8),
+-                child: GestureDetector(
+-                  onTap: () => _toggleTodayHabitMark(habit.id),
+-                  child: AnimatedContainer(
+-                    duration: const Duration(milliseconds: 180),
+-                    padding: const EdgeInsets.symmetric(
+-                      horizontal: 12,
+-                      vertical: 12,
+-                    ),
+-                    decoration: BoxDecoration(
+-                      borderRadius: BorderRadius.circular(16),
+-                      gradient: LinearGradient(
+-                        begin: Alignment.topLeft,
+-                        end: Alignment.bottomRight,
+-                        colors: marked
+-                            ? [
+-                                const Color(0xFF171717),
+-                                const Color(0xFF121212),
+-                              ]
+-                            : [
+-                                const Color(0xFF1A1A1A),
+-                                const Color(0xFF111111),
+-                              ],
+-                      ),
+-                      border: Border.all(
+-                        color: marked
+-                            ? AppColors.white.withValues(alpha: 0.04)
+-                            : AppColors.white.withValues(alpha: 0.06),
+-                        width: 1,
+-                      ),
+-                      boxShadow: [
+-                        BoxShadow(
+-                          color: AppColors.black.withValues(alpha: 0.32),
+-                          blurRadius: 16,
+-                          offset: const Offset(0, 8),
+-                          spreadRadius: -12,
+-                        ),
+-                      ],
+-                    ),
+-                    child: Row(
+-                      children: [
+-                        Expanded(
+-                          child: Text(
+-                            habit.title,
+-                            maxLines: 1,
+-                            overflow: TextOverflow.ellipsis,
+-                            style: AppTypography.headline.copyWith(
+-                              fontSize: 17,
+-                              color: marked
+-                                  ? AppColors.tertiaryLabel
+-                                  : AppColors.label,
+-                              fontWeight: FontWeight.w600,
+-                            ),
+-                          ),
+-                        ),
+-                        Container(
+-                          width: 34,
+-                          height: 34,
+-                          decoration: BoxDecoration(
+-                            borderRadius: BorderRadius.circular(12),
+-                            color: AppColors.white.withValues(alpha: 0.05),
+-                          ),
+-                          child: Center(
+-                            child: Text(
+-                              '$index',
+-                              style: AppTypography.footnote.copyWith(
+-                                fontSize: 15,
+-                                color: marked
+-                                    ? AppColors.tertiaryLabel
+-                                    : AppColors.secondaryLabel,
+-                                fontWeight: FontWeight.w700,
+-                              ),
+-                            ),
+-                          ),
+-                        ),
+-                      ],
+-                    ),
+-                  ),
+-                ),
+-              );
+-            }),
+-        ],
+-      ),
++    return _PressScale(
++      child: Container(
++        padding: const EdgeInsets.all(18),
++        decoration: _panelDecoration(),
++        child: Column(
++          crossAxisAlignment: CrossAxisAlignment.start,
++          children: [
++            _sectionHeader(
++              title: 'HABITS FOR TODAY',
++              trailingIcon: CupertinoIcons.add,
++              onTrailingTap: () => context.push('/habits'),
++            ),
++            const SizedBox(height: 12),
++            if (_todayHabits.isEmpty)
++              Padding(
++                padding: const EdgeInsets.symmetric(vertical: 18),
++                child: Text(
++                  'No habits scheduled today.',
++                  style: AppTypography.subhead.copyWith(
++                    fontSize: 12,
++                    color: AppColors.tertiaryLabel.withValues(alpha: 0.78),
++                  ),
++                ),
++              )
++            else
++              ..._todayHabits.asMap().entries.map((entry) {
++                final habit = entry.value;
++                final index = entry.key + 1;
++                final marked = _todayHabitMarks.contains(habit.id);
++                final isLast = entry.key == _todayHabits.length - 1;
++                return _PressScale(
++                  onTap: () => _toggleTodayHabitMark(habit.id),
++                  child: AnimatedContainer(
++                    duration: const Duration(milliseconds: 180),
++                    constraints: const BoxConstraints(minHeight: 56),
++                    padding: const EdgeInsets.symmetric(vertical: 8),
++                    decoration: BoxDecoration(
++                      border: Border(
++                        bottom: isLast
++                            ? BorderSide.none
++                            : BorderSide(
++                                color: AppColors.white.withValues(alpha: 0.04),
++                                width: 1,
++                              ),
++                      ),
++                    ),
++                    child: Row(
++                      children: [
++                        Expanded(
++                          child: Text(
++                            habit.title,
++                            maxLines: 1,
++                            overflow: TextOverflow.ellipsis,
++                            style: AppTypography.headline.copyWith(
++                              fontSize: 16,
++                              color: marked
++                                  ? AppColors.tertiaryLabel
++                                  : AppColors.label,
++                              fontWeight: FontWeight.w600,
++                            ),
++                          ),
++                        ),
++                        Container(
++                          width: 30,
++                          height: 30,
++                          decoration: BoxDecoration(
++                            shape: BoxShape.circle,
++                            color: marked
++                                ? AppColors.accent.withValues(alpha: 0.14)
++                                : AppColors.white.withValues(alpha: 0.05),
++                            border: Border.all(
++                              color: marked
++                                  ? AppColors.accent.withValues(alpha: 0.32)
++                                  : AppColors.white.withValues(alpha: 0.06),
++                              width: 1,
++                            ),
++                          ),
++                          child: Center(
++                            child: Text(
++                              '$index',
++                              style: AppTypography.footnote.copyWith(
++                                fontSize: 13,
++                                color: marked
++                                    ? AppColors.accent
++                                    : AppColors.secondaryLabel,
++                                fontWeight: FontWeight.w600,
++                              ),
++                            ),
++                          ),
++                        ),
++                      ],
++                    ),
++                  ),
++                );
++              }),
++          ],
++        ),
++      ),
+     );
+   }
+ 
+   Widget _todayScheduleCard() {
+-    return Container(
+-      padding: const EdgeInsets.all(18),
+-      decoration: _panelDecoration(),
+-      child: Column(
+-        crossAxisAlignment: CrossAxisAlignment.start,
+-        children: [
+-          _sectionHeader(
+-            title: 'Schedule',
+-            onViewAll: () => context.push('/calendar'),
+-          ),
+-          const SizedBox(height: 10),
+-          if (_todayEvents.isEmpty)
+-            Text(
+-              'No events scheduled today.',
+-              style: AppTypography.subhead.copyWith(
+-                fontSize: 12,
+-                color: AppColors.tertiaryLabel,
+-              ),
+-            )
+-          else
+-            ..._todayEvents.map(
+-              (event) => Padding(
+-                padding: const EdgeInsets.only(bottom: 8),
+-                child: Container(
+-                  padding: const EdgeInsets.symmetric(
+-                    horizontal: 12,
+-                    vertical: 12,
+-                  ),
+-                  decoration: BoxDecoration(
+-                    borderRadius: BorderRadius.circular(16),
+-                    gradient: LinearGradient(
+-                      begin: Alignment.topLeft,
+-                      end: Alignment.bottomRight,
+-                      colors: const [Color(0xFF1A1A1A), Color(0xFF111111)],
+-                    ),
+-                    border: Border.all(
+-                      color: AppColors.white.withValues(alpha: 0.06),
+-                      width: 1,
+-                    ),
+-                    boxShadow: [
+-                      BoxShadow(
+-                        color: AppColors.black.withValues(alpha: 0.32),
+-                        blurRadius: 16,
+-                        offset: const Offset(0, 8),
+-                        spreadRadius: -12,
+-                      ),
+-                    ],
+-                  ),
+-                  child: Row(
+-                    children: [
+-                      Container(
+-                        padding: const EdgeInsets.symmetric(
+-                          horizontal: 10,
+-                          vertical: 6,
+-                        ),
+-                        decoration: BoxDecoration(
+-                          borderRadius: BorderRadius.circular(10),
+-                          color: AppColors.background.withValues(alpha: 0.56),
+-                        ),
+-                        child: Text(
+-                          _eventTimeLabel(event.eventTime),
+-                          style: AppTypography.callout.copyWith(
+-                            fontSize: 14,
+-                            color: AppColors.secondaryLabel,
+-                            fontWeight: FontWeight.w600,
+-                          ),
+-                        ),
+-                      ),
+-                      const SizedBox(width: 10),
+-                      Expanded(
+-                        child: Text(
+-                          event.title,
+-                          maxLines: 1,
+-                          overflow: TextOverflow.ellipsis,
+-                          style: AppTypography.headline.copyWith(
+-                            fontSize: 16,
+-                            color: AppColors.label,
+-                            fontWeight: FontWeight.w600,
+-                          ),
+-                        ),
+-                      ),
+-                    ],
+-                  ),
+-                ),
+-              ),
+-            ),
+-        ],
+-      ),
++    return _PressScale(
++      child: Container(
++        padding: const EdgeInsets.all(18),
++        decoration: _panelDecoration(),
++        child: Column(
++          crossAxisAlignment: CrossAxisAlignment.start,
++          children: [
++            _sectionHeader(
++              title: 'SCHEDULE',
++              onViewAll: () => context.push('/calendar'),
++            ),
++            const SizedBox(height: 12),
++            if (_todayEvents.isEmpty)
++              Container(
++                width: double.infinity,
++                padding: const EdgeInsets.symmetric(vertical: 26),
++                alignment: Alignment.centerLeft,
++                child: Text(
++                  'No events scheduled today.',
++                  style: AppTypography.subhead.copyWith(
++                    fontSize: 12,
++                    color: AppColors.tertiaryLabel.withValues(alpha: 0.68),
++                  ),
++                ),
++              )
++            else
++              ..._todayEvents.asMap().entries.map((entry) {
++                final event = entry.value;
++                final isLast = entry.key == _todayEvents.length - 1;
++                return Container(
++                  constraints: const BoxConstraints(minHeight: 56),
++                  padding: const EdgeInsets.symmetric(vertical: 8),
++                  decoration: BoxDecoration(
++                    border: Border(
++                      bottom: isLast
++                          ? BorderSide.none
++                          : BorderSide(
++                              color: AppColors.white.withValues(alpha: 0.04),
++                              width: 1,
++                            ),
++                    ),
++                  ),
++                  child: Row(
++                    children: [
++                      Container(
++                        padding: const EdgeInsets.symmetric(
++                          horizontal: 10,
++                          vertical: 6,
++                        ),
++                        decoration: BoxDecoration(
++                          borderRadius: BorderRadius.circular(10),
++                          color: AppColors.white.withValues(alpha: 0.05),
++                          border: Border.all(
++                            color: AppColors.white.withValues(alpha: 0.06),
++                            width: 1,
++                          ),
++                        ),
++                        child: Text(
++                          _eventTimeLabel(event.eventTime),
++                          style: AppTypography.callout.copyWith(
++                            fontSize: 14,
++                            color: AppColors.secondaryLabel,
++                            fontWeight: FontWeight.w600,
++                          ),
++                        ),
++                      ),
++                      const SizedBox(width: 12),
++                      Expanded(
++                        child: Text(
++                          event.title,
++                          maxLines: 1,
++                          overflow: TextOverflow.ellipsis,
++                          style: AppTypography.headline.copyWith(
++                            fontSize: 16,
++                            color: AppColors.label,
++                            fontWeight: FontWeight.w600,
++                          ),
++                        ),
++                      ),
++                    ],
++                  ),
++                );
++              }),
++          ],
++        ),
++      ),
+     );
+   }
+@@
+         Expanded(
+           child: Text(
+-            title,
+-            style: AppTypography.title2.copyWith(
+-              fontSize: 22,
+-              color: AppColors.label,
++            title.toUpperCase(),
++            style: AppTypography.overline.copyWith(
++              fontSize: 14,
++              letterSpacing: 1.2,
++              color: AppColors.label.withValues(alpha: 0.7),
+               fontWeight: FontWeight.w700,
+             ),
+           ),
+@@
+             child: Text(
+               'VIEW ALL →',
+-              style: AppTypography.overline.copyWith(
+-                fontSize: 12,
+-                color: AppColors.tertiaryLabel,
+-                letterSpacing: 1.4,
+-                fontWeight: FontWeight.w700,
++              style: AppTypography.callout.copyWith(
++                fontSize: 13,
++                color: AppColors.secondaryLabel.withValues(alpha: 0.6),
++                fontWeight: FontWeight.w500,
+               ),
+             ),
+           ),
+@@
+   BoxDecoration _panelDecoration({Color? accentColor}) {
+     return BoxDecoration(
+       borderRadius: BorderRadius.circular(20),
+       gradient: const LinearGradient(
+         begin: Alignment.topCenter,
+@@
+       border: Border.all(
+         color: AppColors.white.withValues(alpha: 0.06),
+         width: 1,
+       ),
+       boxShadow: [
+         BoxShadow(
+           color: AppColors.black.withValues(alpha: 0.6),
+           blurRadius: 30,
+           offset: const Offset(0, 10),
+         ),
+         if (accentColor != null)
+           BoxShadow(
+             color: accentColor,
+-            blurRadius: 26,
+-            offset: const Offset(0, 8),
+-            spreadRadius: -18,
++            blurRadius: 24,
++            offset: const Offset(0, 6),
++            spreadRadius: -20,
+           ),
+       ],
+     );
+   }
+ }
+@@
+ class _PriorityBadge extends StatelessWidget {
+@@
+       decoration: BoxDecoration(
+         borderRadius: BorderRadius.circular(10),
+         color: style.background,
+         border: Border.all(color: style.border, width: 1),
+         boxShadow: [
+           BoxShadow(
+             color: style.glow,
+-            blurRadius: 12,
++            blurRadius: 10,
+             offset: const Offset(0, 0),
+-            spreadRadius: -6,
++            spreadRadius: -7,
+           ),
+         ],
+       ),
+@@
+       return const _PriorityBadgeStyle(
+         background: Color(0x1FFF3C3C),
+-        border: Color(0x66FF3C3C),
+-        text: Color(0xFFFF5A5A),
+-        glow: Color(0x33FF5A5A),
++        border: Color(0x59FF3C3C),
++        text: Color(0xFFFF6B6B),
++        glow: Color(0x29FF6B6B),
+       );
+     case 'average':
+     case 'medium':
+       return const _PriorityBadgeStyle(
+         background: Color(0x1F508CFF),
+-        border: Color(0x66508CFF),
+-        text: Color(0xFF74A0FF),
+-        glow: Color(0x33508CFF),
++        border: Color(0x59508CFF),
++        text: Color(0xFF6FA3FF),
++        glow: Color(0x29508CFF),
+       );
+     case 'low':
+       return const _PriorityBadgeStyle(
+         background: Color(0x1A787878),
+         border: Color(0x4D787878),
+-        text: Color(0xFFC3C3C3),
+-        glow: Color(0x26787878),
++        text: Color(0xFFA0A0A0),
++        glow: Color(0x22787878),
+       );
+@@
+ }
++
++class _PressScale extends StatefulWidget {
++  final Widget child;
++  final VoidCallback? onTap;
++
++  const _PressScale({required this.child, this.onTap});
++
++  @override
++  State<_PressScale> createState() => _PressScaleState();
++}
++
++class _PressScaleState extends State<_PressScale> {
++  bool _pressed = false;
++
++  void _setPressed(bool value) {
++    if (_pressed == value || !mounted) return;
++    setState(() => _pressed = value);
++  }
++
++  @override
++  Widget build(BuildContext context) {
++    return Listener(
++      onPointerDown: (_) => _setPressed(true),
++      onPointerUp: (_) => _setPressed(false),
++      onPointerCancel: (_) => _setPressed(false),
++      child: AnimatedScale(
++        scale: _pressed ? 1.01 : 1,
++        duration: const Duration(milliseconds: 120),
++        curve: Curves.easeOutCubic,
++        child: GestureDetector(
++          behavior: HitTestBehavior.translucent,
++          onTap: widget.onTap,
++          child: widget.child,
++        ),
++      ),
++    );
++  }
++}
+*** End Patch

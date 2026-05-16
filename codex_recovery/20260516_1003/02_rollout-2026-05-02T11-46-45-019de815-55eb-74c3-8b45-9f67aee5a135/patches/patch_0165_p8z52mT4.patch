@@ -1,0 +1,155 @@
+*** Begin Patch
+*** Update File: lib/core/widgets/home_widgets/widget_views.dart
+@@
+ class DashboardWidgetSquareView extends StatelessWidget {
+   final LanguageProvider language;
+   final String dateLabel;
+   final int tasksDone;
+   final int tasksTotal;
+   final int habitsDone;
+   final int habitsTotal;
+   final int eventsCount;
+   final int progressPercent;
+   final String nextLine;
+@@
+   @override
+   Widget build(BuildContext context) {
+     return WidgetRoot(
+       padding: WidgetDesignTokens.padSquare,
+       child: Column(
+         crossAxisAlignment: CrossAxisAlignment.start,
+         children: [
+           Text(
+             'Dashboard',
+             style: WidgetDesignTokens.title.copyWith(fontSize: 20),
+           ),
+           const SizedBox(height: 10),
+           Expanded(
+             child: Container(
+               padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+               decoration: WidgetDesignTokens.innerSurface(),
+               child: Column(
+                 children: [
+-                  _StatRow(
+-                    label: language.t('widget_metric_todo'),
+-                    value: '$tasksDone/$tasksTotal',
+-                  ),
+-                  const SizedBox(height: 10),
+-                  _StatRow(
+-                    label: language.t('widget_metric_habits'),
+-                    value: '$habitsDone/$habitsTotal',
+-                  ),
+-                  const SizedBox(height: 10),
+-                  _StatRow(
+-                    label: language.t('widget_metric_events'),
+-                    value: '$eventsCount',
+-                  ),
+-                  const SizedBox(height: 12),
+-                  _ProgressBar(percent: progressPercent),
+-                  const SizedBox(height: 10),
+-                  Text(
+-                    nextLine,
+-                    maxLines: 1,
+-                    overflow: TextOverflow.ellipsis,
+-                    style: WidgetDesignTokens.subtitle.copyWith(
+-                      fontSize: 12,
+-                      color: AppColors.secondaryLabel.withValues(alpha: 0.78),
+-                    ),
+-                  ),
++                  _MetricPill(
++                    label: language.t('widget_metric_todo'),
++                    value: '$tasksDone/$tasksTotal',
++                  ),
++                  const SizedBox(height: 10),
++                  _MetricPill(
++                    label: language.t('widget_metric_habits'),
++                    value: '$habitsDone/$habitsTotal',
++                  ),
++                  const SizedBox(height: 10),
++                  _MetricPill(
++                    label: language.t('widget_metric_events'),
++                    value: '$eventsCount',
++                  ),
++                  const Spacer(),
++                  Row(
++                    children: [
++                      Expanded(child: _ProgressBar(percent: progressPercent)),
++                      const SizedBox(width: 10),
++                      Text(
++                        '$progressPercent%',
++                        style: AppTypography.title3.copyWith(
++                          fontSize: 18,
++                          fontWeight: FontWeight.w800,
++                          color: WidgetDesignTokens.primaryText,
++                          height: 1,
++                        ),
++                      ),
++                    ],
++                  ),
++                  const SizedBox(height: 8),
++                  Text(
++                    nextLine,
++                    maxLines: 1,
++                    overflow: TextOverflow.ellipsis,
++                    style: WidgetDesignTokens.subtitle.copyWith(
++                      fontSize: 13,
++                      color: WidgetDesignTokens.secondaryText,
++                    ),
++                  ),
+                 ],
+               ),
+             ),
+           ),
+         ],
+       ),
+     );
+   }
+ }
++
++class _MetricPill extends StatelessWidget {
++  final String label;
++  final String value;
++
++  const _MetricPill({required this.label, required this.value});
++
++  @override
++  Widget build(BuildContext context) {
++    return Container(
++      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
++      decoration: BoxDecoration(
++        borderRadius: BorderRadius.circular(16),
++        color: AppColors.cardBackgroundAlt.withValues(alpha: 0.45),
++        border: Border.all(color: AppColors.border.withValues(alpha: 0.5)),
++      ),
++      child: Row(
++        children: [
++          Expanded(
++            child: Text(
++              label,
++              maxLines: 1,
++              overflow: TextOverflow.ellipsis,
++              style: AppTypography.caption1.copyWith(
++                fontSize: 13,
++                fontWeight: FontWeight.w700,
++                color: WidgetDesignTokens.secondaryText,
++                height: 1,
++              ),
++            ),
++          ),
++          Text(
++            value,
++            maxLines: 1,
++            overflow: TextOverflow.ellipsis,
++            style: AppTypography.callout.copyWith(
++              fontSize: 16,
++              fontWeight: FontWeight.w800,
++              color: WidgetDesignTokens.primaryText,
++              height: 1,
++            ),
++          ),
++        ],
++      ),
++    );
++  }
++}
+*** End Patch

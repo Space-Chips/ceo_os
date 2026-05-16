@@ -1,0 +1,36 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/rank/rank_screen.dart
+@@
+     _RankTierData(
+-      name: 'Batman',
++      name: 'Immortal',
+       requirements: ['365 day streak', '200h Focus', '100h CEO'],
+     ),
+@@
+   Widget _rankIconContainer(_RankTierData tier, {required double iconSize}) {
+     final artSize = iconSize >= 72
+         ? RankArtSize.hero
+         : iconSize >= 48
+         ? RankArtSize.md
+         : RankArtSize.sm;
++    final containerSize = iconSize + 12;
++    final artDimension = iconSize + 6;
+     return Container(
+-      width: iconSize + 20,
+-      height: iconSize + 20,
++      width: containerSize,
++      height: containerSize,
+       decoration: BoxDecoration(
+         color: AppColors.white.withValues(alpha: 0.05),
+         borderRadius: BorderRadius.circular(14),
+       ),
+       alignment: Alignment.center,
+-      child: RankArt(rankName: tier.name, size: artSize, dimension: iconSize),
++      child: RankArt(
++        rankName: tier.name,
++        size: artSize,
++        dimension: artDimension,
++      ),
+     );
+   }
+*** End Patch

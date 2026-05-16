@@ -1,0 +1,32 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/home/home_screen.dart
+@@
+   Future<void> _bootstrap() async {
+     if (!mounted || _isBootstrapping) return;
+     _isBootstrapping = true;
+-    final sw = Stopwatch()..start;
+     try {
+-      // Do not block first interactive render on heavy provider hydration.
+-      unawaited(_loadBaseData());
++      try {
++        await _loadBaseData();
++      } catch (_) {}
+ 
+       if (!mounted) return;
+ 
+       unawaited(context.read<ScreenTimeSetupController>().initialize());
+-      unawaited(_hydrateUser());
++      await _hydrateUser();
+       if (!mounted) return;
+@@
+       setState(() {
+         _pendingYesterdayValidationFuture = _hasPendingYesterdayHabits();
+       });
+     } finally {
+-      if (kDebugMode) {
+-        debugPrint('[HomeBootstrap] completed in ${sw.elapsedMilliseconds}ms');
+-      }
+       _isBootstrapping = false;
+     }
+   }
+*** End Patch

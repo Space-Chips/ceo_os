@@ -1,0 +1,16 @@
+*** Begin Patch
+*** Update File: lib/core/providers/auth_provider.dart
+@@
+       _hasCompletedOnboarding = true;
+       _wasJustSignedUp = true;
+ 
+-      // If (and only if) the account is created from a TestFlight install,
+-      // grant Premium permanently via the backend entitlement override.
++      // Best-effort: grant Premium for allowlisted accounts via the backend
++      // entitlement override. Premium access must depend only on the server-side
++      // allowlist (email) and stored entitlement state.
+       // Best-effort; failure should not break signup.
+       try {
+         await PremiumRepository().grantPremiumForAllowlistedAccountIfEligible();
+       } catch (_) {}
+*** End Patch

@@ -1,0 +1,35 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/screen_time_manager/screen_time_manager_screen.dart
+@@
+ import '../screen_time_setup/screen_time_setup_controller.dart';
++import '../setup/setup_flow_controller.dart';
+@@
+   void _handleAccessTap(ScreenTimeSetupController setup) {
+-    if (!_isAndroid && (setup.isSetupRequired || !setup.isSetupComplete)) {
+-      _openScreenTimeSetup();
+-      return;
+-    }
+-    context.push('/screen-time?section=access');
++    if (_isAndroid) {
++      final setupFlow = context.read<SetupFlowController>();
++      unawaited(
++        setupFlow.initialize().then((_) async {
++          await setupFlow.refreshPermissionStates();
++          if (!mounted) return;
++          if (setupFlow.isSetupRequired || !setupFlow.isSetupComplete) {
++            context.push('/setup');
++          } else {
++            context.push('/screen-time?section=access');
++          }
++        }),
++      );
++      return;
++    }
++
++    if (setup.isSetupRequired || !setup.isSetupComplete) {
++      _openScreenTimeSetup();
++      return;
++    }
++    context.push('/screen-time?section=access');
+   }
+*** End Patch

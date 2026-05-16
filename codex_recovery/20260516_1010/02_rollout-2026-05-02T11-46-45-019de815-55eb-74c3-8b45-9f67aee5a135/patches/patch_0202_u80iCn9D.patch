@@ -1,0 +1,52 @@
+*** Begin Patch
+*** Update File: ios/CeoWidgets/CeoHomeWidget.swift
+@@
+         VStack(alignment: .leading, spacing: WidgetLayout.gapS) {
+           Text("Habits")
+-            .widgetText(25, .heavy, color: WidgetPalette.textPrimary, minScale: 0.8)
++            .widgetText(23, .heavy, color: WidgetPalette.textPrimary, minScale: 0.8)
+@@
+               Text("Habit")
+                 .frame(width: firstCol, alignment: .leading)
+-                .widgetText(13, .bold, color: WidgetPalette.textSecondary, minScale: 0.82)
++                .widgetText(12.5, .bold, color: WidgetPalette.textSecondary, minScale: 0.82)
+               ForEach(Array((dayLabels.isEmpty ? ["M","T","W","T","F","S","S"] : dayLabels).prefix(7)).indices, id: \.self) { i in
+                 Text((dayLabels.isEmpty ? ["M","T","W","T","F","S","S"] : dayLabels)[i])
+                   .frame(width: dayCol, alignment: .center)
+-                  .widgetText(13, .bold, color: WidgetPalette.textSecondary, minScale: 0.82)
++                  .widgetText(12.5, .bold, color: WidgetPalette.textSecondary, minScale: 0.82)
+               }
+             }
+-            .frame(height: 22)
++            .frame(height: 20)
+@@
+                 Text(name)
+                   .frame(width: firstCol, alignment: .leading)
+-                  .widgetText(15.5, .bold, color: WidgetPalette.textPrimary, minScale: 0.8)
++                  .widgetText(14.5, .bold, color: WidgetPalette.textPrimary, minScale: 0.8)
+                 ForEach(0..<7, id: \.self) { j in
+                   let state = (idx < states.count && j < states[idx].count) ? states[idx][j] : 0
+                   CircleCell(state: state)
+-                    .frame(width: dayCol, height: 28, alignment: .center)
++                    .frame(width: dayCol, height: 26, alignment: .center)
+                 }
+               }
+-              .frame(height: 28)
++              .frame(height: 26)
+             }
+@@
+             if more > 0 {
+               Text("+\(more) more")
+-                .widgetText(14, .semibold, color: WidgetPalette.textSecondary, minScale: 0.82)
++                .widgetText(13.5, .semibold, color: WidgetPalette.textSecondary, minScale: 0.82)
+             }
+           }
+@@
+     var body: some View {
+-      let size: CGFloat = 16
++      let size: CGFloat = 15
+       let strokeW: CGFloat = 1.6
+       ZStack {
+         if state == 1 {
+           Circle()
+*** End Patch

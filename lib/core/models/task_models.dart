@@ -85,8 +85,10 @@ class CalendarEvent {
   final String? description;
   final String? eventDate;
   final String? eventTime;
+  final int? durationMinutes;
   final String? sourceType;
   final String? sourceId;
+  final String? eventTypeId;
   final String? recurrenceRule;
   final DateTime? notification24hTime;
   final DateTime? notification2hTime;
@@ -101,8 +103,10 @@ class CalendarEvent {
     this.description,
     this.eventDate,
     this.eventTime,
+    this.durationMinutes,
     this.sourceType,
     this.sourceId,
+    this.eventTypeId,
     this.recurrenceRule,
     this.notification24hTime,
     this.notification2hTime,
@@ -119,8 +123,10 @@ class CalendarEvent {
       description: json['description'],
       eventDate: json['event_date'],
       eventTime: json['event_time'],
+      durationMinutes: (json['duration_minutes'] as num?)?.toInt(),
       sourceType: json['source_type'],
       sourceId: json['source_id'],
+      eventTypeId: json['event_type_id'],
       recurrenceRule: json['recurrence_rule'],
       notification24hTime: json['notification_24h_time'] != null
           ? DateTime.parse(json['notification_24h_time'])

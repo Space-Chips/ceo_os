@@ -1,0 +1,30 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/router/app_router.dart
+@@
+ import '../../features/home/stats_screen.dart';
+ import '../../features/profile/profile_screen.dart';
+ import '../../features/leaderboard/leaderboard_screen.dart';
++import '../../features/rank/rank_screen.dart';
+ import '../../features/legacy/notes_screen.dart';
+ import '../../features/legacy/win_streak_screen.dart';
+ import '../../features/legacy/rewards_screen.dart';
+ import '../../features/legacy/screen_time_screen.dart';
++import '../../features/screen_time_manager/screen_time_manager_screen.dart';
+ import '../../features/legacy/event_types_screen.dart';
+ import '../../features/legacy/biannual_report_screen.dart';
+ import '../../features/legacy/app_modules_screen.dart';
+@@
+             GoRoute(
+               path: '/rank',
+               pageBuilder: (context, state) =>
+-                  const NoTransitionPage(child: ProfileScreen()),
++                  const NoTransitionPage(child: RankScreen()),
+             ),
+@@
+             GoRoute(
+               path: '/screen-time-manager',
+               pageBuilder: (context, state) =>
+-                  const NoTransitionPage(child: ScreenTimeScreen()),
++                  const NoTransitionPage(child: ScreenTimeManagerScreen()),
+             ),
+*** End Patch

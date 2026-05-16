@@ -1,0 +1,10 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/android/app/src/main/AndroidManifest.xml
+@@
+-        <service
+-            android:name=".WakeAccessibilityService"
++        <service
++            android:name=".BlockingAccessibilityService"
+             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
+             android:exported="true">
+*** End Patch

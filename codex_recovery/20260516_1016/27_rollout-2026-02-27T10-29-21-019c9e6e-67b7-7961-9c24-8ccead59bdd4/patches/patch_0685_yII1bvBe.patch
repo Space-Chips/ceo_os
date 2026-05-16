@@ -1,0 +1,12 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/models/advanced_stats_models.dart
+@@
+-    String rankAtEndOfDay = 'Bronze',
++    String rankAtEndOfDay = 'Asleep',
+@@
+-      currentRank: 'Bronze',
++      currentRank: 'Asleep',
+@@
+-      currentRank: (json['current_rank'] as String?) ?? 'Bronze',
++      currentRank: (json['current_rank'] as String?) ?? 'Asleep',
+*** End Patch

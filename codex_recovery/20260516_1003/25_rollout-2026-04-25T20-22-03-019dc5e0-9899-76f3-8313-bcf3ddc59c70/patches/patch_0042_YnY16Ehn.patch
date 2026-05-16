@@ -1,0 +1,21 @@
+*** Begin Patch
+*** Update File: lib/features/home/home_screen.dart
+@@
+                         if (widget.showAdvancedStats) ...[
+                           const SizedBox(height: 12),
+                           _SheetActionButton(
+                             label: language.t('advanced_stats'),
+                             icon: CupertinoIcons.chart_bar_alt_fill,
+                             onTap: widget.onOpenAdvancedStats,
+                           ),
+                         ],
++                        const SizedBox(height: 12),
++                        _SheetActionButton(
++                          label: 'Personnaliser mon centre',
++                          icon: CupertinoIcons.square_grid_2x2_fill,
++                          onTap: widget.onCustomizeControlCenter,
++                        ),
+                         const SizedBox(height: 28),
+                         Text(
+                           language.t('system_modules'),
+*** End Patch

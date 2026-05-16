@@ -1,0 +1,29 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/home/home_screen.dart
+@@
+ class _InteractiveLift extends StatefulWidget {
+   final Widget child;
+   final VoidCallback? onTap;
+   final double borderRadius;
+   final double hoverScale;
+   final double pressedScale;
+   final Color glowColor;
+-  final bool enabled;
+ 
+   const _InteractiveLift({
+     required this.child,
+     required this.onTap,
+     required this.borderRadius,
+     required this.glowColor,
+     this.hoverScale = 1.014,
+     this.pressedScale = 1.024,
+-    this.enabled = true,
+   });
+@@
+ class _InteractiveLiftState extends State<_InteractiveLift> {
+   bool _isHovered = false;
+   bool _isPressed = false;
+ 
+-  bool get _interactive => widget.enabled && widget.onTap != null;
++  bool get _interactive => widget.onTap != null;
+*** End Patch

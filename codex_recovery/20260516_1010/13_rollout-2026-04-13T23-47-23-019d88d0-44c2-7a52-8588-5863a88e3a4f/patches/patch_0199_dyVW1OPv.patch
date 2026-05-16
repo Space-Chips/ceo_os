@@ -1,0 +1,25 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/ios/Runner/AppDelegate.swift
+@@
+     private static func decodeApplicationToken(from payload: String) -> ApplicationToken? {
+-        guard !payload.isEmpty,
+-              let data = Data(base64Encoded: payload),
+-              let selection = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data) else {
+-            return nil
+-        }
++        guard let selection = decodeFamilyActivitySelectionPayload(payload) else { return nil }
+         return selection.applicationTokens.first
+     }
+ }
+@@
+     private static func decodeWebsiteToken(from payload: String) -> WebDomainToken? {
+-        guard !payload.isEmpty,
+-              let data = Data(base64Encoded: payload),
+-              let selection = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data) else {
+-            return nil
+-        }
++        guard let selection = decodeFamilyActivitySelectionPayload(payload) else { return nil }
+         return selection.webDomainTokens.first
+     }
+ }
+*** End Patch

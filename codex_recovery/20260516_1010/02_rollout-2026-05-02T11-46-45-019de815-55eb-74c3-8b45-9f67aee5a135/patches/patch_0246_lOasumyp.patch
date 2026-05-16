@@ -1,0 +1,123 @@
+*** Begin Patch
+*** Update File: lib/features/premium/upgrade_screen.dart
+@@
+ import 'package:flutter/cupertino.dart';
++import 'package:flutter/services.dart';
+ import 'package:provider/provider.dart';
+ 
+ import '../../components/components.dart';
+ import '../../core/models/premium_models.dart';
+ import '../../core/providers/language_provider.dart';
+ import '../../core/repositories/premium_repository.dart';
++import '../../core/services/billing_diagnostics_service.dart';
+ import '../../core/theme/app_colors.dart';
+ import '../../core/theme/app_typography.dart';
+ 
+ class UpgradeScreen extends StatelessWidget {
+   const UpgradeScreen({super.key});
+@@
+               return ListView(
+                 padding: const EdgeInsets.fromLTRB(16, 18, 16, 24),
+                 children: [
+                   GlassCard(
+                     borderRadius: 28,
+                     level: GlassCardLevel.elevated,
+                     textured: true,
+                     padding: const EdgeInsets.fromLTRB(18, 16, 18, 18),
+                     child: PremiumPaywallContent(
+                       runtime: runtime,
+                       message: message,
+                       isFr: isFr,
+                     ),
+                   ),
++                  const SizedBox(height: 14),
++                  GlassCard(
++                    borderRadius: 20,
++                    level: GlassCardLevel.base,
++                    textured: false,
++                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
++                    child: Column(
++                      crossAxisAlignment: CrossAxisAlignment.stretch,
++                      children: [
++                        Text(
++                          isFr ? 'Support' : 'Support',
++                          style: AppTypography.title3.copyWith(
++                            color: AppColors.label,
++                            fontWeight: FontWeight.w700,
++                          ),
++                        ),
++                        const SizedBox(height: 10),
++                        CupertinoButton(
++                          padding: const EdgeInsets.symmetric(
++                            vertical: 12,
++                            horizontal: 14,
++                          ),
++                          borderRadius: BorderRadius.circular(14),
++                          color: AppColors.sectionBackground.withValues(
++                            alpha: 0.55,
++                          ),
++                          onPressed: () async {
++                            final text = await BillingDiagnosticsService()
++                                .exportText();
++                            await Clipboard.setData(
++                              ClipboardData(text: text),
++                            );
++                            if (context.mounted) {
++                              await showCupertinoDialog<void>(
++                                context: context,
++                                builder: (ctx) => CupertinoAlertDialog(
++                                  title: Text(
++                                    isFr
++                                        ? 'Diagnostics copiés'
++                                        : 'Diagnostics copied',
++                                  ),
++                                  content: Text(
++                                    isFr
++                                        ? 'Colle-les dans un email au support si besoin.'
++                                        : 'Paste them into a support email if needed.',
++                                  ),
++                                  actions: [
++                                    CupertinoDialogAction(
++                                      child: Text(isFr ? 'OK' : 'OK'),
++                                      onPressed: () =>
++                                          Navigator.of(ctx).pop(),
++                                    ),
++                                  ],
++                                ),
++                              );
++                            }
++                          },
++                          child: Row(
++                            children: [
++                              Icon(
++                                CupertinoIcons.doc_on_doc,
++                                color: AppColors.label,
++                                size: 18,
++                              ),
++                              const SizedBox(width: 10),
++                              Expanded(
++                                child: Text(
++                                  isFr
++                                      ? 'Copier diagnostics paiement'
++                                      : 'Copy purchase diagnostics',
++                                  style: AppTypography.body.copyWith(
++                                    color: AppColors.label,
++                                    fontWeight: FontWeight.w600,
++                                  ),
++                                  maxLines: 1,
++                                  overflow: TextOverflow.ellipsis,
++                                ),
++                              ),
++                            ],
++                          ),
++                        ),
++                      ],
++                    ),
++                  ),
+                 ],
+               );
+             },
+           ),
+         ),
+       ),
+*** End Patch

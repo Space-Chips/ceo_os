@@ -1,0 +1,10 @@
+*** Begin Patch
+*** Update File: lib/features/control_center_setup/control_center_setup_screen.dart
+@@
+-                          const _SetupDecorations(),
++                          _SetupDecorations(),
+@@
+ class _SetupDecorations extends StatelessWidget {
+-  const _SetupDecorations();
++  _SetupDecorations();
+*** End Patch

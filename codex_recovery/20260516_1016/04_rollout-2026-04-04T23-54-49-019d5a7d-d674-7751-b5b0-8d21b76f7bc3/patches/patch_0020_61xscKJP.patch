@@ -1,0 +1,10 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/utils/android_protection_disclosure.dart
+@@
+ }) async {
+   final step = await nextStep();
+   if (step == AndroidProtectionStep.complete) return true;
++  if (!context.mounted) return false;
+ 
+   final copy = androidProtectionDisclosureCopyForStep(step);
+*** End Patch

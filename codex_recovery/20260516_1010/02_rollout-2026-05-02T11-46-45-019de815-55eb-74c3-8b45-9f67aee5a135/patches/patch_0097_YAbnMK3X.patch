@@ -1,0 +1,107 @@
+*** Begin Patch
+*** Update File: lib/core/services/home_widget_service.dart
+@@
+ class _CeoDashboardCard extends StatelessWidget {
+   final String title;
+   final String dateLabel;
+   final String todoLabel;
+   final String habitsLabel;
+   final String eventsLabel;
+   final String nextLabel;
+   final String noEventsLabel;
+   final String todayFocusLabel;
+   final String allTasksDoneLabel;
++  final String emptyTitle;
++  final String emptySubtitle;
+   final int tasksDone;
+   final int tasksTotal;
+   final int habitsDone;
+   final int habitsTotal;
+   final int eventsCount;
+@@
+   const _CeoDashboardCard._({
+     required this.title,
+     required this.dateLabel,
+     required this.todoLabel,
+     required this.habitsLabel,
+     required this.eventsLabel,
+     required this.nextLabel,
+     required this.noEventsLabel,
+     required this.todayFocusLabel,
+     required this.allTasksDoneLabel,
++    required this.emptyTitle,
++    required this.emptySubtitle,
+     required this.tasksDone,
+     required this.tasksTotal,
+     required this.habitsDone,
+     required this.habitsTotal,
+     required this.eventsCount,
+@@
+   factory _CeoDashboardCard.small({
+     required String title,
+     required String dateLabel,
+     required String todoLabel,
+     required String habitsLabel,
+     required String eventsLabel,
++    required String emptyTitle,
++    required String emptySubtitle,
+     required int tasksDone,
+     required int tasksTotal,
+     required int habitsDone,
+     required int habitsTotal,
+     required int eventsCount,
+@@
+     return _CeoDashboardCard._(
+       title: title,
+       dateLabel: dateLabel,
+       todoLabel: todoLabel,
+       habitsLabel: habitsLabel,
+       eventsLabel: eventsLabel,
+       nextLabel: '',
+       noEventsLabel: '',
+       todayFocusLabel: '',
+       allTasksDoneLabel: '',
++      emptyTitle: emptyTitle,
++      emptySubtitle: emptySubtitle,
+       tasksDone: tasksDone,
+       tasksTotal: tasksTotal,
+       habitsDone: habitsDone,
+       habitsTotal: habitsTotal,
+       eventsCount: eventsCount,
+@@
+   factory _CeoDashboardCard.large({
+     required String title,
+     required String dateLabel,
+     required String todoLabel,
+     required String habitsLabel,
+     required String eventsLabel,
+     required String nextLabel,
+     required String noEventsLabel,
+     required String todayFocusLabel,
+     required String allTasksDoneLabel,
++    required String emptyTitle,
++    required String emptySubtitle,
+     required int tasksDone,
+     required int tasksTotal,
+     required int habitsDone,
+     required int habitsTotal,
+     required int eventsCount,
+@@
+     return _CeoDashboardCard._(
+       title: title,
+       dateLabel: dateLabel,
+       todoLabel: todoLabel,
+       habitsLabel: habitsLabel,
+       eventsLabel: eventsLabel,
+       nextLabel: nextLabel,
+       noEventsLabel: noEventsLabel,
+       todayFocusLabel: todayFocusLabel,
+       allTasksDoneLabel: allTasksDoneLabel,
++      emptyTitle: emptyTitle,
++      emptySubtitle: emptySubtitle,
+       tasksDone: tasksDone,
+       tasksTotal: tasksTotal,
+       habitsDone: habitsDone,
+       habitsTotal: habitsTotal,
+       eventsCount: eventsCount,
+*** End Patch

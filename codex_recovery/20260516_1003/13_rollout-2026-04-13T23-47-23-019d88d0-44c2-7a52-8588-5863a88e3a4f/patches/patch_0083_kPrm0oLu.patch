@@ -1,0 +1,7 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/providers/theme_provider.dart
+@@
+-import 'package:flutter/material.dart';
++import 'package:flutter/foundation.dart';
++import 'package:flutter/material.dart';
+*** End Patch

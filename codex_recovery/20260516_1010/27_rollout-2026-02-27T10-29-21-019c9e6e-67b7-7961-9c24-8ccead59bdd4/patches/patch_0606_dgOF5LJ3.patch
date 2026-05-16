@@ -1,0 +1,16 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/theme/app_colors.dart
+@@
+   static Color get accentDeep => ThemeRuntime.preset.palette.accentDeep;
+   static Color get accentSoft => ThemeRuntime.preset.semantic.accentSurfaceSoft;
++  static Color get accentSurfaceSoft =>
++      ThemeRuntime.preset.semantic.accentSurfaceSoft;
+   static Color get accentSecondary =>
+       Color.lerp(accent, backgroundLight, isDark ? 0.22 : 0.32)!;
+   static Color get themeGlow => ThemeRuntime.preset.semantic.accentGlow;
+@@
+   static Color get accentText => ThemeRuntime.preset.semantic.accentText;
+   static Color get accentIcon => ThemeRuntime.preset.semantic.accentIcon;
+   static Color get rankAccent => ThemeRuntime.preset.semantic.rankAccent;
++  static Color get scoreValue => ThemeRuntime.preset.semantic.scoreValue;
+*** End Patch

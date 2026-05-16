@@ -1,0 +1,79 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/setup/setup_flow_screen.dart
+@@
+ class _WelcomeStep extends StatelessWidget {
+@@
+   @override
+   Widget build(BuildContext context) {
++    final t = context.read<LanguageProvider>().t;
+     return _SetupStepScaffold(
+@@
+-                _StepProgressPill(step: 0, total: 3),
++                _StepProgressPill(step: 0, total: 3),
+@@
+                           Text('Screen Time setup', style: AppTypography.title1),
+                           const SizedBox(height: 6),
+                           Text(
+-                            'A quick, calm setup so protection feels effortless.',
++                            t('setup_welcome_subtitle'),
+                             style: AppTypography.body.copyWith(
+@@
++                          Text(t('setup_welcome_title'), style: AppTypography.title1),
+@@
+-                Text('What this unlocks', style: AppTypography.title3),
++                Text(t('setup_what_unlocks'), style: AppTypography.title3),
+                 const SizedBox(height: 10),
+-                _BulletLine(text: 'Instant blocking when an app opens.'),
+-                _BulletLine(text: 'Accurate usage limits in the background.'),
+-                _BulletLine(text: 'Focus and blackout sessions that hold.'),
++                _BulletLine(text: t('setup_unlock_instant_blocking')),
++                _BulletLine(text: t('setup_unlock_usage_limits')),
++                _BulletLine(text: t('setup_unlock_focus_blackout')),
+@@
+                   child: Text(
+-                    'Takes about 45 seconds. You can redo this any time in Screen Time settings.',
++                    t('setup_takes_45s'),
+                     style: AppTypography.footnote.copyWith(
+@@
+-          GlassCard(
+-            level: GlassCardLevel.subtle,
+-            showTopHighlight: false,
+-            child: Row(
+-              children: [
+-                Icon(
+-                  CupertinoIcons.time_solid,
+-                  color: AppColors.secondaryLabel,
+-                  size: 16,
+-                ),
+-                const SizedBox(width: 8),
+-                Expanded(
+-                  child: Text(
+-                    'Takes about 45 seconds. You can redo this any time in Screen Time settings.',
+-                    style: AppTypography.footnote.copyWith(
+-                      color: AppColors.secondaryLabel,
+-                    ),
+-                  ),
+-                ),
+-              ],
+-            ),
+-          ),
+-          const SizedBox(height: 14),
+           Text(
+-            'We’ll return you to WakeApp automatically after each permission.',
++            t('setup_return_auto'),
+             style: AppTypography.footnote.copyWith(
+               color: AppColors.tertiaryLabel,
+             ),
+           ),
+         ],
+       ),
+       footer: LiquidButton(
+-        label: 'Start setup',
++        label: t('setup_start'),
+         fullWidth: true,
+         onPressed: onContinue,
+       ),
+     );
+   }
+ }
+*** End Patch

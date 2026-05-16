@@ -1,0 +1,73 @@
+*** Begin Patch
+*** Update File: lib/core/services/home_widget_service.dart
+@@
+   factory _CeoWidgetCard.largeTodo({
+     required String title,
+     required String subtitle,
+     required List<String> lines,
+   }) {
+     return _CeoWidgetCard(title: title, subtitle: subtitle, lines: lines);
+   }
+-
+-  factory _CeoWidgetCard.smallDashboard({
+-    required String title,
+-    required String tasksLabel,
+-    required String habitsLabel,
+-    required int pendingTasks,
+-    required int completedTasks,
+-    required int completedHabits,
+-    required int totalHabits,
+-  }) {
+-    return _CeoWidgetCard(
+-      title: title,
+-      subtitle:
+-          '$tasksLabel $pendingTasks pending • $completedTasks done\n$habitsLabel $completedHabits/$totalHabits today',
+-      lines: const [],
+-    );
+-  }
+-
+-  factory _CeoWidgetCard.largeDashboard({
+-    required String title,
+-    required String tasksLabel,
+-    required String habitsLabel,
+-    required int pendingTasks,
+-    required int completedTasks,
+-    required int completedHabits,
+-    required int totalHabits,
+-  }) {
+-    return _CeoWidgetCard(
+-      title: title,
+-      subtitle:
+-          '$tasksLabel $pendingTasks pending • $completedTasks done\n$habitsLabel $completedHabits/$totalHabits today',
+-      lines: const [],
+-    );
+-  }
+-
+-  factory _CeoWidgetCard.smallHabits({
+-    required String title,
+-    required String subtitlePrefix,
+-    required List<String> lines,
+-    required int completedHabits,
+-    required int totalHabits,
+-  }) {
+-    return _CeoWidgetCard(
+-      title: title,
+-      subtitle: '$subtitlePrefix $completedHabits/$totalHabits today',
+-      lines: lines,
+-    );
+-  }
+-
+-  factory _CeoWidgetCard.largeHabits({
+-    required String title,
+-    required String subtitlePrefix,
+-    required List<String> lines,
+-    required int completedHabits,
+-    required int totalHabits,
+-  }) {
+-    return _CeoWidgetCard(
+-      title: title,
+-      subtitle: '$subtitlePrefix $completedHabits/$totalHabits today',
+-      lines: lines,
+-    );
+-  }
+*** End Patch

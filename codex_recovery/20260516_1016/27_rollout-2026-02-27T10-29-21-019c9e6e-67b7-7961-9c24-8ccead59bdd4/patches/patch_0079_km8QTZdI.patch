@@ -1,0 +1,81 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/dashboard/dashboard_screen.dart
+@@
+   Widget _metric(String label, String value) {
+     return Expanded(
+       child: Column(
+@@
+     );
+   }
+ 
+-  Widget _miniAction({required String label, required VoidCallback onTap}) {
++  Widget _glowSurface({
++    required Widget child,
++    required Color glowColor,
++    double borderRadius = 18,
++  }) {
++    return Stack(
++      children: [
++        Positioned.fill(
++          child: IgnorePointer(
++            child: Container(
++              margin: const EdgeInsets.all(8),
++              decoration: BoxDecoration(
++                borderRadius: BorderRadius.circular(borderRadius),
++                boxShadow: [
++                  BoxShadow(
++                    color: glowColor,
++                    blurRadius: 34,
++                    spreadRadius: 2,
++                  ),
++                ],
++              ),
++            ),
++          ),
++        ),
++        child,
++      ],
++    );
++  }
++
++  Widget _miniAction({
++    required String label,
++    required IconData icon,
++    required VoidCallback onTap,
++  }) {
+     return CupertinoButton(
+       padding: EdgeInsets.zero,
+       onPressed: onTap,
+       child: GlassCard(
+-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
++        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 11),
+         borderRadius: 12,
+-        child: Center(
+-          child: Text(
+-            label,
+-            textAlign: TextAlign.center,
+-            style: AppTypography.mono.copyWith(
+-              fontSize: 9,
+-              fontWeight: FontWeight.bold,
+-              color: AppColors.primaryOrange,
++        child: Column(
++          mainAxisSize: MainAxisSize.min,
++          children: [
++            Icon(icon, size: 14, color: AppColors.primaryOrange),
++            const SizedBox(height: 5),
++            Text(
++              label,
++              textAlign: TextAlign.center,
++              style: AppTypography.mono.copyWith(
++                fontSize: 8,
++                fontWeight: FontWeight.bold,
++                color: AppColors.primaryOrange,
++              ),
+             ),
+-          ),
++          ],
+         ),
+       ),
+     );
+   }
+*** End Patch

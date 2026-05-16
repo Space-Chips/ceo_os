@@ -1,0 +1,43 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/router/app_router.dart
+@@
+   Future<void> _syncNativePlannedSessionsIfNeeded(
+     FocusProvider focusProvider,
+     List<CalendarEvent> events,
+   ) async {
+-    final focusEvents = events
+-        .where((event) => (event.sourceType ?? '').toLowerCase() == 'focus_plan')
+-        .where((event) => event.eventDate != null && event.eventTime != null)
+-        .toList();
+-
+-    final signature = focusEvents
+-        .map(
+-          (event) =>
+-              '${event.id}|${event.eventDate}|${event.eventTime}|${event.durationMinutes}|${event.recurrenceRule}',
+-        )
+-        .join('||');
++    final deduped = <String, CalendarEvent>{};
++    for (final event in events) {
++      if ((event.sourceType ?? '').toLowerCase() != 'focus_plan') continue;
++      if (event.eventDate == null || event.eventTime == null) continue;
++      final rootId = event.id.split('::').first;
++      final existing = deduped[rootId];
++      if (existing == null) {
++        deduped[rootId] = event;
++        continue;
++      }
++      final existingDate = DateTime.tryParse(existing.eventDate ?? '');
++      final newDate = DateTime.tryParse(event.eventDate ?? '');
++      if (existingDate == null || (newDate != null && newDate.isBefore(existingDate))) {
++        deduped[rootId] = event;
++      }
++    }
++    final focusEvents = deduped.values.toList(growable: false);
++
++    final signature = deduped.entries
++        .map(
++          (entry) =>
++              '${entry.key}|${entry.value.eventDate}|${entry.value.eventTime}|${entry.value.durationMinutes}|${entry.value.recurrenceRule}',
++        )
++        .join('||');
+*** End Patch

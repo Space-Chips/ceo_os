@@ -1,0 +1,84 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/rank/rank_screen.dart
+@@
+       child: GlassCard(
+         padding: const EdgeInsets.fromLTRB(18, 18, 18, 20),
+         borderRadius: 28,
++        level: GlassCardLevel.elevated,
++        showEdgeGlow: true,
+         border: Border.all(
+           color: tier.ring.first.withValues(alpha: 0.55),
+           width: 0.8,
+         ),
+@@
+     return GlassCard(
+       padding: const EdgeInsets.all(16),
+       borderRadius: 20,
++      level: GlassCardLevel.standard,
++      showEdgeGlow: true,
+       border: Border.all(
+         color: AppColors.glassBorder.withValues(alpha: 0.74),
+         width: 0.7,
+       ),
+@@
+                 child: Container(
+                   width: double.infinity,
+                   padding: const EdgeInsets.symmetric(
+                     horizontal: 12,
+                     vertical: 11,
+                   ),
+                   decoration: BoxDecoration(
+                     borderRadius: BorderRadius.circular(13),
+-                    color: AppColors.backgroundLight.withValues(alpha: 0.68),
++                    gradient: LinearGradient(
++                      begin: Alignment.topLeft,
++                      end: Alignment.bottomRight,
++                      colors: [
++                        AppColors.floatingGlassGradient.first.withValues(
++                          alpha: 0.86,
++                        ),
++                        AppColors.floatingGlassGradient.last.withValues(
++                          alpha: 0.76,
++                        ),
++                      ],
++                    ),
+                     border: Border.all(
+                       color: AppColors.glassBorder.withValues(alpha: 0.68),
+                       width: 0.7,
+@@
+     return GlassCard(
+       padding: const EdgeInsets.all(16),
+       borderRadius: 20,
++      level: GlassCardLevel.standard,
++      showEdgeGlow: true,
+       border: Border.all(
+         color: AppColors.glassBorder.withValues(alpha: 0.72),
+         width: 0.7,
+       ),
+@@
+     return Container(
+       width: double.infinity,
+       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+       decoration: BoxDecoration(
+         borderRadius: BorderRadius.circular(12),
+-        color: AppColors.backgroundLight.withValues(alpha: 0.68),
++        gradient: LinearGradient(
++          begin: Alignment.topLeft,
++          end: Alignment.bottomRight,
++          colors: [
++            AppColors.floatingGlassGradient.first.withValues(alpha: 0.84),
++            AppColors.floatingGlassGradient.last.withValues(alpha: 0.72),
++          ],
++        ),
+         border: Border.all(color: AppColors.glassBorder.withValues(alpha: 0.7)),
+       ),
+@@
+       child: GlassCard(
+         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+         borderRadius: 16,
++        level: isCurrent ? GlassCardLevel.elevated : GlassCardLevel.standard,
++        showEdgeGlow: isCurrent,
+         border: Border.all(
+           color: isCurrent
+               ? tier.ring.first.withValues(alpha: 0.72)
+*** End Patch

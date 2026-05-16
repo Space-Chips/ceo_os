@@ -1,0 +1,6 @@
+*** Begin Patch
+*** Update File: lib/core/repositories/premium_repository.dart
+@@
+-import 'package:flutter/foundation.dart' show kDebugMode;
+ import 'package:shared_preferences/shared_preferences.dart';
+*** End Patch

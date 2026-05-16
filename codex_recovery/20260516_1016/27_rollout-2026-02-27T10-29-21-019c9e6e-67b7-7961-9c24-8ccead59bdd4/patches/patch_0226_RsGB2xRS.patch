@@ -1,0 +1,10 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/habits/habits_screen.dart
+@@
+         return ListView(
+           padding: const EdgeInsets.symmetric(
+             horizontal: 20,
+-          ).copyWith(bottom: 100),
++          ).copyWith(bottom: 24),
+           children: [
+*** End Patch

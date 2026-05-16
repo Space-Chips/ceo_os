@@ -1,0 +1,24 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/screen_time_setup/screen_time_setup_screen.dart
+@@
+ import '../../components/ambient_backdrop.dart';
+ import '../../components/glass_card.dart';
+ import '../../components/liquid_button.dart';
++import '../../core/providers/language_provider.dart';
+ import '../../core/theme/app_colors.dart';
+ import '../../core/theme/app_typography.dart';
+ import '../../core/services/focus_service.dart';
+@@
+ class _SetupLoadingScreen extends StatelessWidget {
+   const _SetupLoadingScreen();
+ 
+   @override
+   Widget build(BuildContext context) {
++    final t = context.read<LanguageProvider>().t;
+     return AmbientBackdrop(
+@@
+                 Text(
+-                  'Preparing Screen Time…',
++                  t('ios_setup_preparing'),
+                   style: AppTypography.body.copyWith(
+*** End Patch

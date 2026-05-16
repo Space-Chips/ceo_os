@@ -1,0 +1,75 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/dashboard/dashboard_screen.dart
+@@
+ import '../../core/theme/app_colors.dart';
+ import '../../core/theme/app_typography.dart';
++import '../tasks/task_importance_theme.dart';
+@@
+   String _importanceLabel(String? raw) {
+-    switch ((raw ?? '').toLowerCase()) {
+-      case 'crucial':
+-      case 'critical':
+-        return 'CRITICAL';
+-      case 'essential':
+-      case 'high':
+-        return 'HIGH';
+-      case 'average':
+-      case 'medium':
+-        return 'MEDIUM';
+-      case 'low':
+-      default:
+-        return 'LOW';
+-    }
++    return TaskImportanceTheme.dashboardLabel(raw);
+   }
+@@
+ _PriorityBadgeStyle _priorityBadgeStyle(String? raw) {
+-  switch ((raw ?? '').toLowerCase()) {
+-    case 'crucial':
+-    case 'critical':
+-      return const _PriorityBadgeStyle(
+-        background: Color(0x1FFF3C3C),
+-        border: Color(0x59FF3C3C),
+-        text: Color(0xFFFF6B6B),
+-        glow: Color(0x29FF6B6B),
+-      );
+-    case 'average':
+-    case 'medium':
+-      return const _PriorityBadgeStyle(
+-        background: Color(0x1F508CFF),
+-        border: Color(0x59508CFF),
+-        text: Color(0xFF6FA3FF),
+-        glow: Color(0x29508CFF),
+-      );
+-    case 'low':
+-      return const _PriorityBadgeStyle(
+-        background: Color(0x1A787878),
+-        border: Color(0x4D787878),
+-        text: Color(0xFFA0A0A0),
+-        glow: Color(0x22787878),
+-      );
+-    case 'essential':
+-    case 'high':
+-      return const _PriorityBadgeStyle(
+-        background: Color(0x1FD97706),
+-        border: Color(0x66D97706),
+-        text: Color(0xFFFFB347),
+-        glow: Color(0x33D97706),
+-      );
+-    default:
+-      return const _PriorityBadgeStyle(
+-        background: Color(0x1A787878),
+-        border: Color(0x4D787878),
+-        text: Color(0xFFC3C3C3),
+-        glow: Color(0x26787878),
+-      );
+-  }
++  final style = TaskImportanceTheme.badge(raw);
++  return _PriorityBadgeStyle(
++    background: style.background,
++    border: style.border,
++    text: style.text,
++    glow: style.glow,
++  );
+ }
+*** End Patch

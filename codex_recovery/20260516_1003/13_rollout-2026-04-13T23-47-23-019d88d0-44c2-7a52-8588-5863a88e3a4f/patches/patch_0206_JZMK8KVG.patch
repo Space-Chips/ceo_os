@@ -1,0 +1,46 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/screen_time_screen.dart
+@@
+     await _runMutation(() async {
+       final existingPayloads = _blockedWebsites
+           .map((site) => websiteBindings[site.id]?.nativePayload?.trim())
+           .whereType<String>()
+           .where((payload) => payload.isNotEmpty)
+           .toSet();
++      final existingDomains = <String>{
++        for (final site in _blockedWebsites)
++          if ((site.urlDomain ?? '').trim().isNotEmpty)
++            site.urlDomain!.trim().toLowerCase(),
++        for (final binding in websiteBindings.values)
++          if ((binding.nativeIdentifier ?? '').trim().isNotEmpty)
++            binding.nativeIdentifier!.trim().toLowerCase(),
++      };
+       for (final selected in picked) {
+         final payload = selected.payload.trim();
+         if (payload.isEmpty || existingPayloads.contains(payload)) continue;
+         var resolved = selected.domain?.trim();
+@@
+         final domain = (resolved != null && resolved.isNotEmpty)
+             ? normalizeDomainInput(resolved) ?? resolved.toLowerCase()
+             : null;
++        final normalizedDomain = domain?.trim().toLowerCase();
++        if (normalizedDomain != null &&
++            normalizedDomain.isNotEmpty &&
++            existingDomains.contains(normalizedDomain)) {
++          continue;
++        }
+         final record = await _repo.createBlockedWebsiteRecord(domain);
+         if (record == null) continue;
+         await _classicLocalStore.saveWebsiteBinding(
+           rowId: record.id,
+           nativeIdentifier: domain,
+           nativePayload: payload,
+         );
+         existingPayloads.add(payload);
++        if (normalizedDomain != null && normalizedDomain.isNotEmpty) {
++          existingDomains.add(normalizedDomain);
++        }
+       }
+     });
+   }
+*** End Patch

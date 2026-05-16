@@ -1,0 +1,28 @@
+*** Begin Patch
+*** Update File: android/app/src/main/res/values/styles.xml
+@@
+     <style name="BlockGateTheme" parent="@android:style/Theme.Black.NoTitleBar.Fullscreen">
+         <item name="android:windowIsTranslucent">false</item>
+         <item name="android:windowBackground">@android:color/transparent</item>
+         <item name="android:windowAnimationStyle">@android:style/Animation</item>
+     </style>
++    <style name="HomeTheme" parent="Theme.AppCompat.NoActionBar">
++        <item name="android:windowBackground">@android:color/transparent</item>
++        <item name="android:windowAnimationStyle">@null</item>
++        <item name="android:colorBackgroundCacheHint">@null</item>
++    </style>
+ </resources>
+*** Update File: android/app/src/main/res/values-night/styles.xml
+@@
+     <style name="BlockGateTheme" parent="@android:style/Theme.Black.NoTitleBar.Fullscreen">
+         <item name="android:windowIsTranslucent">false</item>
+         <item name="android:windowBackground">@android:color/transparent</item>
+         <item name="android:windowAnimationStyle">@android:style/Animation</item>
+     </style>
++    <style name="HomeTheme" parent="Theme.AppCompat.NoActionBar">
++        <item name="android:windowBackground">@android:color/transparent</item>
++        <item name="android:windowAnimationStyle">@null</item>
++        <item name="android:colorBackgroundCacheHint">@null</item>
++    </style>
+ </resources>
+*** End Patch

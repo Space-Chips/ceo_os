@@ -1,0 +1,32 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/screen_time_manager/screen_time_manager_screen.dart
+@@
+     if (!isAvailable) {
+-      final fallbackUnit = isAuthorized ? 'reopen app' : 'grant access';
++      final fallbackTodayValue = isAuthorized ? 'REOPEN' : 'ALLOW';
++      final fallbackWeekValue = isAuthorized ? 'REOPEN' : 'ALLOW';
++      final fallbackUnit = isAuthorized ? 'full relaunch' : 'grant access';
+       return Row(
+         children: [
+           Expanded(
+             child: _statLargeTile(
+               label: 'TODAY',
+-              value: '--',
++              value: fallbackTodayValue,
+               unit: fallbackUnit,
+               accent: AppColors.scoreValue,
+               highlighted: true,
+               borderColor: AppColors.screenTimeDailyAccentBorder,
+             ),
+@@
+           Expanded(
+             child: _statLargeTile(
+               label: '7D AVG',
+-              value: '--',
++              value: fallbackWeekValue,
+               unit: fallbackUnit,
+               accent: AppColors.secondaryLabel,
+             ),
+           ),
+         ],
+*** End Patch

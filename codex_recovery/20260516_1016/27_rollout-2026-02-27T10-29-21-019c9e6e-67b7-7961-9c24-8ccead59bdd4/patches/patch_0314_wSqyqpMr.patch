@@ -1,0 +1,20 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/router/app_router.dart
+@@
+ import '../../features/legacy/rewards_screen.dart';
+ import '../../features/legacy/screen_time_screen.dart';
+ import '../../features/screen_time_manager/screen_time_manager_screen.dart';
++import '../../features/screen_time_manager/family_time_screen.dart';
+ import '../../features/legacy/event_types_screen.dart';
+@@
+             GoRoute(
+               path: '/screen-time-manager',
+               pageBuilder: (context, state) =>
+                   const NoTransitionPage(child: ScreenTimeManagerScreen()),
+             ),
++            GoRoute(
++              path: '/family-time',
++              pageBuilder: (context, state) =>
++                  const NoTransitionPage(child: FamilyTimeScreen()),
++            ),
+*** End Patch

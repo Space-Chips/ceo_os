@@ -1,0 +1,9 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/theme/app_colors.dart
+@@
+   static Color get background => ThemeRuntime.preset.colors.background;
+-  static Color get backgroundLight => ThemeRuntime.preset.colors.backgroundElevated;
++  static Color get backgroundElevated =>
++      ThemeRuntime.preset.colors.backgroundElevated;
++  static Color get backgroundLight => backgroundElevated;
+*** End Patch

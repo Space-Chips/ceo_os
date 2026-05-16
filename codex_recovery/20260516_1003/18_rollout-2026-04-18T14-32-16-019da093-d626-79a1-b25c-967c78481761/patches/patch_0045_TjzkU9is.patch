@@ -1,0 +1,7 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/theme/app_colors.dart
+@@
+   static Color get accentSecondary =>
+-      Color.lerp(accent, backgroundLight, isDark ? 0.22 : 0.32)!;
++      Color.lerp(accent, backgroundLight, isDark ? 0.22 : 0.32) ?? accent;
+*** End Patch

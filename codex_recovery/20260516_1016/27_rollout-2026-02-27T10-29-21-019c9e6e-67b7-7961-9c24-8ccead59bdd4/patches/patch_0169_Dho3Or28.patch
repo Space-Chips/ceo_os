@@ -1,0 +1,21 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/screen_time_manager/screen_time_manager_screen.dart
+@@
+                         _secondaryActionCard(
+                           title: language.t('leaderboard'),
+                           subtitle: language.t('leaderboard_subtitle'),
+                           icon: CupertinoIcons.star_fill,
+                           onTap: () => context.push('/leaderboard'),
+                         ),
+                         const SizedBox(height: 8),
+                         _secondaryActionCard(
+-                          title: language.t('screen_time_logs'),
+-                          subtitle: language.t('screen_time_logs_subtitle'),
+-                          icon: CupertinoIcons.chart_bar_fill,
+-                          onTap: () => context.push('/screen-time'),
++                          title: language.t('blocking_preview'),
++                          subtitle: language.t('see_how_blocking_works'),
++                          icon: CupertinoIcons.shield,
++                          onTap: () => context.push('/focus'),
+                         ),
+*** End Patch

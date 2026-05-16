@@ -1,0 +1,85 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/setup/setup_flow_screen.dart
+@@
+     return _SetupStepScaffold(
++      progressStep: 0,
+       child: Column(
+         crossAxisAlignment: CrossAxisAlignment.start,
+         children: [
+@@
+   Widget build(BuildContext context) {
+     return _SetupStepScaffold(
++      progressStep: stepIndex,
+       child: Column(
+         crossAxisAlignment: CrossAxisAlignment.start,
+         children: [
+           GlassCard(
+             level: GlassCardLevel.elevated,
+             showEdgeGlow: true,
+             glowColor: accent,
+-            child: Row(
+-              crossAxisAlignment: CrossAxisAlignment.center,
+-              children: [
+-                _IconOrb(icon: icon, accent: accent),
+-                const SizedBox(width: 14),
+-                Expanded(
+-                  child: Column(
+-                    crossAxisAlignment: CrossAxisAlignment.start,
+-                    children: [
+-                      _StepProgressPill(step: stepIndex, total: 3),
+-                      const SizedBox(height: 8),
+-                      Text(title, style: AppTypography.title2),
+-                      const SizedBox(height: 6),
+-                      Text(
+-                        subtitle,
+-                        style: AppTypography.body.copyWith(
+-                          color: AppColors.secondaryLabel,
+-                        ),
+-                      ),
+-                    ],
+-                  ),
+-                ),
+-                const SizedBox(width: 10),
+-                _StatusPill(
+-                  text: isGranted ? 'Enabled' : 'Not enabled',
+-                  color: isGranted ? AppColors.success : AppColors.warning,
+-                ),
+-              ],
+-            ),
++            child: Column(
++              crossAxisAlignment: CrossAxisAlignment.start,
++              children: [
++                Row(
++                  crossAxisAlignment: CrossAxisAlignment.center,
++                  children: [
++                    _IconOrb(icon: icon, accent: accent),
++                    const SizedBox(width: 14),
++                    Expanded(
++                      child: Column(
++                        crossAxisAlignment: CrossAxisAlignment.start,
++                        children: [
++                          Text(title, style: AppTypography.title2),
++                          const SizedBox(height: 6),
++                          Text(
++                            subtitle,
++                            style: AppTypography.body.copyWith(
++                              color: AppColors.secondaryLabel,
++                            ),
++                          ),
++                        ],
++                      ),
++                    ),
++                  ],
++                ),
++                const SizedBox(height: 12),
++                Align(
++                  alignment: Alignment.centerRight,
++                  child: _StatusPill(
++                    text: isGranted ? 'Enabled' : 'Not enabled',
++                    color: isGranted ? AppColors.success : AppColors.warning,
++                  ),
++                ),
++              ],
++            ),
+           ),
+*** End Patch

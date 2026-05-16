@@ -1,0 +1,22 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/home/home_screen.dart
+@@
+                 _PrimaryAppCardData(
+                   moduleId: 'ScreenTimeManager',
+                   title: 'Screen Time',
+                   icon: CupertinoIcons.shield,
+                   active: _isEnabled('ScreenTimeManager'),
+-                  onTap: () =>
+-                      unawaited(_pushAndRefresh('/screen-time-manager')),
++                  onTap: _openScreenTimeEntry,
+                 ),
+@@
+                 _PrimaryAppCardData(
+                   moduleId: 'block_apps',
+                   title: 'Block Apps & Sites',
+                   icon: CupertinoIcons.shield_fill,
+                   active: true,
+-                  onTap: () => unawaited(_pushAndRefresh('/screen-time')),
++                  onTap: _openScreenTimeEntry,
+                 ),
+*** End Patch

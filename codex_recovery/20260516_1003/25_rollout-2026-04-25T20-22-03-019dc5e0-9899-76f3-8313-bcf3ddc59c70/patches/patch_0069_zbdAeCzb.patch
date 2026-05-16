@@ -1,0 +1,14 @@
+*** Begin Patch
+*** Update File: lib/features/control_center_setup/widgets/permissions_screen.dart
+@@
+-import 'package:flutter/foundation.dart';
+-import 'package:flutter/cupertino.dart';
+-import 'package:flutter/material.dart';
+-import 'package:provider/provider.dart';
+ import 'dart:async';
+ 
++import 'package:flutter/cupertino.dart';
++import 'package:flutter/foundation.dart';
++import 'package:provider/provider.dart';
++
+*** End Patch

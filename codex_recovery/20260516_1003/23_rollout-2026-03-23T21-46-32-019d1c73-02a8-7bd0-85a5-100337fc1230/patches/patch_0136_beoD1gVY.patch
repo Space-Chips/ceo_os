@@ -1,0 +1,9 @@
+*** Begin Patch
+*** Update File: android/app/src/main/kotlin/com/wakeapp/ceoos/BlockGateActivity.kt
+@@
+     override fun onStart() {
+         super.onStart()
+         isVisible = true
++        WakeAccessibilityService.onBlockGateVisible()
+         val filter = IntentFilter(ACTION_DISMISS)
+*** End Patch

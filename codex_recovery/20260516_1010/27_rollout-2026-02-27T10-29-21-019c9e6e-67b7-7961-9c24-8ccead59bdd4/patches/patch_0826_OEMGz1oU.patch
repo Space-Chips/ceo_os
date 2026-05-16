@@ -1,0 +1,82 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/screen_time_manager/screen_time_manager_screen.dart
+@@
+   Widget _actionCard({
+     required IconData icon,
+     required Color iconColor,
+     required String title,
+@@
+           child: Row(
+             children: [
+               Container(
+                 width: 42,
+                 height: 42,
+                 decoration: BoxDecoration(
+                   borderRadius: BorderRadius.circular(12),
+-                  color: AppColors.moduleIconBackground,
++                  color: _actionIconBackground(iconColor),
++                  border: Border.all(
++                    color: _actionIconBorder(iconColor),
++                    width: 0.9,
++                  ),
+                 ),
+-                child: Icon(icon, color: iconColor, size: 22),
++                child: Icon(
++                  icon,
++                  color: _actionIconColor(iconColor),
++                  size: 22,
++                ),
+               ),
+@@
+   BoxDecoration _moduleDecoration({
+@@
+       backgroundBlendMode: overlay == null ? null : BlendMode.srcOver,
+     );
+   }
++
++  Color _actionIconBackground(Color iconColor) {
++    switch (AppColors.themeId) {
++      case 'modern_desert':
++        return Color.alphaBlend(
++          iconColor.withValues(alpha: 0.06),
++          AppColors.cardBackgroundStrong.withValues(alpha: 0.84),
++        );
++      case 'cloud_studio':
++        return Color.alphaBlend(
++          iconColor.withValues(alpha: 0.045),
++          AppColors.cardBackgroundStrong.withValues(alpha: 0.9),
++        );
++      default:
++        return AppColors.moduleIconBackground;
++    }
++  }
++
++  Color _actionIconBorder(Color iconColor) {
++    switch (AppColors.themeId) {
++      case 'modern_desert':
++        return Color.alphaBlend(
++          iconColor.withValues(alpha: 0.10),
++          AppColors.borderStrong.withValues(alpha: 0.7),
++        );
++      case 'cloud_studio':
++        return Color.alphaBlend(
++          iconColor.withValues(alpha: 0.08),
++          AppColors.borderStrong.withValues(alpha: 0.68),
++        );
++      default:
++        return AppColors.border.withValues(alpha: 0.24);
++    }
++  }
++
++  Color _actionIconColor(Color iconColor) {
++    switch (AppColors.themeId) {
++      case 'modern_desert':
++        return Color.lerp(iconColor, AppColors.accent, 0.18)!;
++      case 'cloud_studio':
++        return Color.lerp(iconColor, AppColors.accentLight, 0.12)!;
++      default:
++        return iconColor;
++    }
++  }
+ }
+*** End Patch

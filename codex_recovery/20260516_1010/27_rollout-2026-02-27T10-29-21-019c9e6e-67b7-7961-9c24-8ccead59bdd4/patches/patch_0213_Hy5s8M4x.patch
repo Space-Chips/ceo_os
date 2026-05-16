@@ -1,0 +1,9 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/screen_time_manager/screen_time_manager_screen.dart
+@@
+-                          icon: CupertinoIcons.trophy,
++                          icon: CupertinoIcons.rosette,
+@@
+-                  icon: CupertinoIcons.trophy,
++                  icon: CupertinoIcons.rosette,
+*** End Patch

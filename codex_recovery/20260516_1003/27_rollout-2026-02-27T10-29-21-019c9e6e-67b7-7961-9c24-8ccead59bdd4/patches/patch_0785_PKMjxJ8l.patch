@@ -1,0 +1,22 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/ios/Runner/AppDelegate.swift
+@@
+-        let focusEnabled = defaults.bool(forKey: focusEnabledStorageKey)
+-        let classicEnabled = defaults.bool(forKey: classicEnabledStorageKey)
++        let focusEnabled =
++            defaults.bool(forKey: focusEnabledStorageKey)
++            || defaults.bool(forKey: scheduledFocusEnabledStorageKey)
++        let classicEnabled = defaults.bool(forKey: classicEnabledStorageKey)
++        let classicPauseEnabled = defaults.bool(forKey: classicPauseEnabledStorageKey)
+ 
+         var payloads: [String] = []
+         if focusEnabled, let payload = defaults.string(forKey: selectionStorageKey), !payload.isEmpty {
+             payloads.append(payload)
+         }
+         if classicEnabled {
+             payloads.append(contentsOf: storedClassicPayloads())
+         }
++        if classicPauseEnabled {
++            payloads.append(contentsOf: storedClassicPausePayloads())
++        }
+*** End Patch

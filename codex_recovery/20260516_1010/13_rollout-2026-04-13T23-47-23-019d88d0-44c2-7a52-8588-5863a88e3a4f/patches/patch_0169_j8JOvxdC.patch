@@ -1,0 +1,45 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/screen_time_screen.dart
+@@
+     final picked = (selections ?? [])
+         .where((item) => item.payload.trim().isNotEmpty)
+         .toList(growable: false);
+     if (picked.isEmpty) return;
+ 
+     final websiteBindings = await _classicLocalStore.loadWebsiteBindings();
+-    var skippedMissingDomain = 0;
+ 
+     await _runMutation(() async {
+       final existingPayloads = _blockedWebsites
+           .map((site) => websiteBindings[site.id]?.nativePayload?.trim())
+@@
+         final domain = (resolved != null && resolved.isNotEmpty)
+             ? normalizeDomainInput(resolved) ?? resolved.toLowerCase()
+             : null;
+-        if (domain == null || domain.isEmpty) {
+-          skippedMissingDomain += 1;
+-          continue;
+-        }
+-        final label = domain;
+-        final record = await _repo.createBlockedWebsiteRecord(label);
++        final record = await _repo.createBlockedWebsiteRecord(domain);
+         if (record == null) continue;
+         await _classicLocalStore.saveWebsiteBinding(
+           rowId: record.id,
+-          nativeIdentifier: domain,
++          nativeIdentifier: domain,
+           nativePayload: payload,
+         );
+         existingPayloads.add(payload);
+       }
+     });
+-
+-    if (skippedMissingDomain > 0 && mounted) {
+-      await _showNotice(
+-        title: 'Some websites skipped',
+-        message:
+-            '$skippedMissingDomain selected website(s) could not expose a domain label and were not saved.',
+-      );
+-    }
+   }
+*** End Patch

@@ -1,0 +1,23 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/screen_time_manager/screen_time_manager_screen.dart
+@@
+                 decoration: BoxDecoration(
+                   borderRadius: BorderRadius.circular(12),
+-                  color: AppColors.white.withValues(alpha: 0.06),
++                  color: AppColors.moduleIconBackground,
+                 ),
+@@
+       gradient: LinearGradient(
+         begin: Alignment.topCenter,
+         end: Alignment.bottomCenter,
+-        colors: [AppColors.cardBackgroundAlt, AppColors.cardBase],
++        colors: [AppColors.cardBackgroundStrong, AppColors.cardBase],
+       ),
+@@
+         BoxShadow(
+-          color: AppColors.black.withValues(alpha: 0.6),
++          color: AppColors.glassShadow.withValues(alpha: 0.32),
+           blurRadius: 30,
+           offset: const Offset(0, 10),
+         ),
+*** End Patch

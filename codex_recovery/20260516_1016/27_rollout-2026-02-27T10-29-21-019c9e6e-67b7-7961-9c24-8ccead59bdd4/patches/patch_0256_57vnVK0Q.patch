@@ -1,0 +1,6 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/notes_screen.dart
+@@
+-    final sidebarWidth = (screenWidth * 0.26).clamp(152.0, 184.0);
++    final sidebarWidth = (screenWidth * 0.22).clamp(132.0, 168.0);
+*** End Patch

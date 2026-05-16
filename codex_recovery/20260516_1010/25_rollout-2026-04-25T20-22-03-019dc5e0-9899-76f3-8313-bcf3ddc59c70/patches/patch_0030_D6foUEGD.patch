@@ -1,0 +1,22 @@
+*** Begin Patch
+*** Update File: lib/features/home/home_screen.dart
+@@
+       await _loadHomePreferences();
+       if (!mounted) return;
+ 
++      await _loadControlCenterConfiguration();
++      if (!mounted) return;
++
++      if (!_controlCenterConfiguration.setupCompleted &&
++          !_didRouteToControlCenterSetup) {
++        _didRouteToControlCenterSetup = true;
++        WidgetsBinding.instance.addPostFrameCallback((_) {
++          if (!mounted) return;
++          context.push('/control-center-setup');
++        });
++      }
++
+       setState(() {
+         _pendingYesterdayValidationFuture = _hasPendingYesterdayHabits();
+       });
+*** End Patch

@@ -1,0 +1,13 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/screen_time_screen.dart
+@@
+-      final iosAppCatalogFuture = _refreshIosAppCatalog();
+-      final iosWebsiteCatalogFuture = _refreshIosWebsiteCatalog();
+@@
+-      final iosAppCatalog = await iosAppCatalogFuture;
+-      final iosWebsiteCatalog = await iosWebsiteCatalogFuture;
+@@
+-        _iosAppSelectionByBundle = iosAppCatalog;
+-        _iosWebsitePayloadByDomain = iosWebsiteCatalog;
+         _adultContentShieldEnabled = adultEnabled;
+*** End Patch

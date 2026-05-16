@@ -1,0 +1,8 @@
+*** Begin Patch
+*** Update File: android/app/src/main/kotlin/com/wakeapp/ceoos/BlockingAccessibilityService.kt
+@@
+     private fun handleLauncherOverlay(nowElapsed: Long) {
+-        if (nowElapsed - lastLauncherRefreshAt < 45L) return
++        if (nowElapsed - lastLauncherRefreshAt < 120L) return
+         lastLauncherRefreshAt = nowElapsed
+*** End Patch

@@ -1,0 +1,49 @@
+*** Begin Patch
+*** Update File: android/app/src/main/kotlin/com/wakeapp/ceoos/MainActivity.kt
+@@
+     private fun authorizationStatus(): String {
+         return if (hasBlockingPermissions()) "approved" else "denied"
+     }
+ 
++    private fun accessibilityStatus(): String {
++        return if (isAccessibilityServiceEnabled()) "approved" else "denied"
++    }
++
++    private fun usageAccessStatus(): String {
++        return if (hasUsageStatsPermission()) "approved" else "denied"
++    }
++
+     private fun nextProtectionStepName(): String {
+         return when (nextMissingProtectionStep()) {
+             AndroidProtectionStep.ACCESSIBILITY -> "accessibility"
+             AndroidProtectionStep.USAGE_ACCESS -> "usage_access"
+             AndroidProtectionStep.COMPLETE -> "complete"
+         }
+     }
++
++    private fun openAccessibilitySettings(): Boolean {
++        val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {
++            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
++        }
++        startActivity(intent)
++        return true
++    }
++
++    private fun openUsageAccessSettings(): Boolean {
++        val intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS).apply {
++            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
++        }
++        startActivity(intent)
++        return true
++    }
+@@
+                     "requestPermissions" -> result.success(openNextProtectionSettings())
+                     "isAuthorized" -> result.success(hasBlockingPermissions())
+                     "getAuthorizationStatus" -> result.success(authorizationStatus())
++                    "getAccessibilityStatus" -> result.success(accessibilityStatus())
++                    "getUsageAccessStatus" -> result.success(usageAccessStatus())
+                     "getNextProtectionStep" -> result.success(nextProtectionStepName())
+                     "openSystemSettings" -> result.success(openNextProtectionSettings())
++                    "openAccessibilitySettings" -> result.success(openAccessibilitySettings())
++                    "openUsageAccessSettings" -> result.success(openUsageAccessSettings())
+*** End Patch

@@ -1,0 +1,180 @@
+*** Begin Patch
+*** Update File: lib/components/premium_paywall.dart
+@@
+-            Row(
+-              children: [
+-                Expanded(
+-                  child: CupertinoButton(
+-                    padding: EdgeInsets.zero,
+-                    onPressed: _restoreInFlight
+-                        ? null
+-                        : () async {
+-                            setState(() => _restoreInFlight = true);
+-                            try {
+-                              final result = await BillingService()
+-                                  .restorePurchases();
+-                              if (!context.mounted) return;
+-                              final title = result.succeeded
+-                                  ? (widget.isFr ? 'Restauré' : 'Restored')
+-                                  : (widget.isFr ? 'Échec' : 'Restore failed');
+-                              showCupertinoDialog<void>(
+-                                context: context,
+-                                builder: (_) => CupertinoAlertDialog(
+-                                  title: Text(title),
+-                                  content: Text(result.message ?? ''),
+-                                  actions: [
+-                                    CupertinoDialogAction(
+-                                      isDefaultAction: true,
+-                                      onPressed: () =>
+-                                          Navigator.of(context).pop(),
+-                                      child: const Text('OK'),
+-                                    ),
+-                                  ],
+-                                ),
+-                              );
+-                            } finally {
+-                              if (mounted) {
+-                                setState(() => _restoreInFlight = false);
+-                              }
+-                            }
+-                          },
+-                    child: Container(
+-                      height: 46,
+-                      alignment: Alignment.center,
+-                      decoration: BoxDecoration(
+-                        borderRadius: BorderRadius.circular(16),
+-                        color: AppColors.topBarControlBackground,
+-                        border: Border.all(
+-                          color: AppColors.border.withValues(alpha: 0.45),
+-                        ),
+-                      ),
+-                      child: _restoreInFlight
+-                          ? const CupertinoActivityIndicator()
+-                          : Text(
+-                              widget.isFr ? 'Restaurer' : 'Restore',
+-                              style: AppTypography.subhead.copyWith(
+-                                color: AppColors.label,
+-                                fontWeight: FontWeight.w700,
+-                              ),
+-                            ),
+-                    ),
+-                  ),
+-                ),
+-                const SizedBox(width: 10),
+-                Expanded(
+-                  child: CupertinoButton(
+-                    padding: EdgeInsets.zero,
+-                    onPressed: _openManageSubscriptions,
+-                    child: Container(
+-                      height: 46,
+-                      alignment: Alignment.center,
+-                      decoration: BoxDecoration(
+-                        borderRadius: BorderRadius.circular(16),
+-                        color: AppColors.topBarControlBackground,
+-                        border: Border.all(
+-                          color: AppColors.border.withValues(alpha: 0.45),
+-                        ),
+-                      ),
+-                      child: Text(
+-                        widget.isFr ? 'Gérer' : 'Manage',
+-                        style: AppTypography.subhead.copyWith(
+-                          color: AppColors.label,
+-                          fontWeight: FontWeight.w700,
+-                        ),
+-                      ),
+-                    ),
+-                  ),
+-                ),
+-              ],
+-            ),
++            Row(
++              children: [
++                if (widget.showRestoreButton) ...[
++                  Expanded(
++                    child: CupertinoButton(
++                      padding: EdgeInsets.zero,
++                      onPressed: _restoreInFlight
++                          ? null
++                          : () async {
++                              setState(() => _restoreInFlight = true);
++                              try {
++                                final result = await BillingService()
++                                    .restorePurchases();
++                                if (!context.mounted) return;
++                                final title = result.succeeded
++                                    ? (widget.isFr ? 'Restauré' : 'Restored')
++                                    : (widget.isFr
++                                        ? 'Échec'
++                                        : 'Restore failed');
++                                showCupertinoDialog<void>(
++                                  context: context,
++                                  builder: (_) => CupertinoAlertDialog(
++                                    title: Text(title),
++                                    content: Text(result.message ?? ''),
++                                    actions: [
++                                      CupertinoDialogAction(
++                                        isDefaultAction: true,
++                                        onPressed: () =>
++                                            Navigator.of(context).pop(),
++                                        child: const Text('OK'),
++                                      ),
++                                    ],
++                                  ),
++                                );
++                              } finally {
++                                if (mounted) {
++                                  setState(() => _restoreInFlight = false);
++                                }
++                              }
++                            },
++                      child: Container(
++                        height: 46,
++                        alignment: Alignment.center,
++                        decoration: BoxDecoration(
++                          borderRadius: BorderRadius.circular(16),
++                          color: AppColors.topBarControlBackground,
++                          border: Border.all(
++                            color: AppColors.border.withValues(alpha: 0.45),
++                          ),
++                        ),
++                        child: _restoreInFlight
++                            ? const CupertinoActivityIndicator()
++                            : Text(
++                                widget.isFr ? 'Restaurer' : 'Restore',
++                                style: AppTypography.subhead.copyWith(
++                                  color: AppColors.label,
++                                  fontWeight: FontWeight.w700,
++                                ),
++                              ),
++                      ),
++                    ),
++                  ),
++                  const SizedBox(width: 10),
++                ],
++                Expanded(
++                  child: CupertinoButton(
++                    padding: EdgeInsets.zero,
++                    onPressed: _openManageSubscriptions,
++                    child: Container(
++                      height: 46,
++                      alignment: Alignment.center,
++                      decoration: BoxDecoration(
++                        borderRadius: BorderRadius.circular(16),
++                        color: AppColors.topBarControlBackground,
++                        border: Border.all(
++                          color: AppColors.border.withValues(alpha: 0.45),
++                        ),
++                      ),
++                      child: Text(
++                        widget.isFr ? 'Gérer' : 'Manage',
++                        style: AppTypography.subhead.copyWith(
++                          color: AppColors.label,
++                          fontWeight: FontWeight.w700,
++                        ),
++                      ),
++                    ),
++                  ),
++                ),
++              ],
++            ),
+*** End Patch

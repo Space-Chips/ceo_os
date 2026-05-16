@@ -1,0 +1,41 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/home/home_screen.dart
+@@
+ import '../../components/components.dart';
+ import '../../core/models/insights_models.dart';
+-import '../../core/providers/focus_provider.dart';
++import '../../core/providers/ceo_mode_provider.dart';
+ import '../../core/providers/habit_provider.dart';
+ import '../../core/providers/task_provider.dart';
+@@
+ import '../calendar/add_event_sheet.dart';
+-import '../focus/focus_starter_sheet.dart';
+ import '../habits/habit_gallery_sheet.dart';
+ import '../tasks/add_task_sheet.dart';
+@@
+-  void _openFocusStarter() {
+-    showCupertinoModalPopup(
+-      context: context,
+-      builder: (_) => const FocusStarterSheet(),
+-    );
+-  }
+-
+@@
+-    final focusProvider = context.watch<FocusProvider>();
++    final ceoProvider = context.watch<CeoModeProvider>();
+@@
+                   _CeoModeCard(
+-                    isActive: focusProvider.state != FocusState.idle,
+-                    timer: focusProvider.timerDisplay,
+-                    onOpenCeoMode: () {
+-                      if (focusProvider.state == FocusState.idle) {
+-                        _openFocusStarter();
+-                      } else {
+-                        context.push('/focus');
+-                      }
+-                    },
++                    statusLabel: ceoProvider.homeCardLabel,
++                    isActive: ceoProvider.isSessionActive,
++                    onOpenCeoMode: () => context.push('/ceo-mode'),
+                   ),
+*** End Patch

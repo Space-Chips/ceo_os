@@ -1,0 +1,50 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/habits/habits_screen.dart
+@@
+             else
+               ..._objectives.map((objective) {
+-                final title = _objectiveTitle(objective);
++                final meta = _objectiveMeta(objective);
++                final title = meta.name;
+                 final linkedHabits = prov.habits
+                     .where(
+                       (habit) =>
+                           (habit.category ?? '').trim().toLowerCase() ==
+                           title.toLowerCase(),
+@@
+                         Row(
+                           children: [
+                             Icon(
+-                              CupertinoIcons.scope,
++                              _goalIconData(meta.icon),
+                               size: 16,
+                               color: AppColors.primaryOrange,
+                             ),
+                             const SizedBox(width: 10),
+                             Expanded(
+@@
+                                   Text(
+-                                    title.toUpperCase(),
++                                    title,
+                                     style: AppTypography.mono.copyWith(
+                                       fontSize: 13,
+                                       fontWeight: FontWeight.bold,
+                                     ),
+                                   ),
++                                  if (meta.note.isNotEmpty)
++                                    Padding(
++                                      padding: const EdgeInsets.only(top: 2),
++                                      child: Text(
++                                        meta.note,
++                                        maxLines: 1,
++                                        overflow: TextOverflow.ellipsis,
++                                        style: AppTypography.mono.copyWith(
++                                          fontSize: 9,
++                                          color: AppColors.secondaryLabel,
++                                        ),
++                                      ),
++                                    ),
+                                   Text(
+                                     '${linkedHabits.length} habits',
+                                     style: AppTypography.mono.copyWith(
+*** End Patch

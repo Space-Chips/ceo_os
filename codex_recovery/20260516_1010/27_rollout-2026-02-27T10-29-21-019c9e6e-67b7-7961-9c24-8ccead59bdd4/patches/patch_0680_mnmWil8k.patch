@@ -1,0 +1,11 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/screen_time_manager/screen_time_manager_screen.dart
+@@
+                   final blockedTargets = _blockedTargets(focus);
+-                  final rankName = (_rank?.rankName?.trim().isNotEmpty ?? false)
++                  final rankNameRaw = (_rank?.rankName?.trim().isNotEmpty ?? false)
+                       ? _rank!.rankName!.trim()
+-                      : 'Bronze';
++                      : 'Asleep';
++                  final rankName = RankArt.displayName(rankNameRaw);
+*** End Patch

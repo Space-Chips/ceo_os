@@ -1,0 +1,128 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/tasks/tasks_screen.dart
+@@
+ import '../../components/components.dart';
+ import '../../core/models/task_models.dart';
++import '../../core/providers/language_provider.dart';
+ import '../../core/providers/task_provider.dart';
+@@
+-  String _durationLabel(String? raw) {
++  String _durationLabel(String? raw, LanguageProvider language) {
+@@
+       case '1_hour':
+       case '1h':
+-        return '1 hour';
++        return language.t('tasks_duration_1_hour');
+       case '2_hours':
+       case '2h':
+-        return '2 hours';
++        return language.t('tasks_duration_2_hours');
+       case 'half_day':
+-        return 'half day';
++        return language.t('tasks_duration_half_day');
+       case '1_day':
+-        return '1 day';
++        return language.t('tasks_duration_1_day');
+       case 'several_days':
+       case '4h+':
+-        return 'several days';
++        return language.t('tasks_duration_several_days');
+       default:
+-        return '1 hour';
++        return language.t('tasks_duration_1_hour');
+     }
+   }
+ 
+-  String _swipeHint() {
++  String _swipeHint(LanguageProvider language) {
+     switch (_activeTab) {
+       case _TaskTab.list:
+-        return 'Swipe right for Matrix view →';
++        return language.t('tasks_swipe_hint_list');
+       case _TaskTab.matrix:
+-        return '← Swipe left for list    Swipe right for history →';
++        return language.t('tasks_swipe_hint_matrix');
+       case _TaskTab.history:
+-        return '← Swipe left to return to matrix';
++        return language.t('tasks_swipe_hint_history');
+     }
+   }
+@@
+-  String _titleByTab() {
++  String _titleByTab(LanguageProvider language) {
+     switch (_activeTab) {
+       case _TaskTab.list:
+-        return 'To-Do';
++        return language.t('tasks_tab_title_todo');
+       case _TaskTab.matrix:
+-        return 'Pareto Matrix';
++        return language.t('tasks_tab_title_matrix');
+       case _TaskTab.history:
+-        return 'All Tasks';
++        return language.t('tasks_tab_title_history');
+     }
+   }
+ 
+-  String _subtitleByTab() {
++  String _subtitleByTab(LanguageProvider language) {
+     switch (_activeTab) {
+       case _TaskTab.list:
+-        return '20% THAT DRIVES 80%';
++        return language.t('tasks_tab_subtitle_todo');
+       case _TaskTab.matrix:
+-        return 'IMPACT VS TIME INVESTMENT';
++        return language.t('tasks_tab_subtitle_matrix');
+       case _TaskTab.history:
+-        return 'COMPLETE HISTORY • LAST 7 DAYS';
++        return language.t('tasks_tab_subtitle_history');
+     }
+   }
+ 
+   @override
+   Widget build(BuildContext context) {
++    final language = context.watch<LanguageProvider>();
+     return CupertinoPageScaffold(
+@@
+-                    _topRow(),
++                    _topRow(language),
+                     const SizedBox(height: 8),
+-                    _titleBlock(),
++                    _titleBlock(language),
+@@
+                           _buildListTab(
+                             key: const ValueKey('list'),
++                            language: language,
+                             topFive: topFive,
+                             others: others,
+                             onAdd: _showAddTask,
+@@
+                           _buildMatrixTab(
+                             key: const ValueKey('matrix'),
++                            language: language,
+                             quickImportant: quickImportant.toList(),
+@@
+                           _buildHistoryTab(
+                             key: const ValueKey('history'),
++                            language: language,
+                             tasks: recentWeekTasks,
+@@
+                     Text(
+-                      _swipeHint(),
++                      _swipeHint(language),
+@@
+-  Widget _topRow() {
++  Widget _topRow(LanguageProvider language) {
+@@
+                 Text(
+-                  'Home',
++                  language.t('home'),
+@@
+-  Widget _titleBlock() {
++  Widget _titleBlock(LanguageProvider language) {
+@@
+-            _titleByTab(),
++            _titleByTab(language),
+@@
+-          _subtitleByTab(),
++          _subtitleByTab(language),
+*** End Patch

@@ -1,0 +1,74 @@
+*** Begin Patch
+*** Add File: lib/features/control_center_setup/widgets/jiggle.dart
++import 'dart:math' as math;
++
++import 'package:flutter/widgets.dart';
++
++class Jiggle extends StatefulWidget {
++  final Widget child;
++  final double degrees;
++  final Duration period;
++  final double phase;
++  final bool enabled;
++
++  const Jiggle({
++    super.key,
++    required this.child,
++    this.degrees = 1.5,
++    this.period = const Duration(milliseconds: 1800),
++    this.phase = 0,
++    this.enabled = true,
++  });
++
++  @override
++  State<Jiggle> createState() => _JiggleState();
++}
++
++class _JiggleState extends State<Jiggle> with SingleTickerProviderStateMixin {
++  late final AnimationController _controller = AnimationController(
++    vsync: this,
++    duration: widget.period,
++  );
++
++  @override
++  void initState() {
++    super.initState();
++    if (widget.enabled) {
++      _controller.repeat();
++    }
++  }
++
++  @override
++  void didUpdateWidget(covariant Jiggle oldWidget) {
++    super.didUpdateWidget(oldWidget);
++    if (widget.enabled && !_controller.isAnimating) {
++      _controller.repeat();
++    }
++    if (!widget.enabled && _controller.isAnimating) {
++      _controller.stop();
++    }
++  }
++
++  @override
++  void dispose() {
++    _controller.dispose();
++    super.dispose();
++  }
++
++  @override
++  Widget build(BuildContext context) {
++    if (!widget.enabled) return widget.child;
++    final radians = widget.degrees * (math.pi / 180);
++    return AnimatedBuilder(
++      animation: _controller,
++      builder: (context, child) {
++        final t = (_controller.value + widget.phase) % 1.0;
++        final angle = math.sin(t * math.pi * 2) * radians;
++        return Transform.rotate(angle: angle, child: child);
++      },
++      child: widget.child,
++    );
++  }
++}
++
+*** End Patch

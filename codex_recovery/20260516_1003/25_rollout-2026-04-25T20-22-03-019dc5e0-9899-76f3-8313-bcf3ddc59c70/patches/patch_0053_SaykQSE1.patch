@@ -1,0 +1,7 @@
+*** Begin Patch
+*** Update File: lib/features/control_center_setup/widgets/dashboard_intro_screen.dart
+@@
+-    final translate = Tween<double>(begin: 12, end: 0)
++    final translate = Tween<double>(begin: 12.0, end: 0.0)
+         .transform(Curves.easeOutCubic.transform(progress));
+*** End Patch

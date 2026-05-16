@@ -1,0 +1,41 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/providers/ceo_mode_provider.dart
+@@
+       final shieldingApplied = await _activateShielding();
+       if (!shieldingApplied) {
+-        _lastStartIssue = 'block_list';
++        _lastStartIssue = 'activation_failed';
+         _state = CeoModeState.idle;
+         _sessionStartAt = null;
+         _sessionEndAt = null;
+         _exitReadyAt = null;
+*** Update File: /Users/timo/ceo_os/lib/features/ceo_mode/ceo_mode_screen.dart
+@@
+       final issue = provider.lastStartIssue;
+       final (title, message) = switch (issue) {
+-        'block_list' => (
+-          'Block List Required',
+-          'Choose at least one blocked app or category before starting Blackout Mode so the session can be enforced.',
+-        ),
+         'permissions_denied' => (
+           _isAndroid
+               ? 'Turn On Android Protection Access'
+               : 'Turn On Screen Time Access',
+@@
+         'unsupported' => (
+           'Unsupported Runtime',
+           _isAndroid
+               ? 'This build does not currently expose the Android protection services required for Blackout Mode, so the session cannot be enforced here.'
+               : 'This build does not currently expose Apple Screen Time / Family Controls protection, so Blackout Mode cannot enforce the session here.',
+         ),
++        'activation_failed' => (
++          'Blackout Mode Unavailable',
++          _isAndroid
++              ? 'WakeApp could not start the Android Blackout protection on this device. Check the required protection permissions, then try again.'
++              : 'WakeApp could not start the protected Blackout session on this device. Check Screen Time access, then try again.',
++        ),
+         _ => (
+           'Setup Required',
+           _isAndroid
+               ? 'Enable Android protection permissions to enforce Blackout Mode protections.'
+*** End Patch

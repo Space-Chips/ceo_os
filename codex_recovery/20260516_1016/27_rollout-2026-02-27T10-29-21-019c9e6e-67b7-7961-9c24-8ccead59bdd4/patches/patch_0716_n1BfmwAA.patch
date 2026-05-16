@@ -1,0 +1,20 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/rank/rank_screen.dart
+@@
+-    if (level >= 9) return _tiers[0];
+-    if (level == 8) return _tiers[1];
+-    if (level == 7) return _tiers[2];
+-    if (level == 6) return _tiers[3];
+-    if (level == 5) return _tiers[4];
+-    if (level == 4) return _tiers[5];
+-    if (level >= 1) return _tiers[6];
++    if (level >= 7) return _tiers[0];
++    if (level == 6) return _tiers[1];
++    if (level == 5) return _tiers[2];
++    if (level == 4) return _tiers[3];
++    if (level == 3) return _tiers[4];
++    if (level == 2) return _tiers[5];
++    if (level == 1) return _tiers[6];
+     return _tiers[7];
+   }
+*** End Patch

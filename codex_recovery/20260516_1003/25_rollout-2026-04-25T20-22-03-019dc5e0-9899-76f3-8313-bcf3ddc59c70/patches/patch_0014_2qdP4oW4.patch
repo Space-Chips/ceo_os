@@ -1,0 +1,25 @@
+*** Begin Patch
+*** Update File: lib/features/control_center_setup/control_center_setup_screen.dart
+@@
+       case SetupStep.modulePicker:
+         return ModulePickerScreen(
+-          selectedItemIds: {
+-            for (final item in state.selectedModules) item.id,
+-          },
+-          remainingSlots: state.remainingSlots,
++          state: state,
+           onAdd: (module) => viewModel.addModule(module),
+           onContinue: viewModel.goNext,
+         );
+@@
+       case SetupStep.shortcutPicker:
+         return ShortcutPickerScreen(
+-          selectedItemIds: {
+-            for (final item in state.selectedShortcuts) item.id,
+-          },
+-          remainingSlots: state.remainingSlots,
++          state: state,
+           onAdd: (shortcut) => viewModel.addShortcut(shortcut),
+           onContinue: viewModel.goNext,
+         );
+*** End Patch

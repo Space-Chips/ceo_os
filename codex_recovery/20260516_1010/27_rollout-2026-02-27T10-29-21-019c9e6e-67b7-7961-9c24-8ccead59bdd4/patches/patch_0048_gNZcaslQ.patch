@@ -1,0 +1,10 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/calendar/add_event_sheet.dart
+@@
+   void _adjustDuration(int delta) {
+     setState(() {
+-      _durationMinutes = (_durationMinutes + delta).clamp(15, 480);
++      _durationMinutes = (_durationMinutes + delta).clamp(15, 480).toInt();
+     });
+   }
+*** End Patch

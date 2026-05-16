@@ -1,0 +1,60 @@
+<svg width="1024" height="500" viewBox="0 0 1024 500" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="88" y1="42" x2="948" y2="462" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#171B20"/>
+      <stop offset="1" stop-color="#080A0D"/>
+    </linearGradient>
+    <radialGradient id="orb1" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(228 124) rotate(90) scale(216 216)">
+      <stop stop-color="#8DAAFF" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#8DAAFF" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="orb2" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(792 394) rotate(90) scale(206 206)">
+      <stop stop-color="#CED8EA" stop-opacity="0.12"/>
+      <stop offset="1" stop-color="#CED8EA" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="frame" x1="120" y1="114" x2="366" y2="360" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#EEF3FC"/>
+      <stop offset="1" stop-color="#B6C5E3"/>
+    </linearGradient>
+    <linearGradient id="panelStroke" x1="492" y1="124" x2="946" y2="366" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#39414D"/>
+      <stop offset="1" stop-color="#232A33"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1024" height="500" rx="40" fill="url(#bg)"/>
+  <circle cx="228" cy="124" r="216" fill="url(#orb1)"/>
+  <circle cx="792" cy="394" r="206" fill="url(#orb2)"/>
+
+  <g opacity="0.36">
+    <path d="M42 110C181 64 318 42 454 42C614 42 792 76 980 144" stroke="#2A323D" stroke-width="1.5"/>
+    <path d="M56 430C194 456 336 468 474 468C664 468 842 442 984 384" stroke="#1D232B" stroke-width="1.5"/>
+  </g>
+
+  <path d="M146 212V184C146 168.536 158.536 156 174 156H202" stroke="url(#frame)" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M342 212V184C342 168.536 329.464 156 314 156H286" stroke="url(#frame)" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M146 310V338C146 353.464 158.536 366 174 366H202" stroke="url(#frame)" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M342 310V338C342 353.464 329.464 366 314 366H286" stroke="url(#frame)" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="244" cy="261" r="52" fill="#10141A" stroke="url(#frame)" stroke-width="16"/>
+  <circle cx="244" cy="261" r="13" fill="#F7FAFF"/>
+
+  <rect x="472" y="116" width="470" height="248" rx="30" fill="#14181D" fill-opacity="0.74" stroke="url(#panelStroke)"/>
+  <text x="522" y="184" fill="#F6F8FC" font-size="34" font-family="SF Pro Display, Inter, Arial, sans-serif" font-weight="700">
+    Run your focus from one place.
+  </text>
+  <text x="522" y="226" fill="#A8B3C4" font-size="20" font-family="SF Pro Display, Inter, Arial, sans-serif">
+    An adaptable control center for sessions,
+  </text>
+  <text x="522" y="254" fill="#A8B3C4" font-size="20" font-family="SF Pro Display, Inter, Arial, sans-serif">
+    limits, routines, and distraction blocking.
+  </text>
+
+  <g>
+    <rect x="522" y="292" width="126" height="40" rx="20" fill="#1F2632" stroke="#344053"/>
+    <text x="556" y="318" fill="#F1F5FB" font-size="17" font-family="SF Pro Display, Inter, Arial, sans-serif" font-weight="600">Sessions</text>
+    <rect x="664" y="292" width="106" height="40" rx="20" fill="#1B2129" stroke="#313A47"/>
+    <text x="700" y="318" fill="#F1F5FB" font-size="17" font-family="SF Pro Display, Inter, Arial, sans-serif" font-weight="600">Limits</text>
+    <rect x="786" y="292" width="126" height="40" rx="20" fill="#1B2129" stroke="#313A47"/>
+    <text x="820" y="318" fill="#F1F5FB" font-size="17" font-family="SF Pro Display, Inter, Arial, sans-serif" font-weight="600">Control</text>
+  </g>
+</svg>

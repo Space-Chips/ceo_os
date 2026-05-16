@@ -1,0 +1,43 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/android/app/src/main/kotlin/com/wakeapp/ceoos/BrowserBlockingOverlay.kt
+@@
+     fun show(toolbarBounds: Rect?, domain: String, reason: String) {
+         val windowManager = service.getSystemService(AccessibilityService.WINDOW_SERVICE) as? WindowManager
+             ?: return
+         val height = service.resources.displayMetrics.heightPixels
+-        val topInset = toolbarBounds?.bottom?.coerceAtLeast(dp(72)) ?: dp(120)
+-        val overlayHeight = (height - topInset).coerceAtLeast(dp(140))
++        val safeGap = dp(16)
++        val minTopInset = dp(120)
++        val toolbar = toolbarBounds?.let { Rect(it) }
++        val overlayTop: Int
++        val overlayHeight: Int
++
++        if (toolbar != null && !toolbar.isEmpty) {
++            val toolbarCenter = toolbar.centerY().toFloat()
++            if (toolbarCenter > height * 0.55f) {
++                overlayTop = 0
++                overlayHeight = (toolbar.top - safeGap).coerceAtLeast(dp(140))
++            } else {
++                overlayTop = (toolbar.bottom + safeGap).coerceAtLeast(minTopInset)
++                overlayHeight = (height - overlayTop).coerceAtLeast(dp(140))
++            }
++        } else {
++            overlayTop = minTopInset
++            overlayHeight = (height - overlayTop).coerceAtLeast(dp(140))
++        }
+@@
+-                windowManager.addView(view, buildParams(topInset, overlayHeight))
++                windowManager.addView(view, buildParams(overlayTop, overlayHeight))
+             } catch (_: Exception) {
+                 overlayView = null
+                 return
+             }
+         } else {
+             try {
+-                windowManager.updateViewLayout(view, buildParams(topInset, overlayHeight))
++                windowManager.updateViewLayout(view, buildParams(overlayTop, overlayHeight))
+             } catch (_: Exception) {
+             }
+         }
+*** End Patch

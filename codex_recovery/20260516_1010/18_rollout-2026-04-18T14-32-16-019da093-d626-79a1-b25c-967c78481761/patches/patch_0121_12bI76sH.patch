@@ -1,0 +1,15 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/providers/focus_provider.dart
+@@
+       return _sessionEndTime!
+           .difference(DateTime.now())
+           .inSeconds
+-          .clamp(0, focusDurationMinutes * 60);
++          .clamp(0, 24 * 60 * 60);
+@@
+     _remainingSeconds = restoredEnd
+         .difference(now)
+         .inSeconds
+-        .clamp(0, focusDurationMinutes * 60);
++        .clamp(0, 24 * 60 * 60);
+*** End Patch

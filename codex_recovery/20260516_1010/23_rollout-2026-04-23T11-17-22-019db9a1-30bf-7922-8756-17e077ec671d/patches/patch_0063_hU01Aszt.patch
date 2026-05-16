@@ -1,0 +1,13 @@
+*** Begin Patch
+*** Update File: lib/features/home/stats_screen.dart
+@@
+               child: _MetricCard(
+                 title: 'Best streak',
+                 value: '${lifetime.highestStreakEver}d',
+-                subtitle: RankArt.displayName(lifetime.currentRank),
++                subtitle: _localizedRankDisplay(context, lifetime.currentRank),
+               ),
+             ),
+           ],
+         ),
+*** End Patch

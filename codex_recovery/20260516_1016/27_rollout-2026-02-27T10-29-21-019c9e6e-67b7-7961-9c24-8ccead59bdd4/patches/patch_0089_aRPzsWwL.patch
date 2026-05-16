@@ -1,0 +1,67 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/calendar/calendar_screen.dart
+@@
+         GlassCard(
+           padding: const EdgeInsets.symmetric(vertical: 8),
+           borderRadius: 18,
++          border: Border.all(
++            color: AppColors.primaryOrange.withValues(alpha: 0.2),
++            width: 0.55,
++          ),
+           child: TableCalendar<CalendarEvent>(
+@@
+         Row(
+           children: [
+             const NeoMonoText(
+               'AGENDA',
+               fontSize: 12,
+               fontWeight: FontWeight.bold,
+             ),
++            const SizedBox(width: 8),
++            Container(
++              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
++              decoration: BoxDecoration(
++                borderRadius: BorderRadius.circular(8),
++                color: AppColors.primaryOrange.withValues(alpha: 0.12),
++                border: Border.all(
++                  color: AppColors.primaryOrange.withValues(alpha: 0.28),
++                  width: 0.5,
++                ),
++              ),
++              child: Text(
++                '${eventsForSelectedDay.length}',
++                style: AppTypography.mono.copyWith(
++                  fontSize: 9,
++                  fontWeight: FontWeight.bold,
++                  color: AppColors.primaryOrange,
++                ),
++              ),
++            ),
+             const Spacer(),
+             Text(
+               DateFormat('EEEE, MMM d').format(_selectedDate()).toUpperCase(),
+@@
+         if (eventsForSelectedDay.isEmpty)
+-          Padding(
+-            padding: const EdgeInsets.symmetric(vertical: 40),
+-            child: Center(
+-              child: Text(
+-                'NO_EVENTS_SCHEDULED',
+-                style: AppTypography.mono.copyWith(
+-                  fontSize: 12,
+-                  color: AppColors.tertiaryLabel,
+-                ),
++          GlassCard(
++            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 22),
++            borderRadius: 14,
++            child: Center(
++              child: Text(
++                'NO_EVENTS_SCHEDULED',
++                style: AppTypography.mono.copyWith(
++                  fontSize: 12,
++                  color: AppColors.tertiaryLabel,
++                ),
+               ),
+             ),
+           )
+*** End Patch

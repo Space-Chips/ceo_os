@@ -1,0 +1,77 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/notes_screen.dart
+@@
+                         Text(
+                           _compactTitle(note),
+                           maxLines: 1,
+                           overflow: TextOverflow.ellipsis,
+-                          style: AppTypography.mono.copyWith(
+-                            fontSize: 14,
+-                            fontWeight: FontWeight.w800,
++                          style: AppTypography.callout.copyWith(
++                            fontSize: 13,
++                            fontWeight: FontWeight.w600,
+                             color: active
+                                 ? _selectionText
+                                 : AppColors.secondaryLabel.withValues(
+                                     alpha: 0.86,
+                                   ),
+@@
+                         Text(
+                           DateFormat(
+                             'MMM d',
+                           ).format(_effectiveUpdateDate(note)),
+-                          style: AppTypography.mono.copyWith(
++                          style: AppTypography.caption2.copyWith(
+                             fontSize: 10,
+                             color: AppColors.tertiaryLabel,
+                           ),
+@@
+                     child: Text(
+                       _tagLabel(tagPath),
+                       maxLines: 1,
+                       overflow: TextOverflow.ellipsis,
+-                      style: AppTypography.mono.copyWith(
+-                        fontSize: 13,
++                      style: AppTypography.subhead.copyWith(
++                        fontSize: 12,
+                         color: selected
+                             ? _notesGreenLight
+                             : AppColors.secondaryLabel.withValues(alpha: 0.6),
+                         fontWeight: selected
+-                            ? FontWeight.w800
+-                            : FontWeight.w700,
++                            ? FontWeight.w600
++                            : FontWeight.w500,
+                       ),
+                     ),
+                   ),
+@@
+           Text(
+             label,
+-            style: AppTypography.mono.copyWith(
++            style: AppTypography.overline.copyWith(
+               fontSize: 10,
+               color: AppColors.secondaryLabel.withValues(alpha: 0.5),
+               fontWeight: FontWeight.w700,
+-              letterSpacing: 1.6,
++              letterSpacing: 1.2,
+             ),
+           ),
+@@
+               child: Text(
+                 label,
+                 maxLines: 1,
+                 overflow: TextOverflow.ellipsis,
+-                style: AppTypography.mono.copyWith(
+-                  fontSize: 13,
++                style: AppTypography.subhead.copyWith(
++                  fontSize: 12,
+                   color: selected
+                       ? _notesGreenLight
+                       : AppColors.secondaryLabel.withValues(alpha: 0.6),
+-                  fontWeight: FontWeight.w800,
++                  fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+                 ),
+               ),
+*** End Patch

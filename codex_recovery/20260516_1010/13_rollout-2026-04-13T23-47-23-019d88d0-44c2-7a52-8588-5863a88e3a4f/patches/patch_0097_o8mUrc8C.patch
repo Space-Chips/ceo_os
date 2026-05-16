@@ -1,0 +1,25 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/screen_time_screen.dart
+@@
+ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
++  static const List<String> _websiteSuggestions = [
++    'youtube.com',
++    'tiktok.com',
++    'instagram.com',
++    'facebook.com',
++    'x.com',
++    'twitter.com',
++    'reddit.com',
++    'twitch.tv',
++    'netflix.com',
++    'primevideo.com',
++    'discord.com',
++    'snapchat.com',
++    'pinterest.com',
++    'linkedin.com',
++    'news.ycombinator.com',
++    'google.com',
++    'bing.com',
++    'duckduckgo.com',
++  ];
+*** End Patch

@@ -1,0 +1,12 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/services/stats_engine.dart
+@@
+       case 'diamond':
+         return 5;
+       case 'batman':
+       case 'sigma':
+         return 6;
+-      case 'sigma':
+       case 'ceo':
+         return 7;
+*** End Patch

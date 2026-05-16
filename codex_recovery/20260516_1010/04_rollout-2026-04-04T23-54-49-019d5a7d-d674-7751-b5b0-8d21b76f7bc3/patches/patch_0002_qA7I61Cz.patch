@@ -1,0 +1,6 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/android/local.properties
+@@
+ flutter.sdk=/Users/timo/flutter
++sdk.dir=/Users/timo/Library/Android/sdk
+*** End Patch

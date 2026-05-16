@@ -1,0 +1,7 @@
+*** Begin Patch
+*** Update File: lib/core/providers/language_provider.dart
+@@
+     'widget_configuration_hint':
+-        'Sur iOS, ajoute le widget depuis ton écran d’accueil puis modifie-le pour choisir ce qu’il affiche.',
++        'Sur iOS, tu peux ajouter 1, 2 ou 3 instances du widget et régler chacune (To‑Do / Dashboard / Habitudes) via « Modifier le widget ». Ouvre cet écran et appuie sur « Rafraîchir » après tes changements.',
+*** End Patch

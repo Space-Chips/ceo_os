@@ -1,0 +1,14 @@
+*** Begin Patch
+*** Update File: lib/features/home/home_screen.dart
+@@
+     if (shouldForceSetupScreen) {
+       // Spec: for a fresh signup, the first thing the user sees must be the
+       // start of the configuration flow — never a partially hydrated dashboard.
+-      return const CupertinoPageScaffold(
+-        backgroundColor: AppColors.background,
++      return CupertinoPageScaffold(
++        backgroundColor: AppColors.background,
+         child: SafeArea(child: Center(child: CupertinoActivityIndicator())),
+       );
+     }
+*** End Patch

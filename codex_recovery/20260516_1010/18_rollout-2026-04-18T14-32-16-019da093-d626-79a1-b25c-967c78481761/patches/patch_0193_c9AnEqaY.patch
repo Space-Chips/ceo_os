@@ -1,0 +1,40 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/setup/setup_flow_screen.dart
+@@
+-                          Text('Screen Time setup', style: AppTypography.title1),
++                          Text(t('setup_welcome_title'), style: AppTypography.title1),
+@@
+   @override
+   Widget build(BuildContext context) {
++    final t = context.read<LanguageProvider>().t;
+     return _SetupStepScaffold(
+@@
+                 Align(
+                   alignment: Alignment.centerRight,
+                   child: _StatusPill(
+-                    text: isGranted ? 'Enabled' : 'Not enabled',
++                    text: isGranted ? t('setup_enabled') : t('setup_not_enabled'),
+                     color: isGranted ? AppColors.success : AppColors.warning,
+                   ),
+                 ),
+@@
+-                  Text('Quick steps', style: AppTypography.headline),
++                  Text(t('setup_quick_steps'), style: AppTypography.headline),
+@@
+-                  Text('If the switch is locked', style: AppTypography.headline),
++                  Text(t('setup_switch_locked'), style: AppTypography.headline),
+@@
+               return _SuccessBanner(
+-                text: 'Permission granted',
++                text: t('setup_permission_granted'),
+                 visible: success || isGranted,
+               );
+             },
+@@
+           LiquidButton(
+-            label: isGranted ? 'Continue' : 'Open settings',
++            label: isGranted ? t('setup_continue') : t('setup_open_settings'),
+             fullWidth: true,
+             onPressed: isGranted ? onContinue : () => onOpenSettings(),
+           ),
+*** End Patch

@@ -1,0 +1,17 @@
+*** Begin Patch
+*** Update File: lib/core/providers/language_overrides.dart
+@@
+-    'focus_use_screen_time_control_title': '使用 Screen Time 控制',
++    'focus_use_screen_time_control_title': '使用屏幕使用时间控制',
+@@
+     'focus_use_screen_time_control_body':
+-        '在 iPhone 上，应用与网站选择现在由“Screen Time 控制”管理，并提供搜索建议。旧版编辑器不再打开 Apple 选择器。',
++        '在苹果手机上，应用与网站选择现在由“屏幕使用时间控制”管理，并提供搜索建议。旧版编辑器不再打开 Apple 选择器。',
+@@
+     'auth_privacy_body':
+-        'WakeApp 使用 Supabase 作为账户与云同步基础设施；用户选择时使用 Google 登录；购买使用 RevenueCat + Apple 或 Google Play；并使用平台系统 API 实现屏蔽、通知、小组件与计划等功能。',
++        '觉醒应用使用 Supabase 作为账户与云同步基础设施；用户选择时使用 Google 登录；购买使用 RevenueCat + Apple 或 Google Play；并使用平台系统 API 实现屏蔽、通知、小组件与计划等功能。',
+     'auth_terms_body':
+-        'WakeApp 提供生产力、规划与专注工具。高级订阅可能会自动续订，除非你在 Apple App Store 或 Google Play 的订阅设置中取消。',
++        '觉醒应用提供生产力、规划与专注工具。高级订阅可能会自动续订，除非你在 Apple App Store 或 Google Play 的订阅设置中取消。',
+*** End Patch

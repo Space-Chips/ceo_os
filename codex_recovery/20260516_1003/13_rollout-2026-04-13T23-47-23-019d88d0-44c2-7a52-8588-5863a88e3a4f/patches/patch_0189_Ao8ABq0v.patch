@@ -1,0 +1,50 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/screen_time_screen.dart
+@@
+     final selections = await _focusService
+         .openFamilyActivityPickerWithMetadata();
++    final appPickerError = _focusService.takeLastIosAppPickerError();
++    if (appPickerError != null && appPickerError.trim().isNotEmpty) {
++      await _showNotice(
++        title: 'App picker unavailable',
++        message: appPickerError,
++      );
++      return;
++    }
+     final picked = (selections ?? [])
+         .where((item) => item.payload.trim().isNotEmpty)
+         .toList(growable: false);
+     if (picked.isEmpty) {
+       await _showNotice(
+-        title: 'No website selected',
++        title: 'No app selected',
+         message:
+-            'In the Apple picker, choose at least one website/domain (not only apps) then tap Done.',
++            'In the Apple picker, choose at least one app then tap Done.',
+       );
+       return;
+     }
+@@
+     final selections = await _focusService
+         .openFamilyActivityWebsitePickerWithMetadata();
++    final websitePickerError = _focusService.takeLastIosWebsitePickerError();
++    if (websitePickerError != null && websitePickerError.trim().isNotEmpty) {
++      await _showNotice(
++        title: 'Website picker unavailable',
++        message: websitePickerError,
++      );
++      return;
++    }
+     final picked = (selections ?? [])
+         .where((item) => item.payload.trim().isNotEmpty)
+         .toList(growable: false);
+-    if (picked.isEmpty) return;
++    if (picked.isEmpty) {
++      await _showNotice(
++        title: 'No website selected',
++        message:
++            'In the Apple picker, choose at least one website/domain (not only apps) then tap Done.',
++      );
++      return;
++    }
+*** End Patch

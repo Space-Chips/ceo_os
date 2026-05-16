@@ -1,0 +1,16 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/providers/theme_provider.dart
+@@
+ import '../models/onboarding_models.dart';
+ import '../repositories/settings_repository.dart';
+ import '../theme/theme_catalog.dart';
++import '../theme/theme_runtime.dart';
+@@
+   void _setPreset(String presetId, {required bool notify}) {
+     _currentPreset = ThemeCatalog.resolveById(presetId);
++    ThemeRuntime.setPreset(_currentPreset);
+     if (notify) {
+       notifyListeners();
+     }
+   }
+*** End Patch

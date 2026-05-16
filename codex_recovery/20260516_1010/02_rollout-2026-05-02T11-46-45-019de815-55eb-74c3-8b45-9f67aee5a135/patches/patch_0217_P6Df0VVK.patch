@@ -1,0 +1,80 @@
+*** Begin Patch
+*** Update File: lib/features/premium/upgrade_screen.dart
+@@
+ import 'package:flutter/cupertino.dart';
+ import 'package:url_launcher/url_launcher.dart';
+ 
++import '../../components/components.dart';
+ import '../../components/glass_card.dart';
+ import '../../components/liquid_button.dart';
+ import '../../core/models/premium_models.dart';
+ import '../../core/repositories/premium_repository.dart';
+ import '../../core/services/billing_service.dart';
+@@
+ class _SecondaryButton extends StatelessWidget {
+@@
+   @override
+   Widget build(BuildContext context) {
+-    return _InteractiveLift(
+-      onTap: loading ? null : onTap,
+-      borderRadius: 16,
+-      hoverScale: 1.01,
+-      pressedScale: 0.98,
+-      glowColor: AppColors.edgeGlowSoft,
+-      child: Container(
+-        height: 46,
+-        alignment: Alignment.center,
+-        decoration: BoxDecoration(
+-          borderRadius: BorderRadius.circular(16),
+-          color: AppColors.topBarControlBackground,
+-          border: Border.all(color: AppColors.border.withValues(alpha: 0.45)),
+-        ),
+-        child: loading
+-            ? const CupertinoActivityIndicator()
+-            : Text(
+-                label,
+-                style: AppTypography.subhead.copyWith(
+-                  color: AppColors.label,
+-                  fontWeight: FontWeight.w700,
+-                ),
+-              ),
++    return CupertinoButton(
++      padding: EdgeInsets.zero,
++      onPressed: loading ? null : onTap,
++      child: Container(
++        height: 46,
++        alignment: Alignment.center,
++        decoration: BoxDecoration(
++          borderRadius: BorderRadius.circular(16),
++          color: AppColors.topBarControlBackground,
++          border: Border.all(color: AppColors.border.withValues(alpha: 0.45)),
++        ),
++        child: loading
++            ? const CupertinoActivityIndicator()
++            : Text(
++                label,
++                style: AppTypography.subhead.copyWith(
++                  color: AppColors.label,
++                  fontWeight: FontWeight.w700,
++                ),
++              ),
+       ),
+     );
+   }
+ }
+-
+-class AmbientBackdrop extends StatelessWidget {
+-  final Widget child;
+-  const AmbientBackdrop({super.key, required this.child});
+-
+-  @override
+-  Widget build(BuildContext context) {
+-    return ClipRect(
+-      child: BackdropFilter(
+-        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+-        child: child,
+-      ),
+-    );
+-  }
+-}
+*** End Patch

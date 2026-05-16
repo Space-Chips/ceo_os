@@ -1,0 +1,33 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/packages/url_launcher_ios/ios/url_launcher_ios/Sources/url_launcher_ios/URLLauncherPlugin.swift
+@@
+ public final class URLLauncherPlugin: NSObject, FlutterPlugin, UrlLauncherApi {
+@@
+-  private var currentSession: URLLaunchSession?
+-  private let launcher: Launcher
++  private var currentSession: URLLaunchSession?
+   /// Plugin registrar retained for resolving the active presenter lazily.
+   private let registrar: FlutterPluginRegistrar
+ 
+-  init(launcher: Launcher = DefaultLauncher(), registrar: FlutterPluginRegistrar) {
+-    self.launcher = launcher
++  init(registrar: FlutterPluginRegistrar) {
+     self.registrar = registrar
+   }
+@@
+-    let canOpen = launcher.canOpenURL(url)
++    let canOpen = UIApplication.shared.canOpenURL(url)
+     return canOpen ? .success : .failure
+   }
+@@
+     guard let url = URL(string: url) else {
+       completion(.success(.invalidUrl))
+       return
+     }
+     let options = [UIApplication.OpenExternalURLOptionsKey.universalLinksOnly: universalLinksOnly]
+-    launcher.open(url, options: options) { result in
++    UIApplication.shared.open(url, options: options) { result in
+       completion(.success(result ? .success : .failure))
+     }
+   }
+*** End Patch

@@ -1,0 +1,96 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/focus/focus_screen.dart
+@@
+   Future<void> _start(FocusProvider provider) async {
+     if (!provider.isAuthorized) {
+-      await provider.requestPermissions();
++      final granted = await provider.requestPermissions();
++      if (!mounted) return;
++      if (!granted) {
++        final continueWithoutBlocking = await _showProtectionNotice(provider);
++        if (continueWithoutBlocking != true) {
++          return;
++        }
++      }
+     }
+     final success = await provider.startFocus();
+     if (!success && mounted) {
+       final premiumBlock = provider.lastPremiumCheck;
+       if (premiumBlock != null && !premiumBlock.allowed) {
+@@
+       ),
+     );
+   }
++
++  Future<void> _handleProtectionAction(FocusProvider provider) async {
++    if (provider.protectionStatus.shouldOpenSettings) {
++      await provider.openSystemSettings();
++      if (!mounted) return;
++      await provider.refreshProtectionStatus();
++      return;
++    }
++    await provider.requestPermissions();
++  }
++
++  Future<bool?> _showProtectionNotice(FocusProvider provider) {
++    final status = provider.protectionStatus;
++    final title = status.isSupported
++        ? (status.shouldOpenSettings
++              ? 'Turn On Screen Time Access'
++              : 'Blocking Not Active Yet')
++        : 'Blocking Unavailable Here';
++    final message = status.isSupported
++        ? (status.shouldOpenSettings
++              ? 'Focus Mode can block apps and websites on this iPhone, but Screen Time / Family Controls access is currently off. You can re-enable it in iOS Settings, or continue with a timer-only session.'
++              : 'Focus Mode can still start a timer right now, but blocked apps and websites will remain available until Screen Time / Family Controls access is granted.')
++        : 'This runtime does not currently expose Apple Screen Time / Family Controls protection. You can still run the focus timer, but apps and websites will not be blocked.';
++
++    return showCupertinoDialog<bool>(
++      context: context,
++      builder: (ctx) => CupertinoAlertDialog(
++        title: Text(title),
++        content: Padding(
++          padding: const EdgeInsets.only(top: 8),
++          child: Text(message),
++        ),
++        actions: [
++          CupertinoDialogAction(
++            onPressed: () => Navigator.of(ctx).pop(false),
++            child: const Text('Cancel'),
++          ),
++          if (status.shouldOpenSettings)
++            CupertinoDialogAction(
++              isDefaultAction: true,
++              onPressed: () async {
++                Navigator.of(ctx).pop(false);
++                await provider.openSystemSettings();
++              },
++              child: const Text('Open Settings'),
++            ),
++          CupertinoDialogAction(
++            isDefaultAction: !status.shouldOpenSettings,
++            onPressed: () => Navigator.of(ctx).pop(true),
++            child: const Text('Start Timer Only'),
++          ),
++        ],
++      ),
++    );
++  }
++
++  String _protectionWarningMessage(FocusProvider provider) {
++    final status = provider.protectionStatus;
++    if (!status.isSupported) {
++      return 'Apple Screen Time protection is unavailable on this runtime.\nThe focus timer still works, but apps and websites cannot be blocked here.';
++    }
++    if (status.shouldOpenSettings) {
++      return 'Screen Time / Family Controls access is currently off.\nOpen iOS Settings to restore blocked apps and websites during Focus Mode.';
++    }
++    return 'Screen Time / Family Controls access is not enabled yet.\nGrant access to let Focus Mode block selected apps and websites on this device.';
++  }
++
++  String _protectionActionLabel(FocusProvider provider) {
++    return provider.protectionStatus.shouldOpenSettings
++        ? 'Open Settings'
++        : 'Enable protection';
++  }
+*** End Patch

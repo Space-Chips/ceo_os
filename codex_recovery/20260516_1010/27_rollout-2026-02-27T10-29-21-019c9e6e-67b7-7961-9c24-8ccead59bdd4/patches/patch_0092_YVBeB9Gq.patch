@@ -1,0 +1,31 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/calendar/calendar_screen.dart
+@@
+ class _EventCard extends StatelessWidget {
+@@
+   }
+ }
++
++class _EventBadge extends StatelessWidget {
++  final String label;
++  final Color color;
++
++  const _EventBadge({required this.label, required this.color});
++
++  @override
++  Widget build(BuildContext context) {
++    return Container(
++      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
++      decoration: BoxDecoration(
++        color: color.withValues(alpha: 0.12),
++        borderRadius: BorderRadius.circular(7),
++        border: Border.all(color: color.withValues(alpha: 0.25), width: 0.4),
++      ),
++      child: Text(
++        label,
++        style: AppTypography.mono.copyWith(fontSize: 9, color: color),
++      ),
++    );
++  }
++}
+*** End Patch

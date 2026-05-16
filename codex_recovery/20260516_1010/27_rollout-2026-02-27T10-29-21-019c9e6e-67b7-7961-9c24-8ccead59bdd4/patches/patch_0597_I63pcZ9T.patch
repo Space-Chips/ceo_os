@@ -1,0 +1,10 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/home/stats_screen.dart
+@@
+ import '../../components/components.dart';
+ import '../../core/models/advanced_stats_models.dart';
+ import '../../core/models/insights_models.dart';
+-import '../../core/models/performance_score_models.dart';
+ import '../../core/repositories/insights_repository.dart';
+ import '../../core/services/performance_score_service.dart';
+*** End Patch

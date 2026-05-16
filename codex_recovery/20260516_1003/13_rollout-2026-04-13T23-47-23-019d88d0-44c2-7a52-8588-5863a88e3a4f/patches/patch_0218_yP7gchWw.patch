@@ -1,0 +1,87 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/ios/Runner/AppDelegate.swift
+@@
+     init(frame: CGRect, viewId: Int64, args: Any?) {
+         container = UIView(frame: frame)
+         container.backgroundColor = .clear
+         super.init()
+@@
+         let payload = (arguments?["payload"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+         let fallbackTitle = (arguments?["fallbackTitle"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? "Blocked app"
+         let textColorHex = (arguments?["textColorHex"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines)
+         let textColor = (textColorHex?.isEmpty == false) ? UIColor(hexString: textColorHex!) : nil
++        let isDarkTheme = (arguments?["isDarkTheme"] as? Bool) ?? true
+ 
+         if let token = Self.decodeApplicationToken(from: payload) {
+             let host = UIHostingController(
+                 rootView: NativeBlockedAppTokenLabelView(
+                     token: token,
+                     textColor: textColor
+                 )
+             )
+             host.view.backgroundColor = .clear
++            host.overrideUserInterfaceStyle = isDarkTheme ? .dark : .light
+             host.view.translatesAutoresizingMaskIntoConstraints = false
+             container.addSubview(host.view)
+             NSLayoutConstraint.activate([
+                 host.view.leadingAnchor.constraint(equalTo: container.leadingAnchor),
+                 host.view.trailingAnchor.constraint(equalTo: container.trailingAnchor),
+@@
+     init(frame: CGRect, viewId: Int64, args: Any?) {
+         container = UIView(frame: frame)
+         container.backgroundColor = .clear
+         super.init()
+@@
+-        if let token = BlockedAppTokenLabelPlatformView.decodeApplicationToken(from: payload) {
++        let isDarkTheme = (arguments?["isDarkTheme"] as? Bool) ?? true
++
++        if let token = BlockedAppTokenLabelPlatformView.decodeApplicationToken(from: payload) {
+             let host = UIHostingController(
+                 rootView: NativeBlockedAppTokenIconView(token: token)
+             )
+             host.view.backgroundColor = .clear
++            host.overrideUserInterfaceStyle = isDarkTheme ? .dark : .light
+             host.view.translatesAutoresizingMaskIntoConstraints = false
+             container.addSubview(host.view)
+             NSLayoutConstraint.activate([
+                 host.view.leadingAnchor.constraint(equalTo: container.leadingAnchor),
+                 host.view.trailingAnchor.constraint(equalTo: container.trailingAnchor),
+@@
+     init(frame: CGRect, viewId: Int64, args: Any?) {
+         container = UIView(frame: frame)
+         container.backgroundColor = .clear
+         super.init()
+@@
+         let payload = (arguments?["payload"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+         let fallbackTitle = (arguments?["fallbackTitle"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? "Blocked website"
+         let textColorHex = (arguments?["textColorHex"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines)
+         let textColor = (textColorHex?.isEmpty == false) ? UIColor(hexString: textColorHex!) : nil
++        let isDarkTheme = (arguments?["isDarkTheme"] as? Bool) ?? true
+ 
+         if let token = Self.decodeWebsiteToken(from: payload) {
+             let host = UIHostingController(
+                 rootView: NativeBlockedWebsiteTokenLabelView(
+                     token: token,
+                     textColor: textColor
+                 )
+             )
+             host.view.backgroundColor = .clear
++            host.overrideUserInterfaceStyle = isDarkTheme ? .dark : .light
+             host.view.translatesAutoresizingMaskIntoConstraints = false
+             container.addSubview(host.view)
+             NSLayoutConstraint.activate([
+                 host.view.leadingAnchor.constraint(equalTo: container.leadingAnchor),
+                 host.view.trailingAnchor.constraint(equalTo: container.trailingAnchor),
+@@
+     var body: some View {
+         Label(token)
+             .labelStyle(.iconOnly)
+             .imageScale(.large)
+-            .font(.system(size: 32, weight: .semibold))
+-            .scaleEffect(1.28)
++            .font(.system(size: 34, weight: .semibold))
++            .scaleEffect(1.72)
+             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+     }
+ }
+*** End Patch

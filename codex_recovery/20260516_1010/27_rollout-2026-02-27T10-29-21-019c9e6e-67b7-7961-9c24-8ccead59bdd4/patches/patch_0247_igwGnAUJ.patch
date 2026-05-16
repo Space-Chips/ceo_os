@@ -1,0 +1,22 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/notes_screen.dart
+@@
+   @override
+   Widget build(BuildContext context) {
+     final tagTree = _tagTree();
+     final selected = _selected;
++    final screenWidth = MediaQuery.sizeOf(context).width;
++    final sidebarWidth = (screenWidth * 0.26).clamp(152.0, 184.0);
+@@
+                         child: Row(
+                         children: [
+-                          _leftSidebar(tagTree),
++                          _leftSidebar(tagTree, width: sidebarWidth),
+                           Expanded(
+@@
+-  Widget _leftSidebar(_TagTreeData tagTree) {
++  Widget _leftSidebar(_TagTreeData tagTree, {required double width}) {
+@@
+-      width: 208,
++      width: width,
+*** End Patch

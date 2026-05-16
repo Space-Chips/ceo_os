@@ -1,0 +1,64 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/android/app/src/main/kotlin/com/wakeapp/ceoos/BlockGateActivity.kt
+@@
+ class BlockGateActivity : Activity() {
+     companion object {
+         const val ACTION_DISMISS = "com.wakeapp.ceoos.action.DISMISS_BLOCK_GATE"
+         const val EXTRA_KICKER = "extra_kicker"
+         const val EXTRA_TITLE = "extra_title"
+         const val EXTRA_SUBTITLE = "extra_subtitle"
++        @Volatile
++        var isVisible: Boolean = false
+     }
+@@
+     override fun onStart() {
+         super.onStart()
++        isVisible = true
+         val filter = IntentFilter(ACTION_DISMISS)
+@@
+     override fun onStop() {
+         super.onStop()
++        isVisible = false
+         try {
+             unregisterReceiver(dismissReceiver)
+         } catch (_: Exception) {
+         }
+@@
+     private fun goHome() {
++        isVisible = false
+         val homeIntent = Intent(Intent.ACTION_MAIN).apply {
+             addCategory(Intent.CATEGORY_HOME)
+             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+         }
+         startActivity(homeIntent)
++        finish()
+         overridePendingTransition(0, 0)
+     }
+ 
+     private fun openWakeApp() {
++        isVisible = false
+         val launchIntent = packageManager.getLaunchIntentForPackage(packageName)?.apply {
+             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+         }
+         if (launchIntent != null) {
+             startActivity(launchIntent)
++            finish()
+             overridePendingTransition(0, 0)
+         }
+     }
+*** Update File: /Users/timo/ceo_os/android/app/src/main/kotlin/com/wakeapp/ceoos/AppBlockingService.kt
+@@
+     private fun enforceCurrentForegroundIfNeeded() {
+         val candidatePackage = currentPackageName ?: rootInActiveWindow?.packageName?.toString()
+         if (candidatePackage == null) {
+@@
+             return
+         }
++
++        if (candidatePackage == packageName && BlockGateActivity.isVisible) {
++            return
++        }
+ 
+         if (effectiveBlockedPackages().contains(candidatePackage)) {
+             showBlockOverlay()
+*** End Patch

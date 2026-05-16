@@ -1,0 +1,41 @@
+*** Begin Patch
+*** Update File: lib/core/repositories/habit_repository.dart
+@@
+         final prefs = await SharedPreferences.getInstance();
+         await prefs.setString(
+-          _cacheKey('completions_$dateStr_v1'),
++          _cacheKey('completions_${dateStr}_v1'),
+           jsonEncode(response),
+         );
+       } catch (_) {
+         // Best effort only.
+       }
+@@
+       try {
+         final prefs = await SharedPreferences.getInstance();
+-        final raw = prefs.getString(_cacheKey('completions_$dateStr_v1'));
++        final raw = prefs.getString(_cacheKey('completions_${dateStr}_v1'));
+         if (raw == null || raw.isEmpty) return [];
+         final decoded = jsonDecode(raw);
+         if (decoded is! List) return [];
+         return decoded
+@@
+         final prefs = await SharedPreferences.getInstance();
+         await prefs.setString(
+-          _cacheKey('completions_$cacheId_v1'),
++          _cacheKey('completions_${cacheId}_v1'),
+           jsonEncode(response),
+         );
+       } catch (_) {
+         // Best effort only.
+       }
+@@
+       try {
+         final prefs = await SharedPreferences.getInstance();
+-        final raw = prefs.getString(_cacheKey('completions_$cacheId_v1'));
++        final raw = prefs.getString(_cacheKey('completions_${cacheId}_v1'));
+         if (raw == null || raw.isEmpty) return [];
+         final decoded = jsonDecode(raw);
+         if (decoded is! List) return [];
+         return decoded
+*** End Patch

@@ -1,0 +1,11 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/services/performance_score_service.dart
+@@
+-    final weeklyCompletionRate = dashboard.weeklyHabitCompletionRate.clamp(
+-      0,
+-      1,
+-    );
++    final weeklyCompletionRate = dashboard.weeklyHabitCompletionRate
++        .clamp(0, 1)
++        .toDouble();
+*** End Patch

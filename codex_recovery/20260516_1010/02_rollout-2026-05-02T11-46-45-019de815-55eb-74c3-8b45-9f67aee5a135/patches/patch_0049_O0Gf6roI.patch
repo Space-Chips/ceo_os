@@ -1,0 +1,37 @@
+*** Begin Patch
+*** Update File: lib/core/services/home_widget_service.dart
+@@
+     final enabledTodo =
+         await HomeWidget.getWidgetData<bool>(
+           keyEnabledTodo,
+-          defaultValue: true,
++          defaultValue: false,
+         ) ??
+-        true;
++        false;
+     final enabledDashboard =
+         await HomeWidget.getWidgetData<bool>(
+           keyEnabledDashboard,
+-          defaultValue: true,
++          defaultValue: false,
+         ) ??
+-        true;
++        false;
+     final enabledHabits =
+         await HomeWidget.getWidgetData<bool>(
+           keyEnabledHabits,
+-          defaultValue: true,
++          defaultValue: false,
+         ) ??
+-        true;
++        false;
+@@
+     final defaultMode =
+         (await HomeWidget.getWidgetData<String>(
+           keyDefaultMode,
+-          defaultValue: CeoWidgetMode.dashboard.name,
++          defaultValue: '',
+         )) ??
+-        CeoWidgetMode.dashboard.name;
++        '';
+*** End Patch

@@ -1,0 +1,21 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/home/home_screen.dart
+@@
+                           child: Text(
+                             'No mini-app enabled. Use profile menu to activate at least one.',
+-                            style: AppTypography.mono.copyWith(
+-                              fontSize: 11,
++                            style: AppTypography.footnote.copyWith(
++                              fontSize: 12,
+                               color: AppColors.secondaryLabel,
+                             ),
+@@
+                             child: Text(
+                               'Dashboard data unavailable. Tap to retry.',
+-                              style: AppTypography.mono.copyWith(
+-                                fontSize: 10,
++                              style: AppTypography.caption1.copyWith(
++                                fontSize: 11,
+                                 color: AppColors.secondaryLabel,
+                               ),
+*** End Patch

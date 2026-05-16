@@ -1,0 +1,20 @@
+*** Begin Patch
+*** Update File: lib/core/repositories/premium_repository.dart
+@@
+   Future<PremiumCheckResult> canUseTheme(String themeId) async {
+     final runtime = await getRuntime();
+     final normalizedThemeId = themeId.trim().toLowerCase();
+     final isPremiumTheme = runtime.config.premiumThemes.contains(
+       normalizedThemeId,
+     );
+-    if (isPremiumTheme && runtime.config.launchModeEnabled) {
+-      // During launch trial mode, Premium themes remain selectable for users
+-      // until launch mode is explicitly disabled.
+-      return const PremiumCheckResult.allowed();
+-    }
+     if (!isPremiumTheme || runtime.resolved.canUsePremiumThemes) {
+       return const PremiumCheckResult.allowed();
+     }
+     return const PremiumCheckResult.blocked(reason: 'themes');
+   }
+*** End Patch

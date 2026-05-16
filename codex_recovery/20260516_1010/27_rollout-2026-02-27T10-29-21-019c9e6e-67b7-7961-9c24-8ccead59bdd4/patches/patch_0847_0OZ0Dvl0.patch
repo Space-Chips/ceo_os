@@ -1,0 +1,22 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/home/home_screen.dart
+@@
+         child: ConstrainedBox(
+-        constraints: const BoxConstraints(minWidth: 106),
++        constraints: const BoxConstraints(minWidth: 104),
+         child: Container(
+           height: 42,
+-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
++          padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 8),
+@@
+               Padding(
+-                padding: const EdgeInsets.only(right: 8),
++                padding: const EdgeInsets.only(right: 6),
+                 child: RankArt(
+                   rankName: rankName,
+                   size: RankArtSize.xs,
+-                  dimension: 10,
++                  dimension: 14,
+                 ),
+               ),
+*** End Patch

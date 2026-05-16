@@ -1,0 +1,52 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/ios/Runner/AppDelegate.swift
+@@
+-        guard let selection else {
++        guard let selection else {
+             result(nil)
+             return
+         }
+         if requiresWebDomains && selection.webDomainTokens.isEmpty {
+             result(FlutterError(
+                 code: "NO_WEBSITES_SELECTED",
+                 message: "Select at least one website to continue.",
+                 details: nil
+             ))
+             return
+         }
+-        if let encoded = encodeSelection(selection) {
+-            result([encoded])
+-        } else {
+-            result(FlutterError(code: "ENCODE_ERROR", message: "Failed to encode selection", details: nil))
+-        }
++        if !requiresWebDomains {
++            guard !selection.applicationTokens.isEmpty else {
++                result(FlutterError(
++                    code: "NO_APPS_SELECTED",
++                    message: "Select at least one app to continue.",
++                    details: nil
++                ))
++                return
++            }
++            var payloads: [String] = []
++            for token in selection.applicationTokens {
++                var single = FamilyActivitySelection()
++                single.applicationTokens = [token]
++                if let encoded = encodeSelection(single) {
++                    payloads.append(encoded)
++                }
++            }
++            if payloads.isEmpty {
++                result(FlutterError(code: "ENCODE_ERROR", message: "Failed to encode selection", details: nil))
++            } else {
++                result(payloads)
++            }
++            return
++        }
++
++        if let encoded = encodeSelection(selection) {
++            result([encoded])
++        } else {
++            result(FlutterError(code: "ENCODE_ERROR", message: "Failed to encode selection", details: nil))
++        }
+*** End Patch

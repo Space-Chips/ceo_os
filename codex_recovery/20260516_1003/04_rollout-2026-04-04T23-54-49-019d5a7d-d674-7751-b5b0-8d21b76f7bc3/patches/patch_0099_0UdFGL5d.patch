@@ -1,0 +1,24 @@
+*** Begin Patch
+*** Update File: lib/features/focus/focus_screen.dart
+@@
+-                    ? 'Focus Mode can block selected apps and supported websites on this Android device, but Accessibility, Usage Access, or overlay permission is currently off. Re-enable protection in Android settings, or continue with a timer-only session.'
++                    ? 'Focus Mode can block selected apps and supported websites on this Android device, but Accessibility or Usage Access is currently off. Re-enable protection in Android settings, or continue with a timer-only session.'
+@@
+-        ? 'Android protection access is not enabled yet.\nGrant Accessibility, Usage Access, and overlay permission to let Focus Mode block selected apps and supported websites on this device.'
++        ? 'Android protection access is not enabled yet.\nGrant Accessibility and Usage Access to let Focus Mode block selected apps and supported websites on this device.'
+*** Update File: lib/features/ceo_mode/ceo_mode_screen.dart
+@@
+-              ? 'Blackout Mode can enforce blocking on this Android device, but Accessibility, Usage Access, or overlay permission is currently off. Re-enable Android protection access before starting a protected session.'
++              ? 'Blackout Mode can enforce blocking on this Android device, but Accessibility or Usage Access is currently off. Re-enable Android protection access before starting a protected session.'
+*** Update File: lib/features/profile/profile_screen.dart
+@@
+-          'Data is used to authenticate your account, sync your data across your devices, run focus protections, restore purchases, and provide support when you contact us. On iPhone, Screen Time / Family Controls activity and device usage data stay on-device and are not synced, exported, or shared beyond the individual user. On Android, blocking and daily-limit enforcement use on-device permission flows such as Accessibility, Usage Access, and overlay, and are not used for ads or unrelated analytics. Personal data is not sold to third parties.',
++          'Data is used to authenticate your account, sync your data across your devices, run focus protections, restore purchases, and provide support when you contact us. On iPhone, Screen Time / Family Controls activity and device usage data stay on-device and are not synced, exported, or shared beyond the individual user. On Android, blocking and daily-limit enforcement use on-device permission flows such as Accessibility and Usage Access, and are not used for ads or unrelated analytics. Personal data is not sold to third parties.',
+@@
+-          'On Android, WakeApp may request Accessibility to detect selected distracting apps and supported websites, Usage Access to evaluate daily limits, and overlay permission to present the blocking shield. These permissions are used only for the app’s on-device focus protections, not for ads or unrelated analytics.',
++          'On Android, WakeApp may request Accessibility to detect selected distracting apps and supported websites, and Usage Access to evaluate daily limits. These permissions are used only for the app’s on-device focus protections, not for ads or unrelated analytics.',
+*** Update File: lib/features/legacy/screen_time_screen.dart
+@@
+-                                  ? 'On Android, WakeApp uses Accessibility, Usage Access, and overlay permission to enforce selected app and website protections on-device. Website blocking and daily limits apply in supported browsers only.'
++                                  ? 'On Android, WakeApp uses Accessibility and Usage Access to enforce selected app and website protections on-device. Website blocking and daily limits apply in supported browsers only.'
+*** End Patch

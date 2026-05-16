@@ -1,0 +1,38 @@
+*** Begin Patch
+*** Update File: android/app/src/main/kotlin/com/wakeapp/ceoos/AppBlockingOverlay.kt
+@@
+ class AppBlockingOverlay(
+     private val service: AccessibilityService,
+     private val scope: CoroutineScope,
+ ) {
+@@
+     fun hide() {
+         mainHandler.post {
+             visibleForPackage = null
+             if (attached) {
+                 rootView.visibility = View.GONE
+             }
+         }
+     }
+ 
++    fun detach() {
++        mainHandler.post {
++            visibleForPackage = null
++            if (!attached) return@post
++            try {
++                windowManager.removeViewImmediate(rootView)
++            } catch (_: Exception) {
++            } finally {
++                attached = false
++            }
++        }
++    }
++
+     fun hideIfShowingForOtherPackage(currentForegroundPackage: String?) {
+         val current = currentForegroundPackage?.trim().orEmpty()
+         val showingFor = visibleForPackage
+         if (showingFor != null && showingFor != current) {
+             hide()
+         }
+     }
+*** End Patch

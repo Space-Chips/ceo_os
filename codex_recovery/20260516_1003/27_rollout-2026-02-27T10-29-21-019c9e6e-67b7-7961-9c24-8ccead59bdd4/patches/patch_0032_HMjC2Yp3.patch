@@ -1,0 +1,132 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/providers/theme_provider.dart
+@@
+   AppThemePreset get currentPreset => _currentPreset;
+   AppColorPalette get currentColors => _currentPreset.colors;
+   AppTypographyProfile get currentTypography => _currentPreset.typography;
+-  ThemeMode get themeMode => _currentPreset.isDark ? ThemeMode.dark : ThemeMode.light;
++  ThemeMode get themeMode =>
++      _currentPreset.isDark ? ThemeMode.dark : ThemeMode.light;
+   List<AppThemePreset> get presets => ThemeCatalog.presets;
+   String get onboardingCurrentThemeId => _onboardingCurrentThemeId;
++
++  String _normalizedPresetId(String presetId) {
++    return ThemeCatalog.resolveById(presetId).id;
++  }
+@@
+     final user = _client.auth.currentUser;
+     if (user != null) {
+       unawaited(loadThemeFromSupabase());
+     }
+     _authSubscription = _client.auth.onAuthStateChange.listen((event) async {
+       if (event.session?.user == null) {
+         _setPreset(ThemeCatalog.defaultPresetId, notify: true);
+         _pendingOnboardingSetup = null;
++        _onboardingCurrentThemeId = ThemeCatalog.defaultPresetId;
+         return;
+       }
+-      await loadThemeFromSupabase();
+-      if (_pendingOnboardingSetup != null) {
+-        await persistPendingOnboardingSetup();
++      try {
++        await loadThemeFromSupabase();
++        if (_pendingOnboardingSetup != null) {
++          await persistPendingOnboardingSetup();
++        }
++      } catch (_) {
++        // Keep current runtime theme if sync fails and retry on next app event.
+       }
+     });
+   }
+ 
+   Future<void> loadThemeFromSupabase() async {
+-    if (_client.auth.currentUser == null) return;
+-    final settings = await _settingsRepository.getAppSettings();
+-    final presetId = settings?.themePreset ?? ThemeCatalog.defaultPresetId;
+-    _setPreset(presetId, notify: true);
++    if (_client.auth.currentUser == null) {
++      _setPreset(ThemeCatalog.defaultPresetId, notify: true);
++      _onboardingCurrentThemeId = ThemeCatalog.defaultPresetId;
++      return;
++    }
++    var presetId = ThemeCatalog.defaultPresetId;
++    try {
++      final settings = await _settingsRepository.getAppSettings();
++      presetId = _normalizedPresetId(
++        settings?.themePreset ?? ThemeCatalog.defaultPresetId,
++      );
++    } catch (_) {
++      presetId = ThemeCatalog.defaultPresetId;
++    }
++    _onboardingCurrentThemeId = presetId;
++    _setPreset(presetId, notify: true);
+   }
+ 
+   void previewTheme(String presetId) {
+-    _setPreset(presetId, notify: true);
++    _setPreset(_normalizedPresetId(presetId), notify: true);
+   }
+ 
+   void selectThemeForOnboarding(String presetId) {
+-    _onboardingCurrentThemeId = presetId;
+-    previewTheme(presetId);
++    final normalized = _normalizedPresetId(presetId);
++    _onboardingCurrentThemeId = normalized;
++    previewTheme(normalized);
+   }
+ 
+   Future<void> saveThemeForCurrentUser(String presetId) async {
+-    _setPreset(presetId, notify: true);
++    final normalized = _normalizedPresetId(presetId);
++    final previousPresetId = _currentPreset.id;
++    _setPreset(normalized, notify: true);
++    _onboardingCurrentThemeId = normalized;
+     if (_client.auth.currentUser == null) return;
+-    await _settingsRepository.updateThemePreset(presetId);
++    try {
++      await _settingsRepository.updateThemePreset(normalized);
++    } catch (_) {
++      _setPreset(previousPresetId, notify: true);
++      _onboardingCurrentThemeId = previousPresetId;
++      rethrow;
++    }
+   }
+ 
+   void setPendingOnboardingSetup(OnboardingSetupData setup) {
+-    _pendingOnboardingSetup = setup;
+-    _onboardingCurrentThemeId = setup.themePresetId;
+-    previewTheme(setup.themePresetId);
++    final normalizedThemeId = _normalizedPresetId(setup.themePresetId);
++    final normalizedSetup = OnboardingSetupData(
++      goal: setup.goal,
++      discipline: setup.discipline,
++      focusChallenge: setup.focusChallenge,
++      themePresetId: normalizedThemeId,
++    );
++
++    _pendingOnboardingSetup = normalizedSetup;
++    _onboardingCurrentThemeId = normalizedThemeId;
++    previewTheme(normalizedThemeId);
+   }
+ 
+   Future<void> persistPendingOnboardingSetup() async {
+     final setup = _pendingOnboardingSetup;
+     if (setup == null) return;
+     if (_client.auth.currentUser == null) return;
+-    await _settingsRepository.saveOnboardingSetup(setup);
+-    _setPreset(setup.themePresetId, notify: true);
+-    _pendingOnboardingSetup = null;
++    final normalizedThemeId = _normalizedPresetId(setup.themePresetId);
++    final normalizedSetup = OnboardingSetupData(
++      goal: setup.goal,
++      discipline: setup.discipline,
++      focusChallenge: setup.focusChallenge,
++      themePresetId: normalizedThemeId,
++    );
++
++    await _settingsRepository.saveOnboardingSetup(normalizedSetup);
++    _setPreset(normalizedThemeId, notify: true);
++    _onboardingCurrentThemeId = normalizedThemeId;
++    _pendingOnboardingSetup = null;
+   }
+*** End Patch

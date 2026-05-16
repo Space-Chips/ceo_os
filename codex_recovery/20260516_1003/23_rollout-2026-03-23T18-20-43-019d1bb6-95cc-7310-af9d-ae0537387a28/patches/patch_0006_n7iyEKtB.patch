@@ -1,0 +1,95 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/profile/profile_screen.dart
+@@
+   Future<void> _openPrivacyPolicy() async {
+     await _showDocumentSheet(
+       title: 'PRIVACY_POLICY',
+       sections: const [
+         _SettingsSection(
+           'Information We Collect',
+-          'We collect your profile identity and limited productivity data, including habits, tasks, calendar events, focus sessions, selected blocked apps and websites, and screen-time or usage logs needed to provide the app functionality.',
++          'We collect the account details required to sign you in and operate the product, including your email address, profile name, authentication identifiers, habits, tasks, calendar events created inside CEO OS, focus sessions, selected blocked apps and websites, screen-time or usage logs, settings, rank and streak history, family-time records when used, and billing status needed to unlock Premium.',
+         ),
+         _SettingsSection(
+           'How Data Is Used',
+-          'Data is used only to run your workflows, enforce focus protections, sync your account across devices, and compute personal insights, streaks, and history for the same user. Personal data is not sold to third parties.',
++          'Data is used to authenticate your account, sync your data across your devices, run focus protections and Screen Time workflows, compute personal insights and historical stats, restore purchases, and provide support when you contact us. Personal data is not sold to third parties.',
+         ),
+         _SettingsSection(
+-          'Storage and Security',
+-          'Limited usage and blocking data may be stored in Supabase to support sync, history, and personal productivity insights. Row-level security policies are used so users can only access records they own.',
++          'Third-Party Services',
++          'CEO OS uses Supabase for account, database, and cloud sync infrastructure, Google Sign-In when you choose Google authentication, RevenueCat and Apple for subscription and purchase status, and Apple system frameworks for Screen Time, widgets, and local notifications. These services process only the data needed to provide their part of the product.',
+         ),
+         _SettingsSection(
+-          'Your Rights',
+-          'You can request access, correction, or deletion of your data through support. Account deletion remains irreversible.',
++          'Storage and Security',
++          'Productivity records, selected blocking targets, usage-related stats, and account settings may be stored in Supabase to support sync, history, and personal insights. Row-level security is used so users can only access records they own. Purchase state may also be synced from RevenueCat to determine Premium access.',
++        ),
++        _SettingsSection(
++          'Your Rights',
++          'You can update profile information inside the app and permanently delete your account from the settings area. Account deletion is irreversible and removes the associated cloud data we control.',
+         ),
+       ],
+     );
+   }
+ 
+   Future<void> _openPermissionsPolicy() async {
+     await _showDocumentSheet(
+       title: 'PERMISSIONS',
+       sections: const [
+         _SettingsSection(
+           'Notifications',
+-          'Used for reminders and event alerts. You can disable channels individually from profile settings.',
++          'CEO OS requests notification permission to deliver local reminders, focus warnings, planned session alerts, and other time-based productivity prompts generated on-device.',
+         ),
+         _SettingsSection(
+-          'Calendar Access (Optional)',
+-          'Optional integration for reading and creating events in your calendar workflows.',
++          'Screen Time / Family Controls',
++          'CEO OS requests Apple Screen Time / Family Controls permission so you can select apps and websites, apply shields, schedule protected focus periods, and enforce daily-limit workflows using Apple’s official system APIs.',
+         ),
+         _SettingsSection(
+-          'Screen Time / Shield',
+-          'Used only for self-initiated focus sessions on your own device, including blocking selected apps and websites and supporting screen-time analysis features.',
++          'Usage Data and Blocking Data',
++          'Selected blocking targets, focus sessions, planned pauses, daily limits, and screen-time related records may be stored in your account so your history, insights, and restriction setup remain available across sessions and devices.',
+         ),
+         _SettingsSection(
+-          'Data Handling',
+-          'Limited blocking and usage data may be stored on our backend to support sync, history, and personal productivity insights for the same user.',
++          'Sign-In and Purchases',
++          'If you use Google Sign-In, Google shares the authentication data needed to sign you into CEO OS. If you purchase Premium, Apple handles the transaction and RevenueCat is used to validate and sync your entitlement status.',
+         ),
+         _SettingsSection(
+-          'Control',
+-          'Permissions can be changed anytime in device settings. Some app modules may degrade when disabled.',
++          'Widgets and Background Scheduling',
++          'Home screen widgets and scheduled focus automation use Apple widget and background scheduling systems so CEO OS can surface progress and enforce planned restrictions at the right time.',
++        ),
++        _SettingsSection(
++          'Control',
++          'Permissions can be changed in iOS Settings at any time. If you disable notifications or Screen Time / Family Controls access, related modules may stop working or provide reduced functionality.',
+         ),
+       ],
+     );
+   }
+ 
+   Future<void> _openTermsOfUse() async {
+@@
+         _SettingsSection(
+           'Service Availability',
+           'Service may occasionally be interrupted for maintenance, updates, or infrastructure events.',
+         ),
+         _SettingsSection(
++          'Subscriptions',
++          'Premium subscriptions and purchases are processed by Apple and may renew automatically unless canceled in your Apple ID subscription settings. Purchase restoration is available from the Premium paywall.',
++        ),
++        _SettingsSection(
+           'Termination',
+           'Accounts may be suspended for terms violations. Users can also terminate their account through deletion flow.',
+         ),
+       ],
+     );
+*** End Patch

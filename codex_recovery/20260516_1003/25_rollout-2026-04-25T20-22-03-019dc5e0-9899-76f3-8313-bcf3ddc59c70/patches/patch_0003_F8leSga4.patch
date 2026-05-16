@@ -1,0 +1,86 @@
+*** Begin Patch
+*** Update File: lib/features/control_center_setup/control_center_setup_view_model.dart
+@@
+ class ControlCenterSetupViewModel extends ChangeNotifier {
+-  final ControlCenterSetupStore _store;
++  ControlCenterSetupStore? _store;
+@@
+   bool _initialized = false;
+   bool _isPersisting = false;
+ 
+   ControlCenterSetupViewModel({ControlCenterSetupStore? store})
+-    : _store = store ?? (throw ArgumentError('store is required')) {
+-    // Intentionally empty; call `initialize()` explicitly.
+-  }
++    : _store = store;
+@@
+   bool get isPersisting => _isPersisting;
+ 
+   Future<void> initialize({bool force = false}) async {
+     if (_initialized && !force) return;
+-    final config = await _store.load();
++    _store ??= await ControlCenterSetupStore.create();
++    final config = await _store!.load();
+     _state = config.toState(startStep: SetupStep.emptyCenter).copyWith(
+       currentStep: SetupStep.emptyCenter,
+       hasCompletedSetup: config.setupCompleted,
+     );
+@@
+   void addModule(MainModule module) {
++    if (!_initialized) return;
+     final item = ControlCenterModuleItem(module);
+     if (_state.containsItemId(item.id)) return;
+     if (_state.remainingSlots <= 0) return;
+@@
+   void addShortcut(ControlShortcut shortcut) {
++    if (!_initialized) return;
+     final item = ControlCenterShortcutItem(shortcut);
+     if (_state.containsItemId(item.id)) return;
+     if (_state.remainingSlots <= 0) return;
+@@
+   void removeItem(String itemId) {
++    if (!_initialized) return;
+     final nextModules = _state.selectedModules
+         .where((item) => item.id != itemId)
+         .toList(growable: false);
+@@
+   void toggleDashboardWidget(DashboardWidget widget) {
++    if (!_initialized) return;
+     final next = Set<DashboardWidget>.from(_state.enabledDashboardWidgets);
+     if (next.contains(widget)) {
+       next.remove(widget);
+     } else {
+       next.add(widget);
+@@
+   void goBack() {
++    if (!_initialized) return;
+     final step = _state.currentStep;
+     final previous = _previousStep(step);
+     _state = _state.copyWith(currentStep: previous);
+     notifyListeners();
+   }
+ 
+   void goNext() {
++    if (!_initialized) return;
+     final step = _state.currentStep;
+     final next = _nextStep(step);
+     _state = _state.copyWith(currentStep: next);
+     notifyListeners();
+   }
+ 
+   Future<void> completeSetup() async {
++    if (!_initialized) return;
+     if (_isPersisting) return;
+     _isPersisting = true;
+     notifyListeners();
+     try {
+       _state = _state.copyWith(hasCompletedSetup: true);
+       final config = ControlCenterConfiguration.fromState(_state);
+-      await _store.save(config);
++      await _store!.save(config);
+     } finally {
+       _isPersisting = false;
+       notifyListeners();
+     }
+   }
+*** End Patch

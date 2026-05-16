@@ -1,0 +1,25 @@
+*** Begin Patch
+*** Update File: lib/components/premium_gate_dialog.dart
+@@
+ import 'package:flutter/cupertino.dart';
+ 
+ import '../core/models/premium_models.dart';
++import '../core/services/billing_diagnostics_service.dart';
+ import 'premium_paywall.dart';
+ 
+ Future<void> showPremiumGateDialog(
+   BuildContext context,
+   PremiumCheckResult result,
+ ) async {
+   if (result.allowed) return;
++  await BillingDiagnosticsService().log(
++    'gate_shown',
++    data: {
++      'reason': result.reason,
++      'limit': result.limit,
++      'current': result.current,
++    },
++  );
+   await showPremiumPaywallSheet(context: context, checkResult: result);
+ }
+*** End Patch

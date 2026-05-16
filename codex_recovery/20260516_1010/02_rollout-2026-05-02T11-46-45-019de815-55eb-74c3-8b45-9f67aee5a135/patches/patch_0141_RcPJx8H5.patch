@@ -1,0 +1,126 @@
+*** Begin Patch
+*** Update File: lib/core/widgets/home_widgets/widget_views.dart
+@@
+ class FocusWidgetSquareView extends StatelessWidget {
+   final LanguageProvider language;
+   final int durationMinutes;
+@@
+   @override
+   Widget build(BuildContext context) {
+     return WidgetRoot(
+       padding: WidgetDesignTokens.padSquare,
+       decorationOverride: BoxDecoration(
+         borderRadius: BorderRadius.circular(WidgetDesignTokens.radiusOuter),
+         gradient: WidgetDesignTokens.focusGradient,
+         border: Border.all(
+           color: AppColors.borderStrong.withValues(alpha: 0.85),
+           width: 1,
+         ),
+       ),
+-      child: Column(
+-        crossAxisAlignment: CrossAxisAlignment.start,
+-        children: [
+-          // Equal spacing: top edge == (title->button) == bottom edge.
+-          Expanded(
+-            child: Padding(
+-              padding: const EdgeInsets.symmetric(vertical: 2),
+-              child: Column(
+-                crossAxisAlignment: CrossAxisAlignment.start,
+-                children: [
+-                  Text('Focus', style: WidgetDesignTokens.title),
+-                  const SizedBox(height: 12),
+-                  Expanded(
+-                    child: WidgetActionButton(
+-                      icon: CupertinoIcons.play_fill,
+-                      title: language.t('widget_start_focus'),
+-                      subtitle: '$durationMinutes min',
+-                      variant: WidgetActionVariant.focus,
+-                    ),
+-                  ),
+-                ],
+-              ),
+-            ),
+-          ),
+-        ],
+-      ),
++      child: Column(
++        crossAxisAlignment: CrossAxisAlignment.start,
++        children: [
++          Text('Focus', style: WidgetDesignTokens.title),
++          const SizedBox(height: 10),
++          Expanded(
++            child: WidgetActionButton(
++              icon: CupertinoIcons.play_fill,
++              title: language.t('widget_start_focus'),
++              subtitle: '$durationMinutes min',
++              variant: WidgetActionVariant.focus,
++            ),
++          ),
++        ],
++      ),
+     );
+   }
+ }
+ 
+ class BlackoutWidgetSquareView extends StatelessWidget {
+   final LanguageProvider language;
+   final int durationMinutes;
+@@
+   @override
+   Widget build(BuildContext context) {
+     final hours = durationMinutes ~/ 60;
+     final label = hours >= 1 ? '$hours h' : '$durationMinutes min';
+     return WidgetRoot(
+       padding: WidgetDesignTokens.padSquare,
+       decorationOverride: BoxDecoration(
+         borderRadius: BorderRadius.circular(WidgetDesignTokens.radiusOuter),
+         gradient: WidgetDesignTokens.blackoutGradient,
+         border: Border.all(
+           color: AppColors.borderStrong.withValues(alpha: 0.85),
+           width: 1,
+         ),
+       ),
+-      child: Column(
+-        crossAxisAlignment: CrossAxisAlignment.start,
+-        children: [
+-          Expanded(
+-            child: Padding(
+-              padding: const EdgeInsets.symmetric(vertical: 2),
+-              child: Column(
+-                crossAxisAlignment: CrossAxisAlignment.start,
+-                children: [
+-                  Text('Blackout', style: WidgetDesignTokens.title),
+-                  const SizedBox(height: 12),
+-                  Expanded(
+-                    child: WidgetActionButton(
+-                      icon: CupertinoIcons.lock_fill,
+-                      title: language.t('widget_start_blackout'),
+-                      subtitle: label,
+-                      variant: WidgetActionVariant.blackout,
+-                    ),
+-                  ),
+-                ],
+-              ),
+-            ),
+-          ),
+-        ],
+-      ),
++      child: Column(
++        crossAxisAlignment: CrossAxisAlignment.start,
++        children: [
++          Text('Blackout', style: WidgetDesignTokens.title),
++          const SizedBox(height: 10),
++          Expanded(
++            child: WidgetActionButton(
++              icon: CupertinoIcons.lock_fill,
++              title: language.t('widget_start_blackout'),
++              subtitle: label,
++              variant: WidgetActionVariant.blackout,
++            ),
++          ),
++        ],
++      ),
+     );
+   }
+ }
+*** End Patch

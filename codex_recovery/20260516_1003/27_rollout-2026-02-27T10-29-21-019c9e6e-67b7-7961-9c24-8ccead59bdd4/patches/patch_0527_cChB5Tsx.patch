@@ -1,0 +1,12 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/providers/auth_provider.dart
+@@
+-        final accessToken = googleAuth?.accessToken;
+-        final idToken = googleAuth?.idToken;
++        final accessToken = googleAuth.accessToken;
++        final idToken = googleAuth.idToken;
+*** Update File: /Users/timo/ceo_os/lib/core/repositories/insights_repository.dart
+@@
+-        insights: const [],
++        insights: [],
+*** End Patch

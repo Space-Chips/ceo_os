@@ -1,0 +1,13 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/setup/setup_flow_screen.dart
+@@
+                           Text('Screen Time setup', style: AppTypography.title1),
+                           const SizedBox(height: 6),
+                           Text(
+-                            'A guided setup so blocking feels instant and reliable.',
++                            'A quick, calm setup so protection feels effortless.',
+                             style: AppTypography.body.copyWith(
+                               color: AppColors.secondaryLabel,
+                               height: 1.35,
+                             ),
+*** End Patch

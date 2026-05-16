@@ -1,0 +1,37 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/screen_time_manager/screen_time_manager_screen.dart
+@@
+   Widget _privateUsageSummaryRow({
+     required bool isAuthorized,
+     required PrivateScreenTimeSummaryStatus status,
+     required bool isAvailable,
++    required VoidCallback onAccessTap,
+   }) {
+@@
+       return Row(
+         children: [
+           Expanded(
+             child: _statLargeTile(
+               label: 'TODAY',
+               value: fallbackTodayValue,
+               unit: fallbackUnit,
+               accent: AppColors.scoreValue,
+               highlighted: true,
+               borderColor: AppColors.screenTimeDailyAccentBorder,
++              onTap: onAccessTap,
+             ),
+           ),
+           const SizedBox(width: 10),
+           Expanded(
+             child: _statLargeTile(
+               label: '7D AVG',
+               value: fallbackWeekValue,
+               unit: fallbackUnit,
+               accent: AppColors.secondaryLabel,
++              onTap: onAccessTap,
+             ),
+           ),
+         ],
+       );
+     }
+*** End Patch

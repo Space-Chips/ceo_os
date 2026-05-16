@@ -1,0 +1,16 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/profile/profile_screen.dart
+@@
+ import 'package:flutter/cupertino.dart';
+ import 'package:flutter/services.dart';
+-import 'package:flutter/material.dart' show CustomPainter, Canvas, Paint, Path, Size;
+ import 'package:go_router/go_router.dart';
+@@
+                       _settingRow(
+                         label: language.t('privacy_policy'),
+                         onTap: _openPrivacyPolicy,
+-                        leadingIcon: CupertinoIcons.lock_doc,
++                        leadingIcon: CupertinoIcons.lock_shield,
+                         trailing: _rowArrow(),
+                       ),
+*** End Patch

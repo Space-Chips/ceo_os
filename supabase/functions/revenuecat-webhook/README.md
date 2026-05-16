@@ -1,0 +1,25 @@
+# RevenueCat Webhook — Observability & Replay
+
+## What gets stored
+
+- Every incoming webhook is persisted to `billing_webhook_events` (upsert by `provider,event_id`).
+- The current subscription mirror is persisted to `billing_subscriptions` (upsert by `created_by`).
+- For ops at scale, `billing_subscriptions` also stores:
+  - `last_webhook_event_id`, `last_webhook_event_at`
+  - `last_error`, `last_error_at` (cleared on successful upsert)
+
+## When Premium looks "locked" after purchase
+
+Typical causes:
+- Webhook delivery delay / temporary provider outage
+- Wrong `app_user_id` mapping (should be the Supabase user id)
+- Supabase function env misconfiguration (missing service role / auth header)
+
+The client app includes a short local grace window using RevenueCat entitlements,
+so UX can unlock immediately even if the webhook mirror lags.
+
+## Replay strategy (manual)
+
+1. Locate the relevant RevenueCat event payload in `billing_webhook_events`.
+2. Re-send the same payload to this edge function endpoint with the expected Authorization header.
+3. Because the function uses stable `event_id` and `upsert`, replays are idempotent.

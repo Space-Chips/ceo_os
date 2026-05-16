@@ -1,0 +1,59 @@
+*** Begin Patch
+*** Update File: lib/features/screen_time_manager/family_time_screen.dart
+@@
+           CupertinoDialogAction(
+             isDefaultAction: true,
+             onPressed: () => Navigator.of(ctx).pop(),
+-            child: const Text('OK'),
++            child: Text(context.read<LanguageProvider>().t('ok')),
+           ),
+@@
+           CupertinoDialogAction(
+             isDefaultAction: true,
+             onPressed: () => Navigator.of(ctx).pop(),
+-            child: const Text('OK'),
++            child: Text(context.read<LanguageProvider>().t('ok')),
+           ),
+@@
+           return CupertinoAlertDialog(
+-            title: const Text('Exit group session?'),
++            title: Text(
++              context
++                  .read<LanguageProvider>()
++                  .t('family_time_exit_group_session_title'),
++            ),
+             content: Padding(
+               padding: const EdgeInsets.only(top: 8),
+               child: Text(
+-                'Leaving in ${secs}s. Other participants will be notified and quit points may apply.',
++                context
++                    .read<LanguageProvider>()
++                    .t('family_time_exit_group_session_body')
++                    .replaceAll('{secs}', '$secs'),
+               ),
+             ),
+             actions: [
+               CupertinoDialogAction(
+                 isDefaultAction: true,
+                 onPressed: () => Navigator.of(ctx).pop(false),
+-                child: const Text('Stay in session'),
++                child: Text(
++                  context
++                      .read<LanguageProvider>()
++                      .t('family_time_stay_in_session'),
++                ),
+               ),
+             ],
+           );
+@@
+   Future<void> _copyInviteLink() async {
+     final link = widget.repo.buildInviteLink(_bundle.group.inviteToken);
+     await Clipboard.setData(ClipboardData(text: link));
+     if (!mounted) return;
+-    await _showNotice('Invite copied', link);
++    await _showNotice(
++      context.read<LanguageProvider>().t('family_time_invite_copied'),
++      link,
++    );
+   }
+*** End Patch

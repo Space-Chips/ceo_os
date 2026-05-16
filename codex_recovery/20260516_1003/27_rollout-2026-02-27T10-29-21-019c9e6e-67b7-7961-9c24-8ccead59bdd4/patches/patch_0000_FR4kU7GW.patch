@@ -1,0 +1,21 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/ios/Runner.xcodeproj/project.pbxproj
+@@
+-				PRODUCT_BUNDLE_IDENTIFIER = com.example.ceoCompass.RunnerTests;
++				PRODUCT_BUNDLE_IDENTIFIER = com.example.ceoCompass.timo.RunnerTests;
+@@
+-				PRODUCT_BUNDLE_IDENTIFIER = com.example.ceoCompass.RunnerTests;
++				PRODUCT_BUNDLE_IDENTIFIER = com.example.ceoCompass.timo.RunnerTests;
+@@
+-				PRODUCT_BUNDLE_IDENTIFIER = com.example.ceoCompass.RunnerTests;
++				PRODUCT_BUNDLE_IDENTIFIER = com.example.ceoCompass.timo.RunnerTests;
+@@
+-				PRODUCT_BUNDLE_IDENTIFIER = com.example.ceoCompass.CeoWidgets.timo;
++				PRODUCT_BUNDLE_IDENTIFIER = com.example.ceoCompass.timo.CeoWidgets;
+@@
+-				PRODUCT_BUNDLE_IDENTIFIER = com.example.ceoCompass.CeoWidgets.timo;
++				PRODUCT_BUNDLE_IDENTIFIER = com.example.ceoCompass.timo.CeoWidgets;
+@@
+-				PRODUCT_BUNDLE_IDENTIFIER = com.example.ceoCompass.CeoWidgets.timo;
++				PRODUCT_BUNDLE_IDENTIFIER = com.example.ceoCompass.timo.CeoWidgets;
+*** End Patch

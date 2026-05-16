@@ -1,0 +1,188 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/components/glass_card.dart
+@@
++import 'dart:math' as math;
+ import 'dart:ui';
+ import 'package:flutter/cupertino.dart';
+ import 'package:flutter/material.dart';
+ import '../core/theme/app_colors.dart';
+@@
+ class GlassCard extends StatelessWidget {
+@@
+   final double? width;
+   final double? height;
++  final bool textured;
+ 
+   const GlassCard({
+@@
+     this.border,
+     this.width,
+     this.height,
++    this.textured = true,
+   });
+@@
+     return Container(
+       width: width,
+       height: height,
+       decoration: BoxDecoration(
+         borderRadius: BorderRadius.circular(borderRadius),
++        boxShadow: [
++          BoxShadow(
++            color: Colors.black.withValues(alpha: 0.4),
++            blurRadius: 28,
++            offset: const Offset(0, 14),
++            spreadRadius: -10,
++          ),
++          BoxShadow(
++            color: AppColors.primaryOrange.withValues(alpha: 0.08),
++            blurRadius: 40,
++            offset: const Offset(0, 8),
++            spreadRadius: -16,
++          ),
++        ],
+       ),
+       child: ClipRRect(
+         borderRadius: BorderRadius.circular(borderRadius),
+         child: BackdropFilter(
+           filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
+-          child: Container(
+-            padding: padding ?? const EdgeInsets.all(24),
+-            decoration: BoxDecoration(
+-              borderRadius: BorderRadius.circular(borderRadius),
+-              border:
+-                  border ??
+-                  Border.all(color: AppColors.glassBorder, width: 0.5),
+-              gradient: LinearGradient(
+-                begin: Alignment.topLeft,
+-                end: Alignment.bottomRight,
+-                colors:
+-                    gradientColors ??
+-                    [
+-                      AppColors.white.withValues(alpha: 0.05),
+-                      AppColors.white.withValues(alpha: 0.01),
+-                    ],
+-              ),
+-            ),
+-            child: child,
++          child: Stack(
++            children: [
++              Container(
++                padding: padding ?? const EdgeInsets.all(24),
++                decoration: BoxDecoration(
++                  borderRadius: BorderRadius.circular(borderRadius),
++                  border:
++                      border ??
++                      Border.all(color: AppColors.glassBorder, width: 0.5),
++                  gradient: LinearGradient(
++                    begin: Alignment.topLeft,
++                    end: Alignment.bottomRight,
++                    colors:
++                        gradientColors ??
++                        [
++                          AppColors.cardGradientStart.withValues(alpha: 0.9),
++                          AppColors.cardGradientEnd.withValues(alpha: 0.9),
++                        ],
++                  ),
++                ),
++                child: child,
++              ),
++              Positioned.fill(
++                child: IgnorePointer(
++                  child: DecoratedBox(
++                    decoration: BoxDecoration(
++                      borderRadius: BorderRadius.circular(borderRadius),
++                      gradient: LinearGradient(
++                        begin: Alignment.topCenter,
++                        end: Alignment.bottomCenter,
++                        colors: [
++                          Colors.white.withValues(alpha: 0.08),
++                          Colors.transparent,
++                          Colors.black.withValues(alpha: 0.08),
++                        ],
++                        stops: const [0.0, 0.35, 1.0],
++                      ),
++                    ),
++                  ),
++                ),
++              ),
++              if (textured)
++                Positioned.fill(
++                  child: IgnorePointer(
++                    child: CustomPaint(
++                      painter: _NoiseTexturePainter(strength: 0.03),
++                    ),
++                  ),
++                ),
++              Positioned(
++                left: 1,
++                right: 1,
++                top: 1,
++                child: IgnorePointer(
++                  child: Container(
++                    height: 1,
++                    decoration: BoxDecoration(
++                      borderRadius: BorderRadius.circular(999),
++                      color: Colors.white.withValues(alpha: 0.12),
++                    ),
++                  ),
++                ),
++              ),
++            ],
+           ),
+         ),
+       ),
+     );
+   }
+ }
++
++class _NoiseTexturePainter extends CustomPainter {
++  final double strength;
++
++  const _NoiseTexturePainter({required this.strength});
++
++  @override
++  void paint(Canvas canvas, Size size) {
++    final whitePaint = Paint()..style = PaintingStyle.fill;
++    final darkPaint = Paint()..style = PaintingStyle.fill;
++
++    var seed =
++        (size.width.floor() * 73856093) ^
++        (size.height.floor() * 19349663) ^
++        0x9E3779B9;
++
++    double next() {
++      seed = (1664525 * seed + 1013904223) & 0x7fffffff;
++      return seed / 0x7fffffff;
++    }
++
++    final points = math.max(40, (size.width * size.height / 1200).round());
++    for (var i = 0; i < points; i++) {
++      final x = next() * size.width;
++      final y = next() * size.height;
++      final w = 0.7 + (next() * 1.1);
++      final h = 0.7 + (next() * 1.1);
++      whitePaint.color = Colors.white.withValues(
++        alpha: 0.004 + (next() * strength),
++      );
++      canvas.drawRect(Rect.fromLTWH(x, y, w, h), whitePaint);
++    }
++
++    final darkPoints = math.max(20, points ~/ 2);
++    for (var i = 0; i < darkPoints; i++) {
++      final x = next() * size.width;
++      final y = next() * size.height;
++      final w = 0.6 + (next() * 0.8);
++      final h = 0.6 + (next() * 0.8);
++      darkPaint.color = Colors.black.withValues(
++        alpha: 0.003 + (next() * strength * 0.7),
++      );
++      canvas.drawRect(Rect.fromLTWH(x, y, w, h), darkPaint);
++    }
++  }
++
++  @override
++  bool shouldRepaint(covariant _NoiseTexturePainter oldDelegate) {
++    return oldDelegate.strength != strength;
++  }
++}
+*** End Patch

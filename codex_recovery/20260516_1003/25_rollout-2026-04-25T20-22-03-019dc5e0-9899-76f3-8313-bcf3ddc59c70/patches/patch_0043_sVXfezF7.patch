@@ -1,0 +1,19 @@
+*** Begin Patch
+*** Update File: lib/features/control_center_setup/widgets/permissions_screen.dart
+@@
+ import 'package:flutter/foundation.dart';
+ import 'package:flutter/cupertino.dart';
+ import 'package:flutter/material.dart';
+ import 'package:provider/provider.dart';
++import 'dart:async';
+@@
+   @override
+   Widget build(BuildContext context) {
+     final setup = context.watch<SetupFlowController>();
++    if (_isAndroid) {
++      unawaited(setup.initialize());
++    }
+     final permissionStatus = _isAndroid
+         ? (setup.allPermissionsGranted ? 'OK' : 'À activer')
+         : 'Non requis sur ce device';
+*** End Patch

@@ -1,0 +1,12 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/screen_time_screen.dart
+@@
+   Widget _tinyAction({required String label, required VoidCallback? onTap}) {
+     return CupertinoButton(
+       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+-      minSize: 26,
++      minimumSize: const Size(26, 26),
+       color: AppColors.backgroundLight.withValues(alpha: 0.72),
+       borderRadius: BorderRadius.circular(8),
+       onPressed: onTap,
+*** End Patch

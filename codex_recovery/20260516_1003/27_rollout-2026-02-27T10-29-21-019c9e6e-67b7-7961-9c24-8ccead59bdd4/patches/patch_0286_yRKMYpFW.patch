@@ -1,0 +1,233 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/ios/Runner/AppDelegate.swift
+@@
+ import FamilyControls
+ import ManagedSettings
+ import DeviceActivity
+ import SwiftUI
++import UserNotifications
+ 
+ @available(iOS 15.0, *)
+ public class FocusEngine: NSObject {
+     public static let shared = FocusEngine()
+     
+     private let store = ManagedSettingsStore()
+     private let center = AuthorizationCenter.shared
++    private let notificationCenter = UNUserNotificationCenter.current()
++    private let plansStorageKey = "planned_focus_sessions_v1"
++    private let planPrefixWarn = "focus_plan_warn_"
++    private let planPrefixStart = "focus_plan_start_"
+     
+     // Store selection for persistence during session
+     private var selection = FamilyActivitySelection()
++
++    private struct PlannedSession: Codable {
++        let id: String
++        let title: String
++        let date: String
++        let time: String
++        let durationMinutes: Int
++        let weekly: Bool
++    }
+@@
+     private func requestPermissions(result: @escaping FlutterResult) {
+         Task {
+             do {
+                 try await center.requestAuthorization(for: .individual)
++                requestLocalNotificationsIfNeeded()
+                 result(true)
+             } catch {
+                 print("Authorization failed: \(error)")
+                 result(false)
+             }
+         }
+     }
++
++    private func requestLocalNotificationsIfNeeded() {
++        notificationCenter.requestAuthorization(options: [.alert, .sound, .badge]) { _, _ in
++            // Best-effort; no hard failure for focus scheduling.
++        }
++    }
+@@
+     private func applySelectionFrom(encoded: String?) {
+@@
+         }
+     }
++
++    private func parseSession(_ raw: [String: Any]) -> PlannedSession? {
++        guard let id = raw["id"] as? String,
++              let date = raw["date"] as? String,
++              let time = raw["time"] as? String else {
++            return nil
++        }
++        let title = (raw["title"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines)
++        let duration = (raw["durationMinutes"] as? Int) ?? 45
++        let weekly = (raw["weekly"] as? Bool) ?? false
++
++        return PlannedSession(
++            id: id,
++            title: (title?.isEmpty == false ? title! : "Focus Session"),
++            date: date,
++            time: time,
++            durationMinutes: max(5, min(duration, 180)),
++            weekly: weekly
++        )
++    }
++
++    private func parseDate(_ date: String, _ time: String) -> Date? {
++        let formatter = DateFormatter()
++        formatter.locale = Locale(identifier: "en_US_POSIX")
++        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
++        let full = "\(date) \(time)"
++        if let parsed = formatter.date(from: full) {
++            return parsed
++        }
++        formatter.dateFormat = "yyyy-MM-dd HH:mm"
++        return formatter.date(from: "\(date) \(time.prefix(5))")
++    }
++
++    private func savePlans(_ plans: [PlannedSession]) {
++        if let data = try? JSONEncoder().encode(plans) {
++            UserDefaults.standard.set(data, forKey: plansStorageKey)
++        }
++    }
++
++    private func calendarTrigger(for date: Date, weekly: Bool) -> UNCalendarNotificationTrigger {
++        let calendar = Calendar.current
++        if weekly {
++            let components = calendar.dateComponents([.weekday, .hour, .minute], from: date)
++            return UNCalendarNotificationTrigger(dateMatching: components, repeats: true)
++        }
++        let components = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: date)
++        return UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
++    }
++
++    private func clearPlannedNotifications(completion: @escaping () -> Void) {
++        notificationCenter.getPendingNotificationRequests { requests in
++            let ids = requests
++                .map { $0.identifier }
++                .filter { $0.hasPrefix(self.planPrefixWarn) || $0.hasPrefix(self.planPrefixStart) }
++            self.notificationCenter.removePendingNotificationRequests(withIdentifiers: ids)
++            completion()
++        }
++    }
++
++    private func scheduleNotification(
++        identifier: String,
++        title: String,
++        body: String,
++        trigger: UNNotificationTrigger,
++        userInfo: [AnyHashable: Any]
++    ) {
++        let content = UNMutableNotificationContent()
++        content.title = title
++        content.body = body
++        content.sound = .default
++        content.userInfo = userInfo
++        let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
++        notificationCenter.add(request) { error in
++            if let error = error {
++                print("Failed to schedule focus notification \(identifier): \(error)")
++            }
++        }
++    }
++
++    private func syncPlannedSessions(args: [String: Any]?, result: @escaping FlutterResult) {
++        requestLocalNotificationsIfNeeded()
++        let rawSessions = args?["sessions"] as? [[String: Any]] ?? []
++        let parsed = rawSessions.compactMap { parseSession($0) }
++        savePlans(parsed)
++
++        clearPlannedNotifications { [weak self] in
++            guard let self = self else { return }
++            for session in parsed {
++                guard let startDate = self.parseDate(session.date, session.time) else { continue }
++                let warningDate = startDate.addingTimeInterval(-5 * 60)
++
++                let warnTrigger = self.calendarTrigger(for: warningDate, weekly: session.weekly)
++                let startTrigger = self.calendarTrigger(for: startDate, weekly: session.weekly)
++
++                let warnId = "\(self.planPrefixWarn)\(session.id)"
++                let startId = "\(self.planPrefixStart)\(session.id)"
++
++                self.scheduleNotification(
++                    identifier: warnId,
++                    title: "Focus in 5 minutes",
++                    body: "\(session.title) starts soon.",
++                    trigger: warnTrigger,
++                    userInfo: [
++                        "focus_plan_type": "warning",
++                        "focus_plan_id": session.id,
++                        "focus_plan_duration": session.durationMinutes
++                    ]
++                )
++
++                self.scheduleNotification(
++                    identifier: startId,
++                    title: "Focus session started",
++                    body: "\(session.title) is now active.",
++                    trigger: startTrigger,
++                    userInfo: [
++                        "focus_plan_type": "start",
++                        "focus_plan_id": session.id,
++                        "focus_plan_duration": session.durationMinutes
++                    ]
++                )
++            }
++            result(true)
++        }
++    }
++
++    func handlePlannedNotification(_ userInfo: [AnyHashable: Any]) {
++        guard let type = (userInfo["focus_plan_type"] as? String)?.lowercased() else { return }
++        if type == "start" {
++            store.shield.applications = selection.applicationTokens
++            store.shield.applicationCategories = ShieldSettings.ActivityCategoryPolicy.specific(selection.categoryTokens)
++            store.shield.webDomains = selection.webDomainTokens
++        }
++    }
+@@
+         case "openFamilyActivityPicker":
+             presentFamilyActivityPicker(result: result)
++        case "syncPlannedSessions":
++            syncPlannedSessions(args: args, result: result)
+         default:
+             result(FlutterMethodNotImplemented)
+         }
+     }
+@@
+ @main
+ @objc class AppDelegate: FlutterAppDelegate {
+@@
+   ) -> Bool {
+@@
+     GeneratedPluginRegistrant.register(with: self)
++    UNUserNotificationCenter.current().delegate = self
+@@
+ 
+     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+   }
++
++  override func userNotificationCenter(
++    _ center: UNUserNotificationCenter,
++    willPresent notification: UNNotification,
++    withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
++  ) {
++    if #available(iOS 15.0, *) {
++      FocusEngine.shared.handlePlannedNotification(notification.request.content.userInfo)
++    }
++    completionHandler([.banner, .sound, .list])
++  }
++
++  override func userNotificationCenter(
++    _ center: UNUserNotificationCenter,
++    didReceive response: UNNotificationResponse,
++    withCompletionHandler completionHandler: @escaping () -> Void
++  ) {
++    if #available(iOS 15.0, *) {
++      FocusEngine.shared.handlePlannedNotification(response.notification.request.content.userInfo)
++    }
++    completionHandler()
++  }
+ }
+*** End Patch

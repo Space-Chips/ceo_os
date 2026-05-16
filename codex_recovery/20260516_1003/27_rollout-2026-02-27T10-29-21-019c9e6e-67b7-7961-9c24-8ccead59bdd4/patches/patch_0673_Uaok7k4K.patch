@@ -1,0 +1,425 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/rank/rank_screen.dart
+@@
+ import 'package:flutter/cupertino.dart';
+ import 'package:go_router/go_router.dart';
+-import 'dart:math' as math;
+ 
+ import '../../components/components.dart';
+ import '../../core/models/user_models.dart';
+ import '../../core/repositories/user_repository.dart';
+ import '../../core/theme/app_colors.dart';
+ import '../../core/theme/app_typography.dart';
++import '../../core/widgets/rank_art.dart';
+@@
+   Widget _rankIconContainer(_RankTierData tier, {required double iconSize}) {
++    final artSize = iconSize >= 72
++        ? RankArtSize.hero
++        : iconSize >= 48
++        ? RankArtSize.md
++        : RankArtSize.sm;
+     return Container(
+       width: iconSize + 20,
+       height: iconSize + 20,
+       decoration: BoxDecoration(
+         color: AppColors.white.withValues(alpha: 0.05),
+         borderRadius: BorderRadius.circular(14),
+       ),
+       alignment: Alignment.center,
+-      child: _tierBadge(tier, size: iconSize),
++      child: RankArt(
++        rankName: tier.name,
++        size: artSize,
++        dimension: iconSize,
++      ),
+     );
+   }
+@@
+       boxShadow: [
+         BoxShadow(
+           color: AppColors.black.withValues(alpha: 0.5),
+           blurRadius: 30,
+           offset: const Offset(0, 10),
+@@
+       ],
+     );
+   }
+-
+-  Widget _tierBadge(_RankTierData tier, {required double size}) {
+-    final key = tier.name.toLowerCase();
+-    if (key == 'diamond') return _diamondBadge(size);
+-    if (key == 'platinum') return _platinumBadge(size);
+-    if (key == 'batman') return _batmanBadge(size);
+-    if (key == 'ceo') return _ceoBadge(size);
+-    return _baseRingBadge(tier, size);
+-  }
+-
+-  Widget _baseRingBadge(_RankTierData tier, double size) {
+-    return Container(
+-      width: size,
+-      height: size,
+-      decoration: BoxDecoration(
+-        borderRadius: BorderRadius.circular(size * 0.28),
+-        gradient: LinearGradient(
+-          begin: Alignment.topLeft,
+-          end: Alignment.bottomRight,
+-          colors: [tier.ring[0], tier.ring[1], tier.ring[2]],
+-        ),
+-        boxShadow: [
+-          BoxShadow(color: tier.glow, blurRadius: size * 0.35, spreadRadius: 1),
+-        ],
+-      ),
+-      child: Center(
+-        child: Container(
+-          width: size * 0.62,
+-          height: size * 0.62,
+-          decoration: BoxDecoration(
+-            borderRadius: BorderRadius.circular(size * 0.2),
+-            color: AppColors.cardBackgroundStrong,
+-            border: Border.all(
+-              color: AppColors.glassBorder.withValues(alpha: 0.65),
+-            ),
+-          ),
+-        ),
+-      ),
+-    );
+-  }
+-
+-  Widget _diamondBadge(double size) {
+-    return Container(
+-      width: size,
+-      height: size,
+-      decoration: BoxDecoration(
+-        borderRadius: BorderRadius.circular(size * 0.28),
+-        gradient: LinearGradient(
+-          begin: Alignment.topLeft,
+-          end: Alignment.bottomRight,
+-          colors: [
+-            AppColors.accentLight,
+-            AppColors.accent,
+-            AppColors.accentDeep,
+-          ],
+-        ),
+-        boxShadow: [
+-          BoxShadow(
+-            color: AppColors.themeGlow.withValues(alpha: 0.42),
+-            blurRadius: size * 0.42,
+-            spreadRadius: 1,
+-          ),
+-        ],
+-      ),
+-      child: ClipRRect(
+-        borderRadius: BorderRadius.circular(size * 0.28),
+-        child: Stack(
+-          children: [
+-            Positioned.fill(
+-              child: CustomPaint(
+-                painter: _FacetPainter(
+-                  lineColor: AppColors.label.withValues(alpha: 0.86),
+-                  secondaryColor: AppColors.accent.withValues(alpha: 0.45),
+-                  density: 22,
+-                ),
+-              ),
+-            ),
+-            Center(
+-              child: Container(
+-                width: size * 0.58,
+-                height: size * 0.58,
+-                decoration: BoxDecoration(
+-                  borderRadius: BorderRadius.circular(size * 0.2),
+-                  gradient: RadialGradient(
+-                    colors: [
+-                      AppColors.cardBackgroundStrong,
+-                      AppColors.background,
+-                    ],
+-                  ),
+-                  border: Border.all(
+-                    color: AppColors.label.withValues(alpha: 0.78),
+-                    width: 1.1,
+-                  ),
+-                  boxShadow: [
+-                    BoxShadow(
+-                      color: AppColors.themeGlow.withValues(alpha: 0.32),
+-                      blurRadius: size * 0.16,
+-                    ),
+-                  ],
+-                ),
+-              ),
+-            ),
+-          ],
+-        ),
+-      ),
+-    );
+-  }
+-
+-  Widget _platinumBadge(double size) {
+-    return Container(
+-      width: size,
+-      height: size,
+-      decoration: BoxDecoration(
+-        borderRadius: BorderRadius.circular(size * 0.28),
+-        gradient: LinearGradient(
+-          begin: Alignment.topLeft,
+-          end: Alignment.bottomRight,
+-          colors: [
+-            AppColors.label,
+-            AppColors.secondaryLabel,
+-            AppColors.surfaceMuted,
+-          ],
+-        ),
+-        boxShadow: [
+-          BoxShadow(
+-            color: AppColors.label.withValues(alpha: 0.22),
+-            blurRadius: size * 0.36,
+-            spreadRadius: 0.5,
+-          ),
+-        ],
+-      ),
+-      child: ClipRRect(
+-        borderRadius: BorderRadius.circular(size * 0.28),
+-        child: Stack(
+-          children: [
+-            Positioned.fill(
+-              child: CustomPaint(
+-                painter: _FacetPainter(
+-                  lineColor: AppColors.label.withValues(alpha: 0.72),
+-                  secondaryColor: AppColors.accentLight.withValues(alpha: 0.4),
+-                  density: 16,
+-                ),
+-              ),
+-            ),
+-            Center(
+-              child: Container(
+-                width: size * 0.6,
+-                height: size * 0.6,
+-                decoration: BoxDecoration(
+-                  borderRadius: BorderRadius.circular(size * 0.2),
+-                  gradient: RadialGradient(
+-                    colors: [
+-                      AppColors.cardBackgroundAlt,
+-                      AppColors.cardBackgroundStrong,
+-                    ],
+-                  ),
+-                  border: Border.all(
+-                    color: AppColors.label.withValues(alpha: 0.76),
+-                    width: 1.0,
+-                  ),
+-                ),
+-              ),
+-            ),
+-          ],
+-        ),
+-      ),
+-    );
+-  }
+-
+-  Widget _batmanBadge(double size) {
+-    return Container(
+-      width: size,
+-      height: size,
+-      decoration: BoxDecoration(
+-        borderRadius: BorderRadius.circular(size * 0.28),
+-        color: AppColors.cardBackgroundStrong,
+-        border: Border.all(color: AppColors.cardBorderStrong, width: 1.0),
+-        boxShadow: [
+-          BoxShadow(
+-            color: AppColors.black.withValues(alpha: 0.28),
+-            blurRadius: size * 0.24,
+-            spreadRadius: 1,
+-          ),
+-        ],
+-      ),
+-      child: Center(
+-        child: Container(
+-          width: size * 0.64,
+-          height: size * 0.64,
+-          decoration: BoxDecoration(
+-            borderRadius: BorderRadius.circular(size * 0.2),
+-            color: AppColors.cardBackgroundAlt,
+-            border: Border.all(color: AppColors.cardBorder, width: 0.9),
+-          ),
+-        ),
+-      ),
+-    );
+-  }
+-
+-  Widget _ceoBadge(double size) {
+-    return Container(
+-      width: size,
+-      height: size,
+-      decoration: BoxDecoration(
+-        borderRadius: BorderRadius.circular(size * 0.3),
+-        gradient: LinearGradient(
+-          begin: Alignment.topLeft,
+-          end: Alignment.bottomRight,
+-          colors: [
+-            AppColors.warning,
+-            AppColors.rankAccent,
+-            AppColors.cardBackgroundStrong,
+-          ],
+-        ),
+-        boxShadow: [
+-          BoxShadow(
+-            color: AppColors.warning.withValues(alpha: 0.36),
+-            blurRadius: size * 0.48,
+-            spreadRadius: 1,
+-          ),
+-        ],
+-      ),
+-      child: ClipRRect(
+-        borderRadius: BorderRadius.circular(size * 0.3),
+-        child: Stack(
+-          children: [
+-            Positioned.fill(
+-              child: CustomPaint(
+-                painter: _IrisPainter(
+-                  primary: AppColors.rankAccent,
+-                  secondary: AppColors.warning,
+-                  shadow: AppColors.accentDeep,
+-                ),
+-              ),
+-            ),
+-            Center(
+-              child: Container(
+-                width: size * 0.36,
+-                height: size * 0.36,
+-                decoration: BoxDecoration(
+-                  shape: BoxShape.circle,
+-                  color: AppColors.background,
+-                ),
+-              ),
+-            ),
+-            Positioned(
+-              right: size * 0.12,
+-              top: size * 0.1,
+-              child: Container(
+-                width: size * 0.2,
+-                height: size * 0.08,
+-                decoration: BoxDecoration(
+-                  borderRadius: BorderRadius.circular(size * 0.06),
+-                  color: AppColors.label.withValues(alpha: 0.4),
+-                ),
+-              ),
+-            ),
+-          ],
+-        ),
+-      ),
+-    );
+-  }
+-
+ }
+@@
+-}
+-
+-class _FacetPainter extends CustomPainter {
+-  final Color lineColor;
+-  final Color secondaryColor;
+-  final int density;
+-
+-  _FacetPainter({
+-    required this.lineColor,
+-    required this.secondaryColor,
+-    required this.density,
+-  });
+-
+-  @override
+-  void paint(Canvas canvas, Size size) {
+-    final linePaint = Paint()
+-      ..style = PaintingStyle.stroke
+-      ..strokeWidth = 0.9
+-      ..color = lineColor.withValues(alpha: 0.42);
+-    final secPaint = Paint()
+-      ..style = PaintingStyle.stroke
+-      ..strokeWidth = 0.7
+-      ..color = secondaryColor.withValues(alpha: 0.32);
+-
+-    final w = size.width;
+-    final h = size.height;
+-    final step = w / density;
+-    for (var i = 0; i < density; i++) {
+-      final x = step * i;
+-      canvas.drawLine(Offset(x, 0), Offset(w - x * 0.25, h), linePaint);
+-    }
+-    for (var j = 0; j < density ~/ 2; j++) {
+-      final y = (h / (density ~/ 2)) * j;
+-      canvas.drawLine(Offset(0, y), Offset(w, h - y * 0.2), secPaint);
+-    }
+-  }
+-
+-  @override
+-  bool shouldRepaint(covariant _FacetPainter oldDelegate) {
+-    return oldDelegate.lineColor != lineColor ||
+-        oldDelegate.secondaryColor != secondaryColor ||
+-        oldDelegate.density != density;
+-  }
+-}
+-
+-class _IrisPainter extends CustomPainter {
+-  final Color primary;
+-  final Color secondary;
+-  final Color shadow;
+-
+-  _IrisPainter({
+-    required this.primary,
+-    required this.secondary,
+-    required this.shadow,
+-  });
+-
+-  @override
+-  void paint(Canvas canvas, Size size) {
+-    final c = Offset(size.width / 2, size.height / 2);
+-    final r = size.width * 0.47;
+-    final pupil = size.width * 0.19;
+-
+-    final base = Paint()
+-      ..shader = RadialGradient(
+-        colors: [
+-          shadow.withValues(alpha: 0.95),
+-          primary.withValues(alpha: 0.78),
+-          secondary.withValues(alpha: 0.76),
+-          AppColors.cardBackgroundStrong,
+-        ],
+-        stops: const [0.0, 0.42, 0.76, 1.0],
+-      ).createShader(Rect.fromCircle(center: c, radius: r));
+-    canvas.drawCircle(c, r, base);
+-
+-    final rays = 240;
+-    for (var i = 0; i < rays; i++) {
+-      final t = i / rays;
+-      final angle = t * math.pi * 2;
+-      final inner = pupil + 1 + (math.sin(i * 0.91) + 1) * 4.0;
+-      final outer = r - (math.cos(i * 1.27) + 1) * 3.8;
+-      final p1 = Offset(
+-        c.dx + math.cos(angle) * inner,
+-        c.dy + math.sin(angle) * inner,
+-      );
+-      final p2 = Offset(
+-        c.dx + math.cos(angle) * outer,
+-        c.dy + math.sin(angle) * outer,
+-      );
+-      final rayPaint = Paint()
+-        ..strokeWidth = 1.05
+-        ..strokeCap = StrokeCap.round
+-        ..color = Color.lerp(
+-          primary,
+-          secondary,
+-          (math.sin(i * 0.33) + 1) / 2,
+-        )!.withValues(alpha: 0.58);
+-      canvas.drawLine(p1, p2, rayPaint);
+-    }
+-
+-    final ringPaint = Paint()
+-      ..style = PaintingStyle.stroke
+-      ..strokeWidth = 1.5
+-      ..color = AppColors.label.withValues(alpha: 0.5);
+-    canvas.drawCircle(c, r * 0.98, ringPaint);
+-  }
+-
+-  @override
+-  bool shouldRepaint(covariant _IrisPainter oldDelegate) {
+-    return oldDelegate.primary != primary ||
+-        oldDelegate.secondary != secondary ||
+-        oldDelegate.shadow != shadow;
+-  }
+ }
+*** End Patch

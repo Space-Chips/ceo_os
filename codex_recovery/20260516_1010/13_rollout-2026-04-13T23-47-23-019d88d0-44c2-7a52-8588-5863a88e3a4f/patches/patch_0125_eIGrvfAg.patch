@@ -1,0 +1,65 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/screen_time_screen.dart
+@@
+   Future<void> _load() async {
+@@
+       final appBindings = await appBindingsFuture;
++      final upgradedApps = await _upgradeIosBlockedAppNames(
++        apps: apps,
++        appBindings: appBindings,
++      );
++      final effectiveApps = upgradedApps ?? apps;
+       final adultEnabled = websites.any(
+         (site) =>
+             (site.urlDomain ?? '').trim() ==
+             FeatureRepository.adultContentShieldMarker,
+       );
+@@
+       await _syncClassicNative(
+-        apps: apps,
++        apps: effectiveApps,
+         websites: filteredWebsites,
+         rests: rests,
+       );
+-      final validAppIds = apps.map((item) => item.id).toSet();
++      final validAppIds = effectiveApps.map((item) => item.id).toSet();
+ 
+       if (!mounted) return;
+       setState(() {
+-        _blockedApps = apps;
++        _blockedApps = effectiveApps;
+         _blockedWebsites = filteredWebsites;
+         _restPeriods = rests;
+         _appBindings = Map<String, ClassicBlockBinding>.fromEntries(
+           appBindings.entries.where((entry) => validAppIds.contains(entry.key)),
+         );
+@@
+       );
+     }
+   }
++
++  Future<List<BlockedApp>?> _upgradeIosBlockedAppNames({
++    required List<BlockedApp> apps,
++    required Map<String, ClassicBlockBinding> appBindings,
++  }) async {
++    if (!Platform.isIOS || apps.isEmpty) return null;
++
++    var changed = false;
++    for (final app in apps) {
++      if (!_isGenericAppName(app.appName)) continue;
++      final payload = appBindings[app.id]?.nativePayload?.trim();
++      if (payload == null || payload.isEmpty) continue;
++
++      final described = await _focusService.describeAppSelectionPayload(payload);
++      final resolvedName = described?.preferredLabel?.trim();
++      if (resolvedName == null || resolvedName.isEmpty) continue;
++      if (resolvedName == app.appName?.trim()) continue;
++
++      await _repo.updateBlockedAppName(app.id, resolvedName);
++      changed = true;
++    }
++
++    if (!changed) return null;
++    return _repo.getBlockedApps();
++  }
+*** End Patch

@@ -1,0 +1,72 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/calendar/calendar_screen.dart
+@@
+               borderRadius: BorderRadius.circular(18),
+               border: Border.all(
+-                color: AppColors.isDark
+-                    ? AppColors.border
+-                    : AppColors.borderStrong.withValues(alpha: 0.68),
++                color: AppColors.border,
+                 width: 1,
+               ),
+               boxShadow: [
+                 BoxShadow(
+-                  color: AppColors.glassShadow.withValues(
+-                    alpha: AppColors.isDark ? 0.18 : 0.065,
+-                  ),
+-                  blurRadius: AppColors.isDark ? 18 : 11,
+-                  offset: Offset(0, AppColors.isDark ? 8 : 5),
+-                  spreadRadius: AppColors.isDark ? -10 : -8,
++                  color: AppColors.isDark
++                      ? AppColors.black.withValues(alpha: 0.5)
++                      : AppColors.glassShadow.withValues(alpha: 0.085),
++                  blurRadius: AppColors.isDark ? 24 : 18,
++                  offset: Offset(0, AppColors.isDark ? 10 : 7),
++                  spreadRadius: AppColors.isDark ? 0 : -8,
+                 ),
+               ],
+             ),
+@@
+                     decoration: BoxDecoration(
+                       color: isToday
+                           ? AppColors.accent.withValues(alpha: 0.08)
+-                          : (AppColors.isDark
+-                              ? AppColors.white.withValues(alpha: 0.02)
+-                              : AppColors.cardBackgroundAlt.withValues(alpha: 0.9)),
++                          : AppColors.white.withValues(alpha: 0.02),
+                       borderRadius: BorderRadius.circular(12),
+                       border: Border.all(
+                         color: isToday
+                             ? AppColors.activeBorder.withValues(alpha: 0.8)
+-                            : (AppColors.isDark
+-                                ? AppColors.white.withValues(alpha: 0.06)
+-                                : AppColors.borderStrong.withValues(alpha: 0.56)),
++                            : AppColors.white.withValues(alpha: 0.06),
+                         width: 1,
+                       ),
+-                      boxShadow: AppColors.isDark
+-                          ? const []
+-                          : [
+-                              BoxShadow(
+-                                color: AppColors.glassShadowSoft.withValues(
+-                                  alpha: 0.06,
+-                                ),
+-                                blurRadius: 8,
+-                                offset: const Offset(0, 3),
+-                                spreadRadius: -6,
+-                              ),
+-                            ],
++                      boxShadow: AppColors.isDark
++                          ? const []
++                          : [
++                              BoxShadow(
++                                color: AppColors.glassShadowSoft.withValues(
++                                  alpha: 0.045,
++                                ),
++                                blurRadius: 7,
++                                offset: const Offset(0, 2),
++                                spreadRadius: -5,
++                              ),
++                            ],
+                     ),
+*** End Patch

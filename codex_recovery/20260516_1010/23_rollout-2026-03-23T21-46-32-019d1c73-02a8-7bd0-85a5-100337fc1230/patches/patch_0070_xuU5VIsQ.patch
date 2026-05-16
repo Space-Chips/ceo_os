@@ -1,0 +1,317 @@
+*** Begin Patch
+*** Add File: /Users/timo/ceo_os/docs/google_play_submission_packet.md
++# Google Play Submission Packet — CEO OS
++
++Date: 2026-03-28  
++Project: CEO OS  
++Scope: Android publication readiness, Play Console setup, reviewer-facing clarity
++
++## 1. Executive Verdict
++
++### Code-level verdict
++**GO**
++
++The Android codebase is now materially cleaner and more publication-ready than before:
++- Android package identity has been moved off `com.example.*`
++- release signing scaffolding exists
++- sensitive permissions are narrower and better justified
++- Android permission flows are progressive instead of dumping users into multiple settings at once
++- Android wording is now platform-accurate in the app and docs
++
++### Release-level verdict
++**NO-GO until the manual blockers below are done**
++
++This is not a code problem anymore.  
++It is a release configuration / Play Console / external services problem.
++
++---
++
++## 2. Current Manual Blockers
++
++These are the blockers that still prevent a clean Android publication today.
++
++### B1. Release signing is not fully configured yet
++Missing today:
++- `android/key.properties`
++- upload keystore file
++
++Relevant files:
++- [/Users/timo/ceo_os/android/app/build.gradle.kts](/Users/timo/ceo_os/android/app/build.gradle.kts)
++- [/Users/timo/ceo_os/android/key.properties.example](/Users/timo/ceo_os/android/key.properties.example)
++
++### B2. Android build has not been verified locally on this machine
++The last build attempt here failed because the Android SDK is not configured in the environment:
++- `No Android SDK found. Try setting the ANDROID_HOME environment variable.`
++
++This does not mean the project is broken, but it does mean the release path is not yet fully validated on this machine.
++
++### B3. Google Sign-In Android release configuration still needs external setup
++The code is now platform-correct, but release setup still requires:
++- Android OAuth configuration
++- upload certificate fingerprints
++- Play App Signing certificate fingerprints
++- verification against the Google auth provider / Supabase configuration
++
++Relevant files:
++- [/Users/timo/ceo_os/lib/core/config/supabase_config.dart](/Users/timo/ceo_os/lib/core/config/supabase_config.dart)
++- [/Users/timo/ceo_os/lib/core/providers/auth_provider.dart](/Users/timo/ceo_os/lib/core/providers/auth_provider.dart)
++
++### B4. RevenueCat + Google Play monetization is not validated yet
++Still required:
++- Android products in Google Play Console
++- base plans / offers if needed
++- RevenueCat Android app setup
++- product mapping
++- webhook validation
++- real purchase / restore testing
++
++Relevant files:
++- [/Users/timo/ceo_os/lib/core/services/billing_service.dart](/Users/timo/ceo_os/lib/core/services/billing_service.dart)
++- [/Users/timo/ceo_os/lib/core/repositories/premium_repository.dart](/Users/timo/ceo_os/lib/core/repositories/premium_repository.dart)
++- [/Users/timo/ceo_os/supabase/functions/revenuecat-webhook/index.ts](/Users/timo/ceo_os/supabase/functions/revenuecat-webhook/index.ts)
++
++### B5. Public privacy policy and public account deletion page still need to be verified
++Google Play requires:
++- a public privacy policy URL
++- accurate Data Safety answers
++- account deletion support disclosure for apps with account creation
++
++Relevant Google sources:
++- [User Data](https://support.google.com/googleplay/android-developer/answer/10144311?hl=en)
++- [Understanding Google Play’s app account deletion requirements](https://support.google.com/googleplay/android-developer/answer/13327111?hl=en)
++
++### B6. Real-device Android testing is still required
++You still need to validate on a physical Android phone:
++- Accessibility flow
++- Usage Access flow
++- overlay flow
++- app blocking
++- supported-browser website blocking
++- daily limits
++- reboot / time-change behavior
++- purchase / restore if Premium is enabled
++
++Relevant repo doc:
++- [/Users/timo/ceo_os/docs/real_device_test_plan_blocking_stack.md](/Users/timo/ceo_os/docs/real_device_test_plan_blocking_stack.md)
++
++### B7. Play Console declarations are not done yet
++Still required:
++- Data Safety
++- App Content
++- Accessibility declaration if prompted
++- listing copy
++- testing track setup
++
++---
++
++## 3. High-Priority Facts to Keep in Mind
++
++### Target API policy
++Google says that **starting August 31, 2025**, new apps and app updates must target **Android 15 / API level 35 or higher** for phones/tablets.  
++Source: [Target API level requirements for Google Play apps](https://support.google.com/googleplay/android-developer/answer/11926878?hl=en)
++
++### New personal developer accounts
++If your Play developer account is a **personal account created after November 13, 2023**, Google requires a **closed test with at least 12 opted-in testers for at least 14 continuous days** before production access.  
++Source: [App testing requirements for new personal developer accounts](https://support.google.com/googleplay/android-developer/answer/14151465?hl=en)
++
++### Accessibility API
++Because CEO OS uses `AccessibilityService`, Google requires:
++- a Play Console accessibility declaration for non-accessibility-tool use cases
++- clear in-app disclosure
++- affirmative user consent
++- listing documentation of the Accessibility use
++
++Source: [Permissions and APIs that Access Sensitive Information](https://support.google.com/googleplay/android-developer/answer/9888170)
++
++---
++
++## 4. Play Console Checklist — Exact Order
++
++### Step 1. Create the app
++In Play Console:
++- create the app
++- app type: `App`
++- free or paid: choose the real business model now
++- contact email: support email you will actually monitor
++
++Source: [Create and set up your app](https://support.google.com/googleplay/android-developer/answer/9859152?hl=en)
++
++### Step 2. App integrity / signing
++- enable Play App Signing
++- use a Google-generated app signing key unless you have a strong reason not to
++- generate and keep a separate upload key
++- add `android/key.properties`
++- verify your release bundle signs with the upload key
++
++Source: [Use Play App Signing](https://support.google.com/googleplay/android-developer/answer/9842756?hl=en-EN)
++
++### Step 3. Store listing
++Prepare:
++- app name
++- short description
++- full description
++- phone screenshots
++- feature graphic
++- app icon
++
++Constraints from Google:
++- app name max 30 chars
++- short description max 80 chars
++- full description max 4000 chars
++
++Source: [Create and set up your app](https://support.google.com/googleplay/android-developer/answer/9859152?hl=en)
++
++### Step 4. App Content
++Complete all required sections on the App Content page.
++At minimum, expect:
++- Privacy Policy
++- Data Safety
++- Account deletion / Data deletion answers
++- Ads declaration
++- Target audience / families if relevant
++- special declarations if Play prompts them
++
++### Step 5. Data Safety
++Your answers must match the real app behavior.
++
++For CEO OS, expect at least these data domains to be reviewed carefully:
++- account info
++- email / auth identifiers
++- tasks / habits / notes / focus data
++- purchase/subscription state
++- app activity / usage-related data if transmitted off-device
++- third-party processors: Supabase, Google Sign-In, RevenueCat
++
++Source: [Provide information for Google Play's Data safety section](https://support.google.com/googleplay/android-developer/answer/10787469?hl=en)
++
++### Step 6. Privacy Policy
++Your privacy policy URL must be:
++- public
++- active
++- non-geofenced
++- not a PDF
++- labeled clearly as a privacy policy
++
++Source: [User Data](https://support.google.com/googleplay/android-developer/answer/10144311?hl=en)
++
++### Step 7. Account deletion
++Because the app allows account creation:
++- in-app deletion must work
++- Play Console data deletion answers must be accurate
++- the public deletion support page must exist
++
++Source: [Understanding Google Play’s app account deletion requirements](https://support.google.com/googleplay/android-developer/answer/13327111?hl=en)
++
++### Step 8. Accessibility / sensitive permissions declarations
++You must keep the story narrow and factual:
++- Accessibility: detect selected distracting apps and supported websites and apply on-device blocking
++- Usage Access: evaluate real usage for daily limits
++- Overlay: present the blocking shield
++
++Never claim:
++- disability support if that is not the true core purpose
++- universal website blocking across all browsers
++- hidden enforcement
++- unrelated analytics use
++
++Source: [Permissions and APIs that Access Sensitive Information](https://support.google.com/googleplay/android-developer/answer/9888170)
++
++### Step 9. Monetization
++If Premium is live on Android:
++- create subscriptions in Play Console
++- create base plans
++- connect them to RevenueCat
++- verify entitlement unlock and restore
++
++### Step 10. Testing tracks
++Recommended order:
++- internal testing first
++- closed testing second if needed
++- production only after device validation and policy forms are complete
++
++If your account is under the new personal-account rule:
++- satisfy the 12 testers / 14 days requirement before production
++
++### Step 11. Pre-launch and real-device validation
++Before production:
++- inspect pre-launch report
++- run your own real-device test plan
++- validate Google Sign-In release
++- validate purchases / restore
++
++---
++
++## 5. CEO OS Android Listing Rules
++
++### Safe claims
++- Block distracting apps during focus sessions
++- Block selected websites on Android in supported browsers
++- Apply daily limits to selected apps and supported websites
++- Use on-device protection flows for self-control and digital wellbeing
++
++### Unsafe claims
++- Blocks every website in every browser
++- Impossible to bypass
++- Works across all Android web views
++- Full parental control over other users' devices
++- Accessibility support tool for disability use, unless that is genuinely true
++
++---
++
++## 6. Reviewer Notes Template for Google Play
++
++Use this only if Google Play review asks for clarification:
++
++```text
++CEO OS is a personal focus and self-control app.
++
++On Android, the app uses Accessibility to detect when a selected distracting app or supported website is opened, Usage Access to evaluate time spent on selected apps and supported websites for daily-limit enforcement, and display-over-other-apps permission to present the blocking shield.
++
++These Android permissions are used only for the app’s core on-device blocking and self-control features. They are not used for ads, hidden UI manipulation, or unrelated analytics.
++
++Android website blocking depends on what supported browsers expose through the accessibility tree, so CEO OS does not claim universal website blocking across all Android browsers or web views.
++```
++
++---
++
++## 7. Final Go / No-Go Gate
++
++### NO-GO if any item below is still false
++- [ ] `com.wakeapp.ceoos` is the final Play package you want to keep permanently
++- [ ] release keystore exists
++- [ ] `android/key.properties` exists locally
++- [ ] target SDK resolves to API 35 or higher in the actual Android build
++- [ ] Google Sign-In Android release certs are configured
++- [ ] RevenueCat Android setup is complete
++- [ ] Google Play subscription products exist if Premium is enabled
++- [ ] privacy policy URL is live
++- [ ] account deletion support URL is live
++- [ ] Data Safety answers are prepared and accurate
++- [ ] real-device Android blocking test has passed
++- [ ] internal testing build succeeds
++
++### GO when all items above are true
++At that point, publication becomes an execution task, not a remediation task.
++
++---
++
++## 8. My Current Verdict
++
++### Today’s verdict
++**Android publication is not yet ready for submission to Google Play production.**
++
++### Why
++Not because of the code quality anymore, but because of the remaining external blockers:
++- no verified Android release build in this environment
++- no release keystore configured yet
++- no Play / RevenueCat Android setup verification yet
++- no confirmed public privacy/deletion web pages yet
++- no real-device Android validation yet
++
++### What to do next
++1. Finish external release dependencies  
++2. Fill Play Console declarations  
++3. Run internal testing  
++4. Re-check against this packet  
++5. Then submit
+*** End Patch

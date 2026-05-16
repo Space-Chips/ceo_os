@@ -1,0 +1,11 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/screen_time_screen.dart
+@@
+                           CupertinoButton(
+                             padding: EdgeInsets.zero,
+-                            minSize: 0,
++                            minimumSize: Size.zero,
+                             onPressed: _load,
+                             child: Icon(
+                               CupertinoIcons.refresh,
+*** End Patch

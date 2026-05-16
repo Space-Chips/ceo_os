@@ -1,0 +1,26 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/android/app/src/main/kotlin/com/example/ceo_os/AppBlockingService.kt
+*** Move to: /Users/timo/ceo_os/android/app/src/main/kotlin/com/wakeapp/ceoos/AppBlockingService.kt
+@@
+ package com.wakeapp.ceoos
+*** Update File: /Users/timo/ceo_os/android/app/src/main/kotlin/com/example/ceo_os/ClassicDailyLimitTracker.kt
+*** Move to: /Users/timo/ceo_os/android/app/src/main/kotlin/com/wakeapp/ceoos/ClassicDailyLimitTracker.kt
+@@
+ package com.wakeapp.ceoos
+*** Update File: /Users/timo/ceo_os/android/app/src/main/kotlin/com/example/ceo_os/ClassicPauseAlarmReceiver.kt
+*** Move to: /Users/timo/ceo_os/android/app/src/main/kotlin/com/wakeapp/ceoos/ClassicPauseAlarmReceiver.kt
+@@
+ package com.wakeapp.ceoos
+*** Update File: /Users/timo/ceo_os/android/app/src/main/kotlin/com/example/ceo_os/ClassicPauseBootReceiver.kt
+*** Move to: /Users/timo/ceo_os/android/app/src/main/kotlin/com/wakeapp/ceoos/ClassicPauseBootReceiver.kt
+@@
+ package com.wakeapp.ceoos
+*** Update File: /Users/timo/ceo_os/android/app/src/main/kotlin/com/example/ceo_os/ClassicPauseScheduler.kt
+*** Move to: /Users/timo/ceo_os/android/app/src/main/kotlin/com/wakeapp/ceoos/ClassicPauseScheduler.kt
+@@
+ package com.wakeapp.ceoos
+*** Update File: /Users/timo/ceo_os/android/app/src/main/kotlin/com/example/ceo_os/MainActivity.kt
+*** Move to: /Users/timo/ceo_os/android/app/src/main/kotlin/com/wakeapp/ceoos/MainActivity.kt
+@@
+ package com.wakeapp.ceoos
+*** End Patch

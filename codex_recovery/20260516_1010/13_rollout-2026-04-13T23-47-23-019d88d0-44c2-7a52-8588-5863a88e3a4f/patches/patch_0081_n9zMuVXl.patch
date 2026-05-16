@@ -1,0 +1,13 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/screen_time_screen.dart
+@@
+       if (payload == null) {
+         await _showNotice(
+           title: 'Selection canceled',
+           message:
+-              'Select at least one app or website, then tap Done to save your block.',
++              'Select at least one website in the Apple picker, then tap Done to save your block.',
+         );
+         return;
+       }
+*** End Patch

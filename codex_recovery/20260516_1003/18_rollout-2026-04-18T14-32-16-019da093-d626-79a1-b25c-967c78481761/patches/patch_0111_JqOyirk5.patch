@@ -1,0 +1,40 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/profile/profile_screen.dart
+@@
++import 'dart:async';
++
+ import 'package:flutter/foundation.dart';
+ import 'package:flutter/cupertino.dart';
+ import 'package:flutter/services.dart';
+@@
+   Future<void> _showLanguagePicker() async {
+     final languageProvider = context.read<LanguageProvider>();
+     final current = languageProvider.languageCode.toLowerCase();
+@@
+     if (selected == null || selected == current) return;
+     setState(() => _isSettingsSaving = true);
+     try {
+-      await languageProvider.setLanguage(selected, persistToCloud: true);
++      await languageProvider.setLanguage(selected, persistToCloud: false);
++      unawaited(languageProvider.syncLanguageToCloud());
+       await _refreshSettingsOnly();
+-      await _showNotice(
+-        title: 'LANGUAGE_UPDATED',
+-        message: 'Language preference updated successfully.',
+-      );
+-    } catch (_) {
+-      await _showNotice(
+-        title: 'SAVE_FAILED',
+-        message: 'Unable to save language preference right now.',
+-      );
++    } catch (_) {
++      // Local persistence can still fail in edge cases (disk/corrupted prefs).
++      await _showNotice(
++        title: 'SAVE_FAILED',
++        message: 'Unable to update language preference right now.',
++      );
+     } finally {
+       if (mounted) setState(() => _isSettingsSaving = false);
+     }
+   }
+*** End Patch

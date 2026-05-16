@@ -1,11 +1,12 @@
 import 'dart:ui';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart' show Colors, CircularProgressIndicator;
+import 'package:flutter/material.dart' show Colors;
 import 'package:provider/provider.dart';
 import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import '../../components/components.dart';
 import '../../core/models/task_models.dart';
 import '../../core/providers/focus_provider.dart';
+import '../../core/providers/language_provider.dart';
 import '../../core/providers/task_provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
@@ -29,7 +30,7 @@ class _FocusStarterSheetState extends State<FocusStarterSheet> {
 
   Future<void> _startSession() async {
     final focusProv = context.read<FocusProvider>();
-    
+
     // Set session info
     focusProv.sessionTitle = _titleCtrl.text.trim().isNotEmpty
         ? _titleCtrl.text.trim()
@@ -37,14 +38,20 @@ class _FocusStarterSheetState extends State<FocusStarterSheet> {
     focusProv.linkedTaskId = _selectedTask?.id;
 
     final success = await focusProv.startFocus();
-    if (mounted) Navigator.pop(context);
-    if (!success && mounted) {
-      // Could show a permission dialog here
+    if (!mounted) return;
+    if (!success) {
+      final premiumBlock = focusProv.lastPremiumCheck;
+      if (premiumBlock != null && !premiumBlock.allowed) {
+        await showPremiumGateDialog(context, premiumBlock);
+      }
+      return;
     }
+    Navigator.pop(context);
   }
 
   @override
   Widget build(BuildContext context) {
+    context.watch<LanguageProvider>().languageCode;
     final focusProv = context.read<FocusProvider>();
     final taskProv = context.read<TaskProvider>();
     final activeTasks = taskProv.tasks.where((t) => !t.completed).toList();
@@ -61,7 +68,9 @@ class _FocusStarterSheetState extends State<FocusStarterSheet> {
         decoration: BoxDecoration(
           color: AppColors.background.withOpacity(0.9),
           borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-          border: const Border(top: BorderSide(color: AppColors.glassBorder, width: 0.5)),
+          border: Border(
+            top: BorderSide(color: AppColors.glassBorder, width: 0.5),
+          ),
         ),
         child: SafeArea(
           child: SingleChildScrollView(
@@ -92,16 +101,28 @@ class _FocusStarterSheetState extends State<FocusStarterSheet> {
                         color: AppColors.primaryOrange.withOpacity(0.15),
                         borderRadius: BorderRadius.circular(14),
                       ),
-                      child: const Icon(CupertinoIcons.bolt_fill, color: AppColors.primaryOrange, size: 22),
+                      child: Icon(
+                        CupertinoIcons.bolt_fill,
+                        color: AppColors.primaryOrange,
+                        size: 22,
+                      ),
                     ),
                     const SizedBox(width: 16),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const NeoMonoText('ENTER_FOCUS', fontSize: 20, fontWeight: FontWeight.bold),
+                        NeoMonoText(
+                          'ENTER_FOCUS',
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
                         Text(
                           'CONFIGURE_SESSION',
-                          style: AppTypography.mono.copyWith(fontSize: 10, color: AppColors.tertiaryLabel, letterSpacing: 1.5),
+                          style: AppTypography.mono.copyWith(
+                            fontSize: 10,
+                            color: AppColors.tertiaryLabel,
+                            letterSpacing: 1.5,
+                          ),
                         ),
                       ],
                     ),
@@ -112,7 +133,11 @@ class _FocusStarterSheetState extends State<FocusStarterSheet> {
                 // Session Title
                 Text(
                   'SESSION_TITLE',
-                  style: AppTypography.mono.copyWith(fontSize: 10, color: AppColors.tertiaryLabel, letterSpacing: 1.5),
+                  style: AppTypography.mono.copyWith(
+                    fontSize: 10,
+                    color: AppColors.tertiaryLabel,
+                    letterSpacing: 1.5,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 GlassInputField(
@@ -124,7 +149,11 @@ class _FocusStarterSheetState extends State<FocusStarterSheet> {
                 // Link a Task
                 Text(
                   'LINK_TASK',
-                  style: AppTypography.mono.copyWith(fontSize: 10, color: AppColors.tertiaryLabel, letterSpacing: 1.5),
+                  style: AppTypography.mono.copyWith(
+                    fontSize: 10,
+                    color: AppColors.tertiaryLabel,
+                    letterSpacing: 1.5,
+                  ),
                 ),
                 const SizedBox(height: 12),
                 if (activeTasks.isEmpty)
@@ -132,7 +161,10 @@ class _FocusStarterSheetState extends State<FocusStarterSheet> {
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     child: Text(
                       'NO_TASKS_AVAILABLE',
-                      style: AppTypography.mono.copyWith(fontSize: 11, color: AppColors.tertiaryLabel.withOpacity(0.5)),
+                      style: AppTypography.mono.copyWith(
+                        fontSize: 11,
+                        color: AppColors.tertiaryLabel.withOpacity(0.5),
+                      ),
                     ),
                   )
                 else
@@ -153,12 +185,19 @@ class _FocusStarterSheetState extends State<FocusStarterSheet> {
                           },
                           child: AnimatedContainer(
                             duration: const Duration(milliseconds: 200),
-                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 10,
+                            ),
                             decoration: BoxDecoration(
-                              color: isSelected ? AppColors.primaryOrange.withOpacity(0.2) : Colors.transparent,
+                              color: isSelected
+                                  ? AppColors.primaryOrange.withOpacity(0.2)
+                                  : Colors.transparent,
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                color: isSelected ? AppColors.primaryOrange : AppColors.glassBorder,
+                                color: isSelected
+                                    ? AppColors.primaryOrange
+                                    : AppColors.glassBorder,
                                 width: 0.5,
                               ),
                             ),
@@ -166,15 +205,25 @@ class _FocusStarterSheetState extends State<FocusStarterSheet> {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 if (isSelected) ...[
-                                  const Icon(CupertinoIcons.checkmark_alt, size: 12, color: AppColors.primaryOrange),
+                                  Icon(
+                                    CupertinoIcons.checkmark_alt,
+                                    size: 12,
+                                    color: AppColors.primaryOrange,
+                                  ),
                                   const SizedBox(width: 6),
                                 ],
                                 Text(
-                                  task.title.length > 20 ? '${task.title.substring(0, 20)}...' : task.title,
+                                  task.title.length > 20
+                                      ? '${task.title.substring(0, 20)}...'
+                                      : task.title,
                                   style: AppTypography.mono.copyWith(
                                     fontSize: 11,
-                                    color: isSelected ? AppColors.primaryOrange : AppColors.secondaryLabel,
-                                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                    color: isSelected
+                                        ? AppColors.primaryOrange
+                                        : AppColors.secondaryLabel,
+                                    fontWeight: isSelected
+                                        ? FontWeight.bold
+                                        : FontWeight.normal,
                                   ),
                                 ),
                               ],
@@ -189,11 +238,18 @@ class _FocusStarterSheetState extends State<FocusStarterSheet> {
                 // Duration slider
                 Text(
                   'SESSION_LENGTH',
-                  style: AppTypography.mono.copyWith(fontSize: 10, color: AppColors.tertiaryLabel, letterSpacing: 1.5),
+                  style: AppTypography.mono.copyWith(
+                    fontSize: 10,
+                    color: AppColors.tertiaryLabel,
+                    letterSpacing: 1.5,
+                  ),
                 ),
                 const SizedBox(height: 12),
                 GlassCard(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 16,
+                  ),
                   borderRadius: 16,
                   child: StatefulBuilder(
                     builder: (context, setSliderState) {

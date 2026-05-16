@@ -1,0 +1,24 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/providers/habit_provider.dart
+@@
+   Future<void> setHabitCompletionForDate({
+     required String habitId,
+     required DateTime date,
+     required bool completed,
+     String? state,
+   }) async {
+     await _repository.setCompletionForDate(
+       habitId: habitId,
+       date: date,
+       completed: completed,
+       state: state,
+     );
+     _statsEngine.recordHabitStatus(
+       habitId: habitId,
+       completed: completed,
+       eventTime: date,
+     );
++    await loadData();
+   }
+ }
+*** End Patch

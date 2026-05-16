@@ -1,0 +1,167 @@
+*** Begin Patch
+*** Update File: android/app/src/main/kotlin/com/wakeapp/ceoos/ForegroundAppDetector.kt
+@@
+ import android.graphics.Rect
+ import android.os.Build
++import android.os.SystemClock
+ import android.view.accessibility.AccessibilityEvent
+ import android.view.accessibility.AccessibilityNodeInfo
+ import java.util.Locale
+@@
+ class ForegroundAppDetector(
+     private val wakePackageName: String,
+ ) {
+     companion object {
+         private data class BrowserProfile(
+             val packageName: String,
+             val exactViewIds: Set<String>,
+             val viewIdHints: Set<String>,
++            val allowTopToolbarTextFallback: Boolean = false,
+         )
+@@
+             BrowserProfile(
+                 packageName = "com.huawei.browser",
+                 exactViewIds = setOf(
+                     "com.huawei.browser:id/url_bar",
+                     "com.huawei.browser:id/address_bar",
+@@
+                     ":id/search_src_text",
+                 ),
+             ),
++            BrowserProfile(
++                packageName = "com.google.android.googlequicksearchbox",
++                exactViewIds = setOf(
++                    "com.google.android.googlequicksearchbox:id/url_bar",
++                    "com.google.android.googlequicksearchbox:id/location_bar",
++                    "com.google.android.googlequicksearchbox:id/googleapp_url_bar",
++                    "com.google.android.googlequicksearchbox:id/web_address_bar",
++                    "com.google.android.googlequicksearchbox:id/search_src_text",
++                    "com.google.android.googlequicksearchbox:id/search_box",
++                    "com.google.android.googlequicksearchbox:id/omnibox_text",
++                ),
++                viewIdHints = setOf(
++                    ":id/url_bar",
++                    ":id/location_bar",
++                    ":id/googleapp_url_bar",
++                    ":id/web_address_bar",
++                    ":id/search_src_text",
++                    ":id/search_box",
++                    ":id/omnibox",
++                    ":id/address",
++                ),
++                allowTopToolbarTextFallback = true,
++            ),
+         )
+ 
+         private val packagesToProfile = buildMap<String, BrowserProfile> {
+             browserProfiles.forEach { profile ->
+                 put(profile.packageName, profile)
+             }
+         }
++
++        private const val retainedDomainWindowMillis = 1_200L
+     }
++
++    private data class RecentDetectedDomain(
++        val domain: String,
++        val atElapsedMillis: Long,
++    )
++
++    private val recentDetectedDomainsByPackage = mutableMapOf<String, RecentDetectedDomain>()
+@@
+         val packageName = root?.packageName?.toString()?.trim()?.ifEmpty { null }
+             ?: event.packageName?.toString()?.trim()?.ifEmpty { null }
+         val className = event.className?.toString()?.trim()?.ifEmpty { null }
+         val isBrowser = isBrowserPackage(packageName)
+-        val detectedUrl = if (isBrowser) detectBrowserUrl(event, root, packageName) else null
++        val detectedNow = if (isBrowser) detectBrowserUrl(event, root, packageName) else null
++        val detectedUrl = if (isBrowser) resolveDetectedDomain(packageName, detectedNow) else null
+ 
+         return ForegroundSnapshot(
+             packageName = packageName,
+             className = className,
+             eventType = event.eventType,
+@@
+     private fun detectBrowserUrl(
+         event: AccessibilityEvent,
+         root: AccessibilityNodeInfo?,
+         packageName: String?,
+     ): String? {
+         val profile = packageName?.let { packagesToProfile[it] } ?: return null
+         event.source?.let { source ->
+             extractFromAddressNode(source, profile)?.let { return it }
+         }
+ 
+-        return findAddressBarDomain(root, profile)
++        val fromAddressField = findAddressBarDomain(root, profile)
++        if (fromAddressField != null) return fromAddressField
++        if (!profile.allowTopToolbarTextFallback) return null
++        return findTopToolbarDomainFallback(root)
+     }
++
++    private fun resolveDetectedDomain(packageName: String?, detectedNow: String?): String? {
++        val browserPackage = packageName?.trim().orEmpty()
++        if (browserPackage.isEmpty()) return detectedNow
++
++        val now = SystemClock.elapsedRealtime()
++        if (detectedNow != null) {
++            recentDetectedDomainsByPackage[browserPackage] = RecentDetectedDomain(
++                domain = detectedNow,
++                atElapsedMillis = now,
++            )
++            return detectedNow
++        }
++
++        val recent = recentDetectedDomainsByPackage[browserPackage] ?: return null
++        if (now - recent.atElapsedMillis <= retainedDomainWindowMillis) {
++            return recent.domain
++        }
++        recentDetectedDomainsByPackage.remove(browserPackage)
++        return null
++    }
+@@
+     private fun scoreAddressNode(
+         node: AccessibilityNodeInfo,
+         profile: BrowserProfile,
+     ): Int {
+@@
+         return hintScore + widthScore + topBias
+     }
++
++    private fun findTopToolbarDomainFallback(root: AccessibilityNodeInfo?): String? {
++        if (root == null) return null
++        val visited = mutableSetOf<Int>()
++        var bestDomain: String? = null
++        var bestScore = Int.MIN_VALUE
++
++        fun visit(node: AccessibilityNodeInfo?, depth: Int) {
++            if (node == null || depth > 9) return
++            val identity = System.identityHashCode(node)
++            if (!visited.add(identity) || visited.size > 360) return
++
++            val bounds = Rect()
++            node.getBoundsInScreen(bounds)
++            val className = node.className?.toString()?.lowercase(Locale.US).orEmpty()
++            val canContainAddressText =
++                className.contains("edittext") || className.contains("textview")
++            if (canContainAddressText && isLikelyToolbarAddressField(bounds)) {
++                candidateTexts(node).forEach { raw ->
++                    BrowserBlockCoordinator.normalizeDomainToken(raw)?.let { domain ->
++                        val score = bounds.width().coerceAtLeast(0) + (1_600 - bounds.top).coerceAtLeast(0)
++                        if (score > bestScore) {
++                            bestScore = score
++                            bestDomain = domain
++                        }
++                    }
++                }
++            }
++
++            for (index in 0 until node.childCount) {
++                visit(node.getChild(index), depth + 1)
++            }
++        }
++
++        visit(root, 0)
++        return bestDomain
++    }
+*** End Patch

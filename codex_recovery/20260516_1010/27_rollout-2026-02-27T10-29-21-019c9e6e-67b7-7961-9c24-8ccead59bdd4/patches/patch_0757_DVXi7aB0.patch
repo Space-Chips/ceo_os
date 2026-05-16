@@ -1,0 +1,24 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/screen_time_screen.dart
+@@
+                 child: ListView(
+                   padding: const EdgeInsets.fromLTRB(14, 12, 14, 18),
+                   children: [
++                    Container(
++                      padding: const EdgeInsets.all(14),
++                      decoration: _moduleDecoration(),
++                      child: Text(
++                        'Use this screen for limits, planned pauses, and the NSFW shield. For the strongest native blocking on device, keep Focus / CEO permissions enabled and use a real block list selection.',
++                        style: AppTypography.footnote.copyWith(
++                          fontSize: 13,
++                          height: 1.35,
++                          color: AppColors.secondaryLabel.withValues(
++                            alpha: 0.84,
++                          ),
++                        ),
++                      ),
++                    ),
++                    const SizedBox(height: 12),
+                     _sectionHeader(
+                       title: 'BLOCKED APPS',
+*** End Patch

@@ -1,0 +1,21 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/setup/setup_flow_controller.dart
+@@
+   SetupStep firstMissingPermissionStep() {
+-    if (!usageGranted) return SetupStep.usageAccess;
+-    if (!accessibilityGranted) return SetupStep.accessibility;
++    if (!accessibilityGranted) return SetupStep.accessibility;
++    if (!usageGranted) return SetupStep.usageAccess;
+     if (!overlayGranted) return SetupStep.overlay;
+     return SetupStep.success;
+   }
+@@
+   List<SetupStep> get _orderedSteps => const [
+     SetupStep.welcome,
+-    SetupStep.usageAccess,
+     SetupStep.accessibility,
++    SetupStep.usageAccess,
+     SetupStep.overlay,
+     SetupStep.success,
+   ];
+*** End Patch

@@ -1,0 +1,44 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/setup/setup_flow_screen.dart
+@@
+   Future<void> _handleReturnFromSettings() async {
+     final controller = context.read<SetupFlowController>();
+     if (!controller.isPermissionStep(controller.currentStep)) return;
+     await controller.refreshPermissionStates();
+     if (!mounted) return;
+     final granted = controller.isPermissionGrantedFor(controller.currentStep);
+     if (!granted) {
+       setState(() {});
+       return;
+     }
++    await controller.clearPendingPermissionReturn();
+     _showStepSuccess.value = true;
+@@
+         return AmbientBackdrop(
+           child: Scaffold(
+             backgroundColor: Colors.transparent,
+             body: SafeArea(
+-              child: AnimatedSwitcher(
+-                duration: const Duration(milliseconds: 240),
+-                child: _buildStep(context, controller, controller.currentStep),
+-              ),
++              child: Stack(
++                children: [
++                  const _SetupDecorations(),
++                  AnimatedSwitcher(
++                    duration: const Duration(milliseconds: 240),
++                    child: _buildStep(
++                      context,
++                      controller,
++                      controller.currentStep,
++                    ),
++                  ),
++                ],
++              ),
+             ),
+           ),
+         );
+       },
+     );
+   }
+*** End Patch

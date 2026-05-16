@@ -1,0 +1,36 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/theme/app_typography.dart
+@@
++import 'dart:ui' show FontFeature;
++
+ import 'package:flutter/cupertino.dart';
+ import 'package:flutter/material.dart';
+ import 'app_colors.dart';
+@@
+   static const List<String> _fallbacks = [
+@@
+     'sans-serif',
+   ];
++  static const List<String> _monoFallbacks = [
++    'SF Mono',
++    'SFMono-Regular',
++    'Menlo',
++    'Monaco',
++    'Courier New',
++    'monospace',
++  ];
+@@
+   static TextStyle _monoFont({required Color color}) => TextStyle(
+     fontFamily: _sfProText,
+     fontFamilyFallback: _fallbacks,
+     color: color,
+   );
++
++  static TextStyle get timer => TextStyle(
++    fontFamily: 'SF Mono',
++    fontFamilyFallback: _monoFallbacks,
++    color: AppColors.label,
++    fontFeatures: const [FontFeature.tabularFigures()],
++    letterSpacing: 0.2,
++  );
+*** End Patch

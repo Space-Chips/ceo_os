@@ -1,10 +1,11 @@
 import 'dart:ui';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../components/components.dart';
+import '../../core/models/onboarding_models.dart';
 import '../../core/providers/auth_provider.dart';
+import '../../core/providers/theme_provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 
@@ -19,6 +20,8 @@ class _SignupScreenState extends State<SignupScreen> {
   final _emailCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
   bool _loading = false;
+  OnboardingSetupData? _setupData;
+  bool _didHydrateSetup = false;
 
   @override
   void dispose() {
@@ -26,6 +29,19 @@ class _SignupScreenState extends State<SignupScreen> {
     _emailCtrl.dispose();
     _passCtrl.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_didHydrateSetup) return;
+    final state = GoRouterState.of(context);
+    final extra = state.extra;
+    if (extra is OnboardingSetupData) {
+      _setupData = extra;
+      context.read<ThemeProvider>().setPendingOnboardingSetup(extra);
+    }
+    _didHydrateSetup = true;
   }
 
   Future<void> _showError(dynamic error) async {
@@ -42,7 +58,7 @@ class _SignupScreenState extends State<SignupScreen> {
           ),
           actions: [
             CupertinoDialogAction(
-              child: const Text('DISMISS', style: TextStyle(color: AppColors.primaryOrange)),
+              child: Text('DISMISS', style: TextStyle(color: AppColors.primaryOrange)),
               onPressed: () => Navigator.pop(context),
             ),
           ],
@@ -62,6 +78,11 @@ class _SignupScreenState extends State<SignupScreen> {
             _emailCtrl.text,
             _passCtrl.text,
           );
+      if (!mounted) return;
+      if (_setupData != null) {
+        context.read<ThemeProvider>().setPendingOnboardingSetup(_setupData!);
+      }
+      await context.read<ThemeProvider>().persistPendingOnboardingSetup();
     } catch (e) {
       _showError(e);
     } finally {
@@ -84,11 +105,11 @@ class _SignupScreenState extends State<SignupScreen> {
               height: 300,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppColors.primaryOrange.withOpacity(0.08),
+                color: AppColors.primaryOrange.withValues(alpha: 0.08),
               ),
               child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 100, sigmaY: 100),
-                child: Container(color: Colors.transparent),
+                child: Container(color: CupertinoColors.transparent),
               ),
             ),
           ),
@@ -104,7 +125,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     // Header
                     Column(
                       children: [
-                        const NeoMonoText(
+                        NeoMonoText(
                           'REGISTER',
                           fontSize: 32,
                           fontWeight: FontWeight.w800,
@@ -141,21 +162,21 @@ class _SignupScreenState extends State<SignupScreen> {
                           GlassInputField(
                             placeholder: 'FULL_NAME',
                             controller: _nameCtrl,
-                            prefix: const Icon(CupertinoIcons.person, size: 16, color: AppColors.secondaryLabel),
+                            prefix: Icon(CupertinoIcons.person, size: 16, color: AppColors.secondaryLabel),
                           ),
                           const SizedBox(height: 16),
                           GlassInputField(
                             placeholder: 'EMAIL_ADDRESS',
                             controller: _emailCtrl,
                             keyboardType: TextInputType.emailAddress,
-                            prefix: const Icon(CupertinoIcons.mail, size: 16, color: AppColors.secondaryLabel),
+                            prefix: Icon(CupertinoIcons.mail, size: 16, color: AppColors.secondaryLabel),
                           ),
                           const SizedBox(height: 16),
                           GlassInputField(
                             placeholder: 'ACCESS_KEY',
                             controller: _passCtrl,
                             obscureText: true,
-                            prefix: const Icon(CupertinoIcons.lock, size: 16, color: AppColors.secondaryLabel),
+                            prefix: Icon(CupertinoIcons.lock, size: 16, color: AppColors.secondaryLabel),
                           ),
                           const SizedBox(height: 32),
                           LiquidButton(

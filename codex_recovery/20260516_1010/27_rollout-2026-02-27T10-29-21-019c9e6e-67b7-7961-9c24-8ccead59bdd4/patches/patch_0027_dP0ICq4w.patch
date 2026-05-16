@@ -1,0 +1,13 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/ios/CeoWidgets/Info.plist
+@@
+ <plist version="1.0">
+ <dict>
++	<key>CFBundleIdentifier</key>
++	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+ 	<key>NSExtension</key>
+ 	<dict>
+ 		<key>NSExtensionPointIdentifier</key>
+ 		<string>com.apple.widgetkit-extension</string>
+ 	</dict>
+*** End Patch

@@ -1,0 +1,13 @@
+*** Begin Patch
+*** Update File: lib/features/screen_time_manager/screen_time_manager_screen.dart
+@@
+                           blockedTargets: _classicBlockedTargets,
+                           plannedPauseCount: _plannedPauseCount,
+                           isAuthorized: focus.isAuthorized,
+-                          privateRankLabel: _privateRankLabel,
++                          privateRankLabel: _privateRankName,
+                           privateUsageSummaryStatus: _privateUsageSummaryStatus,
+                           privateUsageSummaryAvailable:
+                               _privateUsageSummaryAvailable,
+                           setup: setup,
+*** End Patch

@@ -1,0 +1,220 @@
+*** Begin Patch
+*** Update File: android/app/src/main/kotlin/com/wakeapp/ceoos/blocking/LauncherIconTracker.kt
+@@
+ import android.content.Context
+ import android.content.Intent
+ import android.content.pm.PackageManager
+ import android.graphics.Rect
+ import android.util.TypedValue
+ import android.view.accessibility.AccessibilityNodeInfo
+ import java.util.Locale
++import kotlin.math.abs
++import kotlin.math.max
++import kotlin.math.min
+ 
+ class LauncherIconTracker(
+     private val context: Context,
+ ) {
+     private val appIndex = LauncherAppIndex(context)
+@@
+         TypedValue.COMPLEX_UNIT_DIP,
+         40f,
+         context.resources.displayMetrics,
+     ).toInt()
++    private val maxIconSizePx = TypedValue.applyDimension(
++        TypedValue.COMPLEX_UNIT_DIP,
++        112f,
++        context.resources.displayMetrics,
++    ).toInt()
++    private val expectedIconSizePx = TypedValue.applyDimension(
++        TypedValue.COMPLEX_UNIT_DIP,
++        56f,
++        context.resources.displayMetrics,
++    ).toInt()
+ 
+     fun refreshIndex() {
+         appIndex.refresh()
+     }
+ 
+     fun findTargets(root: AccessibilityNodeInfo?): List<LauncherIconTarget> {
+         if (root == null) return emptyList()
+-        val targets = mutableListOf<LauncherIconTarget>()
++        val bestByPackage = linkedMapOf<String, ScoredTarget>()
+         val visited = mutableSetOf<Int>()
+         val stack = ArrayDeque<Pair<AccessibilityNodeInfo, Int>>()
+         stack.add(root to 0)
+@@
+             if (label != null) {
+                 val packageName = appIndex.packageForLabel(label)
+                 if (packageName != null) {
+-                    val bounds = Rect()
+-                    node.getBoundsInScreen(bounds)
+-                    val resolvedBounds = resolveTapBounds(node, bounds)
+-                    if (resolvedBounds.width() >= minIconSizePx && resolvedBounds.height() >= minIconSizePx) {
+-                        targets.add(
+-                            LauncherIconTarget(
+-                                packageName = packageName,
+-                                label = label,
+-                                bounds = resolvedBounds,
+-                            ),
+-                        )
++                    val nodeBounds = Rect()
++                    node.getBoundsInScreen(nodeBounds)
++                    val resolvedBounds = resolveIconBounds(node, nodeBounds)
++                    if (isValidIconBounds(resolvedBounds)) {
++                        val score = scoreCandidate(node, nodeBounds, resolvedBounds)
++                        val current = bestByPackage[packageName]
++                        if (current == null || score > current.score) {
++                            bestByPackage[packageName] = ScoredTarget(
++                                target = LauncherIconTarget(
++                                    packageName = packageName,
++                                    label = label,
++                                    bounds = Rect(resolvedBounds),
++                                ),
++                                score = score,
++                            )
++                        }
+                     }
+                 }
+             }
+@@
+                 }
+             }
+         }
+ 
+-        return targets
++        return bestByPackage.values.map { it.target }
+     }
+@@
+-    private fun resolveTapBounds(node: AccessibilityNodeInfo, initial: Rect): Rect {
+-        if (initial.width() >= minIconSizePx && initial.height() >= minIconSizePx) {
+-            return initial
+-        }
+-        val parent = node.parent ?: return initial
+-        val parentBounds = Rect()
+-        parent.getBoundsInScreen(parentBounds)
+-        return if (parentBounds.width() >= initial.width() && parentBounds.height() >= initial.height()) {
+-            parentBounds
+-        } else {
+-            initial
+-        }
++    private fun resolveIconBounds(node: AccessibilityNodeInfo, initial: Rect): Rect {
++        if (isLikelyIconNode(node) && isValidIconBounds(initial)) {
++            return Rect(initial)
++        }
++
++        findBestIconBounds(node, maxDepth = 2)?.let { return it }
++        node.parent?.let { parent ->
++            findBestIconBounds(parent, maxDepth = 2)?.let { return it }
++        }
++
++        return shrinkCellBoundsToIcon(initial)
++    }
++
++    private fun findBestIconBounds(
++        start: AccessibilityNodeInfo,
++        maxDepth: Int,
++    ): Rect? {
++        val stack = ArrayDeque<Pair<AccessibilityNodeInfo, Int>>()
++        stack.add(start to 0)
++        val visited = mutableSetOf<Int>()
++        var bestBounds: Rect? = null
++        var bestScore = Int.MIN_VALUE
++        val bounds = Rect()
++
++        while (stack.isNotEmpty()) {
++            val (node, depth) = stack.removeFirst()
++            if (depth > maxDepth) continue
++            val identity = System.identityHashCode(node)
++            if (!visited.add(identity)) continue
++
++            if (isLikelyIconNode(node)) {
++                node.getBoundsInScreen(bounds)
++                if (isValidIconBounds(bounds)) {
++                    val score = iconNodeScore(bounds)
++                    if (score > bestScore) {
++                        bestScore = score
++                        bestBounds = Rect(bounds)
++                    }
++                }
++            }
++
++            for (index in 0 until node.childCount) {
++                node.getChild(index)?.let { child ->
++                    stack.add(child to depth + 1)
++                }
++            }
++        }
++
++        return bestBounds
++    }
++
++    private fun isLikelyIconNode(node: AccessibilityNodeInfo): Boolean {
++        val className = node.className?.toString()?.lowercase(Locale.getDefault()).orEmpty()
++        val viewId = node.viewIdResourceName?.lowercase(Locale.getDefault()).orEmpty()
++        if (className.contains("imageview")) return true
++        if (viewId.contains("icon")) return true
++        if (viewId.contains("app_icon")) return true
++        if (viewId.contains("iv_icon")) return true
++        return false
++    }
++
++    private fun isValidIconBounds(bounds: Rect): Boolean {
++        if (bounds.isEmpty) return false
++        val width = bounds.width()
++        val height = bounds.height()
++        if (width < minIconSizePx || height < minIconSizePx) return false
++        if (width > maxIconSizePx || height > maxIconSizePx) return false
++        val ratioDiff = abs(width - height)
++        return ratioDiff <= (max(width, height) * 0.35f).toInt()
++    }
++
++    private fun shrinkCellBoundsToIcon(cellBounds: Rect): Rect {
++        val size = min(
++            min(cellBounds.width(), cellBounds.height()),
++            (expectedIconSizePx * 1.2f).toInt(),
++        ).coerceIn(minIconSizePx, maxIconSizePx)
++        val left = cellBounds.left + ((cellBounds.width() - size) / 2)
++        val verticalOffset = ((cellBounds.height() - size) * 0.10f).toInt()
++        val top = (cellBounds.top + verticalOffset).coerceAtLeast(cellBounds.top)
++        return Rect(left, top, left + size, top + size)
++    }
++
++    private fun iconNodeScore(bounds: Rect): Int {
++        val width = bounds.width()
++        val height = bounds.height()
++        val squarePenalty = abs(width - height) * 3
++        val sizePenalty = abs(max(width, height) - expectedIconSizePx)
++        return 1000 - squarePenalty - sizePenalty
++    }
++
++    private fun scoreCandidate(
++        node: AccessibilityNodeInfo,
++        nodeBounds: Rect,
++        resolvedBounds: Rect,
++    ): Int {
++        var score = iconNodeScore(resolvedBounds)
++        if (isLikelyIconNode(node)) score += 140
++
++        if (nodeBounds.width() > resolvedBounds.width() || nodeBounds.height() > resolvedBounds.height()) {
++            score += 60
++        }
++
++        val centerYDelta = abs(nodeBounds.centerY() - resolvedBounds.centerY())
++        score -= centerYDelta / 4
++        return score
++    }
++
++    private data class ScoredTarget(
++        val target: LauncherIconTarget,
++        val score: Int,
++    )
++
++    private fun dp(value: Int): Int {
++        return TypedValue.applyDimension(
++            TypedValue.COMPLEX_UNIT_DIP,
++            value.toFloat(),
++            context.resources.displayMetrics,
++        ).toInt()
+     }
+*** End Patch

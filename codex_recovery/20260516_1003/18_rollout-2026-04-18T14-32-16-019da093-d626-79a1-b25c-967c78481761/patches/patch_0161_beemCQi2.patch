@@ -1,0 +1,69 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/home/home_screen.dart
+@@
+                 _PrimaryAppCardData(
+                   moduleId: 'Pareto',
+-                  title: 'To-Do',
++                  title: language.t('tasks'),
+                   icon: CupertinoIcons.check_mark_circled,
+@@
+                 _PrimaryAppCardData(
+                   moduleId: 'Habits',
+-                  title: 'Habits',
++                  title: language.t('habits'),
+                   icon: CupertinoIcons.checkmark_circle,
+@@
+                 _PrimaryAppCardData(
+                   moduleId: 'Calendar',
+-                  title: 'Schedule',
++                  title: language.t('calendar'),
+                   icon: CupertinoIcons.calendar,
+@@
+                 _PrimaryAppCardData(
+                   moduleId: 'ScreenTimeManager',
+-                  title: 'Screen Time',
++                  title: language.t('screen_time_manager'),
+                   icon: CupertinoIcons.shield,
+@@
+                 _PrimaryAppCardData(
+                   moduleId: 'rank',
+-                  title: 'Rank',
++                  title: language.t('rank'),
+                   icon: CupertinoIcons.star_fill,
+@@
+                   _PrimaryAppCardData(
+                     moduleId: 'leaderboard',
+-                    title: 'Friends & Leaderboard',
++                    title: language.t('leaderboard'),
+                     icon: CupertinoIcons.rosette,
+@@
+                 _PrimaryAppCardData(
+                   moduleId: 'focus',
+-                  title: 'Focus Mode',
++                  title: language.t('focus_mode'),
+                   icon: CupertinoIcons.bolt_fill,
+@@
+                   _PrimaryAppCardData(
+                     moduleId: 'family_time',
+-                    title: 'Offline Together',
++                    title: language.t('family_time'),
+                     icon: CupertinoIcons.person_2_fill,
+@@
+                 _PrimaryAppCardData(
+                   moduleId: 'block_apps',
+-                  title: 'Block Apps & Sites',
++                  title: language.t('block_apps_sites'),
+                   icon: CupertinoIcons.shield_fill,
+@@
+                 _PrimaryAppCardData(
+                   moduleId: 'streak',
+-                  title: 'Streak',
++                  title: language.t('streak'),
+                   icon: CupertinoIcons.flame_fill,
+@@
+                 _PrimaryAppCardData(
+                   moduleId: 'notes',
+-                  title: 'Notes',
++                  title: language.t('notes'),
+                   icon: CupertinoIcons.doc_text_fill,
+*** End Patch

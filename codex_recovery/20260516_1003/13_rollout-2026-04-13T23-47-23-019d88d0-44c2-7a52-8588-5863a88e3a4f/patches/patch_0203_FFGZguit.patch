@@ -1,0 +1,107 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/ios/Runner/AppDelegate.swift
+@@
+ @available(iOS 16.0, *)
+ private final class BlockedAppTokenLabelPlatformView: NSObject, FlutterPlatformView {
+     private let container: UIView
+ 
+     init(frame: CGRect, viewId: Int64, args: Any?) {
+@@
+         let arguments = args as? [String: Any]
+         let payload = (arguments?["payload"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+         let fallbackTitle = (arguments?["fallbackTitle"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? "Blocked app"
++        let textColorHex = (arguments?["textColorHex"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines)
++        let textColor = (textColorHex?.isEmpty == false) ? UIColor(hexString: textColorHex!) : nil
+ 
+         if let token = Self.decodeApplicationToken(from: payload) {
+             let host = UIHostingController(
+-                rootView: NativeBlockedAppTokenLabelView(token: token)
++                rootView: NativeBlockedAppTokenLabelView(
++                    token: token,
++                    textColor: textColor
++                )
+             )
+             host.view.backgroundColor = .clear
+             host.view.translatesAutoresizingMaskIntoConstraints = false
+             container.addSubview(host.view)
+@@
+         } else {
+             let label = UILabel(frame: frame)
+             label.text = fallbackTitle
+             label.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
+-            label.textColor = .label
++            label.textColor = textColor ?? .label
+             label.numberOfLines = 1
+             label.adjustsFontSizeToFitWidth = true
+             label.minimumScaleFactor = 0.7
+             label.translatesAutoresizingMaskIntoConstraints = false
+@@
+ private final class BlockedWebsiteTokenLabelPlatformView: NSObject, FlutterPlatformView {
+     private let container: UIView
+ 
+     init(frame: CGRect, viewId: Int64, args: Any?) {
+@@
+         let arguments = args as? [String: Any]
+         let payload = (arguments?["payload"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+         let fallbackTitle = (arguments?["fallbackTitle"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? "Blocked website"
++        let textColorHex = (arguments?["textColorHex"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines)
++        let textColor = (textColorHex?.isEmpty == false) ? UIColor(hexString: textColorHex!) : nil
+ 
+         if let token = Self.decodeWebsiteToken(from: payload) {
+             let host = UIHostingController(
+-                rootView: NativeBlockedWebsiteTokenLabelView(token: token)
++                rootView: NativeBlockedWebsiteTokenLabelView(
++                    token: token,
++                    textColor: textColor
++                )
+             )
+             host.view.backgroundColor = .clear
+             host.view.translatesAutoresizingMaskIntoConstraints = false
+             container.addSubview(host.view)
+@@
+         } else {
+             let label = UILabel(frame: frame)
+             label.text = fallbackTitle
+             label.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
+-            label.textColor = .label
++            label.textColor = textColor ?? .label
+             label.numberOfLines = 1
+             label.adjustsFontSizeToFitWidth = true
+             label.minimumScaleFactor = 0.7
+             label.translatesAutoresizingMaskIntoConstraints = false
+@@
+ @available(iOS 16.0, *)
+ private struct NativeBlockedAppTokenLabelView: View {
+     let token: ApplicationToken
++    let textColor: UIColor?
+ 
+     var body: some View {
+         Label(token)
+             .labelStyle(.titleAndIcon)
+-            .font(.system(size: 16, weight: .semibold))
+-            .foregroundColor(.primary)
++            .imageScale(.large)
++            .font(.system(size: 18, weight: .semibold))
++            .foregroundColor(Color(uiColor: textColor ?? .label))
+             .lineLimit(1)
+             .frame(maxWidth: .infinity, alignment: .leading)
+     }
+ }
+ 
+ @available(iOS 16.0, *)
+ private struct NativeBlockedWebsiteTokenLabelView: View {
+     let token: WebDomainToken
++    let textColor: UIColor?
+ 
+     var body: some View {
+         Label(token)
+             .labelStyle(.titleAndIcon)
++            .imageScale(.medium)
+             .font(.system(size: 16, weight: .semibold))
+-            .foregroundColor(.primary)
++            .foregroundColor(Color(uiColor: textColor ?? .label))
+             .lineLimit(1)
+             .frame(maxWidth: .infinity, alignment: .leading)
+     }
+ }
+*** End Patch

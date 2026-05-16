@@ -1,0 +1,169 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/components/glass_card.dart
+@@
+-    final baseGradient = gradientColors ?? AppColors.floatingGlassGradient;
++    final baseGradient = gradientColors ?? [
++      AppColors.cardBackgroundAlt,
++      AppColors.cardBase,
++    ];
+@@
+-                  Color.alphaBlend(
+-                    AppColors.ambientTint.withValues(
+-                      alpha: AppColors.isDark ? 0.06 : 0.03,
+-                    ),
+-                    baseGradient.first,
+-                  ),
+-                  baseGradient.last,
++                  Color.alphaBlend(
++                    AppColors.ambientTint.withValues(
++                      alpha: AppColors.isDark ? 0.06 : 0.03,
++                    ),
++                    baseGradient.first,
++                  ),
++                  Color.alphaBlend(
++                    AppColors.glassHighlightSoft.withValues(
++                      alpha: AppColors.isDark ? 0.04 : 0.02,
++                    ),
++                    baseGradient.last,
++                  ),
+                 ],
+               ),
+*** Update File: /Users/timo/ceo_os/lib/components/ambient_backdrop.dart
+@@
+                   colors: [
+-                    AppColors.black.withValues(
+-                      alpha: AppColors.isDark ? 0.18 : 0.03,
+-                    ),
++                    AppColors.overlayScrim.withValues(
++                      alpha: AppColors.isDark ? 0.16 : 0.08,
++                    ),
+                     CupertinoColors.transparent,
+-                    AppColors.black.withValues(
+-                      alpha: AppColors.isDark ? 0.36 : 0.08,
+-                    ),
++                    AppColors.overlayScrim.withValues(
++                      alpha: AppColors.isDark ? 0.36 : 0.14,
++                    ),
+                   ],
+                   stops: const [0, 0.44, 1],
+                 ),
+*** Update File: /Users/timo/ceo_os/lib/features/home/home_screen.dart
+@@
+         decoration: BoxDecoration(
+           borderRadius: BorderRadius.circular(12),
+           gradient: LinearGradient(
+             begin: Alignment.topLeft,
+             end: Alignment.bottomRight,
+             colors: [
+-              AppColors.topBarControlBackground,
+-              AppColors.sectionBackground.withValues(alpha: 0.94),
++              AppColors.topBarControlBackground,
++              AppColors.pillBackground,
+             ],
+           ),
+@@
+         decoration: BoxDecoration(
+           borderRadius: BorderRadius.circular(999),
+           gradient: LinearGradient(
+             begin: Alignment.topLeft,
+             end: Alignment.bottomRight,
+             colors: [
+-              AppColors.topBarControlBackground,
+-              AppColors.sectionBackground.withValues(alpha: 0.94),
++              AppColors.pillBackground,
++              AppColors.topBarControlBackground,
+             ],
+           ),
+-          border: Border.all(
+-            color: AppColors.topBarControlBorder,
+-            width: 1,
+-          ),
++          border: Border.all(color: AppColors.pillBorder, width: 1),
+@@
+                           style: AppTypography.timer.copyWith(
+                             fontSize: 46,
+                             fontWeight: FontWeight.w700,
+                             color: AppColors.scoreValue,
++                            shadows: [
++                              Shadow(
++                                color: AppColors.themeGlow.withValues(alpha: 0.12),
++                                blurRadius: 10,
++                              ),
++                            ],
+                           ),
+                         ),
+                       ),
+*** Update File: /Users/timo/ceo_os/lib/features/profile/profile_screen.dart
+@@
+                           decoration: BoxDecoration(
+                             borderRadius: BorderRadius.circular(14),
+-                            color: AppColors.cardRaised,
+-                            border: Border.all(
+-                              color: AppColors.border,
+-                            ),
++                            color: AppColors.inputBackground,
++                            border: Border.all(color: AppColors.inputBorder),
+                           ),
+@@
+       decoration: BoxDecoration(
+         borderRadius: BorderRadius.circular(16),
+-        color: AppColors.cardBackgroundAlt,
+-        border: Border.all(
+-          color: AppColors.border,
+-          width: 1,
+-        ),
++        color: AppColors.pillBackground,
++        border: Border.all(color: AppColors.pillBorder, width: 1),
+       ),
+@@
+       decoration: BoxDecoration(
+         borderRadius: BorderRadius.circular(16),
+-        color: AppColors.cardBackgroundAlt,
+-        border: Border.all(
+-          color: AppColors.border,
+-        ),
++        color: AppColors.pillBackground,
++        border: Border.all(color: AppColors.pillBorder),
+       ),
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/notes_screen.dart
+@@
+                                                   padding: EdgeInsets.zero,
+-                                                  decoration: null,
++                                                  decoration: BoxDecoration(
++                                                    color: AppColors.inputBackground,
++                                                    borderRadius:
++                                                        BorderRadius.circular(12),
++                                                    border: Border.all(
++                                                      color: AppColors.inputBorder,
++                                                    ),
++                                                  ),
+                                                 ),
+@@
+                                                     padding: EdgeInsets.zero,
+-                                                    decoration: null,
++                                                    decoration: BoxDecoration(
++                                                      color:
++                                                          AppColors.inputBackground,
++                                                      borderRadius:
++                                                          BorderRadius.circular(
++                                                            16,
++                                                          ),
++                                                      border: Border.all(
++                                                        color:
++                                                            AppColors.inputBorder,
++                                                      ),
++                                                    ),
+                                                   ),
+*** Update File: /Users/timo/ceo_os/lib/features/focus/focus_screen.dart
+@@
+                 decoration: BoxDecoration(
+-                  color: AppColors.white.withValues(alpha: 0.06),
++                  color: AppColors.topBarControlBackground,
+                   borderRadius: BorderRadius.circular(12),
+                   border: Border.all(
+-                    color: AppColors.white.withValues(alpha: 0.08),
++                    color: AppColors.topBarControlBorder,
+                     width: 1,
+                   ),
+                 ),
+*** End Patch

@@ -1,0 +1,30 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/theme/app_typography.dart
+@@
+   static TextStyle get heroNumber => timer.copyWith(
+     fontSize: 56,
+     fontWeight: FontWeight.w700,
+     letterSpacing: -2.8,
+     height: 1,
+   );
++
++  static TextStyle get heroDisplay => TextStyle(
++    fontFamily: '.SF Pro Display',
++    fontFamilyFallback: const [
++      'SF Pro Display',
++      '.SF Pro Text',
++      'SF Pro Text',
++      'Inter',
++      '-apple-system',
++      'Helvetica Neue',
++      'Arial',
++      'sans-serif',
++    ],
++    color: AppColors.label,
++    fontFeatures: const [FontFeature.tabularFigures()],
++    fontSize: 56,
++    fontWeight: FontWeight.w500,
++    letterSpacing: -2.2,
++    height: 1,
++  );
+*** End Patch

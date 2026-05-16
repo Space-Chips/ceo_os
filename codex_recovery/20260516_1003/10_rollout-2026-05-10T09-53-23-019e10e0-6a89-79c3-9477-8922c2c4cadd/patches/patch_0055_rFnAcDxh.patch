@@ -1,0 +1,13 @@
+*** Begin Patch
+*** Update File: lib/core/repositories/premium_repository.dart
+@@
+-            return PremiumConfig.fromAppConfig(
+-              Map<String, dynamic>.from(decoded as Map),
+-            );
++            return PremiumConfig.fromAppConfig(Map<String, dynamic>.from(decoded));
+@@
+-            return UserEntitlements.fromJson(
+-              Map<String, dynamic>.from(decoded as Map),
+-            );
++            return UserEntitlements.fromJson(Map<String, dynamic>.from(decoded));
+*** End Patch

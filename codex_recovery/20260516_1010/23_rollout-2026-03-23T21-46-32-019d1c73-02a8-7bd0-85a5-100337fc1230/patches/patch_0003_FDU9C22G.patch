@@ -1,0 +1,10 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/ceo_mode/ceo_mode_screen.dart
+@@
+-    return 'Grant Screen Time permissions for stronger enforcement';
++    return 'Grant Screen Time permissions to enable protected CEO Mode sessions';
+*** Update File: /Users/timo/ceo_os/docs/store_review_notes_and_disclosures.md
+@@
+-2. CEO Mode: the user starts a stricter focus session with stronger blocking rules.
++2. CEO Mode: the user starts a stricter focus session with Screen Time-based restrictions.
+*** End Patch

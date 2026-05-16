@@ -1,0 +1,16 @@
+*** Begin Patch
+*** Update File: lib/components/premium_paywall.dart
+@@
+ import 'package:flutter/foundation.dart';
+ import 'package:flutter/cupertino.dart';
+ import 'package:provider/provider.dart';
+ 
+ import '../core/models/premium_models.dart';
+ import '../core/providers/language_provider.dart';
++import '../core/repositories/premium_repository.dart';
+ import '../core/services/billing_service.dart';
+ import '../core/theme/app_colors.dart';
+ import '../core/theme/app_typography.dart';
+ import 'glass_card.dart';
+ import 'liquid_button.dart';
+*** End Patch

@@ -1,0 +1,26 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/android/app/src/main/kotlin/com/wakeapp/ceoos/MainActivity.kt
+@@
+     private fun authorizationStatus(): String {
+         return if (hasBlockingPermissions()) "approved" else "denied"
+     }
++
++    private fun nextProtectionStepName(): String {
++        return when (nextMissingProtectionStep()) {
++            AndroidProtectionStep.ACCESSIBILITY -> "accessibility"
++            AndroidProtectionStep.OVERLAY -> "overlay"
++            AndroidProtectionStep.USAGE_ACCESS -> "usage_access"
++            AndroidProtectionStep.COMPLETE -> "complete"
++        }
++    }
+@@
+                 "getAuthorizationStatus" -> {
+                     result.success(authorizationStatus())
+                 }
++                "getNextProtectionStep" -> {
++                    result.success(nextProtectionStepName())
++                }
+                 "openSystemSettings" -> {
+                     result.success(openNextProtectionSettings())
+                 }
+*** End Patch

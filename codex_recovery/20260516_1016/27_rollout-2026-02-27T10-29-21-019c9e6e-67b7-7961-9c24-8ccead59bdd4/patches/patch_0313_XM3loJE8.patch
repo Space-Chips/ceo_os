@@ -1,0 +1,63 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/screen_time_manager/screen_time_manager_screen.dart
+@@
+                         _actionCard(
+                           icon: CupertinoIcons.nosign,
+                           iconColor: const Color(0xFF3B82F6),
+                           title: 'Block Apps & Sites',
+-                          subtitle:
+-                              '$blockedTargets blocked • apps, sites, pauses',
++                          subtitle: '$blockedTargets blocked • limits & pauses',
+                           onTap: () => context.push('/screen-time'),
+                         ),
+@@
+                         _actionCard(
+-                          icon: CupertinoIcons.shield,
+-                          iconColor: const Color(0xFF3B82F6),
+-                          title: 'Blocking Preview',
+-                          subtitle: 'See how blocking works',
+-                          onTap: () => context.push('/focus'),
++                          icon: CupertinoIcons.person_3_fill,
++                          iconColor: const Color(0xFF8B5CF6),
++                          title: 'Family Time',
++                          subtitle: 'Shared no-phone sessions',
++                          onTap: () => context.push('/family-time'),
+                         ),
+@@
+               Expanded(
+                 child: _statLargeTile(
+                   label: '7-DAY',
+                   value: '$avg7dMinutes',
+                   unit: 'minutes',
+-                  accent: AppColors.secondaryLabel,
++                  accent: const Color(0xFFE2E8F0),
+                 ),
+               ),
+@@
+         color: AppColors.backgroundLight.withValues(
+           alpha: highlighted ? 0.82 : 0.64,
+         ),
+         border: Border.all(
+           color: highlighted
+               ? const Color(0xFF2563EB).withValues(alpha: 0.92)
+-              : AppColors.glassBorder.withValues(alpha: 0.6),
++              : AppColors.glassBorder.withValues(alpha: 0.78),
+           width: highlighted ? 1.35 : 0.7,
+         ),
+       ),
+@@
+             style: AppTypography.mono.copyWith(
+               fontSize: 10,
+-              color: AppColors.tertiaryLabel,
++              color: AppColors.secondaryLabel,
+               fontWeight: FontWeight.w800,
+               letterSpacing: 1.5,
+             ),
+@@
+             style: AppTypography.mono.copyWith(
+               fontSize: 12,
+-              color: AppColors.secondaryLabel,
++              color: AppColors.tertiaryLabel,
+             ),
+           ),
+*** End Patch

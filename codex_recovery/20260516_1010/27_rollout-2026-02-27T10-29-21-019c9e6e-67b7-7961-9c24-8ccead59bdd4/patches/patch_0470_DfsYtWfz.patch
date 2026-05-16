@@ -1,0 +1,19 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/dashboard/dashboard_screen.dart
+@@
+       return Center(
+         child: _PressScale(
+           child: Container(
+@@
+             ),
+           ),
+         ),
+-      ),
+-    );
+-  }
++      );
++    }
+ 
+     return ListView(
+       padding: const EdgeInsets.only(bottom: 120),
+*** End Patch

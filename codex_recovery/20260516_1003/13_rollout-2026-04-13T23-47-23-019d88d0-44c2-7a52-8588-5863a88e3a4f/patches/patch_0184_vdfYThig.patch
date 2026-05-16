@@ -1,0 +1,12 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/screen_time_screen.dart
+@@
+                             creationParams: <String, dynamic>{
+                               'payload': appPayload,
+                               'fallbackTitle': title,
+                             },
+-                            creationParamsCodec: const StandardMessageCodec(),
++                            creationParamsCodec: StandardMessageCodec(),
+                           ),
+                         )
+*** End Patch

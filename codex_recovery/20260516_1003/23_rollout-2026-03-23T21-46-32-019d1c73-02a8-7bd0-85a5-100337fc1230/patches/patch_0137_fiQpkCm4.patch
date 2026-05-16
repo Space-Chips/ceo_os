@@ -1,0 +1,29 @@
+*** Begin Patch
+*** Update File: android/app/src/main/kotlin/com/wakeapp/ceoos/WakeAccessibilityService.kt
+@@
+-            is BlockDecision.BlockApp -> {
+-                blockingOverlay.show()
+-                gateLauncher.launch(this, decision)
+-            }
+-            is BlockDecision.BlockUrl -> {
+-                blockingOverlay.show()
+-                browserBlockCoordinator.handleBlockedUrl(this, decision, gateLauncher)
+-            }
++            is BlockDecision.BlockApp -> {
++                blockingOverlay.show()
++                val launched = gateLauncher.launch(this, decision)
++                if (!launched) {
++                    blockingOverlay.hide()
++                }
++                launched
++            }
++            is BlockDecision.BlockUrl -> {
++                blockingOverlay.show()
++                val launched = browserBlockCoordinator.handleBlockedUrl(this, decision, gateLauncher)
++                if (!launched) {
++                    blockingOverlay.hide()
++                }
++                launched
++            }
+         }
+*** End Patch

@@ -1,0 +1,8 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/ios/ScreenTimeReport/ScreenTimeMetricView.swift
+@@
+-import SwiftUI
++import SwiftUI
++import Foundation
++import UIKit
+*** End Patch

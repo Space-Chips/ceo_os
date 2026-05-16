@@ -1,0 +1,37 @@
+*** Begin Patch
+*** Update File: ios/CeoWidgets/CeoHomeWidget.swift
+@@
+ struct CeoHomeWidgetView: View {
+@@
+     Group {
+       if let path, let image = UIImage(contentsOfFile: path) {
+         Image(uiImage: image)
+           .resizable()
+           .scaledToFill()
+       } else {
+@@
+       }
+     }
+-    .containerBackground(.fill.tertiary, for: .widget)
++    .applyWidgetBackground()
+     .widgetURL(URL(string: routeUrlFor(resolvedMode)))
+     .clipped()
+   }
+@@
+   private func sharedDefaults() -> UserDefaults {
+     UserDefaults(suiteName: appGroupId) ?? .standard
+   }
+ }
++
++private extension View {
++  @ViewBuilder
++  func applyWidgetBackground() -> some View {
++    if #available(iOSApplicationExtension 17.0, *) {
++      self.containerBackground(.fill.tertiary, for: .widget)
++    } else {
++      self.padding()
++    }
++  }
++}
+ 
+*** End Patch

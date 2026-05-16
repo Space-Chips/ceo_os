@@ -1,0 +1,8 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/screen_time_screen.dart
+@@
+                 child: ListView(
+-                  padding: const EdgeInsets.all(20),
++                  padding: const EdgeInsets.fromLTRB(14, 12, 14, 18),
+                   children: [
+*** End Patch

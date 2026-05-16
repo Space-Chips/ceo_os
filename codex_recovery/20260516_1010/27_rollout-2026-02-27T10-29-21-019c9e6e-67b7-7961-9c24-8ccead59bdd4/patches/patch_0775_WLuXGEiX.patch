@@ -1,0 +1,23 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/screen_time_screen.dart
+@@
+   void dispose() {
+     _appCtrl.dispose();
+     _siteCtrl.dispose();
+     super.dispose();
+   }
++
++  String? _firstNonEmpty(List<String>? values) {
++    if (values == null) return null;
++    for (final value in values) {
++      if (value.trim().isNotEmpty) return value.trim();
++    }
++    return null;
++  }
+@@
+-      final payload = selection?.where((item) => item.trim().isNotEmpty).firstOrNull;
++      final payload = _firstNonEmpty(selection);
+@@
+-      final payload = selection?.where((item) => item.trim().isNotEmpty).firstOrNull;
++      final payload = _firstNonEmpty(selection);
+*** End Patch

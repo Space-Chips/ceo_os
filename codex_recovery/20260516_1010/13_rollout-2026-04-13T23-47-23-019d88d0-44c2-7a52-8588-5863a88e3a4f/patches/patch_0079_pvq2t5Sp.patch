@@ -1,0 +1,13 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/ios/Runner/AppDelegate.swift
+@@
+ private struct PrivateScreenTimeFallbackCard: View {
+     let title: String
+     let subtitle: String
++    @AppStorage("screen_time_theme_version", store: UserDefaults(suiteName: screenTimeThemeAppGroupId))
++    private var themeVersion: String = ""
+ 
+     var body: some View {
++        let _ = themeVersion
+         let cardBackground = screenTimeThemeColor("card_bg", fallback: Color(red: 0.13, green: 0.15, blue: 0.18))
+*** End Patch

@@ -1,0 +1,315 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/screen_time_manager/family_time_screen.dart
+@@
+               : ListView(
+                   padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+                   children: [
+                     _detailHeader(),
+                     const SizedBox(height: 18),
++                    _sectionLabel('SESSION CONTROL'),
+                     _sectionCard(
+-                      title: 'Invite link',
+-                      child: _sectionButton(
+-                        label: 'Copy invite link',
+-                        onTap: _copyInviteLink,
+-                      ),
++                      title: 'Group session',
++                      subtitle:
++                          'Launch and manage the shared distraction-free session.',
++                      featured: true,
++                      child: _sessionContent(),
+                     ),
++                    _sectionLabel('GROUP CORE'),
+                     _sectionCard(
+-                      title: 'Sanction rule',
++                      title: 'Blocked apps & sites',
++                      subtitle:
++                          'These apps and sites are shared across the whole group.',
++                      child: Column(
++                        children: [
++                          Row(
++                            children: [
++                              Expanded(
++                                child: _inputField(
++                                  controller: _appCtrl,
++                                  placeholder: 'Add blocked app',
++                                ),
++                              ),
++                              const SizedBox(width: 10),
++                              _actionButton(
++                                label: '+ App',
++                                onTap: !_isAdmin || _saving
++                                    ? null
++                                    : () {
++                                        final appName = _appCtrl.text.trim();
++                                        if (appName.isEmpty) return;
++                                        _runSave(
++                                          () => widget.repo.addBlockedApp(
++                                            groupId: _bundle.group.id,
++                                            appName: appName,
++                                          ),
++                                        );
++                                        _appCtrl.clear();
++                                      },
++                              ),
++                            ],
++                          ),
++                          const SizedBox(height: 12),
++                          _chipsWrapApps(),
++                          const SizedBox(height: 16),
++                          Row(
++                            children: [
++                              Expanded(
++                                child: _inputField(
++                                  controller: _siteCtrl,
++                                  placeholder: 'Add blocked site',
++                                ),
++                              ),
++                              const SizedBox(width: 10),
++                              _actionButton(
++                                label: '+ Site',
++                                onTap: !_isAdmin || _saving
++                                    ? null
++                                    : () {
++                                        final domain = _siteCtrl.text.trim();
++                                        if (domain.isEmpty) return;
++                                        _runSave(
++                                          () => widget.repo.addBlockedSite(
++                                            groupId: _bundle.group.id,
++                                            domain: domain,
++                                          ),
++                                        );
++                                        _siteCtrl.clear();
++                                      },
++                              ),
++                            ],
++                          ),
++                          const SizedBox(height: 12),
++                          _chipsWrapSites(),
++                        ],
++                      ),
++                    ),
++                    _sectionCard(
++                      title: 'Members',
++                      subtitle:
++                          'See who is in the group and manage invitations.',
+                       child: Column(
+                         children: [
+-                          _inputField(
+-                            controller: _sanctionCtrl,
+-                            placeholder:
+-                                'Ex: dishes for 3 days, no dessert, 20 pushups...',
+-                            maxLines: 2,
+-                          ),
+-                          const SizedBox(height: 12),
+-                          _sectionButton(
+-                            label: 'Save sanction',
+-                            onTap: !_isAdmin || _saving
+-                                ? null
+-                                : () => _runSave(
+-                                    () => widget.repo.updateGroupSanction(
+-                                      groupId: _bundle.group.id,
+-                                      sanctionText: _sanctionCtrl.text,
+-                                    ),
+-                                  ),
+-                          ),
+-                        ],
+-                      ),
+-                    ),
+-                    _sectionCard(
+-                      title: 'Members',
+-                      child: Column(
+-                        children: [
+                           if (_isAdmin) ...[
+                             Row(
+                               children: [
+@@
+                           ),
+                         ],
+                       ),
+                     ),
++                    _sectionLabel('GROUP SETTINGS'),
+                     _sectionCard(
+-                      title: 'Shared blocking list',
++                      title: 'Sanction rule',
++                      subtitle:
++                          'Define what happens if someone quits first.',
+                       child: Column(
+                         children: [
+-                          Row(
+-                            children: [
+-                              Expanded(
+-                                child: _inputField(
+-                                  controller: _appCtrl,
+-                                  placeholder: 'Add blocked app',
+-                                ),
+-                              ),
+-                              const SizedBox(width: 10),
+-                              _actionButton(
+-                                label: '+ App',
+-                                onTap: !_isAdmin || _saving
+-                                    ? null
+-                                    : () {
+-                                        final appName = _appCtrl.text.trim();
+-                                        if (appName.isEmpty) return;
+-                                        _runSave(
+-                                          () => widget.repo.addBlockedApp(
+-                                            groupId: _bundle.group.id,
+-                                            appName: appName,
+-                                          ),
+-                                        );
+-                                        _appCtrl.clear();
+-                                      },
+-                              ),
+-                            ],
+-                          ),
+-                          const SizedBox(height: 12),
+-                          _chipsWrapApps(),
+-                          const SizedBox(height: 16),
+-                          Row(
+-                            children: [
+-                              Expanded(
+-                                child: _inputField(
+-                                  controller: _siteCtrl,
+-                                  placeholder: 'Add blocked site',
+-                                ),
+-                              ),
+-                              const SizedBox(width: 10),
+-                              _actionButton(
+-                                label: '+ Site',
+-                                onTap: !_isAdmin || _saving
+-                                    ? null
+-                                    : () {
+-                                        final domain = _siteCtrl.text.trim();
+-                                        if (domain.isEmpty) return;
+-                                        _runSave(
+-                                          () => widget.repo.addBlockedSite(
+-                                            groupId: _bundle.group.id,
+-                                            domain: domain,
+-                                          ),
+-                                        );
+-                                        _siteCtrl.clear();
+-                                      },
+-                              ),
+-                            ],
+-                          ),
++                          _inputField(
++                            controller: _sanctionCtrl,
++                            placeholder:
++                                'Ex: dishes for 3 days, no dessert, 20 pushups...',
++                            maxLines: 2,
++                          ),
+                           const SizedBox(height: 12),
+-                          _chipsWrapSites(),
++                          _sectionButton(
++                            label: 'Save sanction',
++                            onTap: !_isAdmin || _saving
++                                ? null
++                                : () => _runSave(
++                                    () => widget.repo.updateGroupSanction(
++                                      groupId: _bundle.group.id,
++                                      sanctionText: _sanctionCtrl.text,
++                                    ),
++                                  ),
++                          ),
+                         ],
+                       ),
+                     ),
+                     _sectionCard(
+-                      title: 'Group session',
+-                      child: _sessionContent(),
++                      title: 'Invite link',
++                      subtitle:
++                          'Share this link so other people can join this group.',
++                      child: _sectionButton(
++                        label: 'Copy invite link',
++                        onTap: _copyInviteLink,
++                      ),
+                     ),
++                    _sectionLabel('ACTIVITY'),
+                     _sectionCard(
+                       title: 'Session feed',
++                      subtitle:
++                          'Recent group activity, confirmations and exits.',
+                       child: _eventsContent(),
+                     ),
+                   ],
+                 ),
+@@
+-  Widget _sectionCard({required String title, required Widget child}) {
++  Widget _sectionCard({
++    required String title,
++    required Widget child,
++    String? subtitle,
++    bool featured = false,
++  }) {
+     return Padding(
+       padding: const EdgeInsets.only(bottom: 18),
+       child: _CardSurface(
+         padding: const EdgeInsets.all(20),
++        decoration: BoxDecoration(
++          borderRadius: BorderRadius.circular(20),
++          color: featured
++              ? AppColors.accent.withValues(alpha: 0.06)
++              : AppColors.white.withValues(alpha: 0.04),
++          border: Border.all(
++            color: featured
++                ? AppColors.accent.withValues(alpha: 0.24)
++                : AppColors.white.withValues(alpha: 0.08),
++            width: 1,
++          ),
++          boxShadow: featured
++              ? [
++                  BoxShadow(
++                    color: AppColors.accent.withValues(alpha: 0.12),
++                    blurRadius: 24,
++                    offset: const Offset(0, 10),
++                    spreadRadius: -12,
++                  ),
++                ]
++              : null,
++        ),
+         child: Column(
+           crossAxisAlignment: CrossAxisAlignment.start,
+           children: [
+             Text(
+               title,
+@@
+                 color: AppColors.label,
+               ),
+             ),
+-            const SizedBox(height: 14),
++            if (subtitle != null) ...[
++              const SizedBox(height: 6),
++              Text(
++                subtitle,
++                style: AppTypography.body.copyWith(
++                  fontSize: 13,
++                  color: AppColors.secondaryLabel,
++                  height: 1.35,
++                ),
++              ),
++            ],
++            const SizedBox(height: 14),
+             child,
+           ],
+         ),
+       ),
+     );
+   }
++
++  Widget _sectionLabel(String label) {
++    return Padding(
++      padding: const EdgeInsets.only(bottom: 10),
++      child: Text(
++        label,
++        style: AppTypography.mono.copyWith(
++          fontSize: 11,
++          letterSpacing: 2,
++          color: AppColors.secondaryLabel.withValues(alpha: 0.5),
++          fontWeight: FontWeight.w700,
++        ),
++      ),
++    );
++  }
+*** End Patch

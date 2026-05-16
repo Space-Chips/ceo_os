@@ -1,0 +1,16 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/calendar/add_event_sheet.dart
+@@
+   void _toggleBirthday() {
+     setState(() {
+       _isBirthday = !_isBirthday;
+       if (_isBirthday) {
+         _isFocusSession = false;
+-        _focusRepeatsWeekly = true;
++        _focusRepeatsWeekly = false;
+         _selectedTime = null;
+       } else {
+         _focusRepeatsWeekly = false;
+       }
+     });
+*** End Patch

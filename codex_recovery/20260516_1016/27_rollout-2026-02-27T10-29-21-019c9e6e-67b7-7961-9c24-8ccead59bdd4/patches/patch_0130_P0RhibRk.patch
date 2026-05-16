@@ -1,0 +1,639 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/home/home_screen.dart
+@@
+           padding: const EdgeInsets.fromLTRB(20, 10, 20, 120),
+           children: [
+             _HomeHeader(
+               userLabel: _userLabel,
+               onOpenProfile: () => context.push('/profile'),
+               onOpenMenu: _openHomeMenu,
+             ),
+-            const SizedBox(height: 18),
++            const SizedBox(height: 12),
++            _MissionHeroCard(
++              userLabel: _userLabel,
++              isFocusing: isFocusing,
++              onOpenFocus: _openFocusStarter,
++              onOpenDashboard: () => context.push('/dashboard'),
++            ),
++            const SizedBox(height: 14),
+             FutureBuilder<DashboardSnapshot>(
+               future: _snapshotFuture,
+               builder: (context, snapshot) {
+@@
+ class _HomeHeader extends StatelessWidget {
+@@
+   @override
+   Widget build(BuildContext context) {
+-    return Row(
+-      children: [
+-        Expanded(
+-          child: Column(
+-            crossAxisAlignment: CrossAxisAlignment.start,
+-            children: [
+-              Text(
+-                'CEO OS',
+-                style: AppTypography.mono.copyWith(
+-                  fontSize: 22,
+-                  color: AppColors.label,
+-                  fontWeight: FontWeight.w900,
+-                  letterSpacing: 0.6,
+-                ),
+-              ),
+-              const SizedBox(height: 4),
+-              Text(
+-                'Welcome, $userLabel',
+-                style: AppTypography.mono.copyWith(
+-                  fontSize: 11,
+-                  color: AppColors.tertiaryLabel,
+-                ),
+-              ),
+-            ],
+-          ),
+-        ),
+-        CupertinoButton(
+-          padding: const EdgeInsets.only(right: 6),
+-          onPressed: onOpenMenu,
+-          child: Icon(
+-            CupertinoIcons.line_horizontal_3,
+-            color: AppColors.primaryOrange,
+-            size: 21,
+-          ),
+-        ),
+-        CupertinoButton(
+-          padding: EdgeInsets.zero,
+-          onPressed: onOpenProfile,
+-          child: Container(
+-            width: 42,
+-            height: 42,
+-            decoration: BoxDecoration(
+-              color: AppColors.backgroundLight.withValues(alpha: 0.75),
+-              borderRadius: BorderRadius.circular(12),
+-              border: Border.all(
+-                color: AppColors.primaryOrange.withValues(alpha: 0.3),
+-                width: 0.6,
+-              ),
+-            ),
+-            child: Icon(
+-              CupertinoIcons.person_crop_circle,
+-              color: AppColors.primaryOrange,
+-              size: 21,
+-            ),
+-          ),
+-        ),
+-      ],
+-    );
++    return Container(
++      padding: const EdgeInsets.symmetric(horizontal: 2),
++      child: Row(
++        children: [
++          Expanded(
++            child: Column(
++              crossAxisAlignment: CrossAxisAlignment.start,
++              children: [
++                Text(
++                  'CEO OS',
++                  style: AppTypography.mono.copyWith(
++                    fontSize: 23,
++                    color: AppColors.label,
++                    fontWeight: FontWeight.w900,
++                    letterSpacing: 0.8,
++                  ),
++                ),
++                const SizedBox(height: 4),
++                Text(
++                  'Welcome back, $userLabel',
++                  style: AppTypography.mono.copyWith(
++                    fontSize: 11,
++                    color: AppColors.tertiaryLabel,
++                  ),
++                ),
++              ],
++            ),
++          ),
++          CupertinoButton(
++            padding: const EdgeInsets.only(right: 6),
++            onPressed: onOpenMenu,
++            child: Container(
++              width: 36,
++              height: 36,
++              decoration: BoxDecoration(
++                borderRadius: BorderRadius.circular(11),
++                color: AppColors.backgroundLight.withValues(alpha: 0.75),
++                border: Border.all(
++                  color: AppColors.glassBorder.withValues(alpha: 0.6),
++                  width: 0.5,
++                ),
++              ),
++              child: Icon(
++                CupertinoIcons.line_horizontal_3,
++                color: AppColors.primaryOrange,
++                size: 18,
++              ),
++            ),
++          ),
++          CupertinoButton(
++            padding: EdgeInsets.zero,
++            onPressed: onOpenProfile,
++            child: Container(
++              width: 42,
++              height: 42,
++              decoration: BoxDecoration(
++                color: AppColors.backgroundLight.withValues(alpha: 0.75),
++                borderRadius: BorderRadius.circular(12),
++                border: Border.all(
++                  color: AppColors.primaryOrange.withValues(alpha: 0.3),
++                  width: 0.6,
++                ),
++                boxShadow: [
++                  BoxShadow(
++                    color: AppColors.primaryOrange.withValues(alpha: 0.12),
++                    blurRadius: 10,
++                    spreadRadius: 1,
++                  ),
++                ],
++              ),
++              child: Icon(
++                CupertinoIcons.person_crop_circle,
++                color: AppColors.primaryOrange,
++                size: 21,
++              ),
++            ),
++          ),
++        ],
++      ),
++    );
+   }
+ }
+ 
+ class _QuickActions extends StatelessWidget {
+@@
+   @override
+   Widget build(BuildContext context) {
+-    return GlassCard(
+-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+-      borderRadius: 16,
+-      child: Row(
+-        children: [
+-          _action('TASK', CupertinoIcons.checkmark_alt, onTask),
+-          const SizedBox(width: 8),
+-          _action('HABIT', CupertinoIcons.flame_fill, onHabit),
+-          const SizedBox(width: 8),
+-          _action('EVENT', CupertinoIcons.calendar, onEvent),
+-          const SizedBox(width: 8),
+-          _action('FOCUS', CupertinoIcons.timer_fill, onFocus),
+-        ],
++    return Column(
++      children: [
++        Row(
++          children: [
++            Text(
++              'QUICK_ACTIONS',
++              style: AppTypography.mono.copyWith(
++                fontSize: 10,
++                color: AppColors.tertiaryLabel,
++                fontWeight: FontWeight.bold,
++                letterSpacing: 1.1,
++              ),
++            ),
++          ],
++        ),
++        const SizedBox(height: 8),
++        GlassCard(
++          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
++          borderRadius: 16,
++          border: Border.all(
++            color: AppColors.primaryOrange.withValues(alpha: 0.18),
++            width: 0.55,
++          ),
++          child: Row(
++            children: [
++              _action('TASK', CupertinoIcons.checkmark_alt, onTask),
++              const SizedBox(width: 8),
++              _action('HABIT', CupertinoIcons.flame_fill, onHabit),
++              const SizedBox(width: 8),
++              _action('EVENT', CupertinoIcons.calendar, onEvent),
++              const SizedBox(width: 8),
++              _action('FOCUS', CupertinoIcons.timer_fill, onFocus),
++            ],
++          ),
++        ),
++      ],
++    );
++  }
++
++  Widget _action(String label, IconData icon, VoidCallback onTap) {
++    return Expanded(
++      child: GestureDetector(
++        onTap: onTap,
++        child: Container(
++          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
++          decoration: BoxDecoration(
++            borderRadius: BorderRadius.circular(10),
++            color: AppColors.backgroundLight.withValues(alpha: 0.6),
++            border: Border.all(color: AppColors.glassBorder, width: 0.4),
++            boxShadow: [
++              BoxShadow(
++                color: AppColors.background.withValues(alpha: 0.35),
++                blurRadius: 8,
++                offset: const Offset(0, 3),
++              ),
++            ],
++          ),
++          child: Column(
++            children: [
++              Icon(icon, size: 14, color: AppColors.primaryOrange),
++              const SizedBox(height: 5),
++              Text(
++                label,
++                style: AppTypography.mono.copyWith(
++                  fontSize: 8,
++                  color: AppColors.secondaryLabel,
++                  fontWeight: FontWeight.bold,
++                ),
++              ),
++            ],
++          ),
++        ),
+       ),
+     );
+   }
+-
+-  Widget _action(String label, IconData icon, VoidCallback onTap) {
+-    return Expanded(
+-      child: GestureDetector(
+-        onTap: onTap,
+-        child: Container(
+-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+-          decoration: BoxDecoration(
+-            borderRadius: BorderRadius.circular(10),
+-            color: AppColors.backgroundLight.withValues(alpha: 0.6),
+-            border: Border.all(color: AppColors.glassBorder, width: 0.4),
+-          ),
+-          child: Column(
+-            children: [
+-              Icon(icon, size: 14, color: AppColors.primaryOrange),
+-              const SizedBox(height: 5),
+-              Text(
+-                label,
+-                style: AppTypography.mono.copyWith(
+-                  fontSize: 8,
+-                  color: AppColors.secondaryLabel,
+-                  fontWeight: FontWeight.bold,
+-                ),
+-              ),
+-            ],
+-          ),
+-        ),
+-      ),
+-    );
+-  }
+ }
+@@
+       child: GlassCard(
+         padding: const EdgeInsets.all(20),
+         borderRadius: 24,
++        gradientColors: [
++          AppColors.backgroundLight.withValues(alpha: 0.72),
++          AppColors.background.withValues(alpha: 0.9),
++        ],
+         border: Border.all(
+           color: AppColors.primaryOrange.withValues(alpha: 0.25),
+           width: 0.7,
+@@
+                 const SizedBox(width: 8),
+                 Text(
+-                  'Daily Control Center',
++                  'Daily Control Center'.toUpperCase(),
+                   style: AppTypography.mono.copyWith(
+                     fontSize: 13,
+                     fontWeight: FontWeight.bold,
+@@
+             const SizedBox(height: 16),
+             Row(
+               children: [
+@@
+             const SizedBox(height: 10),
+             Text(
+               '${data.totalFocusMinutes7d} focus minutes in 7 days • ${data.eventsNext7d} events planned',
+               style: AppTypography.mono.copyWith(
+                 fontSize: 10,
+                 color: AppColors.secondaryLabel,
+               ),
+             ),
++            const SizedBox(height: 10),
++            Container(
++              height: 1,
++              decoration: BoxDecoration(
++                gradient: LinearGradient(
++                  colors: [
++                    AppColors.primaryOrange.withValues(alpha: 0),
++                    AppColors.primaryOrange.withValues(alpha: 0.35),
++                    AppColors.primaryOrange.withValues(alpha: 0),
++                  ],
++                ),
++              ),
++            ),
++            const SizedBox(height: 8),
++            Text(
++              'Tap to open full dashboard intelligence',
++              style: AppTypography.mono.copyWith(
++                fontSize: 9,
++                color: AppColors.tertiaryLabel,
++              ),
++            ),
+           ],
+         ),
+       ),
+@@
+     return GridView.builder(
+       shrinkWrap: true,
+       physics: const NeverScrollableScrollPhysics(),
+@@
+         return GestureDetector(
+           onTap: () => context.push(module.route),
+           child: GlassCard(
+             padding: const EdgeInsets.all(14),
+             borderRadius: 18,
+             gradientColors: [
+-              AppColors.backgroundLight.withValues(alpha: 0.62),
+-              AppColors.background.withValues(alpha: 0.78),
++              AppColors.backgroundLight.withValues(alpha: 0.68),
++              AppColors.background.withValues(alpha: 0.84),
+             ],
+             border: Border.all(
+-              color: AppColors.glassBorder.withValues(alpha: 0.24),
+-              width: 0.6,
++              color: AppColors.primaryOrange.withValues(alpha: 0.14),
++              width: 0.55,
+             ),
+             child: Column(
+               crossAxisAlignment: CrossAxisAlignment.start,
+@@
+                     Container(
+-                      width: 28,
+-                      height: 28,
++                      width: 34,
++                      height: 34,
+                       decoration: BoxDecoration(
+-                        borderRadius: BorderRadius.circular(9),
+-                        color: AppColors.backgroundLight.withValues(
+-                          alpha: 0.82,
+-                        ),
++                        borderRadius: BorderRadius.circular(11),
++                        gradient: LinearGradient(
++                          begin: Alignment.topLeft,
++                          end: Alignment.bottomRight,
++                          colors: [
++                            AppColors.backgroundLight.withValues(alpha: 0.9),
++                            AppColors.background.withValues(alpha: 0.88),
++                          ],
++                        ),
+                         border: Border.all(
+-                          color: AppColors.glassBorder.withValues(alpha: 0.55),
+-                          width: 0.5,
++                          color: AppColors.primaryOrange.withValues(alpha: 0.22),
++                          width: 0.55,
+                         ),
+                         boxShadow: [
+                           BoxShadow(
+-                            color: AppColors.background.withValues(alpha: 0.45),
++                            color: AppColors.background.withValues(alpha: 0.5),
+                             blurRadius: 8,
+                             offset: const Offset(0, 3),
+                           ),
+@@
+                       child: Center(
+                         child: Icon(
+                           module.icon,
+                           color: AppColors.primaryOrange,
+-                          size: 16,
++                          size: 18,
+                         ),
+                       ),
+                     ),
+@@
+                           padding: const EdgeInsets.all(4),
+                           decoration: BoxDecoration(
+                             color: AppColors.backgroundLight.withValues(
+@@
+                             borderRadius: BorderRadius.circular(8),
++                            border: Border.all(
++                              color: AppColors.glassBorder.withValues(alpha: 0.5),
++                              width: 0.4,
++                            ),
+                           ),
+                           child: Icon(
+                             CupertinoIcons.add,
+@@
+                 Text(
+                   module.label,
+                   style: AppTypography.mono.copyWith(
+                     fontSize: 13,
+                     color: AppColors.label,
+                     fontWeight: FontWeight.bold,
+                   ),
+                 ),
++                const SizedBox(height: 3),
++                Text(
++                  module.id.toUpperCase(),
++                  style: AppTypography.mono.copyWith(
++                    fontSize: 8,
++                    color: AppColors.tertiaryLabel,
++                    letterSpacing: 0.8,
++                  ),
++                ),
+               ],
+             ),
+           ),
+@@
+ }
++
++class _MissionHeroCard extends StatelessWidget {
++  final String userLabel;
++  final bool isFocusing;
++  final VoidCallback onOpenFocus;
++  final VoidCallback onOpenDashboard;
++
++  const _MissionHeroCard({
++    required this.userLabel,
++    required this.isFocusing,
++    required this.onOpenFocus,
++    required this.onOpenDashboard,
++  });
++
++  @override
++  Widget build(BuildContext context) {
++    return Stack(
++      children: [
++        Positioned.fill(
++          child: IgnorePointer(
++            child: Container(
++              margin: const EdgeInsets.all(8),
++              decoration: BoxDecoration(
++                borderRadius: BorderRadius.circular(20),
++                boxShadow: [
++                  BoxShadow(
++                    color: AppColors.primaryOrange.withValues(alpha: 0.14),
++                    blurRadius: 24,
++                    spreadRadius: 1,
++                  ),
++                ],
++              ),
++            ),
++          ),
++        ),
++        GlassCard(
++          padding: const EdgeInsets.all(16),
++          borderRadius: 20,
++          gradientColors: [
++            AppColors.backgroundLight.withValues(alpha: 0.76),
++            AppColors.background.withValues(alpha: 0.9),
++          ],
++          border: Border.all(
++            color: AppColors.primaryOrange.withValues(alpha: 0.22),
++            width: 0.7,
++          ),
++          child: Column(
++            crossAxisAlignment: CrossAxisAlignment.start,
++            children: [
++              Row(
++                children: [
++                  Container(
++                    padding: const EdgeInsets.symmetric(
++                      horizontal: 8,
++                      vertical: 4,
++                    ),
++                    decoration: BoxDecoration(
++                      borderRadius: BorderRadius.circular(8),
++                      color: AppColors.primaryOrange.withValues(alpha: 0.14),
++                    ),
++                    child: Text(
++                      'MISSION',
++                      style: AppTypography.mono.copyWith(
++                        fontSize: 9,
++                        color: AppColors.primaryOrange,
++                        fontWeight: FontWeight.bold,
++                        letterSpacing: 1.0,
++                      ),
++                    ),
++                  ),
++                  const Spacer(),
++                  Icon(
++                    isFocusing
++                        ? CupertinoIcons.timer_fill
++                        : CupertinoIcons.sparkles,
++                    size: 15,
++                    color: isFocusing
++                        ? AppColors.primaryOrange
++                        : AppColors.secondaryLabel,
++                  ),
++                ],
++              ),
++              const SizedBox(height: 10),
++              Text(
++                'Build high-leverage execution blocks today.',
++                style: AppTypography.mono.copyWith(
++                  fontSize: 13,
++                  fontWeight: FontWeight.bold,
++                  color: AppColors.label,
++                ),
++              ),
++              const SizedBox(height: 5),
++              Text(
++                '$userLabel • ${isFocusing ? 'Focus mode active' : 'Ready for first sprint'}',
++                style: AppTypography.mono.copyWith(
++                  fontSize: 10,
++                  color: AppColors.secondaryLabel,
++                ),
++              ),
++              const SizedBox(height: 12),
++              Row(
++                children: [
++                  Expanded(
++                    child: GestureDetector(
++                      onTap: onOpenFocus,
++                      child: Container(
++                        padding: const EdgeInsets.symmetric(
++                          horizontal: 10,
++                          vertical: 9,
++                        ),
++                        decoration: BoxDecoration(
++                          borderRadius: BorderRadius.circular(10),
++                          color: AppColors.primaryOrange.withValues(alpha: 0.14),
++                          border: Border.all(
++                            color: AppColors.primaryOrange.withValues(alpha: 0.3),
++                            width: 0.5,
++                          ),
++                        ),
++                        child: Row(
++                          mainAxisAlignment: MainAxisAlignment.center,
++                          children: [
++                            Icon(
++                              CupertinoIcons.timer,
++                              size: 13,
++                              color: AppColors.primaryOrange,
++                            ),
++                            const SizedBox(width: 6),
++                            Text(
++                              'START',
++                              style: AppTypography.mono.copyWith(
++                                fontSize: 9,
++                                fontWeight: FontWeight.bold,
++                                color: AppColors.primaryOrange,
++                              ),
++                            ),
++                          ],
++                        ),
++                      ),
++                    ),
++                  ),
++                  const SizedBox(width: 8),
++                  Expanded(
++                    child: GestureDetector(
++                      onTap: onOpenDashboard,
++                      child: Container(
++                        padding: const EdgeInsets.symmetric(
++                          horizontal: 10,
++                          vertical: 9,
++                        ),
++                        decoration: BoxDecoration(
++                          borderRadius: BorderRadius.circular(10),
++                          color: AppColors.backgroundLight.withValues(alpha: 0.72),
++                          border: Border.all(
++                            color: AppColors.glassBorder.withValues(alpha: 0.5),
++                            width: 0.5,
++                          ),
++                        ),
++                        child: Row(
++                          mainAxisAlignment: MainAxisAlignment.center,
++                          children: [
++                            Icon(
++                              CupertinoIcons.graph_square,
++                              size: 13,
++                              color: AppColors.secondaryLabel,
++                            ),
++                            const SizedBox(width: 6),
++                            Text(
++                              'INSIGHTS',
++                              style: AppTypography.mono.copyWith(
++                                fontSize: 9,
++                                fontWeight: FontWeight.bold,
++                                color: AppColors.secondaryLabel,
++                              ),
++                            ),
++                          ],
++                        ),
++                      ),
++                    ),
++                  ),
++                ],
++              ),
++            ],
++          ),
++        ),
++      ],
++    );
++  }
++}
+*** End Patch

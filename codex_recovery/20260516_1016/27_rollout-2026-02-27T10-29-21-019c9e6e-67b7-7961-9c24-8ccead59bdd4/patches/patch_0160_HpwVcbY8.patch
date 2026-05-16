@@ -1,0 +1,16 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/tasks/tasks_screen.dart
+@@
+-      child: Consumer<TaskProvider>(
+-        builder: (context, prov, _) {
++      child: AmbientBackdrop(
++        child: Consumer<TaskProvider>(
++          builder: (context, prov, _) {
+@@
+-        },
++          },
++        ),
+       ),
+     );
+   }
+*** End Patch

@@ -1,0 +1,31 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/home/home_screen.dart
+@@
+                         Text(
+                           'Dashboard',
+                           maxLines: 1,
+                           overflow: TextOverflow.ellipsis,
+                           style: AppTypography.title2.copyWith(
+-                            fontSize: 22,
++                            fontSize: 24,
+                             fontWeight: FontWeight.w700,
+                             letterSpacing: -0.55,
+                             color: AppColors.label.withValues(alpha: 0.97),
+                           ),
+                         ),
+@@
+                           Text(
+                             '$wakeScore',
+                             textAlign: TextAlign.center,
+-                            style: AppTypography.timer.copyWith(
++                            style: AppTypography.heroDisplay.copyWith(
+                               fontSize: 60,
+                               height: 0.92,
+                               fontWeight: FontWeight.w500,
+-                              letterSpacing: -1.8,
++                              letterSpacing: -1.95,
+                               color: AppColors.label.withValues(alpha: 0.92),
+                               shadows: [
+                                 Shadow(
+                                   color: AppColors.background.withValues(
+*** End Patch

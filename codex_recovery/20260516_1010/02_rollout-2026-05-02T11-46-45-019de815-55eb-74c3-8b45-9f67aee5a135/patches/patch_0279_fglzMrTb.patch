@@ -1,0 +1,24 @@
+*** Begin Patch
+*** Update File: lib/core/repositories/premium_repository.dart
+@@
+   Future<void> grantPremiumForTestFlightAccountIfEligible() async {
+     final uid = _currentUserId;
+     if (uid == null) return;
+ 
+     final isTestFlight = await AppEnvironmentService.isTestFlight();
+     if (!TesterConfig.testFlightPremiumEnabled || !isTestFlight) return;
+-
+-    final betaKey = TesterConfig.testFlightBetaPremiumKey.trim();
+-    if (betaKey.isEmpty) return;
+ 
+     try {
+       await _diag.log('testflight_account_grant_start');
+       final response = await _client.functions.invoke(
+         'grant-beta-premium',
+-        headers: {'x-beta-premium-key': betaKey},
+       );
+       await _diag.log(
+         'testflight_account_grant_done',
+         data: {'status': response.status},
+       );
+*** End Patch

@@ -1,0 +1,115 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/home/home_screen.dart
+@@
+   static const List<_ModuleToggleOption> _moduleOptions = [
+     _ModuleToggleOption(
+       moduleId: 'Pareto',
+-      title: 'To-Do',
++      titleKey: 'tasks',
+       icon: CupertinoIcons.check_mark_circled,
+     ),
+     _ModuleToggleOption(
+       moduleId: 'Habits',
+-      title: 'Habits',
++      titleKey: 'habits',
+       icon: CupertinoIcons.checkmark_circle,
+     ),
+     _ModuleToggleOption(
+       moduleId: 'Calendar',
+-      title: 'Schedule',
++      titleKey: 'calendar',
+       icon: CupertinoIcons.calendar,
+     ),
+     _ModuleToggleOption(
+       moduleId: 'ScreenTimeManager',
+-      title: 'Screen Time',
++      titleKey: 'screen_time_manager',
+       icon: CupertinoIcons.shield,
+     ),
+   ];
+   static const List<_ModuleToggleOption> _shortcutOptions = [
+     _ModuleToggleOption(
+       moduleId: 'rank',
+-      title: 'Rank',
++      titleKey: 'rank',
+       icon: CupertinoIcons.star_fill,
+     ),
+     _ModuleToggleOption(
+       moduleId: 'leaderboard',
+-      title: 'Friends & Leaderboard',
++      titleKey: 'leaderboard',
+       icon: CupertinoIcons.rosette,
+     ),
+     _ModuleToggleOption(
+       moduleId: 'focus',
+-      title: 'Focus Mode',
++      titleKey: 'focus_mode',
+       icon: CupertinoIcons.bolt_fill,
+     ),
+     _ModuleToggleOption(
+       moduleId: 'family_time',
+-      title: 'Offline Together',
++      titleKey: 'family_time',
+       icon: CupertinoIcons.person_2_fill,
+     ),
+     _ModuleToggleOption(
+       moduleId: 'block_apps',
+-      title: 'Block Apps & Sites',
++      titleKey: 'block_apps_sites',
+       icon: CupertinoIcons.shield_fill,
+     ),
+     _ModuleToggleOption(
+       moduleId: 'streak',
+-      title: 'Streak',
++      titleKey: 'streak',
+       icon: CupertinoIcons.flame_fill,
+     ),
+     _ModuleToggleOption(
+       moduleId: 'notes',
+-      title: 'Notes',
++      titleKey: 'notes',
+       icon: CupertinoIcons.doc_text_fill,
+     ),
+   ];
+@@
+   @override
+   Widget build(BuildContext context) {
++    final language = context.watch<LanguageProvider>();
+     final screen = MediaQuery.of(context).size;
+@@
+                                     Text(
+                                       widget.showAdvancedStats
+-                                          ? 'Settings, advanced stats, and module control\nfor your operating system.'
+-                                          : 'Settings and module control for your operating system.',
++                                          ? language.t(
++                                              'settings_module_control_os_multiline',
++                                            )
++                                          : language.t(
++                                              'settings_module_control_os',
++                                            ),
+                                       style: AppTypography.subhead.copyWith(
+@@
+                         _SheetActionButton(
+-                          label: 'Profile & Settings',
++                          label: language.t('profile_settings'),
+                           icon: CupertinoIcons.person_fill,
+                           onTap: widget.onOpenProfileAndSettings,
+                         ),
+@@
+                           _SheetActionButton(
+-                            label: 'Advanced Stats',
++                            label: language.t('advanced_stats'),
+                             icon: CupertinoIcons.chart_bar_alt_fill,
+                             onTap: widget.onOpenAdvancedStats,
+                           ),
+@@
+                         Text(
+-                          'SYSTEM MODULES',
++                          language.t('system_modules'),
+                           style: AppTypography.overline.copyWith(
+@@
+                         Text(
+-                          'SHORTCUTS',
++                          language.t('shortcuts'),
+                           style: AppTypography.overline.copyWith(
+*** End Patch

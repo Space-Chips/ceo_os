@@ -1,0 +1,49 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/android/app/src/main/kotlin/com/wakeapp/ceoos/BlockingLogger.kt
+@@
+         val detectedUrl: String?,
+         val decision: String,
+         val gateLaunched: Boolean,
++        val gateFailureReason: String?,
+         val latencyMillis: Long,
+         val timestampMillis: Long,
+         val mode: String,
+     )
+@@
+         detectedUrl: String?,
+         decision: String,
+         gateLaunched: Boolean,
++        gateFailureReason: String?,
+         latencyMillis: Long,
+         mode: String,
+     ) {
+         val entry = Entry(
+             eventType = eventType,
+@@
+             detectedUrl = detectedUrl,
+             decision = decision,
+             gateLaunched = gateLaunched,
++            gateFailureReason = gateFailureReason,
+             latencyMillis = latencyMillis,
+             timestampMillis = System.currentTimeMillis(),
+             mode = mode,
+         )
+@@
+                 "[event=${entry.eventType}] [pkg=${entry.packageName}] [cls=${entry.className}] " +
+                 "[url=${entry.detectedUrl}] [decision=${entry.decision}] " +
+-                "[gate_launched=${entry.gateLaunched}] [latency_ms=${entry.latencyMillis}] " +
++                "[gate_launched=${entry.gateLaunched}] [gate_failure=${entry.gateFailureReason}] " +
++                "[latency_ms=${entry.latencyMillis}] " +
+                 "[mode=${entry.mode}]",
+         )
+     }
+@@
+             "detectedUrl" to entry?.detectedUrl,
+             "decision" to entry?.decision,
+             "gateLaunched" to entry?.gateLaunched,
++            "gateFailureReason" to entry?.gateFailureReason,
+             "latencyMillis" to entry?.latencyMillis,
+             "timestampMillis" to entry?.timestampMillis,
+             "mode" to entry?.mode,
+         )
+*** End Patch

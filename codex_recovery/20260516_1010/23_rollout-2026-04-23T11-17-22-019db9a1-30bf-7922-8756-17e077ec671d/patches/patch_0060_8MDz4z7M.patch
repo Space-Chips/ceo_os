@@ -1,0 +1,18 @@
+*** Begin Patch
+*** Update File: lib/features/home/stats_screen.dart
+@@
+                 _CompactMetric(
+                   label: _t('rank'),
+-                  value: RankArt.displayName(
+-                    lifetime?.currentRank ??
+-                        weekly?.mostDistractingApp ??
+-                        'Asleep',
+-                  ),
++                  value: _localizedRankDisplay(
++                    context,
++                    lifetime?.currentRank ??
++                        weekly?.mostDistractingApp ??
++                        'Asleep',
++                  ),
+                 ),
+*** End Patch

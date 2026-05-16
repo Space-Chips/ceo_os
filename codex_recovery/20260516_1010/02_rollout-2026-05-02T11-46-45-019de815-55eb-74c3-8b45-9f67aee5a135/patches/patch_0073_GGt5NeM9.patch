@@ -1,0 +1,18 @@
+*** Begin Patch
+*** Update File: lib/core/config/tester_config.dart
+@@
+ /// Toggle to grant all users premium during the tester period.
+ /// Set to false when the free-tester period ends.
+ class TesterConfig {
+-  static const bool testerPremiumEnabled = true;
++  /// Hard override that grants premium to everyone (all platforms).
++  /// Keep this `false` for production releases.
++  static const bool testerPremiumEnabled =
++      bool.fromEnvironment('TESTER_PREMIUM_ENABLED', defaultValue: false);
++
++  /// Grants premium automatically when the app is installed via TestFlight.
++  /// (Implemented via an iOS receipt check.)
++  static const bool testFlightPremiumEnabled =
++      bool.fromEnvironment('TESTFLIGHT_PREMIUM_ENABLED', defaultValue: true);
+ }
+*** End Patch

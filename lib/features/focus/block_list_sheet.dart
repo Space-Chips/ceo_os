@@ -1,10 +1,10 @@
 import 'dart:ui';
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/models/block_list_model.dart';
 import '../../core/providers/focus_provider.dart';
+import '../../core/providers/language_provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../components/components.dart';
@@ -27,43 +27,74 @@ class _BlockListSheetState extends State<BlockListSheet> {
   @override
   void initState() {
     super.initState();
-    if (widget.blockList != null) {
-      _nameCtrl.text = widget.blockList!.name;
-      _adultBlocking = widget.blockList!.adultBlocking;
-      _blockedPackages = List.from(widget.blockList!.blockedPackageNames);
-      _blockedCategories = List.from(widget.blockList!.blockedCategories);
+    final blockList = widget.blockList;
+    if (blockList != null) {
+      _nameCtrl.text = blockList.name;
+      _adultBlocking = blockList.adultBlocking;
+      _blockedPackages = List.from(blockList.blockedPackageNames);
+      _blockedCategories = List.from(blockList.blockedCategories);
     }
   }
 
   Future<void> _openAppSelector() async {
     if (Platform.isIOS) {
-      // Use native picker bridge via provider
       final provider = context.read<FocusProvider>();
-      final tokens = await provider.selectAppsNative();
-      if (tokens != null) {
-        setState(() {
-          // On iOS, we just get opaque tokens. We store them as "packages" for simplicity in the model.
-          // In a real app, you might want separate fields or a unified ID system.
-          _blockedPackages = tokens; 
-        });
-      } else {
-        if (mounted) {
-          showCupertinoDialog(
+      if (!provider.isAuthorized) {
+        final granted = await provider.requestPermissions();
+        if (!granted && mounted) {
+          await showCupertinoDialog<void>(
             context: context,
             builder: (ctx) => CupertinoAlertDialog(
-              title: const Text('SETUP REQUIRED'),
-              content: const Text(
-                'To select apps on iOS, this application must be rebuilt with native extensions.\n\nPlease stop the running app and restart it using "flutter run".',
+              title: Text(
+                !provider.protectionStatus.isSupported
+                    ? 'Screen Time Unavailable'
+                    : provider.protectionStatus.shouldOpenSettings
+                    ? 'Turn On Screen Time Access'
+                    : 'Permission Required',
+              ),
+              content: Text(
+                !provider.protectionStatus.isSupported
+                    ? 'This runtime does not currently expose Apple Screen Time / Family Controls selection. Try again on a supported iPhone build.'
+                    : provider.protectionStatus.shouldOpenSettings
+                    ? 'To choose apps and websites on iPhone, Screen Time / Family Controls access must be re-enabled in iOS Settings.'
+                    : 'To choose apps and websites on iPhone, grant Screen Time / Family Controls access when Apple asks for permission.',
               ),
               actions: [
                 CupertinoDialogAction(
-                  child: const Text('OK'),
                   onPressed: () => Navigator.pop(ctx),
+                  child: Text('OK'),
                 ),
+                if (provider.protectionStatus.shouldOpenSettings)
+                  CupertinoDialogAction(
+                    isDefaultAction: true,
+                    onPressed: () async {
+                      Navigator.pop(ctx);
+                      await provider.openSystemSettings();
+                    },
+                    child: Text('Open Settings'),
+                  ),
               ],
             ),
           );
+          return;
         }
+      }
+      if (mounted) {
+        await showCupertinoDialog<void>(
+          context: context,
+          builder: (ctx) => CupertinoAlertDialog(
+            title: Text('Use Screen Time Control'),
+            content: Text(
+              'On iPhone, app and website selection is now managed from Screen Time Control with search suggestions. This legacy editor no longer opens the Apple picker.',
+            ),
+            actions: [
+              CupertinoDialogAction(
+                child: Text('OK'),
+                onPressed: () => Navigator.pop(ctx),
+              ),
+            ],
+          ),
+        );
       }
     } else {
       // Android / Custom Dart UI
@@ -102,14 +133,17 @@ class _BlockListSheetState extends State<BlockListSheet> {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<LanguageProvider>().languageCode;
     return BackdropFilter(
       filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
       child: Container(
         height: MediaQuery.of(context).size.height * 0.85,
         decoration: BoxDecoration(
-          color: AppColors.background.withOpacity(0.9),
+          color: AppColors.background.withValues(alpha: 0.9),
           borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-          border: const Border(top: BorderSide(color: AppColors.glassBorder, width: 0.5)),
+          border: Border(
+            top: BorderSide(color: AppColors.glassBorder, width: 0.5),
+          ),
         ),
         child: SafeArea(
           child: Column(
@@ -128,14 +162,18 @@ class _BlockListSheetState extends State<BlockListSheet> {
                   ),
                 ),
               ),
-              
+
               Padding(
                 padding: const EdgeInsets.all(24),
                 child: Column(
                   children: [
-                    const NeoMonoText('BLOCK_LIST_CONFIG', fontSize: 18, fontWeight: FontWeight.bold),
+                    NeoMonoText(
+                      'BLOCK_LIST_CONFIG',
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                     const SizedBox(height: 32),
-                    
+
                     // Name
                     GlassInputField(
                       placeholder: 'LIST_NAME (e.g. DEEP WORK)',
@@ -146,7 +184,8 @@ class _BlockListSheetState extends State<BlockListSheet> {
 
                     // Adult Blocking
                     GestureDetector(
-                      onTap: () => setState(() => _adultBlocking = !_adultBlocking),
+                      onTap: () =>
+                          setState(() => _adultBlocking = !_adultBlocking),
                       child: GlassCard(
                         padding: const EdgeInsets.all(16),
                         child: Row(
@@ -154,25 +193,42 @@ class _BlockListSheetState extends State<BlockListSheet> {
                             Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: AppColors.error.withOpacity(0.1),
+                                color: AppColors.error.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(8),
                               ),
-                              child: const Icon(CupertinoIcons.exclamationmark_shield_fill, color: AppColors.error, size: 20),
+                              child: Icon(
+                                CupertinoIcons.exclamationmark_shield_fill,
+                                color: AppColors.error,
+                                size: 20,
+                              ),
                             ),
                             const SizedBox(width: 16),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text('ADULT_CONTENT_SHIELD', style: AppTypography.mono.copyWith(fontWeight: FontWeight.bold, fontSize: 12)),
-                                  Text('BLOCK_NSFW_SITES', style: AppTypography.mono.copyWith(fontSize: 10, color: AppColors.secondaryLabel)),
+                                  Text(
+                                    'ADULT_CONTENT_SHIELD',
+                                    style: AppTypography.mono.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                  Text(
+                                    'BLOCK_NSFW_SITES',
+                                    style: AppTypography.mono.copyWith(
+                                      fontSize: 10,
+                                      color: AppColors.secondaryLabel,
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),
                             CupertinoSwitch(
                               value: _adultBlocking,
-                              activeColor: AppColors.primaryOrange,
-                              onChanged: (v) => setState(() => _adultBlocking = v),
+                              activeTrackColor: AppColors.primaryOrange,
+                              onChanged: (v) =>
+                                  setState(() => _adultBlocking = v),
                             ),
                           ],
                         ),
@@ -190,29 +246,49 @@ class _BlockListSheetState extends State<BlockListSheet> {
                             Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: AppColors.primaryOrange.withOpacity(0.1),
+                                color: AppColors.primaryOrange.withValues(
+                                  alpha: 0.1,
+                                ),
                                 borderRadius: BorderRadius.circular(8),
                               ),
-                              child: const Icon(CupertinoIcons.square_grid_2x2, color: AppColors.primaryOrange, size: 20),
+                              child: Icon(
+                                CupertinoIcons.square_grid_2x2,
+                                color: AppColors.primaryOrange,
+                                size: 20,
+                              ),
                             ),
                             const SizedBox(width: 16),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text('BLOCKED_APPLICATIONS', style: AppTypography.mono.copyWith(fontWeight: FontWeight.bold, fontSize: 12)),
                                   Text(
-                                    _blockedPackages.isEmpty && _blockedCategories.isEmpty 
-                                        ? 'TAP_TO_SELECT' 
-                                        : (Platform.isIOS 
-                                            ? 'SELECTED_CONFIGURATION' 
-                                            : '${_blockedPackages.length} APPS, ${_blockedCategories.length} CATEGORIES'),
-                                    style: AppTypography.mono.copyWith(fontSize: 10, color: AppColors.secondaryLabel),
+                                    'BLOCKED_APPLICATIONS',
+                                    style: AppTypography.mono.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                  Text(
+                                    _blockedPackages.isEmpty &&
+                                            _blockedCategories.isEmpty
+                                        ? 'TAP_TO_SELECT'
+                                        : (Platform.isIOS
+                                              ? 'SELECTED_CONFIGURATION'
+                                              : '${_blockedPackages.length} APPS, ${_blockedCategories.length} CATEGORIES'),
+                                    style: AppTypography.mono.copyWith(
+                                      fontSize: 10,
+                                      color: AppColors.secondaryLabel,
+                                    ),
                                   ),
                                 ],
                               ),
                             ),
-                            const Icon(CupertinoIcons.chevron_right, color: AppColors.tertiaryLabel, size: 16),
+                            Icon(
+                              CupertinoIcons.chevron_right,
+                              color: AppColors.tertiaryLabel,
+                              size: 16,
+                            ),
                           ],
                         ),
                       ),

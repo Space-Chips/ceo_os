@@ -1,0 +1,46 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/screen_time_setup/screen_time_setup_screen.dart
+@@
+     switch (step) {
+       case ScreenTimeSetupStep.intro:
+         return _IntroStep(onContinue: controller.advance);
+-      case ScreenTimeSetupStep.value:
+-        return _ValueStep(
+-          selection: controller.valueSelection,
+-          onSelect: controller.setValueSelection,
+-          onContinue: controller.advance,
+-        );
+-      case ScreenTimeSetupStep.overview:
+-        return _OverviewStep(
+-          isAuthorized: controller.isAuthorized,
+-          onContinue: controller.advance,
+-        );
+       case ScreenTimeSetupStep.permission:
+         return _PermissionStep(
+           status: controller.protectionStatus,
+           showSuccess: _showStepSuccess,
+           onRequest: controller.requestScreenTimeAccess,
+@@
+ class _SetupStepScaffold extends StatelessWidget {
+   final Widget child;
+   final Widget? footer;
+   final bool showBack;
+   final VoidCallback? onBack;
++  final String? progressLabel;
+ 
+   const _SetupStepScaffold({
+     required this.child,
+     this.footer,
+     this.showBack = false,
+     this.onBack,
++    this.progressLabel,
+   });
+@@
+               else
+                 const SizedBox(width: 32),
+               const Spacer(),
+-              _ProgressPill(),
++              _ProgressPill(label: progressLabel ?? 'Screen Time'),
+             ],
+           ),
+*** End Patch

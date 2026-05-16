@@ -1,0 +1,662 @@
+*** Begin Patch
+*** Delete File: /Users/timo/ceo_os/lib/core/theme/theme_catalog.dart
+*** Add File: /Users/timo/ceo_os/lib/core/theme/theme_catalog.dart
++import 'dart:ui';
++
++enum AppThemeTone { dark, light }
++
++enum AppTypographyProfile { neo, technical, editorial }
++
++class AppThemePalette {
++  final Color bgPrimary;
++  final Color bgSecondary;
++  final Color surfacePrimary;
++  final Color surfaceSecondary;
++  final Color surfaceTertiary;
++  final Color textPrimary;
++  final Color textSecondary;
++  final Color textTertiary;
++  final Color borderSubtle;
++  final Color borderStrong;
++  final Color accent;
++  final Color accentLight;
++  final Color accentDeep;
++  final Color accentGlow;
++  final Color ambientTint;
++
++  const AppThemePalette({
++    required this.bgPrimary,
++    required this.bgSecondary,
++    required this.surfacePrimary,
++    required this.surfaceSecondary,
++    required this.surfaceTertiary,
++    required this.textPrimary,
++    required this.textSecondary,
++    required this.textTertiary,
++    required this.borderSubtle,
++    required this.borderStrong,
++    required this.accent,
++    required this.accentLight,
++    required this.accentDeep,
++    required this.accentGlow,
++    required this.ambientTint,
++  });
++}
++
++class AppThemeSemanticTokens {
++  final Color appBackground;
++  final Color sectionBackground;
++  final Color cardBackground;
++  final Color cardBackgroundAlt;
++  final Color cardBorder;
++  final Color cardBorderStrong;
++  final Color primaryText;
++  final Color secondaryText;
++  final Color tertiaryText;
++  final Color accentText;
++  final Color accentIcon;
++  final Color accentBorder;
++  final Color accentSurfaceSoft;
++  final Color accentSurfaceStrong;
++  final Color accentGlow;
++  final Color scoreValue;
++  final Color progressFill;
++  final Color focusRing;
++  final Color activeToggle;
++  final Color selectionOutline;
++  final Color rankAccent;
++  final Color topBarControlBackground;
++  final Color topBarControlBorder;
++  final Color moduleIconBackground;
++  final Color dashboardGradientStart;
++  final Color dashboardGradientEnd;
++
++  const AppThemeSemanticTokens({
++    required this.appBackground,
++    required this.sectionBackground,
++    required this.cardBackground,
++    required this.cardBackgroundAlt,
++    required this.cardBorder,
++    required this.cardBorderStrong,
++    required this.primaryText,
++    required this.secondaryText,
++    required this.tertiaryText,
++    required this.accentText,
++    required this.accentIcon,
++    required this.accentBorder,
++    required this.accentSurfaceSoft,
++    required this.accentSurfaceStrong,
++    required this.accentGlow,
++    required this.scoreValue,
++    required this.progressFill,
++    required this.focusRing,
++    required this.activeToggle,
++    required this.selectionOutline,
++    required this.rankAccent,
++    required this.topBarControlBackground,
++    required this.topBarControlBorder,
++    required this.moduleIconBackground,
++    required this.dashboardGradientStart,
++    required this.dashboardGradientEnd,
++  });
++}
++
++class AppThemePreset {
++  final String id;
++  final String name;
++  final String subtitle;
++  final AppThemeTone tone;
++  final AppTypographyProfile typography;
++  final AppThemePalette palette;
++  final AppThemeSemanticTokens semantic;
++
++  const AppThemePreset({
++    required this.id,
++    required this.name,
++    required this.subtitle,
++    required this.tone,
++    required this.typography,
++    required this.palette,
++    required this.semantic,
++  });
++
++  bool get isDark => tone == AppThemeTone.dark;
++}
++
++class ThemeCatalog {
++  ThemeCatalog._();
++
++  static const String defaultPresetId = 'graphite_system';
++
++  static final List<AppThemePreset> presets = [
++    _buildPreset(
++      id: 'graphite_system',
++      name: 'Graphite System',
++      subtitle: 'Default',
++      tone: AppThemeTone.dark,
++      typography: AppTypographyProfile.neo,
++      palette: const AppThemePalette(
++        bgPrimary: Color(0xFF0B0F14),
++        bgSecondary: Color(0xFF101722),
++        surfacePrimary: Color(0xFF131C28),
++        surfaceSecondary: Color(0xFF182232),
++        surfaceTertiary: Color(0xFF1D293B),
++        textPrimary: Color(0xFFF3F7FF),
++        textSecondary: Color(0xFFAAB6C7),
++        textTertiary: Color(0xFF7E8A9A),
++        borderSubtle: Color(0x0FFFFFFF),
++        borderStrong: Color(0x1CFFFFFF),
++        accent: Color(0xFF5B84FF),
++        accentLight: Color(0xFF83A8FF),
++        accentDeep: Color(0xFF315DDB),
++        accentGlow: Color(0x475B84FF),
++        ambientTint: Color(0x145B84FF),
++      ),
++    ),
++    _buildPreset(
++      id: 'ember_protocol',
++      name: 'Ember Protocol',
++      subtitle: 'Warm dark',
++      tone: AppThemeTone.dark,
++      typography: AppTypographyProfile.technical,
++      palette: const AppThemePalette(
++        bgPrimary: Color(0xFF110D0A),
++        bgSecondary: Color(0xFF17110D),
++        surfacePrimary: Color(0xFF1C1511),
++        surfaceSecondary: Color(0xFF241A15),
++        surfaceTertiary: Color(0xFF2B1F18),
++        textPrimary: Color(0xFFFFF7F1),
++        textSecondary: Color(0xFFD2BEB0),
++        textTertiary: Color(0xFF9A8579),
++        borderSubtle: Color(0x12FFF5EE),
++        borderStrong: Color(0x1FFFF5EE),
++        accent: Color(0xFFFF8E42),
++        accentLight: Color(0xFFFFB06D),
++        accentDeep: Color(0xFFD96521),
++        accentGlow: Color(0x47FF8E42),
++        ambientTint: Color(0x14FF8E42),
++      ),
++    ),
++    _buildPreset(
++      id: 'royal_violet',
++      name: 'Royal Violet',
++      subtitle: 'Strategic dark',
++      tone: AppThemeTone.dark,
++      typography: AppTypographyProfile.editorial,
++      palette: const AppThemePalette(
++        bgPrimary: Color(0xFF0E0C14),
++        bgSecondary: Color(0xFF15111D),
++        surfacePrimary: Color(0xFF1A1624),
++        surfaceSecondary: Color(0xFF221B2F),
++        surfaceTertiary: Color(0xFF2A2140),
++        textPrimary: Color(0xFFF7F2FF),
++        textSecondary: Color(0xFFC6B8DB),
++        textTertiary: Color(0xFF8E83A5),
++        borderSubtle: Color(0x0FFFFFFF),
++        borderStrong: Color(0x1CFFFFFF),
++        accent: Color(0xFF9A78FF),
++        accentLight: Color(0xFFB69EFF),
++        accentDeep: Color(0xFF6E4DE0),
++        accentGlow: Color(0x4D9A78FF),
++        ambientTint: Color(0x179A78FF),
++      ),
++    ),
++    _buildPreset(
++      id: 'modern_desert',
++      name: 'Modern Desert',
++      subtitle: 'Cream modern',
++      tone: AppThemeTone.light,
++      typography: AppTypographyProfile.editorial,
++      palette: const AppThemePalette(
++        bgPrimary: Color(0xFFF6F0E7),
++        bgSecondary: Color(0xFFEFE6DA),
++        surfacePrimary: Color(0xFFFFF8EF),
++        surfaceSecondary: Color(0xFFF4EBDD),
++        surfaceTertiary: Color(0xFFEADCC9),
++        textPrimary: Color(0xFF2C241D),
++        textSecondary: Color(0xFF6E6257),
++        textTertiary: Color(0xFF9B8D80),
++        borderSubtle: Color(0x14453222),
++        borderStrong: Color(0x24453222),
++        accent: Color(0xFFC98A4A),
++        accentLight: Color(0xFFE0AE77),
++        accentDeep: Color(0xFFA96B30),
++        accentGlow: Color(0x2EC98A4A),
++        ambientTint: Color(0x12C98A4A),
++      ),
++    ),
++    _buildPreset(
++      id: 'cloud_studio',
++      name: 'Cloud Studio',
++      subtitle: 'Soft clean',
++      tone: AppThemeTone.light,
++      typography: AppTypographyProfile.neo,
++      palette: const AppThemePalette(
++        bgPrimary: Color(0xFFEEF2F6),
++        bgSecondary: Color(0xFFE5EBF1),
++        surfacePrimary: Color(0xFFF8FAFC),
++        surfaceSecondary: Color(0xFFEDF2F7),
++        surfaceTertiary: Color(0xFFDCE4EC),
++        textPrimary: Color(0xFF1E2833),
++        textSecondary: Color(0xFF5D6A78),
++        textTertiary: Color(0xFF8894A1),
++        borderSubtle: Color(0x14333242),
++        borderStrong: Color(0x21333242),
++        accent: Color(0xFF5E88C9),
++        accentLight: Color(0xFF84A9E0),
++        accentDeep: Color(0xFF3E68A8),
++        accentGlow: Color(0x2E5E88C9),
++        ambientTint: Color(0x105E88C9),
++      ),
++    ),
++  ];
++
++  static const Map<String, String> _legacyAliases = {
++    'graphite_system': 'graphite_system',
++    'ember_protocol': 'ember_protocol',
++    'royal_violet': 'royal_violet',
++    'modern_desert': 'modern_desert',
++    'cloud_studio': 'cloud_studio',
++    'graphite_blue': 'graphite_system',
++    'ember_focus': 'ember_protocol',
++    'emerald_system': 'graphite_system',
++    'ice_silver': 'cloud_studio',
++    'midnight_blue': 'graphite_system',
++    'graphite': 'graphite_system',
++    'sandstone': 'modern_desert',
++    'deep_forest': 'graphite_system',
++    'light_premium': 'cloud_studio',
++    'obsidian_dark': 'graphite_system',
++    'nebula_dark': 'graphite_system',
++    'ember_dark': 'ember_protocol',
++    'obsidian_light': 'cloud_studio',
++    'nebula_light': 'cloud_studio',
++    'ember_light': 'modern_desert',
++  };
++
++  static AppThemePreset resolveById(String? id) {
++    if (id == null || id.isEmpty) return presets.first;
++    final resolvedId = _legacyAliases[id] ?? id;
++    return presets.firstWhere(
++      (preset) => preset.id == resolvedId,
++      orElse: () => presets.first,
++    );
++  }
++
++  static AppThemePreset _buildPreset({
++    required String id,
++    required String name,
++    required String subtitle,
++    required AppThemeTone tone,
++    required AppTypographyProfile typography,
++    required AppThemePalette palette,
++  }) {
++    final semantic = AppThemeSemanticTokens(
++      appBackground: palette.bgPrimary,
++      sectionBackground: palette.bgSecondary,
++      cardBackground: palette.surfacePrimary,
++      cardBackgroundAlt: palette.surfaceSecondary,
++      cardBorder: palette.borderSubtle,
++      cardBorderStrong: palette.borderStrong,
++      primaryText: palette.textPrimary,
++      secondaryText: palette.textSecondary,
++      tertiaryText: palette.textTertiary,
++      accentText: palette.accent,
++      accentIcon: palette.accent,
++      accentBorder: palette.accent.withValues(alpha: 0.35),
++      accentSurfaceSoft: Color.alphaBlend(
++        palette.ambientTint,
++        palette.surfacePrimary,
++      ),
++      accentSurfaceStrong: Color.alphaBlend(
++        palette.accentGlow.withValues(alpha: 0.16),
++        palette.surfaceSecondary,
++      ),
++      accentGlow: palette.accentGlow,
++      scoreValue: palette.accent,
++      progressFill: palette.accent,
++      focusRing: palette.accent,
++      activeToggle: palette.accent,
++      selectionOutline: palette.accent.withValues(alpha: 0.42),
++      rankAccent: palette.accentLight,
++      topBarControlBackground: Color.alphaBlend(
++        palette.borderSubtle.withValues(alpha: 0.85),
++        palette.surfaceSecondary,
++      ),
++      topBarControlBorder: palette.borderStrong,
++      moduleIconBackground: Color.alphaBlend(
++        palette.borderSubtle.withValues(alpha: 0.72),
++        palette.surfaceTertiary,
++      ),
++      dashboardGradientStart: palette.surfaceSecondary,
++      dashboardGradientEnd: palette.surfacePrimary,
++    );
++
++    return AppThemePreset(
++      id: id,
++      name: name,
++      subtitle: subtitle,
++      tone: tone,
++      typography: typography,
++      palette: palette,
++      semantic: semantic,
++    );
++  }
++}
+*** Update File: /Users/timo/ceo_os/lib/core/theme/app_colors.dart
+@@
+ import 'dart:ui';
+ import 'theme_runtime.dart';
+ 
+ /// Dynamic color tokens bound to the active theme preset.
+ ///
+ /// New semantic tokens are exposed first, with legacy aliases kept for
+ /// compatibility across existing screens.
+ class AppColors {
+   AppColors._();
+ 
+   static bool get isDark => ThemeRuntime.preset.isDark;
+ 
+-  static Color get background => ThemeRuntime.preset.colors.background;
+-  static Color get backgroundElevated =>
+-      ThemeRuntime.preset.colors.backgroundElevated;
++  static Color get background => ThemeRuntime.preset.semantic.appBackground;
++  static Color get backgroundElevated =>
++      ThemeRuntime.preset.semantic.sectionBackground;
+   static Color get backgroundLight => backgroundElevated;
+-  static Color get surface => ThemeRuntime.preset.colors.surface;
+-  static Color get surfaceMuted => ThemeRuntime.preset.colors.surfaceMuted;
+-  static Color get cardBase => ThemeRuntime.preset.colors.cardBase;
+-  static Color get cardRaised => ThemeRuntime.preset.colors.cardRaised;
+-
+-  static Color get accent => ThemeRuntime.preset.colors.accent;
+-  static Color get accentLight => ThemeRuntime.preset.colors.accentLight;
+-  static Color get accentSoft => ThemeRuntime.preset.colors.accentSoft;
++  static Color get surface => ThemeRuntime.preset.semantic.cardBackground;
++  static Color get surfaceMuted => ThemeRuntime.preset.palette.surfaceTertiary;
++  static Color get cardBase => ThemeRuntime.preset.semantic.cardBackground;
++  static Color get cardRaised => ThemeRuntime.preset.semantic.cardBackgroundAlt;
++
++  static Color get accent => ThemeRuntime.preset.palette.accent;
++  static Color get accentLight => ThemeRuntime.preset.palette.accentLight;
++  static Color get accentDeep => ThemeRuntime.preset.palette.accentDeep;
++  static Color get accentSoft => ThemeRuntime.preset.semantic.accentSurfaceSoft;
+   static Color get accentSecondary =>
+       Color.lerp(accent, backgroundLight, isDark ? 0.22 : 0.32)!;
+-  static Color get themeGlow => ThemeRuntime.preset.colors.glow;
+-  static Color get activeBorder => ThemeRuntime.preset.colors.activeBorder;
+-  static Color get toggleOn => ThemeRuntime.preset.colors.toggleOn;
+-  static Color get buttonGradientStart =>
+-      ThemeRuntime.preset.colors.buttonGradientStart;
+-  static Color get buttonGradientEnd =>
+-      ThemeRuntime.preset.colors.buttonGradientEnd;
++  static Color get themeGlow => ThemeRuntime.preset.semantic.accentGlow;
++  static Color get activeBorder => ThemeRuntime.preset.semantic.accentBorder;
++  static Color get toggleOn => ThemeRuntime.preset.semantic.activeToggle;
++  static Color get buttonGradientStart => accent;
++  static Color get buttonGradientEnd => accentLight;
+   static List<Color> get buttonGradient => [
+     buttonGradientStart,
+     buttonGradientEnd,
+   ];
+ 
+-  static Color get label => ThemeRuntime.preset.colors.label;
+-  static Color get secondaryLabel => ThemeRuntime.preset.colors.secondaryLabel;
+-  static Color get tertiaryLabel => ThemeRuntime.preset.colors.tertiaryLabel;
+-  static Color get quaternaryLabel =>
+-      ThemeRuntime.preset.colors.quaternaryLabel;
+-
+-  static Color get success => ThemeRuntime.preset.colors.success;
+-  static Color get warning => ThemeRuntime.preset.colors.warning;
+-  static Color get error => ThemeRuntime.preset.colors.error;
+-
+-  static Color get chartA => ThemeRuntime.preset.colors.chartA;
+-  static Color get chartB => ThemeRuntime.preset.colors.chartB;
+-  static Color get chartC => ThemeRuntime.preset.colors.chartC;
+-  static Color get chartD => ThemeRuntime.preset.colors.chartD;
+-
+-  static Color get focusPrimary => ThemeRuntime.preset.colors.focusPrimary;
+-  static Color get focusSecondary => ThemeRuntime.preset.colors.focusSecondary;
+-  static Color get ceoPrimary => ThemeRuntime.preset.colors.ceoPrimary;
+-  static Color get ceoSecondary => ThemeRuntime.preset.colors.ceoSecondary;
+-
+-  static Color get border => ThemeRuntime.preset.colors.border;
+-  static Color get borderStrong => ThemeRuntime.preset.colors.borderStrong;
++  static Color get label => ThemeRuntime.preset.semantic.primaryText;
++  static Color get secondaryLabel => ThemeRuntime.preset.semantic.secondaryText;
++  static Color get tertiaryLabel => ThemeRuntime.preset.semantic.tertiaryText;
++  static Color get quaternaryLabel => tertiaryLabel.withValues(alpha: 0.72);
++
++  static const Color success = Color(0xFF2CB67D);
++  static const Color warning = Color(0xFFF5A524);
++  static const Color error = Color(0xFFEA5E67);
++
++  static Color get chartA => accentLight;
++  static Color get chartB => accent;
++  static Color get chartC => warning;
++  static Color get chartD => success.withValues(alpha: 0.88);
++
++  static Color get focusPrimary => ThemeRuntime.preset.semantic.focusRing;
++  static Color get focusSecondary => accentLight;
++  static const Color ceoPrimary = Color(0xFFFFB04E);
++  static const Color ceoSecondary = Color(0xFFFFD48A);
++
++  static Color get border => ThemeRuntime.preset.semantic.cardBorder;
++  static Color get borderStrong => ThemeRuntime.preset.semantic.cardBorderStrong;
+@@
+   // New system tokens.
+   static Color get systemBackground => background;
+   static Color get secondarySystemBackground => backgroundLight;
+   static Color get tertiarySystemBackground => surface;
+   static Color get elevatedBackground => cardRaised;
+   static Color get separator => border;
+   static Color get opaqueSeparator => borderStrong;
+   static Color get onAccent => isDark ? white : const Color(0xFFF9FBFF);
+ 
+   // Low-noise materials.
+   static Color get glassBase => cardBase;
+   static Color get glassBorder => border;
+-  static Color get glassSurfaceSoft => isDark
+-      ? Color.alphaBlend(const Color(0x06FFFFFF), cardBase)
+-      : Color.alphaBlend(const Color(0xB3FFFFFF), surface);
+-  static Color get glassSurfaceStrong => isDark
+-      ? Color.alphaBlend(const Color(0x10FFFFFF), cardRaised)
+-      : Color.alphaBlend(const Color(0xEBFFFFFF), surface);
+-
+-  static Color get glassHighlight => isDark
+-      ? Color.alphaBlend(const Color(0x29FFFFFF), backgroundLight)
+-      : const Color(0xCFFFFFFF);
+-  static Color get glassHighlightSoft => isDark
+-      ? Color.alphaBlend(const Color(0x18FFFFFF), background)
+-      : const Color(0x99FFFFFF);
++  static Color get glassSurfaceSoft => Color.alphaBlend(
++    border.withValues(alpha: 0.48),
++    cardBase,
++  );
++  static Color get glassSurfaceStrong => Color.alphaBlend(
++    borderStrong.withValues(alpha: 0.78),
++    cardRaised,
++  );
++
++  static Color get glassHighlight => Color.alphaBlend(
++    white.withValues(alpha: isDark ? 0.14 : 0.34),
++    backgroundLight,
++  );
++  static Color get glassHighlightSoft => Color.alphaBlend(
++    white.withValues(alpha: isDark ? 0.08 : 0.22),
++    background,
++  );
+@@
+   static Color get edgeGlow =>
+       themeGlow.withValues(alpha: isDark ? themeGlow.a : 0.1);
+   static Color get edgeGlowSoft =>
+       themeGlow.withValues(alpha: isDark ? 0.12 : 0.06);
+ 
+   static List<Color> get backdropGradient => [
+-    background,
+-    Color.lerp(background, backgroundLight, 0.58)!,
++    background,
++    Color.alphaBlend(ThemeRuntime.preset.palette.ambientTint, backgroundLight),
+     background,
+   ];
+ 
+   static List<Color> get floatingGlassGradient => [
+-    Color.alphaBlend(
+-      isDark ? const Color(0x08FFFFFF) : const Color(0xCCFFFFFF),
+-      cardRaised,
+-    ),
+-    Color.alphaBlend(
+-      isDark ? const Color(0x04FFFFFF) : const Color(0xAAFFFFFF),
+-      cardBase,
+-    ),
++    Color.alphaBlend(borderStrong.withValues(alpha: 0.55), cardRaised),
++    Color.alphaBlend(border.withValues(alpha: 0.42), cardBase),
+   ];
+ 
+   static List<Color> get inputGlassGradient => [
+-    Color.alphaBlend(
+-      isDark ? const Color(0x0AFFFFFF) : const Color(0xF2FFFFFF),
+-      surface,
+-    ),
+-    Color.alphaBlend(
+-      isDark ? const Color(0x04FFFFFF) : const Color(0xE8FFFFFF),
+-      surfaceMuted,
+-    ),
++    Color.alphaBlend(border.withValues(alpha: 0.44), surface),
++    Color.alphaBlend(border.withValues(alpha: 0.22), surfaceMuted),
+   ];
+@@
+   static Color get royalPurple => accentSoft;
+   static Color get softIndigo => accentSoft;
+   static Color get vibrantPink => accent;
+ 
+   static Color get systemBlue => accent;
+   static Color get systemRed => error;
+ }
+*** Update File: /Users/timo/ceo_os/lib/core/theme/app_theme.dart
+@@
+   static CupertinoThemeData cupertinoForTone(AppThemeTone tone) {
+     final isDark = tone == AppThemeTone.dark;
+     return CupertinoThemeData(
+       brightness: isDark ? Brightness.dark : Brightness.light,
+       primaryColor: AppColors.accent,
+       scaffoldBackgroundColor: AppColors.background,
+       barBackgroundColor: Color.alphaBlend(
+-        isDark ? const Color(0xC60A1018) : const Color(0xEFFFFFFF),
++        isDark ? const Color(0xC60A1018) : const Color(0xD9FFFFFF),
+         AppColors.background,
+       ),
+       applyThemeToAll: true,
+@@
+     final colorScheme = baseScheme.copyWith(
+       primary: AppColors.accent,
+       secondary: AppColors.accent,
+       surface: AppColors.surface,
+       onSurface: AppColors.label,
+       onPrimary: AppColors.onAccent,
+       onSecondary: AppColors.onAccent,
+       error: AppColors.error,
+       onError: AppColors.white,
+     );
+@@
+       scaffoldBackgroundColor: AppColors.background,
+       canvasColor: AppColors.background,
+       primaryColor: AppColors.accent,
+@@
+       cardTheme: CardThemeData(
+         color: AppColors.cardBase,
+         elevation: 0,
+         shape: RoundedRectangleBorder(
+           borderRadius: BorderRadius.circular(18),
+@@
+       inputDecorationTheme: InputDecorationTheme(
+         filled: true,
+-        fillColor: AppColors.surface,
++        fillColor: AppColors.cardRaised,
+         contentPadding: const EdgeInsets.symmetric(
+           horizontal: 16,
+           vertical: 14,
+@@
+       dialogTheme: DialogThemeData(
+         backgroundColor: AppColors.cardRaised,
+         shape: RoundedRectangleBorder(
+*** Update File: /Users/timo/ceo_os/lib/core/providers/theme_provider.dart
+@@
+-  AppColorPalette get currentColors => _currentPreset.colors;
++  AppThemePalette get currentColors => _currentPreset.palette;
+*** Update File: /Users/timo/ceo_os/lib/core/models/settings_models.dart
+@@
+-      themePreset: json['theme_preset'] ?? 'graphite_blue',
++      themePreset: json['theme_preset'] ?? 'graphite_system',
+*** Update File: /Users/timo/ceo_os/supabase_p0_profile_settings_theme.sql
+@@
+ update public.app_settings
+-set theme_preset = 'graphite_blue'
++set theme_preset = 'graphite_system'
+ where theme_preset is null;
+ 
+ alter table public.app_settings
+-  alter column theme_preset set default 'graphite_blue';
++  alter column theme_preset set default 'graphite_system';
+@@
+         'midnight_blue',
++        'graphite_system',
++        'ember_protocol',
++        'modern_desert',
++        'cloud_studio',
+         'graphite_blue',
+         'graphite',
+         'sandstone',
+         'deep_forest',
+         'light_premium',
+         'ember_focus',
+         'emerald_system',
+         'royal_violet',
+         'ice_silver',
+*** Update File: /Users/timo/ceo_os/supabase_theme_preset_ids_fix.sql
+@@
+ update public.app_settings
+-set theme_preset = 'graphite_blue'
++set theme_preset = 'graphite_system'
+ where theme_preset is null;
+ 
+ alter table public.app_settings
+-  alter column theme_preset set default 'graphite_blue';
++  alter column theme_preset set default 'graphite_system';
+@@
+         'midnight_blue',
++        'graphite_system',
++        'ember_protocol',
++        'modern_desert',
++        'cloud_studio',
+         'graphite_blue',
+         'graphite',
+         'sandstone',
+         'deep_forest',
+         'light_premium',
+         'ember_focus',
+         'emerald_system',
+         'royal_violet',
+         'ice_silver',
+*** Update File: /Users/timo/ceo_os/supabase_theme_onboarding_update.sql
+@@
+ update public.app_settings
+-set theme_preset = 'graphite_blue'
++set theme_preset = 'graphite_system'
+ where theme_preset is null;
+ 
+ alter table public.app_settings
+-  alter column theme_preset set default 'graphite_blue';
++  alter column theme_preset set default 'graphite_system';
+@@
+           'midnight_blue',
++          'graphite_system',
++          'ember_protocol',
++          'modern_desert',
++          'cloud_studio',
+           'graphite_blue',
+           'graphite',
+           'sandstone',
+           'deep_forest',
+           'light_premium',
+*** End Patch

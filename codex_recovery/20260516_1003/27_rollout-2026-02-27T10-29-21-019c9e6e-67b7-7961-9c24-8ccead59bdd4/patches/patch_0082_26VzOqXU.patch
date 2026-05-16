@@ -1,0 +1,58 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/tasks/tasks_screen.dart
+@@
+   Widget _tabChip(String label, _TaskTab tab) {
+     final selected = _activeTab == tab;
+     return Expanded(
+       child: GestureDetector(
+         onTap: () => setState(() => _activeTab = tab),
+@@
+             border: Border.all(
+               color: selected
+                   ? AppColors.primaryOrange.withValues(alpha: 0.35)
+                   : AppColors.glassBorder,
+               width: 0.5,
+             ),
++            boxShadow: selected
++                ? [
++                    BoxShadow(
++                      color: AppColors.primaryOrange.withValues(alpha: 0.2),
++                      blurRadius: 14,
++                      spreadRadius: -2,
++                    ),
++                  ]
++                : null,
+           ),
+           child: Center(
+             child: Text(
+               label,
+@@
+       ),
+     );
+   }
++
++  Widget _glowSurface({
++    required Widget child,
++    required Color glowColor,
++    double borderRadius = 18,
++  }) {
++    return Stack(
++      children: [
++        Positioned.fill(
++          child: IgnorePointer(
++            child: Container(
++              margin: const EdgeInsets.all(8),
++              decoration: BoxDecoration(
++                borderRadius: BorderRadius.circular(borderRadius),
++                boxShadow: [
++                  BoxShadow(color: glowColor, blurRadius: 32, spreadRadius: 2),
++                ],
++              ),
++            ),
++          ),
++        ),
++        child,
++      ],
++    );
++  }
+*** End Patch

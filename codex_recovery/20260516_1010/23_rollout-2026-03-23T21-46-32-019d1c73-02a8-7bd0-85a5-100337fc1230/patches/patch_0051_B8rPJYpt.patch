@@ -1,0 +1,34 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/ios/Runner/AppDelegate.swift
+@@
+         case "getAuthorizationStatus":
+             result(authorizationStatusCode())
+         case "supportsPrivateScreenTimeSummaryView":
++            #if targetEnvironment(simulator)
++            result(false)
++            #else
+             if #available(iOS 16.0, *) {
+                 result(true)
+             } else {
+                 result(false)
+             }
++            #endif
+         case "startShield":
+             if let packages = args?["packages"] as? [String], !packages.isEmpty {
+                 updateFocusSelection(encodedPayloads: packages, applyShield: true)
+                 result(nil)
+             } else {
+@@
+-    if #available(iOS 16.0, *) {
++    #if !targetEnvironment(simulator)
++    if #available(iOS 16.0, *) {
+         registrar.register(
+             PrivateScreenTimeSummaryPlatformViewFactory(),
+             withId: "com.ceoos.app/private_screen_time_summary"
+         )
+     }
++    #endif
+ 
+     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+   }
+*** End Patch

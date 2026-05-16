@@ -1,0 +1,11 @@
+*** Begin Patch
+*** Update File: lib/features/screen_time_manager/family_time_screen.dart
+@@
+   @override
+   Widget build(BuildContext context) {
++    context.watch<LanguageProvider>().languageCode;
+     return CupertinoPageScaffold(
+       backgroundColor: AppColors.background,
+       child: AmbientBackdrop(
+         child: SafeArea(
+*** End Patch

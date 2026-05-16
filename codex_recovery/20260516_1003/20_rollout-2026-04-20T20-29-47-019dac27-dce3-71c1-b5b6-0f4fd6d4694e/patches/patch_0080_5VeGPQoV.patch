@@ -1,0 +1,75 @@
+*** Begin Patch
+*** Update File: android/app/src/main/kotlin/com/wakeapp/ceoos/BlockingAccessibilityService.kt
+@@
+     private fun openBrowserHome(browserPackage: String?, blockedDomain: String?) {
+         val pkg = browserPackage?.trim().orEmpty()
+         if (pkg.isEmpty()) {
+             performGlobalAction(GLOBAL_ACTION_HOME)
+             return
+         }
+ 
+         registerBrowserHomeRedirect(pkg, blockedDomain)
+ 
++        val safeUrlIntent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.google.com/")).apply {
++            `package` = pkg
++            addFlags(
++                Intent.FLAG_ACTIVITY_NEW_TASK or
++                    Intent.FLAG_ACTIVITY_CLEAR_TOP or
++                    Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED or
++                    Intent.FLAG_ACTIVITY_NO_ANIMATION,
++            )
++        }
++
+         val blankIntent = Intent(Intent.ACTION_VIEW, Uri.parse("about:blank")).apply {
+             `package` = pkg
+             addFlags(
+                 Intent.FLAG_ACTIVITY_NEW_TASK or
+@@
+         // Important: don't use resolveActivity() here; package visibility restrictions can make it lie.
+         // Just try the intents, and fall back on exceptions.
+         try {
++            try {
++                startActivity(safeUrlIntent)
++                return
++            } catch (_: Exception) {
++            }
+             if (pkg == "com.android.chrome" || pkg == "com.brave.browser") {
+                 try {
+                     startActivity(
+                         Intent(Intent.ACTION_VIEW, Uri.parse("chrome://newtab")).apply {
+                             `package` = pkg
+@@
+             try {
+                 startActivity(blankIntent)
+                 return
+             } catch (_: Exception) {
+                 try {
+                     startActivity(intent)
+                     return
+                 } catch (_: Exception) {
+                     if (launchIntent != null) {
+                         startActivity(launchIntent)
+                         return
+                     }
+                 }
+             }
+         } catch (_: Exception) {
+         }
+ 
+         performGlobalAction(GLOBAL_ACTION_HOME)
+     }
+@@
+     private fun registerBrowserHomeRedirect(browserPackage: String?, blockedDomain: String?) {
+@@
+-        browserHomeGraceUntilElapsed = SystemClock.elapsedRealtime() + 700L
++        browserHomeGraceUntilElapsed = SystemClock.elapsedRealtime() + 250L
+         browserHomeGraceDomain = blockedDomain?.trim()?.ifEmpty { null }
+     }
+@@
+     private fun shouldIgnoreDuringBrowserHomeGrace(
+@@
+-        val current = snapshot.detectedBrowserUrl
+-        return current == null || current == graceDomain
++        return snapshot.detectedBrowserUrl == null
+     }
+*** End Patch

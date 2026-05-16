@@ -1,0 +1,31 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/rank/rank_screen.dart
+@@
+             _tierBadge(tier, size: 120),
+             const SizedBox(height: 10),
+-            Text(
+-              tier.name,
+-              style: AppTypography.mono.copyWith(
+-                fontSize: 74,
+-                color: AppColors.label,
+-                fontWeight: FontWeight.w900,
+-                height: 0.9,
++            SizedBox(
++              width: double.infinity,
++              child: FittedBox(
++                fit: BoxFit.scaleDown,
++                child: Text(
++                  tier.name,
++                  style: AppTypography.mono.copyWith(
++                    fontSize: 74,
++                    color: AppColors.label,
++                    fontWeight: FontWeight.w900,
++                    height: 0.9,
++                  ),
++                ),
+               ),
+             ),
+           ],
+         ),
+       ),
+*** End Patch

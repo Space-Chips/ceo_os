@@ -1,0 +1,80 @@
+*** Begin Patch
+*** Update File: lib/core/widgets/home_widgets/widget_views.dart
+@@
+ class FocusWidgetSquareView extends StatelessWidget {
+@@
+   @override
+   Widget build(BuildContext context) {
+     return WidgetRoot(
+       padding: WidgetDesignTokens.padSquare,
+       decorationOverride: BoxDecoration(
+         borderRadius: BorderRadius.circular(WidgetDesignTokens.radiusOuter),
+         gradient: WidgetDesignTokens.focusGradient,
+         border: Border.all(
+           color: AppColors.borderStrong.withValues(alpha: 0.85),
+           width: 1,
+         ),
+       ),
+       child: Column(
+         crossAxisAlignment: CrossAxisAlignment.start,
+         children: [
+-          Text('Focus', style: WidgetDesignTokens.title),
++          Text('Focus', style: WidgetDesignTokens.title.copyWith(fontSize: 22)),
+           const SizedBox(height: 10),
+           Expanded(
+             child: WidgetActionButton(
+               icon: CupertinoIcons.play_fill,
+               title: language.t('widget_start_focus'),
+-              subtitle: '$durationMinutes min',
++              subtitle: 'Start session',
+               variant: WidgetActionVariant.focus,
++              prominentValue: '$durationMinutes min',
+             ),
+           ),
+         ],
+       ),
+     );
+   }
+ }
+@@
+ class BlackoutWidgetSquareView extends StatelessWidget {
+@@
+   @override
+   Widget build(BuildContext context) {
+     final hours = durationMinutes ~/ 60;
+     final label = hours >= 1 ? '$hours h' : '$durationMinutes min';
+     return WidgetRoot(
+       padding: WidgetDesignTokens.padSquare,
+       decorationOverride: BoxDecoration(
+         borderRadius: BorderRadius.circular(WidgetDesignTokens.radiusOuter),
+         gradient: WidgetDesignTokens.blackoutGradient,
+         border: Border.all(
+           color: AppColors.borderStrong.withValues(alpha: 0.85),
+           width: 1,
+         ),
+       ),
+       child: Column(
+         crossAxisAlignment: CrossAxisAlignment.start,
+         children: [
+-          Text('Blackout', style: WidgetDesignTokens.title),
++          Text(
++            'Blackout',
++            style: WidgetDesignTokens.title.copyWith(fontSize: 22),
++          ),
+           const SizedBox(height: 10),
+           Expanded(
+             child: WidgetActionButton(
+               icon: CupertinoIcons.lock_fill,
+               title: language.t('widget_start_blackout'),
+-              subtitle: label,
++              subtitle: 'Start session',
+               variant: WidgetActionVariant.blackout,
++              prominentValue: label,
+             ),
+           ),
+         ],
+       ),
+     );
+   }
+ }
+*** End Patch

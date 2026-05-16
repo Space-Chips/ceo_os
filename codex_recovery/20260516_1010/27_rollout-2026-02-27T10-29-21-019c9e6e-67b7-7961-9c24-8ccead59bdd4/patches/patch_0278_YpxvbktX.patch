@@ -1,0 +1,161 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/router/app_router.dart
+@@
++import 'dart:async';
+ import 'dart:ui';
+ import 'package:flutter/cupertino.dart';
+ import 'package:flutter/material.dart';
+ import 'package:go_router/go_router.dart';
+ import 'package:provider/provider.dart';
+@@
+ import '../../features/legacy/event_types_screen.dart';
+ import '../../features/legacy/biannual_report_screen.dart';
+ import '../../features/legacy/app_modules_screen.dart';
+ import '../../core/models/habit_models.dart';
++import '../providers/task_provider.dart';
+@@
+ /// App shell containing the global focus bar.
+-class _AppShell extends StatelessWidget {
++class _AppShell extends StatefulWidget {
+   final Widget child;
+   const _AppShell({required this.child});
+ 
++  @override
++  State<_AppShell> createState() => _AppShellState();
++}
++
++class _AppShellState extends State<_AppShell> {
++  Timer? _focusPlanTimer;
++  DateTime _lastEventsRefresh = DateTime.fromMillisecondsSinceEpoch(0);
++  bool _focusPlanTickRunning = false;
++  final Set<String> _warnedPlanKeys = <String>{};
++  final Set<String> _startedPlanKeys = <String>{};
++
++  @override
++  void initState() {
++    super.initState();
++    WidgetsBinding.instance.addPostFrameCallback((_) {
++      _runFocusPlanTick();
++      _focusPlanTimer = Timer.periodic(const Duration(seconds: 30), (_) {
++        _runFocusPlanTick();
++      });
++    });
++  }
++
++  @override
++  void dispose() {
++    _focusPlanTimer?.cancel();
++    super.dispose();
++  }
++
++  Future<void> _runFocusPlanTick() async {
++    if (!mounted || _focusPlanTickRunning) return;
++    _focusPlanTickRunning = true;
++    try {
++      final now = DateTime.now();
++      final taskProvider = context.read<TaskProvider>();
++      final focusProvider = context.read<FocusProvider>();
++
++      if (now.difference(_lastEventsRefresh) > const Duration(minutes: 5)) {
++        await taskProvider.loadEvents();
++        _lastEventsRefresh = now;
++      }
++
++      for (final event in taskProvider.events) {
++        final source = (event.sourceType ?? '').trim().toLowerCase();
++        if (source != 'focus_plan') continue;
++        final eventDate = event.eventDate;
++        final eventTime = event.eventTime;
++        if (eventDate == null || eventTime == null) continue;
++
++        final scheduled = _parseDateTime(eventDate, eventTime);
++        if (scheduled == null) continue;
++        final key = '${event.id}|${scheduled.toIso8601String()}';
++
++        if (now.isAfter(scheduled.subtract(const Duration(minutes: 5))) &&
++            now.isBefore(scheduled) &&
++            !_warnedPlanKeys.contains(key)) {
++          _warnedPlanKeys.add(key);
++          _showPlanReminderSnackBar();
++        }
++
++        if (!now.isBefore(scheduled) &&
++            now.isBefore(scheduled.add(const Duration(minutes: 2))) &&
++            !_startedPlanKeys.contains(key) &&
++            focusProvider.state == FocusState.idle) {
++          final duration = (event.durationMinutes ?? 45).clamp(5, 180);
++          focusProvider.focusDurationMinutes = duration;
++          final started = await focusProvider.startFocus();
++          if (started) {
++            _startedPlanKeys.add(key);
++            _showFocusStartedSnackBar(duration);
++          }
++        }
++      }
++
++      _trimPlanMemory(now);
++    } catch (_) {
++      // Keep shell resilient; scheduler must never crash UI.
++    } finally {
++      _focusPlanTickRunning = false;
++    }
++  }
++
++  DateTime? _parseDateTime(String rawDate, String rawTime) {
++    final date = DateTime.tryParse(rawDate);
++    if (date == null) return null;
++    final parts = rawTime.split(':');
++    if (parts.length < 2) return null;
++    final hour = int.tryParse(parts[0]);
++    final minute = int.tryParse(parts[1]);
++    if (hour == null || minute == null) return null;
++    return DateTime(date.year, date.month, date.day, hour, minute);
++  }
++
++  void _trimPlanMemory(DateTime now) {
++    final stalePrefix = now.subtract(const Duration(days: 3)).toIso8601String();
++    _warnedPlanKeys.removeWhere((key) {
++      final split = key.split('|');
++      if (split.length < 2) return true;
++      return split.last.compareTo(stalePrefix) < 0;
++    });
++    _startedPlanKeys.removeWhere((key) {
++      final split = key.split('|');
++      if (split.length < 2) return true;
++      return split.last.compareTo(stalePrefix) < 0;
++    });
++  }
++
++  void _showPlanReminderSnackBar() {
++    if (!mounted) return;
++    ScaffoldMessenger.of(context).showSnackBar(
++      SnackBar(
++        behavior: SnackBarBehavior.floating,
++        duration: const Duration(seconds: 3),
++        content: const Text('Focus mode will start automatically in 5 minutes.'),
++      ),
++    );
++  }
++
++  void _showFocusStartedSnackBar(int duration) {
++    if (!mounted) return;
++    ScaffoldMessenger.of(context).showSnackBar(
++      SnackBar(
++        behavior: SnackBarBehavior.floating,
++        duration: const Duration(seconds: 3),
++        content: Text('Planned focus started ($duration min).'),
++      ),
++    );
++  }
++
+   @override
+   Widget build(BuildContext context) {
+     final location = GoRouterState.of(context).matchedLocation;
+ 
+     return Scaffold(
+       backgroundColor: AppColors.background,
+       body: Stack(
+         children: [
+-          child,
++          widget.child,
+*** End Patch

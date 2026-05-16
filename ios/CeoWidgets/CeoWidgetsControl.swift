@@ -13,7 +13,7 @@ import WidgetKit
 struct CeoWidgetsControl: ControlWidget {
     var body: some ControlWidgetConfiguration {
         StaticControlConfiguration(
-            kind: "com.example.ceoCompass.CeoWidgets",
+            kind: "com.wakeapp.ceoos.ceowidgets.control",
             provider: Provider()
         ) { value in
             ControlWidgetToggle(

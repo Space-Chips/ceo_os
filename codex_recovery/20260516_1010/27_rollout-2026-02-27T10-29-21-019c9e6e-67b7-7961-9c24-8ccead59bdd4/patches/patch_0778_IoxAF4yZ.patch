@@ -1,0 +1,14 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/android/app/src/main/kotlin/com/example/ceo_os/MainActivity.kt
+@@
+                 "isShieldActive" -> {
+-                    // Simple check if service is running/connected (approximate)
+-                    result.success(AppBlockingService.instance != null)
++                    val prefs = prefs()
++                    val active =
++                        prefs.getBoolean("focus_shield_active", false) ||
++                        prefs.getBoolean("classic_shield_active", false) ||
++                        prefs.getBoolean("ceo_shield_active", false)
++                    result.success(active)
+                 }
+*** End Patch

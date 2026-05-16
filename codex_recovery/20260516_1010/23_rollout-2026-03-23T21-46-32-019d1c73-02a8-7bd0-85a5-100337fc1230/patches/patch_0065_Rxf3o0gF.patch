@@ -1,0 +1,73 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/profile/profile_screen.dart
+@@
+         _SettingsSection(
+           'How Data Is Used',
+-          'Data is used to authenticate your account, sync your data across your devices, run focus protections, restore purchases, and provide support when you contact us. Screen Time / Family Controls activity and device usage data stay on-device on iPhone and are not synced, exported, or shared beyond the individual user. Personal data is not sold to third parties.',
++          'Data is used to authenticate your account, sync your data across your devices, run focus protections, restore purchases, and provide support when you contact us. On iPhone, Screen Time / Family Controls activity and device usage data stay on-device and are not synced, exported, or shared beyond the individual user. On Android, blocking and daily-limit enforcement use on-device permission flows such as Accessibility, Usage Access, and overlay, and are not used for ads or unrelated analytics. Personal data is not sold to third parties.',
+         ),
+         _SettingsSection(
+           'Third-Party Services',
+-          'CEO OS uses Supabase for account, database, and cloud sync infrastructure, Google Sign-In when you choose Google authentication, RevenueCat and Apple for subscription and purchase status, and Apple system frameworks for Screen Time, widgets, and local notifications. These services process only the data needed to provide their part of the product.',
++          'CEO OS uses Supabase for account, database, and cloud sync infrastructure, Google Sign-In when you choose Google authentication, RevenueCat plus Apple or Google Play for subscription and purchase status, and platform system frameworks for blocking, widgets, notifications, and scheduling. These services process only the data needed to provide their part of the product.',
+         ),
+         _SettingsSection(
+           'Storage and Security',
+-          'Productivity records and account settings may be stored in Supabase to support sync and continuity. On iPhone, Screen Time / Family Controls selections, schedules, limits, and activity data remain local to the device. Row-level security is used so users can only access records they own. Purchase state may also be synced from RevenueCat to determine Premium access.',
++          'Productivity records and account settings may be stored in Supabase to support sync and continuity. On iPhone, Screen Time / Family Controls selections, schedules, limits, and activity data remain local to the device. On Android, selected app and website protections are enforced on-device, and usage measurements used for daily limits are not used for ads or unrelated profiling. Row-level security is used so users can only access records they own. Purchase state may also be synced from RevenueCat to determine Premium access.',
+         ),
+@@
+         _SettingsSection(
+-          'Screen Time / Family Controls',
+-          'CEO OS requests Apple Screen Time / Family Controls permission so you can select apps and websites, apply shields, schedule protected focus periods, and enforce daily-limit workflows using Apple’s official system APIs.',
++          'iPhone Protection Permissions',
++          'On iPhone, CEO OS requests Apple Screen Time / Family Controls permission so you can select apps and websites, apply shields, schedule protected focus periods, and enforce daily-limit workflows using Apple’s official system APIs.',
+         ),
+         _SettingsSection(
+-          'Usage Data and Blocking Data',
+-          'Focus sessions and general productivity history may be stored in your account. On iPhone, Screen Time / Family Controls selections, planned pauses, daily limits, usage data, activity reports, and blocking attempts stay on-device and are not synced, exported, or shared.',
++          'Android Protection Permissions',
++          'On Android, CEO OS may request Accessibility to detect selected distracting apps and supported websites, Usage Access to evaluate daily limits, and overlay permission to present the blocking shield. These permissions are used only for the app’s on-device focus protections, not for ads or unrelated analytics.',
++        ),
++        _SettingsSection(
++          'Usage Data and Blocking Data',
++          'Focus sessions and general productivity history may be stored in your account. On iPhone, Screen Time / Family Controls selections, planned pauses, daily limits, usage data, activity reports, and blocking attempts stay on-device and are not synced, exported, or shared. On Android, protection enforcement and daily-limit measurements are used on-device to run the blocking features you enable.',
+         ),
+         _SettingsSection(
+           'Sign-In and Purchases',
+-          'If you use Google Sign-In, Google shares the authentication data needed to sign you into CEO OS. If you purchase Premium, Apple handles the transaction and RevenueCat is used to validate and sync your entitlement status.',
++          'If you use Google Sign-In, Google shares the authentication data needed to sign you into CEO OS. If you purchase Premium, Apple or Google Play handles the transaction and RevenueCat is used to validate and sync your entitlement status.',
+         ),
+         _SettingsSection(
+-          'Widgets and Background Scheduling',
+-          'Home screen widgets and scheduled focus automation use Apple widget and background scheduling systems so CEO OS can surface progress and enforce planned restrictions at the right time.',
++          'Widgets and Background Scheduling',
++          'Home screen widgets and scheduled focus automation use platform widget and background scheduling systems so CEO OS can surface progress and enforce planned restrictions at the right time.',
+         ),
+         _SettingsSection(
+           'Control',
+-          'Permissions can be changed in iOS Settings at any time. If you disable notifications or Screen Time / Family Controls access, related modules may stop working or provide reduced functionality.',
++          'Permissions can be changed in system settings at any time. If you disable notifications or platform protection access, related modules may stop working or provide reduced functionality.',
+         ),
+       ],
+     );
+   }
+*** Update File: /Users/timo/ceo_os/lib/features/auth/auth_support.dart
+@@
+                 title: 'TERMS OF USE',
+                 body:
+-                    'CEO OS provides productivity, planning, and focus tools. Premium subscriptions may renew automatically unless canceled in your Apple ID settings.',
++                    'CEO OS provides productivity, planning, and focus tools. Premium subscriptions may renew automatically unless canceled in your Apple App Store or Google Play subscription settings.',
+               ),
+             ),
+             _AuthInlineLink(
+               label: 'PRIVACY',
+               onTap: () => showAuthLegalDialog(
+                 context,
+                 title: 'PRIVACY POLICY',
+                 body:
+-                    'CEO OS uses Supabase for account and cloud sync infrastructure, Google Sign-In when selected by the user, RevenueCat and Apple for purchases, and Apple system APIs for Screen Time, notifications, widgets, and scheduling.',
++                    'CEO OS uses Supabase for account and cloud sync infrastructure, Google Sign-In when selected by the user, RevenueCat plus Apple or Google Play for purchases, and platform system APIs for blocking, notifications, widgets, and scheduling.',
+               ),
+             ),
+*** End Patch

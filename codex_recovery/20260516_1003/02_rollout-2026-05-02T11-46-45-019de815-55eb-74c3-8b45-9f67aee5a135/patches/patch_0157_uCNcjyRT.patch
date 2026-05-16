@@ -1,0 +1,74 @@
+*** Begin Patch
+*** Update File: lib/core/widgets/home_widgets/widget_design_tokens.dart
+@@
+ class WidgetDesignTokens {
+   const WidgetDesignTokens._();
+@@
+   static const EdgeInsets padRect = EdgeInsets.fromLTRB(12, 12, 12, 10);
+ 
+   static Color get bg => const Color(0xFF0A0B0D);
+ 
++  static Color get primaryText {
++    final candidate = AppColors.label;
++    // Widgets always use dark backgrounds. If the active theme is light,
++    // `AppColors.label` can be dark -> invisible. Clamp to a light color.
++    return candidate.computeLuminance() < 0.6
++        ? AppColors.white.withValues(alpha: 0.98)
++        : candidate.withValues(alpha: 0.98);
++  }
++
++  static Color get secondaryText {
++    final candidate = AppColors.secondaryLabel;
++    return candidate.computeLuminance() < 0.55
++        ? AppColors.white.withValues(alpha: 0.74)
++        : candidate.withValues(alpha: 0.74);
++  }
++
++  static Color get tertiaryText {
++    final candidate = AppColors.tertiaryLabel;
++    return candidate.computeLuminance() < 0.55
++        ? AppColors.white.withValues(alpha: 0.58)
++        : candidate.withValues(alpha: 0.58);
++  }
++
+   static LinearGradient get bgGradient => LinearGradient(
+     begin: Alignment.topLeft,
+     end: Alignment.bottomRight,
+     colors: [const Color(0xFF111318), const Color(0xFF07080A)],
+   );
+@@
+   static TextStyle get title => AppTypography.largeTitle.copyWith(
+     fontSize: 22,
+     height: 1.0,
+     letterSpacing: 0.2,
+     fontWeight: FontWeight.w700,
+-    color: AppColors.label,
++    color: primaryText,
+   );
+ 
+   static TextStyle get subtitle => AppTypography.subhead.copyWith(
+     fontSize: 12,
+     height: 1.2,
+     letterSpacing: 0.2,
+     fontWeight: FontWeight.w600,
+-    color: AppColors.secondaryLabel.withValues(alpha: 0.72),
++    color: secondaryText,
+   );
+ 
+   static TextStyle get section => AppTypography.overline.copyWith(
+     fontSize: 11,
+     letterSpacing: 2.2,
+     fontWeight: FontWeight.w700,
+-    color: AppColors.secondaryLabel.withValues(alpha: 0.58),
++    color: tertiaryText,
+   );
+ 
+   static TextStyle get body => AppTypography.callout.copyWith(
+     fontSize: 13,
+     height: 1.1,
+     fontWeight: FontWeight.w700,
+-    color: AppColors.label.withValues(alpha: 0.92),
++    color: primaryText.withValues(alpha: 0.92),
+   );
+ }
+*** End Patch

@@ -1,0 +1,130 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/ceo_mode/ceo_mode_screen.dart
+@@
+         _glowSurface(
+           glowColor: AppColors.primaryOrange.withValues(alpha: 0.22),
+           borderRadius: 28,
+           child: GlassCard(
+             padding: const EdgeInsets.all(18),
+             borderRadius: 28,
++            level: GlassCardLevel.elevated,
++            showEdgeGlow: true,
+             border: Border.all(
+               color: AppColors.primaryOrange.withValues(alpha: 0.5),
+               width: 0.85,
+             ),
+@@
+                 Container(
+                   height: 146,
+                   decoration: BoxDecoration(
+                     borderRadius: BorderRadius.circular(16),
+-                    color: AppColors.background.withValues(alpha: 0.62),
++                    gradient: LinearGradient(
++                      begin: Alignment.topLeft,
++                      end: Alignment.bottomRight,
++                      colors: [
++                        AppColors.floatingGlassGradient.first.withValues(
++                          alpha: 0.88,
++                        ),
++                        AppColors.floatingGlassGradient.last.withValues(
++                          alpha: 0.78,
++                        ),
++                      ],
++                    ),
+                     border: Border.all(
+                       color: AppColors.glassBorder.withValues(alpha: 0.8),
+                       width: 0.7,
+                     ),
+@@
+         GlassCard(
+           padding: const EdgeInsets.all(18),
+           borderRadius: 24,
++          level: GlassCardLevel.standard,
++          showEdgeGlow: true,
+           child: Column(
+             crossAxisAlignment: CrossAxisAlignment.start,
+             children: [
+@@
+         _glowSurface(
+           glowColor: AppColors.primaryOrange.withValues(alpha: 0.28),
+           borderRadius: 30,
+           child: GlassCard(
+             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+             borderRadius: 30,
++            level: GlassCardLevel.elevated,
++            showEdgeGlow: true,
+             border: Border.all(
+               color: AppColors.primaryOrange.withValues(alpha: 0.56),
+               width: 1.0,
+             ),
+@@
+         GlassCard(
+           padding: const EdgeInsets.all(16),
+           borderRadius: 18,
++          level: GlassCardLevel.standard,
++          showEdgeGlow: true,
+           child: Column(
+             crossAxisAlignment: CrossAxisAlignment.start,
+             children: [
+@@
+         _glowSurface(
+           glowColor: AppColors.error.withValues(alpha: 0.22),
+           borderRadius: 220,
+           child: Container(
+             width: double.infinity,
+             padding: const EdgeInsets.all(10),
+             child: AspectRatio(
+               aspectRatio: 1,
+-              child: Container(
+-                decoration: BoxDecoration(
+-                  shape: BoxShape.circle,
+-                  gradient: RadialGradient(
+-                    colors: [
+-                      AppColors.primaryOrange.withValues(alpha: 0.25),
+-                      AppColors.backgroundLight.withValues(alpha: 0.9),
+-                      AppColors.background.withValues(alpha: 0.98),
+-                    ],
+-                    stops: const [0.0, 0.6, 1.0],
+-                  ),
+-                  border: Border.all(
+-                    color: AppColors.error.withValues(alpha: 0.52),
+-                    width: 1.1,
+-                  ),
+-                ),
++              child: GlassCard(
++                padding: const EdgeInsets.all(10),
++                borderRadius: 999,
++                level: GlassCardLevel.elevated,
++                showEdgeGlow: true,
++                border: Border.all(
++                  color: AppColors.error.withValues(alpha: 0.52),
++                  width: 1.1,
++                ),
++                gradientColors: [
++                  AppColors.primaryOrange.withValues(alpha: 0.25),
++                  AppColors.backgroundLight.withValues(alpha: 0.9),
++                ],
+                 child: Column(
+                   mainAxisAlignment: MainAxisAlignment.center,
+                   children: [
+@@
+   Widget _approvedAppItem(IconData icon, String label) {
+-    return Container(
++    return GlassCard(
+       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+-      decoration: BoxDecoration(
+-        borderRadius: BorderRadius.circular(12),
+-        color: AppColors.backgroundLight.withValues(alpha: 0.68),
+-        border: Border.all(
+-          color: AppColors.glassBorder.withValues(alpha: 0.82),
+-          width: 0.55,
+-        ),
++      borderRadius: 12,
++      level: GlassCardLevel.subtle,
++      border: Border.all(
++        color: AppColors.glassBorder.withValues(alpha: 0.82),
++        width: 0.55,
+       ),
+       child: Row(
+         children: [
+*** End Patch

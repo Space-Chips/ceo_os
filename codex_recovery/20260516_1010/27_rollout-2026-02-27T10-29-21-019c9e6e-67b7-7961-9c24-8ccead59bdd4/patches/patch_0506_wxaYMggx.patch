@@ -1,0 +1,350 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/calendar/calendar_screen.dart
+@@
+   bool _isSameDate(DateTime a, DateTime b) {
+     return a.year == b.year && a.month == b.month && a.day == b.day;
+   }
++
++  bool _isCurrentHour(DateTime day, int hour) {
++    final now = DateTime.now();
++    return _isSameDate(day, now) && now.hour == hour;
++  }
+@@
+   Widget _buildDailyView(List<CalendarEvent> events) {
+     final dayLabel = DateFormat('EEEE, MMM d').format(_currentDate);
++    final now = DateTime.now();
+ 
+     return GlassCard(
+       key: const ValueKey('daily'),
+       padding: EdgeInsets.zero,
+@@
+           Padding(
+             padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
+             child: Text(
+               dayLabel,
+-              style: AppTypography.mono.copyWith(
++              textAlign: TextAlign.center,
++              style: AppTypography.body.copyWith(
+                 fontSize: 20,
+-                fontWeight: FontWeight.w900,
++                fontWeight: FontWeight.w600,
+                 color: AppColors.label,
+               ),
+             ),
+           ),
+           Container(
+@@
+             child: ListView.builder(
+               padding: EdgeInsets.zero,
+               itemCount: 24,
+               itemBuilder: (context, hour) {
+                 final hourEvents = _eventsForHour(_currentDate, hour, events);
+                 final hasEvents = hourEvents.isNotEmpty;
+-                return GestureDetector(
++                final isCurrentHour = _isCurrentHour(_currentDate, hour);
++                return _CalendarPressScale(
++                  scaleWhenPressed: 1.02,
+                   onTap: () => _showAddEvent(
+                     initialTime: TimeOfDay(hour: hour, minute: 0),
+                   ),
+                   child: Container(
+                     constraints: const BoxConstraints(minHeight: 74),
+                     decoration: BoxDecoration(
+                       color: hasEvents
+-                          ? AppColors.backgroundLight.withValues(alpha: 0.26)
++                          ? AppColors.backgroundLight.withValues(alpha: 0.18)
+                           : Colors.transparent,
+                       border: Border(
+-                        bottom: BorderSide(
+-                          color: AppColors.glassBorder.withValues(alpha: 0.32),
+-                          width: 0.5,
++                        top: BorderSide(
++                          color: AppColors.white.withValues(alpha: 0.05),
++                          width: 1,
+                         ),
+                       ),
+                     ),
+-                    child: Row(
+-                      crossAxisAlignment: CrossAxisAlignment.start,
+-                      children: [
+-                        SizedBox(
+-                          width: 74,
+-                          child: Padding(
+-                            padding: const EdgeInsets.only(top: 12, right: 10),
+-                            child: Text(
+-                              '${hour.toString().padLeft(2, '0')}:00',
+-                              textAlign: TextAlign.right,
+-                              style: AppTypography.mono.copyWith(
+-                                fontSize: 10,
+-                                fontWeight: FontWeight.w800,
+-                                color: AppColors.tertiaryLabel,
++                    child: Stack(
++                      children: [
++                        if (isCurrentHour)
++                          Positioned(
++                            left: 0,
++                            right: 0,
++                            top: 12 + (50 * (now.minute / 60)),
++                            child: Row(
++                              children: [
++                                SizedBox(
++                                  width: 74,
++                                  child: Padding(
++                                    padding: const EdgeInsets.only(right: 10),
++                                    child: Text(
++                                      DateFormat('HH:mm').format(now),
++                                      textAlign: TextAlign.right,
++                                      style: AppTypography.mono.copyWith(
++                                        fontSize: 11,
++                                        fontWeight: FontWeight.w700,
++                                        color: const Color(0xFF4C7DFF),
++                                      ),
++                                    ),
++                                  ),
++                                ),
++                                Expanded(
++                                  child: Container(
++                                    height: 2,
++                                    color: const Color(0xFF4C7DFF),
++                                  ),
++                                ),
+                               ),
+                             ),
+                           ),
+-                        ),
+-                        Expanded(
+-                          child: Padding(
+-                            padding: const EdgeInsets.fromLTRB(0, 10, 10, 10),
+-                            child: Column(
+-                              crossAxisAlignment: CrossAxisAlignment.start,
+-                              children: [
+-                                if (hourEvents.isEmpty)
+-                                  const SizedBox(height: 18)
+-                                else
+-                                  ...hourEvents.map(
+-                                    (event) => Padding(
+-                                      padding: const EdgeInsets.only(bottom: 6),
+-                                      child: Container(
+-                                        padding: const EdgeInsets.symmetric(
+-                                          horizontal: 10,
+-                                          vertical: 8,
+-                                        ),
+-                                        decoration: BoxDecoration(
+-                                          borderRadius: BorderRadius.circular(
+-                                            10,
+-                                          ),
+-                                          gradient: _isBirthdayEvent(event)
+-                                              ? LinearGradient(
+-                                                  begin: Alignment.topLeft,
+-                                                  end: Alignment.bottomRight,
+-                                                  colors: [
+-                                                    const Color(
+-                                                      0xFFF472B6,
+-                                                    ).withValues(alpha: 0.28),
+-                                                    const Color(
+-                                                      0xFFFB7185,
+-                                                    ).withValues(alpha: 0.16),
+-                                                  ],
+-                                                )
+-                                              : _isFocusPlanEvent(event)
+-                                              ? LinearGradient(
+-                                                  begin: Alignment.topLeft,
+-                                                  end: Alignment.bottomRight,
+-                                                  colors: [
+-                                                    const Color(
+-                                                      0xFF8B5CF6,
+-                                                    ).withValues(alpha: 0.24),
+-                                                    const Color(
+-                                                      0xFF6366F1,
+-                                                    ).withValues(alpha: 0.16),
+-                                                  ],
+-                                                )
+-                                              : null,
+-                                          color:
+-                                              _isBirthdayEvent(event) ||
+-                                                  _isFocusPlanEvent(event)
+-                                              ? null
+-                                              : _eventColor(
+-                                                  event,
+-                                                ).withValues(alpha: 0.16),
+-                                          border: Border.all(
+-                                            color: _eventColor(
+-                                              event,
+-                                            ).withValues(alpha: 0.65),
+-                                            width: 0.7,
+-                                          ),
+-                                        ),
+-                                        child: Column(
+-                                          crossAxisAlignment:
+-                                              CrossAxisAlignment.start,
+-                                          children: [
+-                                            Row(
+-                                              children: [
+-                                                if (_isBirthdayEvent(event))
+-                                                  const Padding(
+-                                                    padding: EdgeInsets.only(
+-                                                      right: 6,
+-                                                    ),
+-                                                    child: Text(
+-                                                      '🎂',
+-                                                      style: TextStyle(
+-                                                        fontSize: 11,
+-                                                      ),
+-                                                    ),
+-                                                  ),
+-                                                if (_isFocusPlanEvent(event))
+-                                                  Icon(
+-                                                    CupertinoIcons.bolt_fill,
+-                                                    size: 11,
+-                                                    color: const Color(
+-                                                      0xFFC4B5FD,
+-                                                    ),
+-                                                  ),
+-                                                if (_isFocusPlanEvent(event))
+-                                                  const SizedBox(width: 6),
+-                                                Expanded(
+-                                                  child: Text(
+-                                                    event.title,
+-                                                    style: AppTypography.mono
+-                                                        .copyWith(
+-                                                          fontSize: 11,
+-                                                          fontWeight:
+-                                                              FontWeight.w800,
+-                                                          color:
+-                                                              AppColors.label,
+-                                                        ),
+-                                                  ),
+-                                                ),
+-                                              ],
+-                                            ),
+-                                            const SizedBox(height: 2),
+-                                            Text(
+-                                              event.eventTime == null
+-                                                  ? (_isBirthdayEvent(event)
+-                                                        ? 'BIRTHDAY • repeats yearly'
+-                                                        : 'ALL DAY')
+-                                                  : _isFocusPlanEvent(event)
+-                                                  ? '${event.eventTime} • ${_duration(event)}min${(event.recurrenceRule ?? '').toLowerCase().contains('week') ? ' • weekly' : ''}'
+-                                                  : '${event.eventTime} • ${_duration(event)}min',
+-                                              style: AppTypography.mono
+-                                                  .copyWith(
+-                                                    fontSize: 10,
+-                                                    color: AppColors
+-                                                        .secondaryLabel,
+-                                                  ),
+-                                            ),
+-                                          ],
+-                                        ),
+-                                      ),
+-                                    ),
+-                                  ),
+-                              ],
+-                            ),
+-                          ),
+-                        ),
++                        Row(
++                          crossAxisAlignment: CrossAxisAlignment.start,
++                          children: [
++                            SizedBox(
++                              width: 74,
++                              child: Padding(
++                                padding: const EdgeInsets.only(
++                                  top: 12,
++                                  right: 10,
++                                ),
++                                child: Text(
++                                  '${hour.toString().padLeft(2, '0')}:00',
++                                  textAlign: TextAlign.right,
++                                  style: AppTypography.mono.copyWith(
++                                    fontSize: 13,
++                                    fontWeight: FontWeight.w600,
++                                    color: AppColors.secondaryLabel.withValues(
++                                      alpha: 0.65,
++                                    ),
++                                  ),
++                                ),
++                              ),
++                            ),
++                            Expanded(
++                              child: Padding(
++                                padding: const EdgeInsets.fromLTRB(
++                                  0,
++                                  10,
++                                  10,
++                                  10,
++                                ),
++                                child: Column(
++                                  crossAxisAlignment: CrossAxisAlignment.start,
++                                  children: [
++                                    if (hourEvents.isEmpty)
++                                      const SizedBox(height: 18)
++                                    else
++                                      ...hourEvents.map(
++                                        (event) => Padding(
++                                          padding: const EdgeInsets.only(
++                                            bottom: 6,
++                                          ),
++                                          child: Container(
++                                            padding: const EdgeInsets.all(8),
++                                            decoration: BoxDecoration(
++                                              color: const Color(
++                                                0xFF4C7DFF,
++                                              ).withValues(alpha: 0.15),
++                                              borderRadius:
++                                                  BorderRadius.circular(10),
++                                              border: Border.all(
++                                                color: const Color(
++                                                  0xFF4C7DFF,
++                                                ).withValues(alpha: 0.35),
++                                                width: 1,
++                                              ),
++                                            ),
++                                            child: Column(
++                                              crossAxisAlignment:
++                                                  CrossAxisAlignment.start,
++                                              children: [
++                                                Text(
++                                                  event.title,
++                                                  style: AppTypography.body
++                                                      .copyWith(
++                                                        fontSize: 12,
++                                                        fontWeight:
++                                                            FontWeight.w600,
++                                                        color: AppColors.label,
++                                                      ),
++                                                ),
++                                                const SizedBox(height: 2),
++                                                Text(
++                                                  event.eventTime == null
++                                                      ? (_isBirthdayEvent(event)
++                                                            ? 'BIRTHDAY • repeats yearly'
++                                                            : 'ALL DAY')
++                                                      : _isFocusPlanEvent(event)
++                                                      ? '${event.eventTime} • ${_duration(event)}min${(event.recurrenceRule ?? '').toLowerCase().contains('week') ? ' • weekly' : ''}'
++                                                      : '${event.eventTime} • ${_duration(event)}min',
++                                                  style: AppTypography.body
++                                                      .copyWith(
++                                                        fontSize: 11,
++                                                        color: AppColors
++                                                            .secondaryLabel
++                                                            .withValues(
++                                                              alpha: 0.8,
++                                                            ),
++                                                      ),
++                                                ),
++                                              ],
++                                            ),
++                                          ),
++                                        ),
++                                      ),
++                                  ],
++                                ),
++                              ),
++                            ),
++                          ],
++                        ),
+                       ],
+                     ),
+                   ),
+                 );
+*** End Patch

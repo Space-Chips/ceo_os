@@ -1,0 +1,23 @@
+*** Begin Patch
+*** Update File: supabase/functions/grant-beta-premium/index.ts
+@@
+-  // Keep it renewable & reversible: short-ish expiry, extended on each call.
+-  const now = new Date();
+-  const expiresAt = new Date(now.getTime() + 1000 * 60 * 60 * 24 * 30); // 30 days
+-
+   const { error } = await admin.from('user_entitlements').upsert(
+     {
+       created_by: user.id,
+       premium_override: true,
+-      premium_override_reason: 'testflight',
+-      premium_override_expires_at: expiresAt.toISOString(),
++      premium_override_reason: 'testflight_account',
++      premium_override_expires_at: null,
+     },
+     { onConflict: 'created_by' },
+   );
+@@
+-  return Response.json({ ok: true, expires_at: expiresAt.toISOString() });
++  return Response.json({ ok: true });
+ });
+*** End Patch

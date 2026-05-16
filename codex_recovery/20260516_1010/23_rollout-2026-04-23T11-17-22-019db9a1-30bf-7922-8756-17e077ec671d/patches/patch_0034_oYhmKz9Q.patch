@@ -1,0 +1,27 @@
+*** Begin Patch
+*** Update File: lib/features/screen_time_manager/screen_time_manager_screen.dart
+@@
+           Expanded(
+             child: _statLargeTile(
+-              label: 'PROTECTED',
++              label: _t('screen_time_tile_protected'),
+               value: '$_classicBlockedTargets',
+-              unit: 'targets',
++              unit: _t('screen_time_tile_targets'),
+               accent: AppColors.scoreValue,
+               highlighted: true,
+               borderColor: AppColors.screenTimeDailyAccentBorder,
+               onTap: () => context.push('/screen-time?section=apps'),
+@@
+           Expanded(
+             child: _statLargeTile(
+-              label: 'PAUSES',
++              label: _t('screen_time_tile_pauses'),
+               value: '$_plannedPauseCount',
+-              unit: 'scheduled',
++              unit: _t('screen_time_tile_scheduled'),
+               accent: AppColors.secondaryLabel,
+               onTap: () => context.push('/screen-time?section=pauses'),
+             ),
+           ),
+*** End Patch

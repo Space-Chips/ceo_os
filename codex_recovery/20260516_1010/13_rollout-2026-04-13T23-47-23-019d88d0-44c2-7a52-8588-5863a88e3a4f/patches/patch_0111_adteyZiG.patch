@@ -1,0 +1,44 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/ios/ScreenTimeReport/ScreenTimeMetricView.swift
+@@
+ struct ScreenTimeMetricView: View {
+     let metric: ScreenTimeMetricConfiguration
+-    @AppStorage("screen_time_theme_version", store: UserDefaults(suiteName: "group.com.wakeapp.ceoos"))
+-    private var themeVersion: String = ""
+ 
+     var body: some View {
+-        let _ = themeVersion
+         let theme = ScreenTimeTheme.current()
+         ZStack {
+             RoundedRectangle(cornerRadius: 18, style: .continuous)
+@@
+         let fallback = ScreenTimeTheme(
+             cardBackground: Color(red: 0.13, green: 0.15, blue: 0.18),
+             cardBorder: Color.white.opacity(0.08),
+             titleColor: Color.white.opacity(0.48),
+             valueColor: Color.white.opacity(0.96),
+             subtitleColor: Color.white.opacity(0.55)
+         )
+-        guard let defaults = UserDefaults(suiteName: "group.com.wakeapp.ceoos") else {
++        guard let defaults = appGroupDefaults() else {
+             return fallback
+         }
+         return ScreenTimeTheme(
+             cardBackground: ScreenTimeTheme.color(from: defaults, key: "card_bg") ?? fallback.cardBackground,
+             cardBorder: ScreenTimeTheme.color(from: defaults, key: "card_border") ?? fallback.cardBorder,
+@@
+     }
+ }
++
++private func appGroupDefaults() -> UserDefaults? {
++    let appGroupId = "group.com.wakeapp.ceoos"
++    guard FileManager.default.containerURL(
++        forSecurityApplicationGroupIdentifier: appGroupId
++    ) != nil else {
++        return nil
++    }
++    return UserDefaults(suiteName: appGroupId)
++}
+ 
+ private extension UIColor {
+*** End Patch

@@ -1,0 +1,253 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/repositories/insights_repository.dart
+@@
+   SupabaseClient get _client => _supabaseService.client;
+   String get _currentUserId => _client.auth.currentUser!.id;
+ 
++  bool _isMissingFieldError(PostgrestException error, List<String> fields) {
++    return error.code == 'PGRST204' ||
++        error.code == '42703' ||
++        fields.any((field) => error.message.contains(field));
++  }
++
++  Future<List<Map<String, dynamic>>> _selectTasks(String fields) async {
++    final response = await _client
++        .from('pareto_tasks')
++        .select(fields)
++        .eq('created_by', _currentUserId);
++    return (response as List).cast<Map<String, dynamic>>();
++  }
++
+   Future<List<Map<String, dynamic>>> _fetchTasksForSnapshot() async {
+     try {
+-      final response = await _client
+-          .from('pareto_tasks')
+-          .select('id, completed, deadline, created_at')
+-          .eq('created_by', _currentUserId);
+-      return (response as List).cast<Map<String, dynamic>>();
++      return await _selectTasks(
++        'id, completed, deadline, created_at, importance_level, time_duration, duration_minutes',
++      );
+     } on PostgrestException catch (e) {
+-      final missingDeadline =
+-          e.code == 'PGRST204' ||
+-          e.code == '42703' ||
+-          e.message.contains('deadline');
+-      if (!missingDeadline) rethrow;
+-      final response = await _client
+-          .from('pareto_tasks')
+-          .select('id, completed, created_at')
+-          .eq('created_by', _currentUserId);
+-      return (response as List).cast<Map<String, dynamic>>();
++      if (!_isMissingFieldError(e, [
++        'deadline',
++        'importance_level',
++        'time_duration',
++        'duration_minutes',
++      ])) {
++        rethrow;
++      }
++      try {
++        return await _selectTasks(
++          'id, completed, created_at, importance_level, time_duration, duration_minutes',
++        );
++      } on PostgrestException catch (fallbackError) {
++        if (!_isMissingFieldError(fallbackError, [
++          'importance_level',
++          'time_duration',
++          'duration_minutes',
++        ])) {
++          rethrow;
++        }
++        try {
++          return await _selectTasks('id, completed, deadline, created_at');
++        } on PostgrestException catch (basicError) {
++          if (!_isMissingFieldError(basicError, ['deadline'])) rethrow;
++          return _selectTasks('id, completed, created_at');
++        }
++      }
++    }
++  }
++
++  Future<Map<String, dynamic>?> _fetchOptionalAdvancedDaily(String today) async {
++    try {
++      final response = await _client
++          .from('advanced_daily_stats')
++          .select(
++            'attention_score, deep_work_time_minutes, focus_sessions_completed, focus_sessions_broken, ceo_sessions_broken, distractions_blocked, time_recovered_minutes',
++          )
++          .eq('created_by', _currentUserId)
++          .eq('date', today)
++          .maybeSingle();
++      return response == null ? null : Map<String, dynamic>.from(response);
++    } on PostgrestException catch (e) {
++      if (e.message.contains('advanced_daily_stats') || e.code == '42P01') {
++        return null;
++      }
++      rethrow;
++    }
++  }
++
++  Future<Map<String, dynamic>?> _fetchOptionalAdvancedLifetime() async {
++    try {
++      final response = await _client
++          .from('advanced_lifetime_stats')
++          .select('highest_streak_ever')
++          .eq('created_by', _currentUserId)
++          .maybeSingle();
++      return response == null ? null : Map<String, dynamic>.from(response);
++    } on PostgrestException catch (e) {
++      if (e.message.contains('advanced_lifetime_stats') || e.code == '42P01') {
++        return null;
++      }
++      rethrow;
+     }
+   }
++
++  int _estimatedTaskMinutes(Map<String, dynamic> task) {
++    final minutes = (task['duration_minutes'] as num?)?.toInt();
++    if (minutes != null && minutes > 0) return minutes;
++    final raw = (task['time_duration'] as String?)?.trim().toLowerCase();
++    switch (raw) {
++      case '30 min':
++      case '30m':
++        return 30;
++      case '45 min':
++      case '45m':
++        return 45;
++      case '1 hour':
++      case '1h':
++      case '1 hr':
++        return 60;
++      case '1.5 hours':
++      case '1.5h':
++      case '90 min':
++        return 90;
++      case '2 hours':
++      case '2h':
++        return 120;
++      case 'half day':
++        return 240;
++      case 'full day':
++        return 480;
++      case 'several days':
++        return 960;
++      default:
++        return 0;
++    }
++  }
+ 
+   Future<DashboardSnapshot> getDashboardSnapshot() async {
+     try {
+       final now = DateTime.now();
+       final today = DateFormat('yyyy-MM-dd').format(now);
+@@
+         focusFuture,
+         eventsFuture,
+         rankFuture,
+         percentileFuture,
++        _fetchOptionalAdvancedDaily(today),
++        _fetchOptionalAdvancedLifetime(),
+       ]);
+@@
+       final rank = results[5] as Map<String, dynamic>?;
+       final percentile = results[6] as Map<String, dynamic>?;
++      final advancedDaily = results[7] as Map<String, dynamic>?;
++      final advancedLifetime = results[8] as Map<String, dynamic>?;
+ 
+       final completedTasks = tasks
+           .where((t) => (t['completed'] as bool?) ?? false)
+           .length;
++      final crucialTasks = tasks.where(
++        (t) => ((t['importance_level'] as String?) ?? '').toLowerCase() == 'crucial',
++      );
++      final crucialTasksCompleted = crucialTasks.where(
++        (t) => (t['completed'] as bool?) ?? false,
++      ).length;
++      final estimatedTaskMinutesPlanned = tasks.fold<int>(
++        0,
++        (sum, task) => sum + _estimatedTaskMinutes(task),
++      );
++      final estimatedTaskMinutesCompleted = tasks
++          .where((t) => (t['completed'] as bool?) ?? false)
++          .fold<int>(0, (sum, task) => sum + _estimatedTaskMinutes(task));
+ 
+       int tasksDueToday = 0;
+       int overdueTasks = 0;
+@@
+       final streak = _calculateStreak(
+         habitCompletionsRange
+             .map((e) => e['date']?.toString())
+             .whereType<String>()
+             .toSet(),
+         today,
+       );
++      final activeHabitDays = habitCompletionsRange
++          .map((e) => e['date']?.toString())
++          .whereType<String>()
++          .toSet()
++          .length;
++      final weeklyHabitCompletionRate = habits.isEmpty
++          ? 0.0
++          : (habitCompletionsRange.length / (habits.length * 7)).clamp(0, 1)
++              .toDouble();
+ 
+       return DashboardSnapshot(
+         totalTasks: tasks.length,
+         completedTasks: completedTasks,
++        crucialTasksTotal: crucialTasks.length,
++        crucialTasksCompleted: crucialTasksCompleted,
++        estimatedTaskMinutesPlanned: estimatedTaskMinutesPlanned,
++        estimatedTaskMinutesCompleted: estimatedTaskMinutesCompleted,
+         tasksDueToday: tasksDueToday,
+         overdueTasks: overdueTasks,
+         totalHabits: habits.length,
+         habitsCompletedToday: habitCompletionsToday.length,
++        weeklyHabitCompletionRate: weeklyHabitCompletionRate,
++        activeHabitDays: activeHabitDays,
+         currentHabitStreak: streak,
++        bestHabitStreak: (advancedLifetime?['highest_streak_ever'] as num?)?.toInt() ?? streak,
+         totalFocusMinutes7d: focusMinutes,
+         focusSessions7d: focusSessions.length,
++        attentionScoreToday: (advancedDaily?['attention_score'] as num?)?.toInt() ?? 0,
++        deepWorkMinutesToday: (advancedDaily?['deep_work_time_minutes'] as num?)?.toInt() ?? 0,
++        focusSessionsCompletedToday:
++            (advancedDaily?['focus_sessions_completed'] as num?)?.toInt() ?? 0,
++        earlyExitsToday:
++            ((advancedDaily?['focus_sessions_broken'] as num?)?.toInt() ?? 0) +
++            ((advancedDaily?['ceo_sessions_broken'] as num?)?.toInt() ?? 0),
++        distractionsBlockedToday:
++            (advancedDaily?['distractions_blocked'] as num?)?.toInt() ?? 0,
++        recoveredTimeMinutesToday:
++            (advancedDaily?['time_recovered_minutes'] as num?)?.toInt() ?? 0,
+         eventsNext7d: events.length,
+         rankLevel: (rank?['rank_level'] as num?)?.toInt() ?? 1,
+         rankName: (rank?['rank_name'] as String?) ?? 'Starter',
+@@
+       return const DashboardSnapshot(
+         totalTasks: 0,
+         completedTasks: 0,
++        crucialTasksTotal: 0,
++        crucialTasksCompleted: 0,
++        estimatedTaskMinutesPlanned: 0,
++        estimatedTaskMinutesCompleted: 0,
+         tasksDueToday: 0,
+         overdueTasks: 0,
+         totalHabits: 0,
+         habitsCompletedToday: 0,
++        weeklyHabitCompletionRate: 0,
++        activeHabitDays: 0,
+         currentHabitStreak: 0,
++        bestHabitStreak: 0,
+         totalFocusMinutes7d: 0,
+         focusSessions7d: 0,
++        attentionScoreToday: 0,
++        deepWorkMinutesToday: 0,
++        focusSessionsCompletedToday: 0,
++        earlyExitsToday: 0,
++        distractionsBlockedToday: 0,
++        recoveredTimeMinutesToday: 0,
+         eventsNext7d: 0,
+         rankLevel: 1,
+         rankName: 'Starter',
+*** End Patch

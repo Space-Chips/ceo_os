@@ -1,0 +1,57 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/home/home_screen.dart
+@@
+                   ListView(
+-                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
++                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                     children: [
+                       const SizedBox(height: 70),
+@@
+                   Positioned(
+-                    left: 20,
+-                    right: 20,
++                    left: 16,
++                    right: 16,
+                     top: 8,
+                     child: _TopShortcutsBar(
+@@
+-          height: 132,
++          height: 152,
+           child: Row(
+             crossAxisAlignment: CrossAxisAlignment.center,
+             children: [
+               Container(
+-                width: 88,
+-                height: 88,
++                width: 84,
++                height: 84,
+@@
+-              const SizedBox(width: 16),
++              const SizedBox(width: 12),
+               Expanded(
+                 child: Column(
+                   crossAxisAlignment: CrossAxisAlignment.start,
++                  mainAxisAlignment: MainAxisAlignment.center,
+                   children: [
+                     Text(
+                       'Dashboard',
+                       maxLines: 1,
+                       overflow: TextOverflow.ellipsis,
+                       style: AppTypography.mono.copyWith(
+-                        fontSize: 26,
++                        fontSize: 24,
+                         fontWeight: FontWeight.w900,
+                         color: AppColors.label,
+                       ),
+@@
+-              const SizedBox(width: 10),
++              const SizedBox(width: 8),
+               Container(
+-                width: 84,
+-                height: 84,
++                width: 80,
++                height: 80,
+                 decoration: BoxDecoration(
+                   borderRadius: BorderRadius.circular(22),
+                   color: AppColors.accentSecondary.withValues(alpha: 0.15),
+*** End Patch

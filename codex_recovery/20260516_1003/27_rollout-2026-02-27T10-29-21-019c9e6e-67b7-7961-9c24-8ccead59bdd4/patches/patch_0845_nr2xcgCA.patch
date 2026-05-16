@@ -1,0 +1,19 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/focus/focus_screen.dart
+@@
+                 Text(
+                   title,
+-                  style: AppTypography.mono.copyWith(
++                  style: AppTypography.callout.copyWith(
+                     fontSize: 16,
+                     color: AppColors.secondaryLabel,
+                     fontWeight: FontWeight.w600,
+@@
+                   Text(
+                     'Home',
+-                    style: AppTypography.mono.copyWith(
++                    style: AppTypography.callout.copyWith(
+                       fontSize: 16,
+                       color: AppColors.secondaryLabel,
+                       fontWeight: FontWeight.w600,
+*** End Patch

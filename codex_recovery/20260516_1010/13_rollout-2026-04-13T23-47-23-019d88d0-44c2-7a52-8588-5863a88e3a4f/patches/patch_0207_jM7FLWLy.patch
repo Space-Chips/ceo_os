@@ -1,0 +1,27 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/screen_time_screen.dart
+@@
+                   child: showNativeAppLabel
+                       ? SizedBox(
+-                          height: 36,
++                          height: 44,
+                           child: UiKitView(
+                             viewType: 'com.ceoos.app/blocked_app_token_label',
+                             creationParams: <String, dynamic>{
+                               'payload': appPayload,
+                               'fallbackTitle': title,
++                              'textColorHex': _colorToArgbHex(AppColors.label),
+                             },
+                             creationParamsCodec: StandardMessageCodec(),
+                           ),
+                         )
+@@
+                             creationParams: <String, dynamic>{
+                               'payload': sitePayload,
+                               'fallbackTitle': title,
++                              'textColorHex': _colorToArgbHex(AppColors.label),
+                             },
+                             creationParamsCodec: StandardMessageCodec(),
+                           ),
+                         )
+*** End Patch

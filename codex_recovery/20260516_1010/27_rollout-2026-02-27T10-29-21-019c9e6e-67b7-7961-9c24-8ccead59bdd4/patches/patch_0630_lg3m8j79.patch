@@ -1,0 +1,65 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/supabase_theme_preset_ids_fix.sql
+@@
+ update public.app_settings
+-set theme_preset = 'graphite_system'
++set theme_preset = 'carbon_system'
+ where theme_preset is null;
+ 
+ alter table public.app_settings
+-  alter column theme_preset set default 'graphite_system';
++  alter column theme_preset set default 'carbon_system';
+@@
+       theme_preset in (
++        'carbon_system',
+         'midnight_blue',
+         'graphite_system',
+         'ember_protocol',
+*** Update File: /Users/timo/ceo_os/supabase_p0_profile_settings_theme.sql
+@@
+ update public.app_settings
+-set theme_preset = 'graphite_system'
++set theme_preset = 'carbon_system'
+ where theme_preset is null;
+ 
+ alter table public.app_settings
+-  alter column theme_preset set default 'graphite_system';
++  alter column theme_preset set default 'carbon_system';
+@@
+       theme_preset in (
++        'carbon_system',
+         'midnight_blue',
+         'graphite_system',
+         'ember_protocol',
+*** Update File: /Users/timo/ceo_os/supabase_theme_onboarding_update.sql
+@@
+ update public.app_settings
+-set theme_preset = 'graphite_system'
++set theme_preset = 'carbon_system'
+ where theme_preset is null;
+ 
+ alter table public.app_settings
+-  alter column theme_preset set default 'graphite_system';
++  alter column theme_preset set default 'carbon_system';
+@@
+         theme_preset in (
++          'carbon_system',
+           'midnight_blue',
+           'graphite_system',
+           'ember_protocol',
+*** Update File: /Users/timo/ceo_os/supabase_theme_accent_system_update.sql
+@@
+ update public.app_settings
+-set theme_preset = 'graphite_system'
++set theme_preset = 'carbon_system'
+ where theme_preset is null;
+ 
+ alter table public.app_settings
+-  alter column theme_preset set default 'graphite_system';
++  alter column theme_preset set default 'carbon_system';
+@@
+       theme_preset in (
++        'carbon_system',
+         'graphite_system',
+         'ember_protocol',
+*** End Patch

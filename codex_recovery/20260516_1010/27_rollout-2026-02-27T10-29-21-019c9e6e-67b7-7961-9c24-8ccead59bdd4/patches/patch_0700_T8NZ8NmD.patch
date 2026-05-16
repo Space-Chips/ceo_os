@@ -1,0 +1,8 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/rank/rank_screen.dart
+@@
+-    final containerSize = iconSize + 6;
+-    final artDimension = iconSize + 16;
++    final containerSize = iconSize + 4;
++    final artDimension = iconSize + 20;
+*** End Patch

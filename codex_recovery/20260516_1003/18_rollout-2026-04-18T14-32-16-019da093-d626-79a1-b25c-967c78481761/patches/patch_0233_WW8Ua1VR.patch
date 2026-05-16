@@ -1,0 +1,79 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/rank/rank_screen.dart
+@@
+ import 'package:flutter/cupertino.dart';
+ import 'package:go_router/go_router.dart';
++import 'package:provider/provider.dart';
+ 
+ import '../../components/components.dart';
+ import '../../core/models/user_models.dart';
++import '../../core/providers/language_provider.dart';
+ import '../../core/repositories/focus_repository.dart';
+ import '../../core/repositories/user_repository.dart';
+@@
+   List<_RankTierData> get _tiers => [
+@@
+     _RankTierData(name: 'Asleep', requirements: ['Starting rank']),
+   ];
++
++  String _t(String key) => context.read<LanguageProvider>().t(key);
++
++  String _localizedTierName(String name) {
++    switch (name.toLowerCase()) {
++      case 'awakened':
++        return _t('rank_awakened');
++      case 'immortal':
++        return _t('rank_immortal');
++      case 'diamond':
++        return _t('rank_diamond');
++      case 'platinum':
++        return _t('rank_platinum');
++      case 'gold':
++        return _t('rank_gold');
++      case 'silver':
++        return _t('rank_silver');
++      case 'bronze':
++        return _t('rank_bronze');
++      case 'asleep':
++      default:
++        return _t('rank_asleep');
++    }
++  }
++
++  String _localizedRequirement(String requirement) {
++    switch (requirement) {
++      case '500 day streak':
++        return _t('rank_req_500_day_streak');
++      case '250h Focus':
++        return _t('rank_req_250h_focus');
++      case '250h CEO':
++        return _t('rank_req_250h_ceo');
++      case '365 day streak':
++        return _t('rank_req_365_day_streak');
++      case '200h Focus':
++        return _t('rank_req_200h_focus');
++      case '100h CEO':
++        return _t('rank_req_100h_ceo');
++      case '180 day streak':
++        return _t('rank_req_180_day_streak');
++      case '90 day streak':
++        return _t('rank_req_90_day_streak');
++      case '60h Focus':
++        return _t('rank_req_60h_focus');
++      case '50 day streak':
++        return _t('rank_req_50_day_streak');
++      case '15 days in app':
++        return _t('rank_req_15_days_in_app');
++      case '10 day streak':
++        return _t('rank_req_10_day_streak');
++      case '7 days in app':
++        return _t('rank_req_7_days_in_app');
++      case '1 Focus session':
++        return _t('rank_req_1_focus_session');
++      case 'Starting rank':
++        return _t('rank_req_starting_rank');
++      default:
++        return requirement;
++    }
++  }
+*** End Patch

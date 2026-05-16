@@ -1,0 +1,29 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/home/home_screen.dart
+@@
+     return CupertinoPageScaffold(
+-      backgroundColor: const Color(0xFF050507),
++      backgroundColor: AppColors.background,
+@@
+                     Container(
+                       width: 28,
+                       height: 28,
+                       decoration: BoxDecoration(
+                         borderRadius: BorderRadius.circular(9),
+-                        color: const Color(0xFF2E2E2E),
++                        color: AppColors.backgroundLight.withValues(
++                          alpha: 0.82,
++                        ),
+                         border: Border.all(
+-                          color: Colors.white.withValues(alpha: 0.06),
++                          color: AppColors.glassBorder.withValues(alpha: 0.55),
+                           width: 0.5,
+                         ),
+                         boxShadow: [
+                           BoxShadow(
+-                            color: Colors.black.withValues(alpha: 0.36),
++                            color: AppColors.background.withValues(alpha: 0.45),
+                             blurRadius: 8,
+                             offset: const Offset(0, 3),
+                           ),
+*** End Patch

@@ -1,0 +1,20 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/ceo_mode/ceo_mode_screen.dart
+@@
+               Text(
+-                'APPROVED APPS (3)',
++                'ESSENTIAL APPS (3)',
+@@
+         Text(
+           'Distractions will be blocked during the session.',
+@@
+                 Text(
+-                  'Only approved apps should be used during this session.',
++                  'Keep usage limited to essential apps during this session.',
+                   textAlign: TextAlign.center,
+@@
+               Text(
+-                'APPROVED APPS',
++                'ESSENTIAL APPS',
+                 style: AppTypography.mono.copyWith(
+*** End Patch

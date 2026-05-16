@@ -1,0 +1,21 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/habits/habits_screen.dart
+@@
+                               : () async {
+                                   final name = _goalNameCtrl.text.trim();
+                                   if (name.isEmpty) return;
++                                  final navigator = Navigator.of(sheetContext);
+                                   setModalState(() => creating = true);
+                                   try {
+                                     await _repo.createObjective(
+                                       _serializeGoal(
+                                         name: name,
+@@
+                                       ),
+                                     );
+                                     if (!mounted) return;
+-                                    Navigator.of(sheetContext).pop();
++                                    navigator.pop();
+                                     await _load();
+                                   } finally {
+*** End Patch

@@ -1,0 +1,108 @@
+*** Begin Patch
+*** Update File: lib/features/legacy/notes_screen.dart
+@@
+                                                 CupertinoTextField(
+                                                   controller: _tagEditor,
+                                                   placeholder:
+                                                       _t('notes_tag_placeholder'),
+                                                   style: AppTypography.body
+@@
+                                                   decoration: null,
+                                                 ),
+                                                 const SizedBox(height: 12),
++                                                if (_notePhotoPath != null &&
++                                                    _notePhotoPath!.trim().isNotEmpty) ...[
++                                                  _PressableSurface(
++                                                    onTap: () =>
++                                                        _openNotePhotoFullScreen(
++                                                          _notePhotoPath!,
++                                                        ),
++                                                    pressedScale: 0.99,
++                                                    borderRadius: 16,
++                                                    child: ClipRRect(
++                                                      borderRadius:
++                                                          BorderRadius.circular(
++                                                            16,
++                                                          ),
++                                                      child: Container(
++                                                        height: 140,
++                                                        width: double.infinity,
++                                                        decoration:
++                                                            BoxDecoration(
++                                                          color: AppColors
++                                                              .pillBackground,
++                                                          border: Border.all(
++                                                            color: AppColors
++                                                                .pillBorder,
++                                                            width: 1,
++                                                          ),
++                                                        ),
++                                                        child: Image.file(
++                                                          File(
++                                                            _notePhotoPath!,
++                                                          ),
++                                                          fit: BoxFit.cover,
++                                                          errorBuilder:
++                                                              (context, error, stack) =>
++                                                                  Center(
++                                                                    child: Icon(
++                                                                      CupertinoIcons
++                                                                          .photo,
++                                                                      color: AppColors
++                                                                          .secondaryLabel,
++                                                                    ),
++                                                                  ),
++                                                        ),
++                                                      ),
++                                                    ),
++                                                  ),
++                                                  const SizedBox(height: 12),
++                                                ],
+                                                 Expanded(
+                                                   child: CupertinoTextField(
+                                                     controller: _editor,
+                                                     focusNode: _editorFocus,
+                                                     expands: true,
+@@
+                                           ),
+                                         ),
+                                       ],
+                                     ),
+                                   ),
++                                  Positioned(
++                                    left: 22,
++                                    bottom: 22,
++                                    child: _PressableSurface(
++                                      onTap: _pickPhotoForNote,
++                                      pressedScale: 0.96,
++                                      borderRadius: 12,
++                                      child: Container(
++                                        width: 42,
++                                        height: 42,
++                                        decoration: BoxDecoration(
++                                          borderRadius: BorderRadius.circular(
++                                            12,
++                                          ),
++                                          color:
++                                              AppColors.topBarControlBackground,
++                                          border: Border.all(
++                                            color: AppColors.topBarControlBorder,
++                                            width: 1,
++                                          ),
++                                        ),
++                                        child: Icon(
++                                          CupertinoIcons.photo_on_rectangle,
++                                          color: AppColors.label.withValues(
++                                            alpha: 0.85,
++                                          ),
++                                          size: 18,
++                                        ),
++                                      ),
++                                    ),
++                                  ),
+                                   Positioned(
+                                     top: 22,
+                                     right: 22,
+                                     child: _PressableSurface(
+                                       onTap: selected == null
+*** End Patch

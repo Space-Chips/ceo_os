@@ -1,0 +1,23 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/services/focus_service.dart
+@@
+   Future<List<IosFamilyActivitySelection>?>
+   openFamilyActivityPickerWithMetadata() async {
+     const method = 'openFamilyActivityPicker';
+     if (_shouldSkipMissingMethod(method)) return null;
++    _lastIosAppPickerError = null;
+     try {
+       final List<dynamic>? result = await _channel.invokeMethod(method);
+       if (result == null) return null;
+-      _lastIosAppPickerError = null;
+@@
+   Future<List<IosWebsiteSelection>?>
+   openFamilyActivityWebsitePickerWithMetadata() async {
+     const method = 'openFamilyActivityWebsitePicker';
+     if (_shouldSkipMissingMethod(method)) return null;
++    _lastIosWebsitePickerError = null;
+     try {
+       final List<dynamic>? result = await _channel.invokeMethod(method);
+       if (result == null) return null;
+-      _lastIosWebsitePickerError = null;
+*** End Patch

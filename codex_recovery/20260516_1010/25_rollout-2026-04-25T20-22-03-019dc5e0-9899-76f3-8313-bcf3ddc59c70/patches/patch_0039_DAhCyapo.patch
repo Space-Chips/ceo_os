@@ -1,0 +1,19 @@
+*** Begin Patch
+*** Update File: lib/features/home/home_screen.dart
+@@
+   Future<void> _pushAndRefresh(String route) async {
+     await context.push(route);
+     if (!mounted) return;
+     _handleSourceDataChanged();
+   }
++
++  Future<void> _openControlCenterCustomizer() async {
++    await context.push('/control-center-setup?edit=true');
++    if (!mounted) return;
++    await _loadControlCenterConfiguration();
++    if (!mounted) return;
++    _handleSourceDataChanged();
++  }
+ 
+   Future<bool> _hasPendingYesterdayHabits() async {
+*** End Patch

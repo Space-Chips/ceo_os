@@ -1,0 +1,38 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/setup/setup_flow_screen.dart
+@@
+       case SetupStep.accessibility:
+         _maybeAutoAdvance(controller, step, controller.accessibilityGranted);
+         return _PermissionStep(
+           stepIndex: 1,
+-          title: 'Enable instant blocking',
++          title: 'Unlock instant protection',
+           subtitle:
+-              'Accessibility lets Screen Time detect the active app and block it immediately.',
++              'WakeApp only detects the active app so it can react instantly.',
+           icon: CupertinoIcons.hand_raised_fill,
+           accent: AppColors.accent,
+           reassurance:
+-              'Screen Time never reads your messages or captures your screen. It only detects which app is active to enforce your focus rules on‑device.',
++              'No messages, content, or screens are read. Everything stays on‑device.',
+@@
+       case SetupStep.usageAccess:
+         _maybeAutoAdvance(controller, step, controller.usageGranted);
+         return _PermissionStep(
+           stepIndex: 2,
+-          title: 'Track usage accurately',
++          title: 'Keep limits accurate',
+           subtitle:
+-              'Usage access keeps your limits, reports, and focus sessions accurate.',
++              'Usage access keeps limits and sessions reliable in the background.',
+@@
+       case SetupStep.overlay:
+         _maybeAutoAdvance(controller, step, controller.overlayGranted);
+         return _PermissionStep(
+           stepIndex: 3,
+-          title: 'Show the block screen',
++          title: 'Show a gentle block screen',
+           subtitle:
+-              'Overlay permission lets the block screen appear above blocked apps.',
++              'This lets WakeApp place a clean block screen when needed.',
+*** End Patch

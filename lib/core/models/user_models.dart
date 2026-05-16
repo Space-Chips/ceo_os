@@ -39,7 +39,6 @@ class UserRank {
   final String createdBy;
   final String? rankName;
   final int? rankLevel;
-  final double? screenTimeAvgMinutes;
   final int? winStreakBonus;
   final int? totalRankPoints;
   final int? daysAtCurrentRank;
@@ -52,7 +51,6 @@ class UserRank {
     required this.createdBy,
     this.rankName,
     this.rankLevel,
-    this.screenTimeAvgMinutes,
     this.winStreakBonus,
     this.totalRankPoints,
     this.daysAtCurrentRank,
@@ -67,9 +65,6 @@ class UserRank {
       createdBy: json['created_by'],
       rankName: json['rank_name'],
       rankLevel: json['rank_level'],
-      screenTimeAvgMinutes: json['screen_time_avg_minutes'] != null
-          ? (json['screen_time_avg_minutes'] as num).toDouble()
-          : null,
       winStreakBonus: json['win_streak_bonus'],
       totalRankPoints: json['total_rank_points'],
       daysAtCurrentRank: json['days_at_current_rank'],
@@ -123,8 +118,8 @@ class LeaderboardEntry {
   final int? rankLevel;
   final String? rankName;
   final int? winStreak;
-  final double? screenTimeAvgMinutes;
   final int? percentile;
+  final int? screenTimeAvgMinutes;
   final bool optedIn;
   final DateTime? lastSyncDate;
   final DateTime createdAt;
@@ -135,8 +130,8 @@ class LeaderboardEntry {
     this.rankLevel,
     this.rankName,
     this.winStreak,
-    this.screenTimeAvgMinutes,
     this.percentile,
+    this.screenTimeAvgMinutes,
     this.optedIn = true,
     this.lastSyncDate,
     required this.createdAt,
@@ -149,10 +144,8 @@ class LeaderboardEntry {
       rankLevel: json['rank_level'],
       rankName: json['rank_name'],
       winStreak: json['win_streak'],
-      screenTimeAvgMinutes: json['screen_time_avg_minutes'] != null
-          ? (json['screen_time_avg_minutes'] as num).toDouble()
-          : null,
       percentile: json['percentile'],
+      screenTimeAvgMinutes: (json['screen_time_avg_minutes'] as num?)?.toInt(),
       optedIn: json['opted_in'] ?? true,
       lastSyncDate: json['last_sync_date'] != null
           ? DateTime.parse(json['last_sync_date'])

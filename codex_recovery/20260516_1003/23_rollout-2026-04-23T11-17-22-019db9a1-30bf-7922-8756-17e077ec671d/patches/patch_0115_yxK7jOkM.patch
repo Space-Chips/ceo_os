@@ -1,0 +1,14 @@
+*** Begin Patch
+*** Update File: lib/features/auth/login_screen.dart
+@@
+-    await languageProvider.setLanguage(selected, persistToCloud: false);
++    await languageProvider.setLanguage(selected, persistToCloud: true);
+*** Update File: lib/features/auth/onboarding_screen.dart
+@@
+-    await languageProvider.setLanguage(selected, persistToCloud: false);
++    await languageProvider.setLanguage(selected, persistToCloud: true);
+*** Update File: lib/features/auth/signup_screen.dart
+@@
+-    await languageProvider.setLanguage(selected, persistToCloud: false);
++    await languageProvider.setLanguage(selected, persistToCloud: true);
+*** End Patch

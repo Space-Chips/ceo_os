@@ -1,0 +1,136 @@
+*** Begin Patch
+*** Add File: /Users/timo/ceo_os/lib/core/providers/language_provider.dart
++import 'dart:async';
++
++import 'package:flutter/foundation.dart';
++import 'package:supabase_flutter/supabase_flutter.dart';
++
++import '../repositories/settings_repository.dart';
++
++class LanguageProvider extends ChangeNotifier {
++  static const String _defaultLanguage = 'en';
++
++  final SupabaseClient _client = Supabase.instance.client;
++  SettingsRepository _settingsRepository = SettingsRepository();
++  StreamSubscription<AuthState>? _authSubscription;
++
++  String _languageCode = _defaultLanguage;
++
++  LanguageProvider({SettingsRepository? settingsRepository}) {
++    if (settingsRepository != null) {
++      _settingsRepository = settingsRepository;
++    }
++    _init();
++  }
++
++  String get languageCode => _languageCode;
++
++  Future<void> _init() async {
++    if (_client.auth.currentUser != null) {
++      await loadFromSettings();
++    }
++    _authSubscription = _client.auth.onAuthStateChange.listen((event) async {
++      if (event.session?.user == null) {
++        _setLanguage(_defaultLanguage, notify: true);
++        return;
++      }
++      await loadFromSettings();
++    });
++  }
++
++  Future<void> loadFromSettings() async {
++    try {
++      final settings = await _settingsRepository.getAppSettings();
++      final code = (settings?.languageCode ?? _defaultLanguage).trim();
++      _setLanguage(_normalize(code), notify: true);
++    } catch (_) {
++      _setLanguage(_defaultLanguage, notify: true);
++    }
++  }
++
++  Future<void> setLanguage(
++    String code, {
++    bool persistToCloud = true,
++  }) async {
++    final normalized = _normalize(code);
++    final previous = _languageCode;
++    _setLanguage(normalized, notify: true);
++    if (!persistToCloud || _client.auth.currentUser == null) return;
++    try {
++      await _settingsRepository.updateLanguageCode(normalized);
++    } catch (_) {
++      _setLanguage(previous, notify: true);
++      rethrow;
++    }
++  }
++
++  String t(String key) {
++    final table = _translations[_languageCode] ?? _translations[_defaultLanguage]!;
++    return table[key] ?? (_translations[_defaultLanguage]?[key] ?? key);
++  }
++
++  String _normalize(String raw) {
++    final c = raw.toLowerCase().trim();
++    if (_translations.containsKey(c)) return c;
++    return _defaultLanguage;
++  }
++
++  void _setLanguage(String code, {required bool notify}) {
++    _languageCode = code;
++    if (notify) notifyListeners();
++  }
++
++  @override
++  void dispose() {
++    _authSubscription?.cancel();
++    super.dispose();
++  }
++}
++
++const Map<String, Map<String, String>> _translations = {
++  'en': {
++    'profile': 'PROFILE',
++    'save': 'SAVE',
++    'saving': 'SAVING',
++    'display_name': 'DISPLAY_NAME',
++    'focus_protocols': 'FOCUS_PROTOCOLS',
++    'system_preferences': 'SYSTEM_PREFERENCES',
++    'settings_legal': 'SETTINGS_AND_LEGAL',
++    'actions': 'ACTIONS',
++    'interface_appearance': 'INTERFACE_APPEARANCE',
++    'language': 'LANGUAGE',
++    'notification_channels': 'NOTIFICATION_CHANNELS',
++    'privacy_policy': 'PRIVACY_POLICY',
++    'permissions': 'PERMISSIONS',
++    'terms_of_use': 'TERMS_OF_USE',
++    'contact_support': 'CONTACT_SUPPORT',
++    'data_deletion': 'DATA_DELETION',
++    'terminate_session': 'TERMINATE_SESSION',
++    'open_leaderboard': 'OPEN_LEADERBOARD',
++    'open_rank': 'OPEN_RANK',
++    'open_screen_manager': 'OPEN_SCREEN_TIME_MANAGER',
++  },
++  'fr': {
++    'profile': 'PROFIL',
++    'save': 'ENREGISTRER',
++    'saving': 'ENREGISTREMENT',
++    'display_name': 'NOM_AFFICHÉ',
++    'focus_protocols': 'PROTOCOLES_FOCUS',
++    'system_preferences': 'PRÉFÉRENCES_SYSTÈME',
++    'settings_legal': 'PARAMÈTRES_ET_LÉGAL',
++    'actions': 'ACTIONS',
++    'interface_appearance': 'APPARENCE_INTERFACE',
++    'language': 'LANGUE',
++    'notification_channels': 'CANAUX_NOTIFICATION',
++    'privacy_policy': 'POLITIQUE_CONFIDENTIALITÉ',
++    'permissions': 'AUTORISATIONS',
++    'terms_of_use': 'CONDITIONS_UTILISATION',
++    'contact_support': 'CONTACT_SUPPORT',
++    'data_deletion': 'SUPPRESSION_DONNÉES',
++    'terminate_session': 'TERMINER_SESSION',
++    'open_leaderboard': 'OUVRIR_CLASSEMENT',
++    'open_rank': 'OUVRIR_RANG',
++    'open_screen_manager': 'OUVRIR_GESTIONNAIRE_ÉCRAN',
++  },
++};
+*** End Patch

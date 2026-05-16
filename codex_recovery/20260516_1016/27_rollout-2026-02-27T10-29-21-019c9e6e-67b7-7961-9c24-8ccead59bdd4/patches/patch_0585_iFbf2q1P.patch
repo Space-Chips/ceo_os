@@ -1,0 +1,35 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/home/home_screen.dart
+@@
+       child: ConstrainedBox(
+         constraints: const BoxConstraints(minWidth: 118),
+         child: Container(
+-          height: 46,
+-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
++          height: 48,
++          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+           decoration: BoxDecoration(
+             borderRadius: BorderRadius.circular(14),
+             gradient: LinearGradient(
+               begin: Alignment.topCenter,
+               end: Alignment.bottomCenter,
+@@
+             children: [
+               Text(
+                 levelText,
+                 maxLines: 1,
+                 overflow: TextOverflow.ellipsis,
+                 style: AppTypography.overline.copyWith(
+-                  fontSize: 10,
++                  fontSize: 9,
+                   letterSpacing: 0.8,
+                   color: AppColors.secondaryLabel.withValues(alpha: 0.6),
+                 ),
+               ),
+-              const SizedBox(height: 1),
+               Text(
+                 label.toUpperCase(),
+                 maxLines: 1,
+                 overflow: TextOverflow.ellipsis,
+                 style: AppTypography.callout.copyWith(
+*** End Patch

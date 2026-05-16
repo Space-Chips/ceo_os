@@ -36,7 +36,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     (
       icon: CupertinoIcons.timer_fill,
       title: 'Protect Deep Work',
-      subtitle: 'Use focus sessions and blocking to reduce context switching.',
+      subtitle:
+          'Use focus sessions and blocking to reduce context switching. On iPhone, blocking uses Apple Screen Time / Family Controls APIs and requires permission on that device.',
     ),
   ];
 
@@ -81,11 +82,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ),
             ),
           ),
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(22),
-              child: Column(
-                children: [
+          DefaultTextStyle.merge(
+            style: TextStyle(
+              decoration: TextDecoration.none,
+              decorationColor: Color(0x00000000),
+            ),
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(22),
+                child: Column(
+                  children: [
                   Row(
                     children: [
                       Text(
@@ -183,7 +189,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       fullWidth: true,
                       onPressed: _next,
                     ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),

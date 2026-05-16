@@ -68,8 +68,8 @@ end $$;
 create table if not exists public.user_ranks (
   id uuid primary key default gen_random_uuid(),
   created_by uuid not null references auth.users(id) on delete cascade,
-  rank_name text not null default 'Starter',
-  rank_level int not null default 1,
+  rank_name text not null default 'Asleep',
+  rank_level int not null default 0,
   screen_time_avg_minutes numeric,
   win_streak_bonus int not null default 0,
   total_rank_points int not null default 0,
@@ -93,8 +93,8 @@ create table if not exists public.win_streaks (
 create table if not exists public.leaderboard_entries (
   id uuid primary key default gen_random_uuid(),
   created_by uuid not null references auth.users(id) on delete cascade,
-  rank_level int not null default 1,
-  rank_name text not null default 'Starter',
+  rank_level int not null default 0,
+  rank_name text not null default 'Asleep',
   win_streak int not null default 0,
   screen_time_avg_minutes numeric,
   percentile int not null default 0,
@@ -164,8 +164,10 @@ declare
   v_completed_habits int := 0;
   v_focus_minutes int := 0;
   v_points int := 0;
-  v_rank_level int := 1;
-  v_rank_name text := 'Starter';
+  v_focus_sessions_completed int := 0;
+  v_days_in_app int := 0;
+  v_rank_level int := 0;
+  v_rank_name text := 'Asleep';
   v_streak int := 0;
   v_total int := 0;
   v_better int := 0;
@@ -183,16 +185,27 @@ begin
   from public.focus_sessions
   where created_by = p_user and completed = true;
 
+  select count(*) into v_focus_sessions_completed
+  from public.focus_sessions
+  where created_by = p_user and completed = true;
+
   select coalesce(current_streak, 0) into v_streak
   from public.win_streaks
   where created_by = p_user;
 
+  select greatest(0, (current_date - coalesce(date(created_at), current_date)) + 1)
+    into v_days_in_app
+  from public.profiles
+  where id = p_user;
+
+  v_days_in_app := coalesce(v_days_in_app, 0);
+
   v_points := (v_completed_tasks * 7) + (v_completed_habits * 5) + (v_focus_minutes / 10)::int + (v_streak * 18);
 
   if v_points >= 2500 then
-    v_rank_level := 7; v_rank_name := 'Mythic';
+    v_rank_level := 7; v_rank_name := 'Awakened';
   elsif v_points >= 1800 then
-    v_rank_level := 6; v_rank_name := 'Legend';
+    v_rank_level := 6; v_rank_name := 'Immortal';
   elsif v_points >= 1200 then
     v_rank_level := 5; v_rank_name := 'Diamond';
   elsif v_points >= 800 then
@@ -201,8 +214,10 @@ begin
     v_rank_level := 3; v_rank_name := 'Gold';
   elsif v_points >= 200 then
     v_rank_level := 2; v_rank_name := 'Silver';
+  elsif v_days_in_app >= 7 and v_focus_sessions_completed >= 1 then
+    v_rank_level := 1; v_rank_name := 'Bronze';
   else
-    v_rank_level := 1; v_rank_name := 'Starter';
+    v_rank_level := 0; v_rank_name := 'Asleep';
   end if;
 
   insert into public.user_ranks (created_by, rank_name, rank_level, total_rank_points, win_streak_bonus)

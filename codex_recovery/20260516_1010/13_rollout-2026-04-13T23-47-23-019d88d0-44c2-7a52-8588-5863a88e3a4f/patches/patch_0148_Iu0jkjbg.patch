@@ -1,0 +1,57 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/screen_time_screen.dart
+@@
+                                 if (_filteredAppSuggestions(
+                                   _appCtrl.text,
+                                 ).isNotEmpty) ...[
+                                   Column(
+                                     children: [
+                                       for (final app in _filteredAppSuggestions(
+                                         _appCtrl.text,
+-                                      ).take(8))
++                                      ).take(20))
+                                         Padding(
+                                           padding: const EdgeInsets.only(
+                                             bottom: 8,
+                                           ),
+@@
+                                 if (_filteredWebsiteSuggestions(
+                                   _siteCtrl.text,
+                                 ).isNotEmpty) ...[
+                                   Column(
+                                     children: [
+                                       for (final domain
+                                           in _filteredWebsiteSuggestions(
+                                             _siteCtrl.text,
+-                                          ).take(5))
++                                          ).take(8))
+                                         Padding(
+                                           padding: const EdgeInsets.only(
+                                             bottom: 8,
+                                           ),
+                                           child: _websiteSuggestionTile(domain),
+@@
+                                 ] else ...[
+                                   Text(
+-                                    'Suggestions appear as you type.',
++                                    Platform.isIOS &&
++                                            _iosWebsitePayloadByDomain.isNotEmpty
++                                        ? 'Type to filter supported websites on this iPhone.'
++                                        : 'Suggestions appear as you type.',
+                                     style: AppTypography.caption1.copyWith(
+                                       fontSize: 11,
+                                       color: AppColors.tertiaryLabel.withValues(
+                                         alpha: 0.75,
+                                       ),
+@@
+                                 LiquidButton(
+                                   label: 'Add website',
+                                   fullWidth: true,
+                                   onPressed: _saving
+                                       ? null
+-                                      : _addBlockedWebsite,
++                                      : (_canSubmitWebsiteInput()
++                                            ? _addBlockedWebsite
++                                            : null),
+                                 ),
+*** End Patch

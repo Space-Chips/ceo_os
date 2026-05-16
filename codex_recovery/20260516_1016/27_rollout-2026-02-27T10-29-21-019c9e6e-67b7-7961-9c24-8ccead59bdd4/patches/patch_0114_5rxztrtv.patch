@@ -1,0 +1,45 @@
+*** Begin Patch
+*** Add File: /Users/timo/ceo_os/supabase_friend_connections_hardening.sql
++-- Friend connections hardening for production use.
++-- Safe to run multiple times.
++
++begin;
++
++-- Normalize email casing/spaces for deterministic matching.
++update public.friend_connections
++set friend_email = lower(trim(friend_email))
++where friend_email is not null
++  and friend_email <> lower(trim(friend_email));
++
++-- Keep only the newest row per (created_by, friend_email).
++with ranked as (
++  select
++    id,
++    row_number() over (
++      partition by created_by, friend_email
++      order by coalesce(last_updated, created_at) desc, created_at desc, id desc
++    ) as rn
++  from public.friend_connections
++  where friend_email is not null
++)
++delete from public.friend_connections fc
++using ranked r
++where fc.id = r.id
++  and r.rn > 1;
++
++-- Enforce one friend email per owner.
++create unique index if not exists ux_friend_connections_owner_email
++  on public.friend_connections (created_by, friend_email)
++  where friend_email is not null;
++
++-- Query performance for leaderboard friends sorting.
++create index if not exists idx_friend_connections_owner_rank
++  on public.friend_connections (
++    created_by,
++    friend_rank_level desc,
++    friend_win_streak desc,
++    last_updated desc
++  );
++
++commit;
+*** End Patch

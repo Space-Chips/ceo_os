@@ -1,0 +1,150 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/tasks/tasks_screen.dart
+@@
+         child: DecoratedBox(
+           decoration: BoxDecoration(
+             borderRadius: BorderRadius.circular(22),
+             gradient: LinearGradient(
+               begin: Alignment.topCenter,
+               end: Alignment.bottomCenter,
+               colors: [overlay, CupertinoColors.transparent],
+             ),
+           ),
+           child: Padding(
+             padding: const EdgeInsets.all(18),
+-          child: Column(
+-            crossAxisAlignment: CrossAxisAlignment.start,
+-            children: [
+-              Text(
+-                title,
+-                style: AppTypography.overline.copyWith(
+-                  fontSize: 16,
+-                  fontWeight: FontWeight.w700,
+-                  color: AppColors.label,
+-                  letterSpacing: 2,
++            child: Column(
++              crossAxisAlignment: CrossAxisAlignment.start,
++              children: [
++                Text(
++                  title,
++                  style: AppTypography.overline.copyWith(
++                    fontSize: 16,
++                    fontWeight: FontWeight.w700,
++                    color: AppColors.label,
++                    letterSpacing: 2,
++                  ),
+                 ),
+-              ),
+-              const SizedBox(height: 4),
+-              Text(
+-                subtitle,
+-                style: AppTypography.caption1.copyWith(
+-                  fontSize: 12,
+-                  color: AppColors.secondaryLabel.withValues(alpha: 0.6),
++                const SizedBox(height: 4),
++                Text(
++                  subtitle,
++                  style: AppTypography.caption1.copyWith(
++                    fontSize: 12,
++                    color: AppColors.secondaryLabel.withValues(alpha: 0.6),
++                  ),
+                 ),
+-              ),
+-              const SizedBox(height: 14),
+-              if (tasks.isEmpty)
+-                Padding(
+-                  padding: const EdgeInsets.symmetric(vertical: 32),
+-                  child: Center(
+-                    child: Text(
+-                      'Empty',
+-                      textAlign: TextAlign.center,
+-                      style: AppTypography.subhead.copyWith(
+-                        fontSize: 13,
+-                        color: AppColors.tertiaryLabel.withValues(alpha: 0.5),
++                const SizedBox(height: 14),
++                if (tasks.isEmpty)
++                  Padding(
++                    padding: const EdgeInsets.symmetric(vertical: 32),
++                    child: Center(
++                      child: Text(
++                        'Empty',
++                        textAlign: TextAlign.center,
++                        style: AppTypography.subhead.copyWith(
++                          fontSize: 13,
++                          color: AppColors.tertiaryLabel.withValues(alpha: 0.5),
++                        ),
+                       ),
+                     ),
+-                  ),
+-                )
+-              else
+-                ...tasks.map(
+-                  (task) => Padding(
+-                    padding: const EdgeInsets.only(bottom: 8),
+-                    child: _PressScale(
+-                      onTap: () => onTapTask(task),
+-                      child: Container(
+-                        width: double.infinity,
+-                        padding: const EdgeInsets.symmetric(
+-                          horizontal: 16,
+-                          vertical: 10,
+-                        ),
+-                        decoration: BoxDecoration(
+-                          borderRadius: BorderRadius.circular(14),
+-                          color: const Color(0xFF1C1C1C),
+-                          border: Border.all(
+-                            color: AppColors.white.withValues(alpha: 0.06),
+-                            width: 1,
++                  )
++                else
++                  ...tasks.map(
++                    (task) => Padding(
++                      padding: const EdgeInsets.only(bottom: 8),
++                      child: _PressScale(
++                        onTap: () => onTapTask(task),
++                        child: Container(
++                          width: double.infinity,
++                          padding: const EdgeInsets.symmetric(
++                            horizontal: 16,
++                            vertical: 10,
+                           ),
+-                        ),
+-                        child: Text(
+-                          task.title,
+-                          maxLines: 1,
+-                          overflow: TextOverflow.ellipsis,
+-                          style: AppTypography.headline.copyWith(
+-                            fontSize: 16,
+-                            color: AppColors.label,
+-                            fontWeight: FontWeight.w600,
++                          decoration: BoxDecoration(
++                            borderRadius: BorderRadius.circular(14),
++                            color: const Color(0xFF1C1C1C),
++                            border: Border.all(
++                              color: AppColors.white.withValues(alpha: 0.06),
++                              width: 1,
++                            ),
+                           ),
++                          child: Text(
++                            task.title,
++                            maxLines: 1,
++                            overflow: TextOverflow.ellipsis,
++                            style: AppTypography.headline.copyWith(
++                              fontSize: 16,
++                              color: AppColors.label,
++                              fontWeight: FontWeight.w600,
++                            ),
++                          ),
+                         ),
+                       ),
+                     ),
+-                  ),
+-                ),
+-            ],
++                  ),
++              ],
++            ),
+           ),
+         ),
+       ),
+*** End Patch

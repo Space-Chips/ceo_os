@@ -1,0 +1,8 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/profile/profile_screen.dart
+@@
+                     Text(
+-                      section.title.toUpperCase(),
++                      section.title,
+                       style: AppTypography.overline.copyWith(
+*** End Patch

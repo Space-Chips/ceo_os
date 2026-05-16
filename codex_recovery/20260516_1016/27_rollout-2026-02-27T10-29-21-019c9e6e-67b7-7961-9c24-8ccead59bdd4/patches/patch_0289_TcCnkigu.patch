@@ -1,0 +1,14 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/ios/Runner/Runner.entitlements
+@@
+ <plist version="1.0">
+ <dict>
+     <key>com.apple.developer.family-controls</key>
+     <true/>
++    <key>com.apple.security.application-groups</key>
++    <array>
++        <string>group.com.example.ceocompass.timo</string>
++    </array>
+ </dict>
+ </plist>
+*** End Patch

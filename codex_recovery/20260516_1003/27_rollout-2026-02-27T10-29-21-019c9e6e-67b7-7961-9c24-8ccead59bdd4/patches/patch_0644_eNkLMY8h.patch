@@ -1,0 +1,88 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/screen_time_manager/family_time_screen.dart
+@@
+         Container(
+           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+           decoration: BoxDecoration(
+             borderRadius: BorderRadius.circular(10),
+             color: _isAdmin
+                 ? AppColors.accent.withValues(alpha: 0.12)
+-                : AppColors.white.withValues(alpha: 0.05),
++                : AppColors.pillBackground,
+             border: Border.all(
+               color: _isAdmin
+                   ? AppColors.accent.withValues(alpha: 0.35)
+-                  : AppColors.white.withValues(alpha: 0.08),
++                  : AppColors.pillBorder,
+             ),
+           ),
+@@
+         decoration: BoxDecoration(
+           borderRadius: BorderRadius.circular(20),
+           color: featured
+               ? AppColors.accent.withValues(alpha: 0.06)
+-              : AppColors.white.withValues(alpha: 0.04),
++              : AppColors.cardBackgroundAlt,
+           border: Border.all(
+             color: featured
+                 ? AppColors.accent.withValues(alpha: 0.24)
+-                : AppColors.white.withValues(alpha: 0.08),
++                : AppColors.border,
+             width: 1,
+           ),
+@@
+                       decoration: BoxDecoration(
+                         borderRadius: BorderRadius.circular(12),
+                         color: _sessionDuration == d
+                             ? AppColors.accent.withValues(alpha: 0.12)
+-                            : AppColors.white.withValues(alpha: 0.04),
++                            : AppColors.pillBackground,
+                         border: Border.all(
+                           color: _sessionDuration == d
+                               ? AppColors.accent.withValues(alpha: 0.35)
+-                              : AppColors.white.withValues(alpha: 0.08),
++                              : AppColors.pillBorder,
+                         ),
+                       ),
+@@
+             decoration: BoxDecoration(
+-              color: AppColors.white.withValues(alpha: 0.04),
++              color: AppColors.cardBackgroundAlt,
+               borderRadius: BorderRadius.circular(12),
+               border: Border.all(
+-                color: AppColors.white.withValues(alpha: 0.08),
++                color: AppColors.border,
+               ),
+             ),
+@@
+       decoration: BoxDecoration(
+         borderRadius: BorderRadius.circular(10),
+-        color: AppColors.white.withValues(alpha: 0.04),
++        color: AppColors.pillBackground,
+         border: Border.all(
+-          color: AppColors.white.withValues(alpha: 0.08),
++          color: AppColors.pillBorder,
+         ),
+       ),
+@@
+         decoration: BoxDecoration(
+           borderRadius: BorderRadius.circular(12),
+           color: primary
+             ? AppColors.accent
+-            : AppColors.white.withValues(alpha: 0.06),
++            : AppColors.pillBackground,
+         border: Border.all(
+           color: primary
+               ? AppColors.accent.withValues(alpha: 0.35)
+-              : AppColors.white.withValues(alpha: 0.08),
++              : AppColors.pillBorder,
+         ),
+@@
+         decoration: BoxDecoration(
+           borderRadius: BorderRadius.circular(12),
+           color: destructive
+             ? AppColors.error.withValues(alpha: 0.14)
+-            : AppColors.white.withValues(alpha: 0.06),
++            : AppColors.pillBackground,
+         border: Border.all(
+*** End Patch

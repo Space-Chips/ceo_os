@@ -1,0 +1,13 @@
+*** Begin Patch
+*** Update File: ios/Runner/AppDelegate.swift
+@@
+ #if canImport(home_widget)
+ import home_widget
+ #endif
++#if canImport(image_picker_ios)
++import image_picker_ios
++#endif
+ #if canImport(path_provider_foundation)
+ import path_provider_foundation
+ #endif
+*** End Patch

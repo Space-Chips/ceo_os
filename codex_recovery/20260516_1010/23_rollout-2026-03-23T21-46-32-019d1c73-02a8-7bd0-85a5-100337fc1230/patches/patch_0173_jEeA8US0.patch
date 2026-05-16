@@ -1,0 +1,47 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/setup/setup_flow_screen.dart
+@@
+ class _SetupFlowScreenState extends State<SetupFlowScreen>
+     with WidgetsBindingObserver {
+   final ValueNotifier<bool> _showStepSuccess = ValueNotifier(false);
++  final Set<SetupStep> _autoAdvancedSteps = <SetupStep>{};
+   Timer? _successTimer;
+@@
+   Widget _buildStep(
+     BuildContext context,
+     SetupFlowController controller,
+     SetupStep step,
+   ) {
+     switch (step) {
+@@
+       case SetupStep.overlay:
++        _maybeAutoAdvance(controller, step, controller.overlayGranted);
+         return _PermissionStep(
+           stepIndex: 1,
+@@
+       case SetupStep.usageAccess:
++        _maybeAutoAdvance(controller, step, controller.usageGranted);
+         return _PermissionStep(
+@@
+       case SetupStep.accessibility:
++        _maybeAutoAdvance(controller, step, controller.accessibilityGranted);
+         return _PermissionStep(
+@@
+     }
+   }
++
++  void _maybeAutoAdvance(
++    SetupFlowController controller,
++    SetupStep step,
++    bool isGranted,
++  ) {
++    if (!isGranted) return;
++    if (_autoAdvancedSteps.contains(step)) return;
++    _autoAdvancedSteps.add(step);
++    WidgetsBinding.instance.addPostFrameCallback((_) {
++      if (!mounted) return;
++      controller.advance();
++    });
++  }
+ }
+*** End Patch

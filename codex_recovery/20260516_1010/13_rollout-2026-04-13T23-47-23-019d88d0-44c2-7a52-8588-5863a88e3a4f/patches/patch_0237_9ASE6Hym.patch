@@ -1,0 +1,34 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/providers/focus_provider.dart
+@@
+   Future<void> loadInitialData() async {
+-    _blockLists = await _repository.getBlockLists();
+-
+-    // Check for an active list from DB first
+-    final activeInDb = _blockLists.where((l) => l.isActive).toList();
+-    if (activeInDb.isNotEmpty) {
+-      _activeBlockListId = activeInDb.first.id;
+-    } else {
+-      // Fallback to SharedPreferences if DB doesn't have it
+-      final prefs = await SharedPreferences.getInstance();
+-      _activeBlockListId = prefs.getString('active_block_list_id');
+-    }
+-
+-    if (_blockLists.isNotEmpty &&
+-        (_activeBlockListId == null ||
+-            !_blockLists.any((l) => l.id == _activeBlockListId))) {
+-      _activeBlockListId = _blockLists.first.id;
+-    }
+-
++    _blockLists = await _repository.getBlockLists();
+     await _refreshProtectionStatus();
+-
+-    if (_activeBlockListId != null) {
+-      await _syncToNative();
+-    }
++    await _syncClassicBaselineFromBlockedAppsSites();
++    await _refreshBlockingSummary();
+ 
+     notifyListeners();
+   }
+*** End Patch

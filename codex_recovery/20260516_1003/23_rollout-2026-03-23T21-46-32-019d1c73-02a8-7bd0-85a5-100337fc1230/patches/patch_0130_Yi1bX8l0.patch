@@ -1,0 +1,28 @@
+*** Begin Patch
+*** Update File: android/app/src/main/kotlin/com/wakeapp/ceoos/GateLauncher.kt
+@@
+ class GateLauncher {
+     private var lastLaunchSignature: String? = null
+     private var lastLaunchAtMillis: Long = 0L
++    private val appLabelCache = mutableMapOf<String, String>()
+@@
+     private fun appLabelForPackage(packageManager: PackageManager, packageName: String): String {
+-        return try {
+-            val appInfo = packageManager.getApplicationInfo(packageName, 0)
+-            packageManager.getApplicationLabel(appInfo)?.toString()?.trim().orEmpty()
+-                .ifEmpty { packageName.substringAfterLast('.') }
+-        } catch (_: Exception) {
+-            packageName.substringAfterLast('.')
+-        }
++        appLabelCache[packageName]?.let { return it }
++        val label = try {
++            val appInfo = packageManager.getApplicationInfo(packageName, 0)
++            packageManager.getApplicationLabel(appInfo)?.toString()?.trim().orEmpty()
++                .ifEmpty { packageName.substringAfterLast('.') }
++        } catch (_: Exception) {
++            packageName.substringAfterLast('.')
++        }
++        appLabelCache[packageName] = label
++        return label
+     }
+*** End Patch

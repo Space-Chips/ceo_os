@@ -1,0 +1,57 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/tasks/add_task_sheet.dart
+@@
+   Widget _sectionLabel(String label) => Text(
+     label,
+     style: AppTypography.mono.copyWith(
+       fontSize: 10,
+       color: AppColors.tertiaryLabel,
+       letterSpacing: 1.5,
+     ),
+   );
+ }
+-
+-class _GroupChip extends StatelessWidget {
+-  final String label;
+-  final bool isSelected;
+-  final VoidCallback onTap;
+-
+-  const _GroupChip({
+-    required this.label,
+-    required this.isSelected,
+-    required this.onTap,
+-  });
+-
+-  @override
+-  Widget build(BuildContext context) {
+-    return GestureDetector(
+-      onTap: onTap,
+-      child: AnimatedContainer(
+-        duration: const Duration(milliseconds: 200),
+-        margin: const EdgeInsets.only(right: 8),
+-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+-        decoration: BoxDecoration(
+-          color: isSelected
+-              ? AppColors.primaryOrange.withOpacity(0.2)
+-              : Colors.transparent,
+-          borderRadius: BorderRadius.circular(12),
+-          border: Border.all(
+-            color: isSelected ? AppColors.primaryOrange : AppColors.glassBorder,
+-            width: 0.5,
+-          ),
+-        ),
+-        child: Text(
+-          label,
+-          style: AppTypography.mono.copyWith(
+-            fontSize: 10,
+-            color: isSelected
+-                ? AppColors.primaryOrange
+-                : AppColors.secondaryLabel,
+-            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+-          ),
+-        ),
+-      ),
+-    );
+-  }
+-}
+*** End Patch

@@ -1,0 +1,24 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/home/home_screen.dart
+@@
+ import '../../core/repositories/feature_repository.dart';
+ import '../../core/repositories/insights_repository.dart';
+ import '../../core/repositories/user_repository.dart';
++import '../../core/services/stats_engine.dart';
+ import '../../core/theme/app_colors.dart';
+ import '../../core/theme/app_typography.dart';
+@@
+   final InsightsRepository _insightsRepository = InsightsRepository();
+   final UserRepository _userRepository = UserRepository();
+   final FeatureRepository _featureRepository = FeatureRepository();
++  final StatsEngine _statsEngine = StatsEngine();
+@@
+   void initState() {
+     super.initState();
+     _snapshotFuture = _insightsRepository.getDashboardSnapshot();
++    unawaited(_statsEngine.recordDashboardOpened());
+     WidgetsBinding.instance.addPostFrameCallback((_) async {
+       await _bootstrap();
+     });
+   }
+*** End Patch

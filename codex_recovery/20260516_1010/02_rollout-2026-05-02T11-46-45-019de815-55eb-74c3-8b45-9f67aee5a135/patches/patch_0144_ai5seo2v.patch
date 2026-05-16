@@ -1,0 +1,42 @@
+*** Begin Patch
+*** Update File: lib/core/widgets/home_widgets/widget_views.dart
+@@
+           _WidgetHeader(
+             title: title,
+             subtitle:
+                 '${language.t('today')} · $completed/$total ${language.t('widget_completed')}',
+             titleStyle: WidgetDesignTokens.section.copyWith(
+               fontSize: 12,
+               letterSpacing: 1.1,
+               color: AppColors.secondaryLabel.withValues(alpha: 0.78),
+             ),
+           ),
+-          const SizedBox(height: 10),
++          const SizedBox(height: 8),
+@@
+                       if (i != items.length - 1)
+                         Container(
+                           height: 1,
+-                          margin: const EdgeInsets.symmetric(horizontal: 14),
++                          margin: const EdgeInsets.symmetric(horizontal: 12),
+                           color: AppColors.border.withValues(alpha: 0.55),
+                         ),
+@@
+                     else if (more > 0)
+                       Padding(
+-                        padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
++                        padding: const EdgeInsets.fromLTRB(12, 8, 12, 10),
+                         child: Align(
+                           alignment: Alignment.centerLeft,
+                           child: Text(
+@@
+ class _HabitsTodayRow extends StatelessWidget {
+@@
+   @override
+   Widget build(BuildContext context) {
+     return Padding(
+-      padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
++      padding: const EdgeInsets.fromLTRB(12, 9, 12, 9),
+       child: Row(
+         children: [
+*** End Patch

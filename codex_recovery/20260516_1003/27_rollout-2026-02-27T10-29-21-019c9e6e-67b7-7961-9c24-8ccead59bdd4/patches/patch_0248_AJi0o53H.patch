@@ -1,0 +1,199 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/tasks/tasks_screen.dart
+@@
+ class _TasksScreenState extends State<TasksScreen> {
+   final PremiumRepository _premiumRepository = PremiumRepository();
++  final PageController _pageController = PageController();
+   _TaskTab _activeTab = _TaskTab.list;
+-  int _tabDirection = -1;
+@@
+   void initState() {
+     super.initState();
+     WidgetsBinding.instance.addPostFrameCallback((_) async {
+       await context.read<TaskProvider>().loadTasksWithCompleted(
+@@
+     });
+   }
++
++  @override
++  void dispose() {
++    _pageController.dispose();
++    super.dispose();
++  }
+@@
+-  void _goNextTab() {
+-    if (_activeTab == _TaskTab.list) {
+-      _setActiveTab(_TaskTab.matrix);
+-      return;
+-    }
+-    if (_activeTab == _TaskTab.matrix) {
+-      _setActiveTab(_TaskTab.history);
+-    }
+-  }
+-
+-  void _goPreviousTab() {
+-    if (_activeTab == _TaskTab.history) {
+-      _setActiveTab(_TaskTab.matrix);
+-      return;
+-    }
+-    if (_activeTab == _TaskTab.matrix) {
+-      _setActiveTab(_TaskTab.list);
+-    }
+-  }
+-
+   void _setActiveTab(_TaskTab tab) {
+     if (tab == _activeTab) return;
+-    final direction = tab.index > _activeTab.index ? -1 : 1;
+     setState(() {
+-      _tabDirection = direction;
+       _activeTab = tab;
+     });
++    _pageController.animateToPage(
++      tab.index,
++      duration: const Duration(milliseconds: 240),
++      curve: Curves.easeOutCubic,
++    );
+   }
+-
+-  void _handleTabSwipe(DragEndDetails details) {
+-    final velocity = details.primaryVelocity ?? 0;
+-    if (velocity > 300) {
+-      _goNextTab();
+-    } else if (velocity < -300) {
+-      _goPreviousTab();
+-    }
+-  }
+@@
+-              return GestureDetector(
+-                onHorizontalDragEnd: _handleTabSwipe,
+-                child: Padding(
+-                  padding: const EdgeInsets.fromLTRB(14, 8, 14, 10),
+-                  child: Column(
+-                    children: [
+-                      _topRow(),
+-                      const SizedBox(height: 8),
+-                      _titleBlock(),
+-                      const SizedBox(height: 10),
+-                      Expanded(
+-                        child: AnimatedSwitcher(
+-                          duration: const Duration(milliseconds: 260),
+-                          switchInCurve: Curves.easeOutCubic,
+-                          switchOutCurve: Curves.easeInCubic,
+-                          transitionBuilder: (child, animation) {
+-                            final begin = _tabDirection < 0
+-                                ? const Offset(0.2, 0)
+-                                : const Offset(-0.2, 0);
+-                            final slide = Tween<Offset>(
+-                              begin: begin,
+-                              end: Offset.zero,
+-                            ).animate(animation);
+-                            return FadeTransition(
+-                              opacity: animation,
+-                              child: SlideTransition(
+-                                position: slide,
+-                                child: child,
+-                              ),
+-                            );
+-                          },
+-                          child: _activeTab == _TaskTab.list
+-                              ? _buildListTab(
+-                                  key: const ValueKey('list'),
+-                                  topFive: topFive,
+-                                  others: others,
+-                                  onAdd: _showAddTask,
+-                                  onComplete: (task) =>
+-                                      prov.completeTask(task.id),
+-                                )
+-                              : _activeTab == _TaskTab.matrix
+-                              ? _buildMatrixTab(
+-                                  key: const ValueKey('matrix'),
+-                                  quickImportant: quickImportant.toList(),
+-                                  slowImportant: slowImportant.toList(),
+-                                  quickNotImportant: quickNotImportant.toList(),
+-                                  slowNotImportant: slowNotImportant.toList(),
+-                                  onComplete: (task) =>
+-                                      prov.completeTask(task.id),
+-                                )
+-                              : _buildHistoryTab(
+-                                  key: const ValueKey('history'),
+-                                  tasks: recentWeekTasks,
+-                                  onToggle: (task) async {
+-                                    if (task.completed) {
+-                                      await prov.uncompleteTask(task.id);
+-                                    } else {
+-                                      await prov.completeTask(task.id);
+-                                    }
+-                                  },
+-                                ),
+-                        ),
+-                      ),
+-                      const SizedBox(height: 8),
+-                      Text(
+-                        _swipeHint(),
+-                        style: AppTypography.mono.copyWith(
+-                          fontSize: 10,
+-                          color: AppColors.tertiaryLabel,
+-                        ),
+-                      ),
+-                    ],
+-                  ),
+-                ),
++              return Padding(
++                padding: const EdgeInsets.fromLTRB(14, 8, 14, 10),
++                child: Column(
++                  children: [
++                    _topRow(),
++                    const SizedBox(height: 8),
++                    _titleBlock(),
++                    const SizedBox(height: 10),
++                    Expanded(
++                      child: PageView(
++                        controller: _pageController,
++                        onPageChanged: (index) {
++                          if (!mounted) return;
++                          setState(() => _activeTab = _TaskTab.values[index]);
++                        },
++                        children: [
++                          _buildListTab(
++                            key: const ValueKey('list'),
++                            topFive: topFive,
++                            others: others,
++                            onAdd: _showAddTask,
++                            onComplete: (task) => prov.completeTask(task.id),
++                          ),
++                          _buildMatrixTab(
++                            key: const ValueKey('matrix'),
++                            quickImportant: quickImportant.toList(),
++                            slowImportant: slowImportant.toList(),
++                            quickNotImportant: quickNotImportant.toList(),
++                            slowNotImportant: slowNotImportant.toList(),
++                            onComplete: (task) => prov.completeTask(task.id),
++                          ),
++                          _buildHistoryTab(
++                            key: const ValueKey('history'),
++                            tasks: recentWeekTasks,
++                            onToggle: (task) async {
++                              if (task.completed) {
++                                await prov.uncompleteTask(task.id);
++                              } else {
++                                await prov.completeTask(task.id);
++                              }
++                            },
++                          ),
++                        ],
++                      ),
++                    ),
++                    const SizedBox(height: 8),
++                    Text(
++                      _swipeHint(),
++                      style: AppTypography.mono.copyWith(
++                        fontSize: 10,
++                        color: AppColors.tertiaryLabel,
++                      ),
++                    ),
++                  ],
++                ),
+               );
+             },
+           ),
+*** End Patch

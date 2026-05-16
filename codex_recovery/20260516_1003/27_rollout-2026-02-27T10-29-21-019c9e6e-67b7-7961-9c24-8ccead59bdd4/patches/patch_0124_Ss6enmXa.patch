@@ -1,0 +1,546 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/profile/profile_screen.dart
+@@
+-  void _showNotificationsInfo() {
+-    showCupertinoDialog(
+-      context: context,
+-      builder: (context) => CupertinoAlertDialog(
+-        title: Text('NOTIFICATION_CHANNELS', style: AppTypography.mono),
+-        content: Padding(
+-          padding: const EdgeInsets.only(top: 8),
+-          child: Text(
+-            'Notification channel controls will be available in a future update.',
+-            style: AppTypography.mono.copyWith(
+-              fontSize: 12,
+-              color: AppColors.secondaryLabel,
+-            ),
+-          ),
+-        ),
+-        actions: [
+-          CupertinoDialogAction(
+-            onPressed: () => Navigator.of(context).pop(),
+-            child: Text(
+-              'OK',
+-              style: AppTypography.mono.copyWith(
+-                color: AppColors.primaryOrange,
+-              ),
+-            ),
+-          ),
+-        ],
+-      ),
+-    );
++  String _languageLabel(String code) {
++    switch (code.toLowerCase()) {
++      case 'fr':
++        return 'FRANCAIS';
++      case 'zh':
++        return '中文';
++      case 'hi':
++        return 'हिन्दी';
++      case 'es':
++        return 'ESPANOL';
++      case 'ar':
++        return 'العربية';
++      case 'id':
++        return 'BAHASA INDONESIA';
++      case 'ru':
++        return 'РУССКИЙ';
++      case 'pt':
++        return 'PORTUGUES';
++      default:
++        return 'ENGLISH';
++    }
++  }
++
++  Future<void> _showNotice({
++    required String title,
++    required String message,
++  }) async {
++    if (!mounted) return;
++    await showCupertinoDialog<void>(
++      context: context,
++      builder: (context) => CupertinoAlertDialog(
++        title: Text(title, style: AppTypography.mono),
++        content: Padding(
++          padding: const EdgeInsets.only(top: 8),
++          child: Text(
++            message,
++            style: AppTypography.mono.copyWith(
++              fontSize: 12,
++              color: AppColors.secondaryLabel,
++            ),
++          ),
++        ),
++        actions: [
++          CupertinoDialogAction(
++            isDefaultAction: true,
++            onPressed: () => Navigator.of(context).pop(),
++            child: Text(
++              'OK',
++              style: AppTypography.mono.copyWith(
++                color: AppColors.primaryOrange,
++              ),
++            ),
++          ),
++        ],
++      ),
++    );
++  }
++
++  Future<void> _refreshSettingsOnly() async {
++    final settings = await _settingsRepository.getAppSettings();
++    if (!mounted) return;
++    setState(() => _appSettings = settings);
++  }
++
++  Future<void> _showLanguagePicker() async {
++    final current = (_appSettings?.languageCode ?? 'en').toLowerCase();
++    final selected = await showCupertinoModalPopup<String>(
++      context: context,
++      builder: (context) => CupertinoActionSheet(
++        title: Text(
++          'LANGUAGE',
++          style: AppTypography.mono.copyWith(fontSize: 12),
++        ),
++        message: Text(
++          'Choose your preferred language.',
++          style: AppTypography.mono.copyWith(
++            fontSize: 11,
++            color: AppColors.secondaryLabel,
++          ),
++        ),
++        actions: [
++          for (final language in _languages)
++            CupertinoActionSheetAction(
++              onPressed: () => Navigator.of(context).pop(language.code),
++              child: Row(
++                mainAxisAlignment: MainAxisAlignment.center,
++                children: [
++                  Text(
++                    '${language.nativeLabel} (${language.label})',
++                    style: AppTypography.mono.copyWith(fontSize: 12),
++                  ),
++                  if (language.code == current)
++                    Padding(
++                      padding: const EdgeInsets.only(left: 8),
++                      child: Icon(
++                        CupertinoIcons.check_mark_circled_solid,
++                        size: 16,
++                        color: AppColors.primaryOrange,
++                      ),
++                    ),
++                ],
++              ),
++            ),
++        ],
++        cancelButton: CupertinoActionSheetAction(
++          onPressed: () => Navigator.of(context).pop(),
++          child: Text(
++            'CANCEL',
++            style: AppTypography.mono.copyWith(fontWeight: FontWeight.bold),
++          ),
++        ),
++      ),
++    );
++
++    if (selected == null || selected == current) return;
++    setState(() => _isSettingsSaving = true);
++    try {
++      await _settingsRepository.updateLanguageCode(selected);
++      await _refreshSettingsOnly();
++      await _showNotice(
++        title: 'LANGUAGE_UPDATED',
++        message: 'Preference saved to your profile settings.',
++      );
++    } catch (_) {
++      await _showNotice(
++        title: 'SAVE_FAILED',
++        message: 'Unable to save language preference right now.',
++      );
++    } finally {
++      if (mounted) setState(() => _isSettingsSaving = false);
++    }
++  }
++
++  Future<void> _showNotificationChannels() async {
++    var globalEnabled = _appSettings?.notificationsEnabled ?? true;
++    var habitEnabled = _appSettings?.habitNotificationsEnabled ?? true;
++    var calendarEnabled = _appSettings?.calendarNotificationsEnabled ?? true;
++    var focusEnabled = _appSettings?.focusNotificationsEnabled ?? true;
++
++    await showCupertinoModalPopup<void>(
++      context: context,
++      builder: (popupContext) => StatefulBuilder(
++        builder: (context, setPopupState) => SafeArea(
++          top: false,
++          child: Container(
++            height: MediaQuery.of(context).size.height * 0.62,
++            padding: const EdgeInsets.fromLTRB(16, 14, 16, 20),
++            decoration: BoxDecoration(
++              color: AppColors.background,
++              borderRadius: const BorderRadius.vertical(
++                top: Radius.circular(20),
++              ),
++              border: Border.all(
++                color: AppColors.primaryOrange.withValues(alpha: 0.24),
++                width: 0.7,
++              ),
++            ),
++            child: Column(
++              children: [
++                Row(
++                  children: [
++                    Expanded(
++                      child: Text(
++                        'NOTIFICATION_CHANNELS',
++                        style: AppTypography.mono.copyWith(
++                          fontSize: 12,
++                          fontWeight: FontWeight.bold,
++                        ),
++                      ),
++                    ),
++                    CupertinoButton(
++                      padding: EdgeInsets.zero,
++                      onPressed: () => Navigator.of(popupContext).pop(),
++                      child: Icon(
++                        CupertinoIcons.xmark_circle_fill,
++                        color: AppColors.tertiaryLabel,
++                      ),
++                    ),
++                  ],
++                ),
++                const SizedBox(height: 8),
++                Expanded(
++                  child: ListView(
++                    children: [
++                      _settingRow(
++                        label: 'GLOBAL_NOTIFICATIONS',
++                        trailing: CupertinoSwitch(
++                          activeTrackColor: AppColors.primaryOrange,
++                          value: globalEnabled,
++                          onChanged: (value) {
++                            setPopupState(() {
++                              globalEnabled = value;
++                              if (!globalEnabled) {
++                                habitEnabled = false;
++                                calendarEnabled = false;
++                                focusEnabled = false;
++                              }
++                            });
++                          },
++                        ),
++                      ),
++                      _divider(),
++                      _settingRow(
++                        label: 'HABIT_REMINDERS',
++                        trailing: CupertinoSwitch(
++                          activeTrackColor: AppColors.primaryOrange,
++                          value: habitEnabled,
++                          onChanged: globalEnabled
++                              ? (value) =>
++                                    setPopupState(() => habitEnabled = value)
++                              : null,
++                        ),
++                      ),
++                      _divider(),
++                      _settingRow(
++                        label: 'CALENDAR_ALERTS',
++                        trailing: CupertinoSwitch(
++                          activeTrackColor: AppColors.primaryOrange,
++                          value: calendarEnabled,
++                          onChanged: globalEnabled
++                              ? (value) => setPopupState(
++                                  () => calendarEnabled = value,
++                                )
++                              : null,
++                        ),
++                      ),
++                      _divider(),
++                      _settingRow(
++                        label: 'FOCUS_SESSION_ALERTS',
++                        trailing: CupertinoSwitch(
++                          activeTrackColor: AppColors.primaryOrange,
++                          value: focusEnabled,
++                          onChanged: globalEnabled
++                              ? (value) =>
++                                    setPopupState(() => focusEnabled = value)
++                              : null,
++                        ),
++                      ),
++                    ],
++                  ),
++                ),
++                const SizedBox(height: 8),
++                LiquidButton(
++                  label: _isSettingsSaving ? 'SAVING' : 'SAVE_CHANNELS',
++                  fullWidth: true,
++                  onPressed: _isSettingsSaving
++                      ? null
++                      : () async {
++                          setState(() => _isSettingsSaving = true);
++                          try {
++                            await _settingsRepository.updateNotificationChannels(
++                              notificationsEnabled: globalEnabled,
++                              habitNotificationsEnabled: habitEnabled,
++                              calendarNotificationsEnabled: calendarEnabled,
++                              focusNotificationsEnabled: focusEnabled,
++                            );
++                            await _refreshSettingsOnly();
++                            if (mounted) {
++                              Navigator.of(popupContext).pop();
++                            }
++                          } catch (_) {
++                            await _showNotice(
++                              title: 'SAVE_FAILED',
++                              message:
++                                  'Unable to save notification channels right now.',
++                            );
++                          } finally {
++                            if (mounted) {
++                              setState(() => _isSettingsSaving = false);
++                            }
++                          }
++                        },
++                ),
++              ],
++            ),
++          ),
++        ),
++      ),
++    );
++  }
++
++  Future<void> _showDocumentSheet({
++    required String title,
++    required List<_SettingsSection> sections,
++    String footer = 'Last updated: December 2025',
++  }) async {
++    await showCupertinoModalPopup<void>(
++      context: context,
++      builder: (popupContext) => SafeArea(
++        top: false,
++        child: Container(
++          height: MediaQuery.of(context).size.height * 0.86,
++          padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
++          decoration: BoxDecoration(
++            color: AppColors.background,
++            borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
++            border: Border.all(
++              color: AppColors.primaryOrange.withValues(alpha: 0.2),
++              width: 0.7,
++            ),
++          ),
++          child: Column(
++            children: [
++              Row(
++                children: [
++                  Expanded(
++                    child: Text(
++                      title,
++                      style: AppTypography.mono.copyWith(
++                        fontSize: 12,
++                        fontWeight: FontWeight.bold,
++                      ),
++                    ),
++                  ),
++                  CupertinoButton(
++                    padding: EdgeInsets.zero,
++                    onPressed: () => Navigator.of(popupContext).pop(),
++                    child: Icon(
++                      CupertinoIcons.xmark_circle_fill,
++                      color: AppColors.tertiaryLabel,
++                    ),
++                  ),
++                ],
++              ),
++              const SizedBox(height: 6),
++              Expanded(
++                child: ListView.separated(
++                  itemCount: sections.length + 1,
++                  separatorBuilder: (_, __) => const SizedBox(height: 10),
++                  itemBuilder: (context, index) {
++                    if (index == sections.length) {
++                      return Padding(
++                        padding: const EdgeInsets.only(top: 6, bottom: 4),
++                        child: Text(
++                          footer,
++                          textAlign: TextAlign.center,
++                          style: AppTypography.mono.copyWith(
++                            fontSize: 9,
++                            color: AppColors.tertiaryLabel,
++                          ),
++                        ),
++                      );
++                    }
++                    final section = sections[index];
++                    return GlassCard(
++                      padding: const EdgeInsets.all(14),
++                      borderRadius: 14,
++                      child: Column(
++                        crossAxisAlignment: CrossAxisAlignment.start,
++                        children: [
++                          Text(
++                            section.title,
++                            style: AppTypography.mono.copyWith(
++                              fontSize: 10,
++                              color: AppColors.primaryOrange,
++                              fontWeight: FontWeight.bold,
++                            ),
++                          ),
++                          const SizedBox(height: 6),
++                          Text(
++                            section.body,
++                            style: AppTypography.mono.copyWith(
++                              fontSize: 10,
++                              color: AppColors.secondaryLabel,
++                              height: 1.35,
++                            ),
++                          ),
++                        ],
++                      ),
++                    );
++                  },
++                ),
++              ),
++            ],
++          ),
++        ),
++      ),
++    );
++  }
++
++  Future<void> _openPrivacyPolicy() async {
++    await _showDocumentSheet(
++      title: 'PRIVACY_POLICY',
++      sections: const [
++        _SettingsSection(
++          'Information We Collect',
++          'We collect your profile identity and productivity data (habits, tasks, calendar events, focus sessions, screen-time logs) to provide the app functionality.',
++        ),
++        _SettingsSection(
++          'How Data Is Used',
++          'Data is used to run your workflows, compute insights, streaks, and ranking progress. Personal data is not sold to third parties.',
++        ),
++        _SettingsSection(
++          'Storage and Security',
++          'Data is stored in Supabase with row-level security policies so users can only access records they own.',
++        ),
++        _SettingsSection(
++          'Your Rights',
++          'You can request access, correction, or deletion of your data through support. Account deletion remains irreversible.',
++        ),
++      ],
++    );
++  }
++
++  Future<void> _openPermissionsPolicy() async {
++    await _showDocumentSheet(
++      title: 'PERMISSIONS',
++      sections: const [
++        _SettingsSection(
++          'Notifications',
++          'Used for reminders and event alerts. You can disable channels individually from profile settings.',
++        ),
++        _SettingsSection(
++          'Calendar Access (Optional)',
++          'Optional integration for reading and creating events in your calendar workflows.',
++        ),
++        _SettingsSection(
++          'Screen Time / Shield',
++          'Used only for focus protection workflows and screen-time analysis features.',
++        ),
++        _SettingsSection(
++          'Control',
++          'Permissions can be changed anytime in device settings. Some app modules may degrade when disabled.',
++        ),
++      ],
++    );
++  }
++
++  Future<void> _openTermsOfUse() async {
++    await _showDocumentSheet(
++      title: 'TERMS_OF_USE',
++      sections: const [
++        _SettingsSection(
++          'Acceptance',
++          'Using this app means you accept the terms and operate within lawful use.',
++        ),
++        _SettingsSection(
++          'Account Responsibility',
++          'You are responsible for the confidentiality of your account credentials and activities under your account.',
++        ),
++        _SettingsSection(
++          'Service Availability',
++          'Service may occasionally be interrupted for maintenance, updates, or infrastructure events.',
++        ),
++        _SettingsSection(
++          'Termination',
++          'Accounts may be suspended for terms violations. Users can also terminate their account through deletion flow.',
++        ),
++      ],
++    );
++  }
++
++  Future<void> _openContactSupport() async {
++    const supportEmail = 'support@app.com';
++    await Clipboard.setData(const ClipboardData(text: supportEmail));
++    await _showNotice(
++      title: 'SUPPORT_CONTACT',
++      message:
++          'Support email copied: support@app.com. Include device, app version, and reproduction steps.',
++    );
++  }
++
++  Future<void> _openDataDeletionFlow() async {
++    final confirmCtrl = TextEditingController();
++    final confirmed = await showCupertinoDialog<bool>(
++      context: context,
++      builder: (ctx) => CupertinoAlertDialog(
++        title: Text('DATA_DELETION', style: AppTypography.mono),
++        content: Column(
++          children: [
++            const SizedBox(height: 8),
++            Text(
++              'Type DELETE to confirm permanent deletion request flow. Current production fallback logs out immediately, matching web behavior.',
++              style: AppTypography.mono.copyWith(
++                fontSize: 11,
++                color: AppColors.secondaryLabel,
++              ),
++            ),
++            const SizedBox(height: 10),
++            CupertinoTextField(
++              controller: confirmCtrl,
++              placeholder: 'Type DELETE',
++              autocorrect: false,
++            ),
++          ],
++        ),
++        actions: [
++          CupertinoDialogAction(
++            onPressed: () => Navigator.of(ctx).pop(false),
++            child: const Text('Cancel'),
++          ),
++          CupertinoDialogAction(
++            isDestructiveAction: true,
++            onPressed: () {
++              final ok = confirmCtrl.text.trim().toUpperCase() == 'DELETE';
++              Navigator.of(ctx).pop(ok);
++            },
++            child: const Text('Delete'),
++          ),
++        ],
++      ),
++    );
++    confirmCtrl.dispose();
++
++    if (confirmed != true) {
++      await _showNotice(
++        title: 'DELETION_ABORTED',
++        message: 'Confirmation token mismatch or flow canceled.',
++      );
++      return;
++    }
++
++    await context.read<AuthProvider>().logout();
+   }
+*** End Patch

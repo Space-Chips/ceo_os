@@ -1,0 +1,57 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/android/app/src/main/kotlin/com/wakeapp/ceoos/BlockGateActivity.kt
+@@
+ import android.widget.LinearLayout
+ import android.widget.TextView
+ 
+ class BlockGateActivity : Activity() {
+@@
+     private val dismissReceiver = object : BroadcastReceiver() {
+@@
+     override fun onCreate(savedInstanceState: Bundle?) {
++        blockedType = intent?.getStringExtra(EXTRA_BLOCK_TYPE)?.trim()?.ifEmpty { null }
++        if (isWebBlock()) {
++            setTheme(R.style.BlockGateThemeWeb)
++        } else {
++            setTheme(R.style.BlockGateTheme)
++        }
+         super.onCreate(savedInstanceState)
+         isVisible = true
+         window.setBackgroundDrawableResource(android.R.color.transparent)
+         overridePendingTransition(0, 0)
+         setFinishOnTouchOutside(false)
+-        blockedType = intent?.getStringExtra(EXTRA_BLOCK_TYPE)?.trim()?.ifEmpty { null }
+         configureWindowForCurrentBlockType()
+         buildUi()
+         applyIntent(intent)
+     }
+@@
+     override fun onNewIntent(intent: Intent?) {
+         super.onNewIntent(intent)
+         setIntent(intent)
+-        blockedType = intent?.getStringExtra(EXTRA_BLOCK_TYPE)?.trim()?.ifEmpty { null }
++        val newType = intent?.getStringExtra(EXTRA_BLOCK_TYPE)?.trim()?.ifEmpty { null }
++        if (newType != blockedType) {
++            blockedType = newType
++            recreate()
++            return
++        }
+         configureWindowForCurrentBlockType()
+         buildUi()
+         applyIntent(intent)
+     }
+@@
+     private fun configureWindowForCurrentBlockType() {
+         if (isWebBlock()) {
+             window.setGravity(Gravity.TOP)
+-            val freeBottomHeight = dp(108) + navBarHeightPx()
++            val freeBottomHeight = dp(164) + navBarHeightPx()
+             val screenHeight = resources.displayMetrics.heightPixels
+-            val windowHeight = (screenHeight - freeBottomHeight).coerceAtLeast(dp(360))
++            val windowHeight = (screenHeight - freeBottomHeight).coerceAtLeast(dp(300))
+             window.setLayout(
+                 ViewGroup.LayoutParams.MATCH_PARENT,
+                 windowHeight,
+             )
+         } else {
+*** End Patch

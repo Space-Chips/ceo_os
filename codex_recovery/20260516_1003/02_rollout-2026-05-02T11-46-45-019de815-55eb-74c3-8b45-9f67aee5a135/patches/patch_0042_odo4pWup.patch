@@ -1,0 +1,67 @@
+*** Begin Patch
+*** Update File: lib/features/widget_configuration/widget_configuration_screen.dart
+@@
+                         padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                         children: [
+                           const SizedBox(height: 6),
+-                          _sectionTitle(_t('widget_configuration_default')),
++                          _sectionTitle(_t('widget_configuration_widgets')),
+                           const SizedBox(height: 12),
+-                          _modeCard(
+-                            mode: CeoWidgetMode.todo,
++                          _widgetToggleCard(
+                             label: _t('widget_mode_todo'),
+                             icon: CupertinoIcons.check_mark_circled_solid,
++                            value: _enabledTodo,
++                            onChanged: (value) => _setEnabled(todo: value),
+                           ),
+                           const SizedBox(height: 10),
+-                          _modeCard(
+-                            mode: CeoWidgetMode.dashboard,
++                          _widgetToggleCard(
+                             label: _t('widget_mode_dashboard'),
+                             icon: CupertinoIcons.rectangle_3_offgrid_fill,
++                            value: _enabledDashboard,
++                            onChanged: (value) => _setEnabled(dashboard: value),
+                           ),
+                           const SizedBox(height: 10),
+-                          _modeCard(
+-                            mode: CeoWidgetMode.habits,
++                          _widgetToggleCard(
+                             label: _t('widget_mode_habits'),
+                             icon: CupertinoIcons.flame_fill,
++                            value: _enabledHabits,
++                            onChanged: (value) => _setEnabled(habits: value),
+                           ),
+                           const SizedBox(height: 22),
++                          _sectionTitle(_t('widget_configuration_default')),
++                          const SizedBox(height: 12),
++                          _defaultModeCard(
++                            mode: null,
++                            label: _t('widget_default_none'),
++                            icon: CupertinoIcons.xmark_circle_fill,
++                          ),
++                          const SizedBox(height: 10),
++                          _defaultModeCard(
++                            mode: CeoWidgetMode.todo,
++                            label: _t('widget_mode_todo'),
++                            icon: CupertinoIcons.check_mark_circled_solid,
++                          ),
++                          const SizedBox(height: 10),
++                          _defaultModeCard(
++                            mode: CeoWidgetMode.dashboard,
++                            label: _t('widget_mode_dashboard'),
++                            icon: CupertinoIcons.rectangle_3_offgrid_fill,
++                          ),
++                          const SizedBox(height: 10),
++                          _defaultModeCard(
++                            mode: CeoWidgetMode.habits,
++                            label: _t('widget_mode_habits'),
++                            icon: CupertinoIcons.flame_fill,
++                          ),
++                          const SizedBox(height: 22),
+                           _sectionTitle(_t('widget_configuration_actions')),
+                           const SizedBox(height: 12),
+                           _actionButton(
+                             label: _t('widget_configuration_refresh'),
+*** End Patch

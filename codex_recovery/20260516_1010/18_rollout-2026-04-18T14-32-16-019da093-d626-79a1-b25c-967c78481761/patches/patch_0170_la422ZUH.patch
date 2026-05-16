@@ -1,0 +1,18 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/main.dart
+@@
+   @override
+   Widget build(BuildContext context) {
+-    return Consumer<ThemeProvider>(
+-      builder: (context, theme, _) {
++    return Consumer2<ThemeProvider, LanguageProvider>(
++      builder: (context, theme, language, _) {
+         final overlayStyle = SystemUiOverlayStyle(
+           statusBarBrightness: theme.currentPreset.isDark
+               ? Brightness.dark
+@@
+         return AdaptiveApp.router(
+-          key: ValueKey(theme.currentPreset.id),
++          key: ValueKey('${theme.currentPreset.id}:${language.languageCode}'),
+           title: 'WakeApp',
+*** End Patch

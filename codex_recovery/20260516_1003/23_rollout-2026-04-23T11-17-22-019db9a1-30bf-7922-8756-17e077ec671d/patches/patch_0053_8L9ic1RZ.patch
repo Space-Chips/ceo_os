@@ -1,0 +1,11 @@
+*** Begin Patch
+*** Update File: lib/features/home/home_screen.dart
+@@
+                                     Text(
+-                                      'WakeApp',
++                                      language.t('app_name'),
+                                       maxLines: 1,
+                                       overflow: TextOverflow.ellipsis,
+                                       style: AppTypography.title1.copyWith(
+                                         fontSize: 30,
+*** End Patch

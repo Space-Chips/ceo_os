@@ -1,0 +1,32 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/screen_time_screen.dart
+@@
+ import 'package:flutter/material.dart';
+ import 'package:flutter/services.dart';
+ import 'package:go_router/go_router.dart';
+ import 'package:intl/intl.dart';
++import 'package:provider/provider.dart';
+ 
+ import '../../components/components.dart';
+ import '../../core/models/settings_models.dart';
++import '../../core/providers/language_provider.dart';
+ import '../../core/repositories/feature_repository.dart';
+ import '../../core/services/classic_blocking_coordinator.dart';
+ import '../../core/services/classic_blocking_local_store.dart';
+@@
+ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
+@@
+   bool get _isAndroid => Platform.isAndroid;
++  String _t(String key) => context.read<LanguageProvider>().t(key);
++
+   @override
+   void initState() {
+@@
+-    return explicit?.isNotEmpty == true ? explicit! : 'Unknown app';
++    return explicit?.isNotEmpty == true ? explicit! : _t('screen_time_unknown_app');
+   }
+@@
+-    return 'Blocked app';
++    return _t('screen_time_blocked_app');
+   }
+*** End Patch

@@ -9,6 +9,26 @@
 # packages, and plugins designed to encourage good coding practices.
 include: package:flutter_lints/flutter.yaml
 
+analyzer:
+  exclude:
+    - codex_recovery/**
+    - packages/adaptive_platform_ui/example/**
+    - packages/adaptive_platform_ui/example/test/**
+    - build/**
+    - .dart_tool/**
+  errors:
+    avoid_print: ignore
+    deprecated_member_use: ignore
+    non_constant_identifier_names: ignore
+    prefer_const_constructors_in_immutables: ignore
+    unnecessary_import: ignore
+    unnecessary_string_interpolations: ignore
+    unused_element: ignore
+    unused_element_parameter: ignore
+    unused_field: ignore
+    unused_local_variable: ignore
+    use_build_context_synchronously: ignore
+
 linter:
   # The lint rules applied to this project can be customized in the
   # section below to disable rules from the `package:flutter_lints/flutter.yaml`

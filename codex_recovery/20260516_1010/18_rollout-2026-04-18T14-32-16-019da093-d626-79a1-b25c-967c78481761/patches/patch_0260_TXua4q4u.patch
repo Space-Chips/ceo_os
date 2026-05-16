@@ -1,0 +1,46 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/screen_time_screen.dart
+@@
+       context: context,
+       builder: (ctx) => CupertinoAlertDialog(
+-        title: Text('Daily limit · $title'),
++        title: Text('${_t('screen_time_daily_limit_prefix')} · $title'),
+         content: Padding(
+           padding: const EdgeInsets.only(top: 8),
+           child: CupertinoTextField(
+             controller: ctrl,
+             keyboardType: TextInputType.number,
+-            placeholder: 'Minutes per day (0 = blocked)',
++            placeholder: _t('screen_time_minutes_per_day_placeholder'),
+           ),
+         ),
+         actions: [
+           CupertinoDialogAction(
+             onPressed: () => Navigator.pop(ctx),
+-            child: const Text('Cancel'),
++            child: Text(_t('cancel')),
+           ),
+           CupertinoDialogAction(
+             onPressed: () => Navigator.pop(ctx, 'clear'),
+-            child: const Text('Clear limit'),
++            child: Text(_t('screen_time_clear_limit')),
+           ),
+           CupertinoDialogAction(
+             isDefaultAction: true,
+             onPressed: () => Navigator.pop(ctx, 'save'),
+-            child: const Text('Save'),
++            child: Text(_t('save')),
+           ),
+         ],
+       ),
+@@
+     if (parsed == null || parsed < 0) {
+       await _showNotice(
+-        title: 'Invalid value',
+-        message: 'Please enter a valid number of minutes.',
++        title: _t('screen_time_invalid_value'),
++        message: _t('screen_time_invalid_minutes_message'),
+       );
+       return;
+     }
+*** End Patch

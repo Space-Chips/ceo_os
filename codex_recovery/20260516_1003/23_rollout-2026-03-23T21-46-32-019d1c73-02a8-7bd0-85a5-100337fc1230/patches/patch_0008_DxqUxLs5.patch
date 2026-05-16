@@ -1,0 +1,44 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/home/home_screen.dart
+@@
+ import 'package:shared_preferences/shared_preferences.dart';
+ import 'package:supabase_flutter/supabase_flutter.dart';
+ 
+ import '../../components/components.dart';
++import '../../core/config/apple_review_compliance.dart';
+ import '../../core/models/insights_models.dart';
+@@
+   static const List<String> _shortcutOrder = [
+     'rank',
+     'leaderboard',
+@@
+     'streak',
+     'notes',
+   ];
++  static const Set<String> _socialShortcutIds = {'leaderboard', 'family_time'};
+@@
+   bool _hideNoModulesMessage = false;
+   int _winStreak = 0;
+   String? _lastDataSignature;
++
++  bool get _showAdvancedStats => AppleReviewCompliance.allowAdvancedStats;
++  bool get _showSocialScreenTimeSurfaces =>
++      AppleReviewCompliance.allowSocialScreenTimeSurfaces;
+@@
+   Set<String> _normalizeEnabledShortcuts(
+     Set<String> shortcuts,
+     Set<String> activeApps,
+   ) {
+     final capacity = _shortcutCapacityFor(activeApps).clamp(0, 4);
+     final ordered = _shortcutOrder
+-        .where(shortcuts.contains)
++        .where(
++          (shortcutId) =>
++              shortcuts.contains(shortcutId) &&
++              (_showSocialScreenTimeSurfaces ||
++                  !_socialShortcutIds.contains(shortcutId)),
++        )
+         .take(capacity)
+         .toSet();
+     return ordered;
+*** End Patch

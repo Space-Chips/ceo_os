@@ -1,0 +1,14 @@
+*** Begin Patch
+*** Update File: lib/features/legacy/event_types_screen.dart
+@@
+   Future<void> _create() async {
+     final premiumCheck = await _premiumRepository.canAccessAdvancedCalendar();
+     if (!premiumCheck.allowed) {
+       if (!mounted) return;
+       await showPremiumGateDialog(context, premiumCheck);
+       return;
+     }
++    if (!mounted) return;
+ 
+     final name = TextEditingController();
+*** End Patch

@@ -1,0 +1,21 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/home/stats_screen.dart
+@@
+         if (snapshot.todayCard != null) ...[
+           const SizedBox(height: 4),
+           _ShareCardContainer(
+             title: 'Screenshot summary',
+-            child: _TodayCard(card: snapshot.todayCard!),
++            child: _TodayCard(
++              card: snapshot.todayCard!,
++              score: snapshot.todayCard!.attentionScore,
++            ),
+           ),
+         ],
+@@
+               CupertinoButton(
+                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+-                minSize: 34,
++                minimumSize: const Size(34, 34),
+                 onPressed: () {
+*** End Patch

@@ -1,0 +1,59 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/auth/login_screen.dart
+@@
+   @override
+   Widget build(BuildContext context) {
++    final language = context.watch<LanguageProvider>();
+     return CupertinoPageScaffold(
+@@
+                         Text(
+-                          'Welcome back',
++                          language.t('welcome_back'),
+@@
+                         Text(
+-                          'Sign in to restore your system, sync your data, and continue where you left off.',
++                          language.t('auth_login_subtitle'),
+@@
+                         Text(
+-                          'Secure cloud sync across your devices.',
++                          language.t('auth_secure_sync'),
+@@
+                             Text(
+-                              'Sign in',
++                              language.t('auth_sign_in'),
+@@
+                             Text(
+-                              'Use the same email and password you created for WakeApp.',
++                              language.t('auth_use_same_credentials'),
+@@
+-                            _fieldLabel('Email'),
++                            _fieldLabel(language.t('auth_email')),
+@@
+-                              placeholder: 'name@example.com',
++                              placeholder: language.t(
++                                'auth_email_placeholder',
++                              ),
+@@
+-                            _fieldLabel('Password'),
++                            _fieldLabel(language.t('auth_password')),
+@@
+-                              placeholder: 'Password',
++                              placeholder: language.t('auth_password'),
+@@
+                             LiquidButton(
+-                              label: 'Continue',
++                              label: language.t('onboarding_continue'),
+@@
+                                 onPressed: _loading ? null : _resetPassword,
+                                 child: Text(
+-                                  'Forgot password?',
++                                  language.t('auth_forgot_password'),
+@@
+                         Text(
+-                          'New to WakeApp? ',
++                          language.t('auth_new_to_wakeapp'),
+@@
+                           child: Text(
+-                            'Create account',
++                            language.t('auth_create_account'),
+*** End Patch

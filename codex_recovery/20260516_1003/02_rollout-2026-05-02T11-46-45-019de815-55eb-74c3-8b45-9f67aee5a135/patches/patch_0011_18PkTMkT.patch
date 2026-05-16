@@ -1,0 +1,20 @@
+*** Begin Patch
+*** Update File: lib/core/providers/language_provider.dart
+@@
+     'secondary_menu': 'Menu secondaire',
+     'profile_settings': 'Profil et paramètres',
++    'widget_configuration': 'Configuration des widgets',
++    'widget_configuration_default': 'VUE PAR DÉFAUT',
++    'widget_configuration_actions': 'ACTIONS',
++    'widget_configuration_refresh': 'Rafraîchir les aperçus du widget',
++    'widget_configuration_add_android': "Ajouter un widget à l'écran d'accueil",
++    'widget_configuration_hint':
++        'Sur iOS, ajoute le widget depuis ton écran d’accueil puis modifie-le pour choisir ce qu’il affiche.',
++    'widget_mode_todo': 'To‑Do',
++    'widget_mode_dashboard': 'Dashboard',
++    'widget_mode_habits': 'Habitudes',
++    'widget_completed': 'Complété',
+     'advanced_stats': 'Statistiques avancées',
+     'system_modules': 'MODULES SYSTÈME',
+     'shortcuts': 'RACCOURCIS',
+*** End Patch

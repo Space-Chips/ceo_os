@@ -1,0 +1,17 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/tasks/tasks_screen.dart
+@@
+-  void _setActiveTab(_TaskTab tab) {
+-    if (tab == _activeTab) return;
+-    setState(() {
+-      _activeTab = tab;
+-    });
+-    _pageController.animateToPage(
+-      tab.index,
+-      duration: const Duration(milliseconds: 240),
+-      curve: Curves.easeOutCubic,
+-    );
+-  }
+-
+   String _swipeHint() {
+*** End Patch

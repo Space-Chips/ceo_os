@@ -1,0 +1,629 @@
+*** Begin Patch
+*** Update File: lib/core/providers/language_overrides.dart
+@@
+-    'block_apps_sites': 'BLOCK_APPS_AND_SITES',
+-    'calendar': 'CALENDAR',
+-    'dashboard': 'DASHBOARD',
+-    'focus_blocking_not_active_yet': 'Blocking Not Active Yet',
+-    'focus_blocking_summary':
+-        'Focus will block {apps} app(s) and {websites} website(s) from Blocked apps & sites for the full session.',
+-    'focus_blocking_unavailable_here': 'Blocking Unavailable Here',
+-    'focus_enable_protection': 'Enable protection',
+-    'focus_exit_ready_message':
+-        'You can now leave Focus Mode. This will break your streak.',
+-    'focus_hold_before_quit':
+-        'Hold for {countdown} before quitting. You can return anytime.',
+-    'focus_mode': 'FOCUS_MODE',
+-    'focus_no_targets_warning':
+-        'No restricted app/site found in Blocked apps & sites.\\nFocus timer will run, but nothing can be blocked until you add targets there.',
+-    'focus_notice_android_runtime_unavailable':
+-        'This runtime does not currently expose Android protection services. You can still run the focus timer, but apps and websites will not be blocked here.',
+-    'focus_notice_android_settings_off':
+-        'Focus Mode can block selected apps and supported websites on this Android device, but Accessibility or Usage Access is currently off. Re-enable protection in Android settings, or continue with a timer-only session.',
+-    'focus_notice_android_timer_only':
+-        'Focus Mode can still start a timer right now, but blocked apps and supported websites will remain available until Android protection permissions are granted.',
+-    'focus_notice_ios_runtime_unavailable':
+-        'This runtime does not currently expose Apple Screen Time / Family Controls protection. You can still run the focus timer, but apps and websites will not be blocked.',
+-    'focus_notice_ios_settings_off':
+-        'Focus Mode can block apps and websites on this iPhone, but Screen Time / Family Controls access is currently off. You can re-enable it in iOS Settings, or continue with a timer-only session.',
+-    'focus_notice_ios_timer_only':
+-        'Focus Mode can still start a timer right now, but blocked apps and websites will remain available until Screen Time / Family Controls access is granted.',
+-    'focus_quit_available_in': 'QUIT AVAILABLE IN {countdown}',
+-    'focus_start_timer_only': 'Start Timer Only',
+-    'focus_turn_on_android_access': 'Turn On Android Protection Access',
+-    'focus_turn_on_screen_time_access': 'Turn On Screen Time Access',
+-    'focus_warning_android_access_off':
+-        'Android protection access is currently off.\\nOpen Android settings to restore blocked apps and supported websites during Focus Mode.',
+-    'focus_warning_android_not_enabled':
+-        'Android protection access is not enabled yet.\\nGrant Accessibility and Usage Access to let Focus Mode block selected apps and supported websites on this device.',
+-    'focus_warning_android_runtime_unavailable':
+-        'Android protection is unavailable on this runtime.\\nThe focus timer still works, but apps and websites cannot be blocked here.',
+-    'focus_warning_ios_access_off':
+-        'Screen Time / Family Controls access is currently off.\\nOpen iOS Settings to restore blocked apps and websites during Focus Mode.',
+-    'focus_warning_ios_not_enabled':
+-        'Screen Time / Family Controls access is not enabled yet.\\nGrant access to let Focus Mode block selected apps and websites on this device.',
+-    'focus_warning_ios_runtime_unavailable':
+-        'Apple Screen Time protection is unavailable on this runtime.\\nThe focus timer still works, but apps and websites cannot be blocked here.',
+-    'habits_confirm_goal_deletion_message':
+-        'This will permanently remove “{goal}” and detach related habits.',
+-    'habits_confirm_habit_deletion_message':
+-        'This will permanently remove “{habit}” from this goal.',
+-    'habits_delete_goal_message':
+-        '“{goal}” will be removed from your active goals.',
+-    'habits_delete_habit_message':
+-        '“{habit}” will be removed from your active habits.',
+-    'habits_locked_after_commitment':
+-        'Locked after commitment for the current week.',
+-    'habits_threshold_locked':
+-        'Threshold {threshold}% • Locked until next week',
+-    'home_dashboard_load_failed': 'Dashboard load failed',
+-    'home_dashboard_retry_hint': 'Tap to try loading your dashboard again.',
+-    'leaderboard': 'LEADERBOARD',
+-    'leaderboard_friend': 'Friend',
+-    'leaderboard_invite_copied': 'Invite link copied to clipboard.',
+-    'leaderboard_invite_message':
+-        'Join me on WakeApp to compare progress and win streaks: ',
+-    'leaderboard_invite_ready': 'Invite ready',
+-    'leaderboard_you': 'You',
+-    'no_active_modules':
+-        'No active modules. Enable modules from the grid button in the header.',
+-    'notes': 'NOTES',
+-    'rank_best': 'BEST',
+-    'rank_level': 'LEVEL',
+-    'rank_points': 'POINTS',
+-    'screen_time': 'SCREEN_TIME',
+-    'screen_time_manager': 'SCREEN_TIME_MANAGER',
+-    'tasks': '任务',
+-    'tasks_add_task': '添加任务',
+-    'tasks_created': '创建时间',
+-    'tasks_description': '描述',
+-    'tasks_due': '截止时间',
+-    'tasks_duration_1_day': '1 天',
+-    'tasks_duration_1_hour': '1 小时',
+-    'tasks_duration_2_hours': '2 小时',
+-    'tasks_duration_half_day': '半天',
+-    'tasks_duration_several_days': '几天',
+-    'tasks_duration_under_30min': '30 分钟以内',
+-    'tasks_duration_unplanned': '未计划',
+-    'tasks_empty': '暂无任务',
+-    'tasks_est_duration': '预计时长',
+-    'tasks_history_empty': '还没有已完成任务',
+-    'tasks_importance_average': '一般',
+-    'tasks_importance_crucial': '关键',
+-    'tasks_importance_essential': '重要',
+-    'tasks_importance_low': '较低',
+-    'tasks_initialize_task': '创建你的第一个任务',
+-    'tasks_mark_done': '标记完成',
+-    'tasks_matrix_do_now': '立即执行',
+-    'tasks_matrix_do_now_subtitle': '高影响，低投入',
+-    'tasks_matrix_eliminate': '删除',
+-    'tasks_matrix_eliminate_subtitle': '低影响，高投入',
+-    'tasks_matrix_if_time': '有时间再做',
+-    'tasks_matrix_if_time_subtitle': '低影响，低投入',
+-    'tasks_matrix_impact_axis': '影响',
+-    'tasks_matrix_plan': '计划',
+-    'tasks_matrix_plan_subtitle': '高影响，高投入',
+-    'tasks_matrix_time_axis': '投入',
+-    'tasks_new_task': '新任务',
+-    'tasks_no_description': '无描述',
+-    'tasks_no_priorities': '还没有优先任务',
+-    'tasks_no_priorities_subtitle':
+-        'Add your first priority to start execution.',
+-    'tasks_other_tasks': 'Other Tasks',
+-    'tasks_picker_clear': 'Clear',
+-    'tasks_picker_done': 'Done',
+-    'tasks_priority': 'Priority',
+-    'tasks_reopen_task': 'Reopen task',
+-    'tasks_set_deadline': 'Set deadline',
+-    'tasks_swipe_hint_history': 'Swipe to reopen',
+-    'tasks_swipe_hint_list': 'Swipe to complete or reopen',
+-    'tasks_swipe_hint_matrix': 'Tap to view details',
+-    'tasks_sync_deadline_to_calendar': 'Sync deadline to calendar',
+-    'tasks_tab_subtitle_history': 'Completed tasks',
+-    'tasks_tab_subtitle_matrix': 'Priority map',
+-    'tasks_tab_subtitle_todo': 'Execution list',
+-    'tasks_tab_title_history': 'History',
+-    'tasks_tab_title_matrix': 'Matrix',
+-    'tasks_tab_title_todo': 'To-Do',
+-    'tasks_task_title_placeholder': 'Task title',
+-    'tasks_your_priorities': 'Your Priorities',
++    'dashboard': 'Panel',
++    'calendar': 'Calendario',
++    'event_types': 'Tipos de evento',
++    'notes': 'Notas',
++    'leaderboard': 'Clasificación',
++    'screen_time': 'Tiempo en pantalla',
++    'screen_time_manager': 'Gestor de tiempo en pantalla',
++    'block_apps_sites': 'Apps y sitios bloqueados',
++
++    // Focus (runtime + starter)
++    'focus_mode': 'Modo Focus',
++    'focus_enable_protection': 'Activar protección',
++    'focus_start_timer_only': 'Iniciar solo temporizador',
++    'focus_turn_on_android_access': 'Activar acceso de protección de Android',
++    'focus_turn_on_screen_time_access': 'Activar acceso de Tiempo en pantalla',
++    'focus_blocking_not_active_yet': 'El bloqueo aún no está activo',
++    'focus_blocking_unavailable_here': 'Bloqueo no disponible aquí',
++    'focus_no_targets_warning':
++        'No se encontró ninguna app/sitio restringido en Apps y sitios bloqueados.\nEl temporizador de Focus funcionará, pero no se podrá bloquear nada hasta que añadas objetivos allí.',
++    'focus_blocking_summary':
++        'Focus bloqueará {apps} app(s) y {websites} sitio(s) web de Apps y sitios bloqueados durante toda la sesión.',
++    'focus_exit_ready_message':
++        'Ya puedes salir del modo Focus. Esto romperá tu racha.',
++    'focus_hold_before_quit':
++        'Mantén pulsado {countdown} antes de salir. Puedes volver cuando quieras.',
++    'focus_quit_available_in': 'SALIR DISPONIBLE EN {countdown}',
++    'focus_notice_android_settings_off':
++        'El modo Focus puede bloquear apps seleccionadas y sitios web compatibles en este dispositivo Android, pero Accesibilidad o Acceso de uso están desactivados. Reactiva la protección en Ajustes de Android o continúa con una sesión solo de temporizador.',
++    'focus_notice_ios_settings_off':
++        'El modo Focus puede bloquear apps y sitios web en este iPhone, pero el acceso de Screen Time / Family Controls está desactivado. Puedes reactivarlo en Ajustes de iOS o continuar con una sesión solo de temporizador.',
++    'focus_notice_android_timer_only':
++        'El modo Focus puede iniciar un temporizador ahora mismo, pero las apps bloqueadas y los sitios web compatibles seguirán disponibles hasta que se concedan los permisos de protección de Android.',
++    'focus_notice_ios_timer_only':
++        'El modo Focus puede iniciar un temporizador ahora mismo, pero las apps y los sitios web bloqueados seguirán disponibles hasta que se conceda el acceso de Screen Time / Family Controls.',
++    'focus_notice_android_runtime_unavailable':
++        'Este runtime no expone actualmente los servicios de protección de Android. Puedes usar el temporizador de Focus, pero aquí no se bloquearán apps ni sitios web.',
++    'focus_notice_ios_runtime_unavailable':
++        'Este runtime no expone actualmente la protección de Apple Screen Time / Family Controls. Puedes usar el temporizador de Focus, pero no se bloquearán apps ni sitios web.',
++    'focus_warning_android_access_off':
++        'El acceso de protección de Android está desactivado.\nAbre los ajustes de Android para restaurar el bloqueo de apps y sitios web compatibles durante el modo Focus.',
++    'focus_warning_ios_access_off':
++        'El acceso de Screen Time / Family Controls está desactivado.\nAbre Ajustes de iOS para restaurar el bloqueo de apps y sitios web durante el modo Focus.',
++    'focus_warning_android_not_enabled':
++        'El acceso de protección de Android aún no está habilitado.\nConcede Accesibilidad y Acceso de uso para que el modo Focus pueda bloquear apps seleccionadas y sitios web compatibles en este dispositivo.',
++    'focus_warning_ios_not_enabled':
++        'El acceso de Screen Time / Family Controls aún no está habilitado.\nConcede el acceso para que el modo Focus pueda bloquear apps y sitios web seleccionados en este dispositivo.',
++    'focus_warning_android_runtime_unavailable':
++        'La protección de Android no está disponible en este runtime.\nEl temporizador de Focus funciona, pero aquí no se pueden bloquear apps ni sitios web.',
++    'focus_warning_ios_runtime_unavailable':
++        'La protección de Apple Screen Time no está disponible en este runtime.\nEl temporizador de Focus funciona, pero aquí no se pueden bloquear apps ni sitios web.',
++    'focus_starter_session_title': 'Título de la sesión',
++    'focus_starter_session_placeholder': 'Sesión de trabajo profundo...',
++    'focus_starter_session_length': 'Duración de la sesión',
++    'focus_starter_link_task': 'Vincular tarea',
++    'focus_starter_no_tasks': 'No hay tareas disponibles',
++    'focus_starter_configure_session': 'Configurar sesión',
++    'focus_starter_enter_focus': 'Entrar en Focus',
++    'focus_starter_start_focus': 'Iniciar Focus',
++    'focus_use_screen_time_control_title': 'Usar Control de tiempo en pantalla',
++    'focus_use_screen_time_control_body':
++        'En iPhone, la selección de apps y sitios web ahora se gestiona desde el Control de tiempo en pantalla con sugerencias de búsqueda. Este editor legacy ya no abre el selector de Apple.',
++
++    // Habits (dialogs)
++    'habits_confirm_goal_deletion_message':
++        'Esto eliminará definitivamente “{goal}” y desvinculará los hábitos relacionados.',
++    'habits_confirm_habit_deletion_message':
++        'Esto eliminará definitivamente “{habit}” de este objetivo.',
++    'habits_delete_goal_message':
++        '“{goal}” se eliminará de tus metas activas.',
++    'habits_delete_habit_message':
++        '“{habit}” se eliminará de tus hábitos activos.',
++    'habits_locked_after_commitment':
++        'Bloqueado tras el compromiso para la semana actual.',
++    'habits_threshold_locked':
++        'Umbral {threshold}% • Bloqueado hasta la próxima semana',
++
++    // Dashboard
++    'dashboard_control_center': 'Centro de control',
++    'dashboard_wake_score': 'Puntuación Wake',
++    'dashboard_complete_validation_to_continue':
++        'Completa la validación para continuar',
++    'dashboard_confirming': 'Confirmando…',
++    'dashboard_confirm': 'Confirmar',
++    'dashboard_unavailable': 'Panel no disponible',
++    'dashboard_no_open_tasks': 'No hay tareas abiertas.',
++    'dashboard_habits_for_today': 'Hábitos de hoy',
++    'dashboard_habits_from_yesterday': 'Hábitos de ayer',
++    'dashboard_no_habits_today': 'No hay hábitos programados hoy.',
++    'dashboard_no_events_today': 'No hay eventos programados hoy.',
++    'dashboard_view_all': 'Ver todo',
++    'dashboard_duration_30m': '30 min',
++    'dashboard_duration_1h': '1 hora',
++    'dashboard_duration_2h': '2 horas',
++    'dashboard_duration_half_day': 'medio día',
++    'dashboard_duration_1_day': '1 día',
++    'dashboard_duration_several_days': 'varios días',
++
++    // Event types
++    'event_types_type_name': 'NOMBRE DEL TIPO',
++    'event_types_name_placeholder': 'Trabajo, deporte, personal…',
++    'event_types_color': 'COLOR',
++    'event_types_create_button': '+ Crear tipo',
++    'event_types_create_title': 'Crear tipo de evento',
++    'event_types_empty_title': 'Aún no hay tipos de evento.',
++    'event_types_empty_subtitle':
++        'Crea tu primer tipo para organizar eventos.',
++
++    // Notes
++    'notes_recent': 'RECIENTES',
++    'notes_last_edit': 'ÚLTIMA EDICIÓN',
++    'notes_new_note': 'NUEVA NOTA',
++    'notes_search_placeholder': 'Buscar notas...',
++    'notes_tag_placeholder': '#trabajo/reunión',
++    'notes_all_notes': 'Todas las notas',
++    'notes_no_tag': 'Sin etiqueta',
++    'notes_untitled': 'Sin título',
++
++    // Leaderboard
++    'leaderboard_title': 'Amigos y clasificación',
++    'leaderboard_global_tab': 'Global',
++    'leaderboard_friends_tab': 'Amigos',
++    'leaderboard_empty': 'Aún no hay datos de clasificación',
++    'leaderboard_no_friends': 'Aún no has añadido amigos',
++    'leaderboard_add_friends_hint': '¡Añade amigos para comparar el progreso!',
++    'leaderboard_invite_friends': 'Invitar a amigos',
++    'leaderboard_top_performers': 'Mejores',
++    'leaderboard_your_position': 'Tu posición',
++    'leaderboard_friend': 'Amigo',
++    'leaderboard_invite_copied':
++        'Enlace de invitación copiado al portapapeles.',
++    'leaderboard_invite_message':
++        'Únete a mí en WakeApp para comparar el progreso y las rachas: ',
++    'leaderboard_invite_ready': 'Invitación lista',
++    'leaderboard_you': 'Tú',
++
++    // Win streak
++    'win_streak_recent_sessions': 'Sesiones recientes',
++    'win_streak_no_sessions_yet':
++        'Aún no hay sesiones. ¡Inicia tu primera sesión Focus!',
++    'win_streak_current_streak': 'Racha actual',
++    'win_streak_best_streak': 'Mejor racha',
++    'win_streak_days_suffix': 'días',
++    'win_streak_start_first_session': 'Inicia tu primera sesión',
++    'win_streak_keep_momentum': 'Mantén el impulso',
++    'win_streak_completed': 'Completada',
++    'win_streak_stopped_early': 'Terminada antes',
++
++    // Family time
++    'family_time_invite_copied': 'Invitación copiada',
++    'family_time_exit_group_session_body':
++        'Saliendo en {secs}s. Se notificará a otros participantes y pueden aplicarse puntos de salida.',
++
++    // Rank
++    'rank_ladder': 'Escalera de rangos',
++    'rank_progress': 'Progreso',
++    'rank_path_to': 'Camino a {rank}',
++    'rank_your_stats': 'Tus estadísticas',
++    'rank_days_in_app': 'Días en la app',
++    'rank_streak': 'Racha',
++    'rank_highest_tier': 'Ya estás en el nivel más alto.',
++    'rank_top_reached': 'Rango máximo alcanzado',
++    'rank_requirements_completed_sync_pending':
++        'Los requisitos para tu próximo rango están completados. El rango del servidor aún se está actualizando.',
++    'rank_unlocked': 'Desbloqueado',
++    'rank_locked': 'Bloqueado',
++    'rank_unlocked_today': 'Desbloqueado hoy',
++    'rank_unlocked_local_pending_sync':
++        'Desbloqueado localmente — sincronización pendiente',
++    'rank_asleep': 'Dormido',
++    'rank_awakened': 'Despierto',
++    'rank_bronze': 'Bronce',
++    'rank_silver': 'Plata',
++    'rank_gold': 'Oro',
++    'rank_platinum': 'Platino',
++    'rank_diamond': 'Diamante',
++    'rank_immortal': 'Inmortal',
++    'rank_req_starting_rank': 'Rango inicial',
++    'rank_req_7_days_in_app': '7 días en la app',
++    'rank_req_15_days_in_app': '15 días en la app',
++    'rank_req_10_day_streak': 'Racha de 10 días',
++    'rank_req_50_day_streak': 'Racha de 50 días',
++    'rank_req_90_day_streak': 'Racha de 90 días',
++    'rank_req_180_day_streak': 'Racha de 180 días',
++    'rank_req_365_day_streak': 'Racha de 365 días',
++    'rank_req_500_day_streak': 'Racha de 500 días',
++    'rank_req_1_focus_session': '1 sesión Focus',
++    'rank_req_60h_focus': '60h de Focus',
++    'rank_req_200h_focus': '200h de Focus',
++    'rank_req_250h_focus': '250h de Focus',
++    'rank_req_100h_ceo': '100h CEO',
++    'rank_req_250h_ceo': '250h CEO',
++    'rank_best': 'Mejor',
++    'rank_level': 'Nivel',
++    'rank_points': 'Puntos',
++
++    // Screen Time Control
++    'screen_time_access_approved': 'Acceso aprobado',
++    'screen_time_accessibility_access': 'Acceso de accesibilidad',
++    'screen_time_accessibility_enabled': 'Accesibilidad activada',
++    'screen_time_accessibility_enabled_message':
++        'El acceso de Accesibilidad ya está activado en este dispositivo.',
++    'screen_time_action_failed': 'Acción fallida',
++    'screen_time_add_website': 'Añadir sitio web',
++    'screen_time_allow': 'Permitir',
++    'screen_time_already_blocked': 'Ya está bloqueado',
++    'screen_time_already_blocked_message_suffix':
++        'ya está en tus sitios web bloqueados.',
++    'screen_time_android_access_approved_message':
++        'El acceso de protección de Android ya está aprobado en este dispositivo.',
++    'screen_time_android_local_limit_info':
++        'Los datos de uso para límites diarios en Android se quedan en este dispositivo y no se usan para anuncios ni analítica no relacionada.',
++    'screen_time_android_privacy_notice':
++        'En Android, WakeApp usa Accesibilidad y Acceso de uso para aplicar protecciones de apps y sitios web seleccionados en el dispositivo. El bloqueo de sitios web y los límites diarios solo se aplican en navegadores compatibles.',
++    'screen_time_app_fully_blocked_message':
++        'Esta app está completamente bloqueada (sin asignación diaria).',
++    'screen_time_app_picker_unavailable': 'Selector de apps no disponible',
++    'screen_time_apps_added': 'apps añadidas',
++    'screen_time_apps_removed': 'apps eliminadas',
++    'screen_time_blocked_app': 'App bloqueada',
++    'screen_time_blocked_apps': 'Apps bloqueadas',
++    'screen_time_blocked_apps_updated': 'Apps bloqueadas actualizadas',
++    'screen_time_blocked_website': 'Sitio web bloqueado',
++    'screen_time_blocked_websites': 'Sitios web bloqueados',
++    'screen_time_choose_apps': 'Elegir apps',
++    'screen_time_choose_apps_subtitle':
++        'Abre el selector de apps de Apple y elige una o varias apps.',
++    'screen_time_choose_apps_to_block': 'Elegir apps para bloquear',
++    'screen_time_clear_limit': 'Borrar límite',
++    'screen_time_control_title': 'Control de tiempo en pantalla',
++    'screen_time_daily_limit_prefix': 'Límite diario',
++    'screen_time_daily_limit_short': 'Límite diario',
++    'screen_time_deep_work_environment': 'Entorno de trabajo profundo',
++    'screen_time_enabled': 'Activado',
++    'screen_time_enabled_on_device': 'Activado en este dispositivo',
++    'screen_time_fully_blocked': 'Bloqueado por completo',
++    'screen_time_global_nsfw_shield': 'Escudo NSFW global',
++    'screen_time_invalid_minutes_message':
++        'Introduce un número válido de minutos.',
++    'screen_time_invalid_value': 'Valor inválido',
++    'screen_time_ios_access_approved_message':
++        'El acceso de Screen Time / Family Controls ya está aprobado en este iPhone.',
++    'screen_time_ios_local_limit_info':
++        'El uso para protecciones de Tiempo en pantalla se queda en este dispositivo y no se sincroniza, exporta ni comparte.',
++    'screen_time_ios_privacy_notice':
++        'En iPhone, la actividad de Screen Time / Family Controls se queda en este dispositivo. WakeApp guarda tus bloqueos y horarios seleccionados, pero no tu historial de uso del dispositivo.',
++    'screen_time_min_per_day': 'min/día',
++    'screen_time_minutes_per_day_placeholder': 'Minutos al día (0 = bloqueado)',
++    'screen_time_no_app_selected': 'Ninguna app seleccionada',
++    'screen_time_no_app_selected_message':
++        'En el selector de Apple, elige al menos una app y luego toca Listo.',
++    'screen_time_no_website_selected': 'Ningún sitio web seleccionado',
++    'screen_time_no_website_selected_message':
++        'En el selector de Apple, elige al menos un sitio web/dominio (no solo apps) y luego toca Listo.',
++    'screen_time_one_app_added': '1 app añadida',
++    'screen_time_one_app_removed': '1 app eliminada',
++    'screen_time_open_app_picker': 'Abrir selector de apps',
++    'screen_time_pause': 'Pausa',
++    'screen_time_permission_required': 'Permiso requerido',
++    'screen_time_permissions_required': 'Permisos requeridos',
++    'screen_time_permissions_required_apps_message':
++        'Primero permite Screen Time / Family Controls para que las apps seleccionadas puedan bloquearse durante tus sesiones de Focus en este dispositivo.',
++    'screen_time_permissions_required_websites_message':
++        'Primero permite Screen Time / Family Controls para que los sitios web seleccionados puedan bloquearse durante tus sesiones de Focus en este dispositivo.',
++    'screen_time_plan_pause': 'Planificar una pausa',
++    'screen_time_planning_required': 'Planificación requerida',
++    'screen_time_planning_required_message':
++        'Las pausas deben planificarse con al menos 2 horas de antelación.',
++    'screen_time_search_installed_apps': 'Buscar apps instaladas',
++    'screen_time_start_session': 'INICIAR SESIÓN',
++    'screen_time_sync_failed': 'Error de sincronización',
++    'screen_time_sync_failed_android_message':
++        'No se pudieron cargar los controles de protección de Android ahora mismo.',
++    'screen_time_sync_failed_ios_message':
++        'No se pudieron cargar los controles de Tiempo en pantalla ahora mismo.',
++    'screen_time_tile_access': 'ACCESO',
++    'screen_time_tile_allow': 'PERMITIR',
++    'screen_time_tile_approved': 'APROBADO',
++    'screen_time_tile_full_restart': 'reinicio completo',
++    'screen_time_tile_grant_access': 'otorgar acceso',
++    'screen_time_tile_ios16_required': 'iOS 16 requerido',
++    'screen_time_tile_iphone': 'iPhone',
++    'screen_time_tile_pauses': 'PAUSAS',
++    'screen_time_tile_protected': 'PROTEGIDO',
++    'screen_time_tile_real_device_only': 'solo dispositivo real',
++    'screen_time_tile_relaunch': 'RELANZAR',
++    'screen_time_tile_scheduled': 'programadas',
++    'screen_time_tile_targets': 'objetivos',
++    'screen_time_tile_unavailable': 'NO DISP.',
++    'screen_time_unavailable': 'No disponible',
++    'screen_time_unknown_app': 'App desconocida',
++    'screen_time_unknown_period': 'Periodo desconocido',
++    'screen_time_unsupported_on_device': 'No compatible en este dispositivo',
++    'screen_time_usage_access': 'Acceso de uso',
++    'screen_time_usage_access_enabled': 'Acceso de uso activado',
++    'screen_time_usage_access_enabled_message':
++        'El acceso de uso ya está activado en este dispositivo.',
++    'screen_time_valid_domain_required': 'Dominio válido requerido',
++    'screen_time_valid_domain_required_message':
++        'Introduce un sitio web como youtube.com o reddit.com.',
++    'screen_time_website_fully_blocked_message':
++        'Este sitio web está completamente bloqueado (sin asignación diaria).',
++    'screen_time_website_picker_unavailable':
++        'Selector de sitios web no disponible',
++    'screen_time_no_website_selected': 'Ningún sitio web seleccionado',
++
++    // Calendar
++    'calendar_schedule_title': 'Agenda',
++    'calendar_types_button': 'Tipos',
++    'calendar_types_loading': 'Tipos…',
++    'calendar_swipe_stats_hint': 'Desliza a la derecha para stats e insights →',
++    'calendar_swipe_calendar_hint':
++        '← Desliza a la izquierda para la vista de calendario',
++    'calendar_focus_opportunity': 'Oportunidad de Focus',
++    'calendar_focus_reason_no_events':
++        'Día libre: perfecto para trabajo profundo',
++    'calendar_focus_reason_light_schedule':
++        'Agenda ligera: ideal para un bloque de Focus',
++    'calendar_focus_reason_busy_schedule':
++        'Día denso: mantén un sprint corto de Focus',
++    'calendar_start_focus': 'Iniciar Focus',
++    'calendar_real_free_time': 'Tiempo libre real',
++    'calendar_real_free_time_subtitle': 'Después de eventos y sueño',
++    'calendar_week_overview': 'Resumen semanal',
++    'calendar_week_scheduled': 'Programado',
++    'calendar_week_important': 'Importante',
++    'calendar_week_free_time': 'Tiempo libre',
++    'calendar_week_priority': 'Prioridad',
++    'calendar_weekday_mon': 'LUN',
++    'calendar_weekday_tue': 'MAR',
++    'calendar_weekday_wed': 'MIÉ',
++    'calendar_weekday_thu': 'JUE',
++    'calendar_weekday_fri': 'VIE',
++    'calendar_weekday_sat': 'SÁB',
++    'calendar_weekday_sun': 'DOM',
++    'calendar_stats_overloaded_day': 'Día sobrecargado',
++    'calendar_stats_overload_no_breaks':
++        'Eventos seguidos sin un descanso claro.',
++    'calendar_stats_overload_too_many_hours':
++        '{hours}h programadas: reduce la carga.',
++    'calendar_stats_habit_conflict': 'Conflicto de hábitos',
++    'calendar_stats_habit_conflict_message':
++        '{habits} hábito(s) + {hours}h de eventos.',
++    'calendar_add_event_title': 'Crear nuevo evento',
++    'calendar_add_event_type': 'Tipo',
++    'calendar_add_event_type_standard': 'Estándar',
++    'calendar_add_event_type_birthday': 'Cumpleaños',
++    'calendar_add_event_type_focus_session': 'Sesión Focus',
++    'calendar_add_event_loading_types': 'Cargando tipos…',
++    'calendar_add_event_manage_types': 'Gestionar tipos',
++    'calendar_add_event_create_types': 'Crear tipos de evento',
++    'calendar_add_event_create_birthday': 'Crear cumpleaños',
++    'calendar_add_event_plan_session': 'Planificar sesión',
++    'calendar_add_event_repeat_weekly': 'Repetir semanalmente',
++    'calendar_add_event_minutes': 'minutos',
++    'calendar_add_event_focus_requires_start_time':
++        'La sesión Focus requiere una hora de inicio.',
++    'calendar_add_event_error_title': 'No se puede crear el evento',
++    'calendar_add_event_section_title': 'TÍTULO',
++    'calendar_add_event_section_description': 'DESCRIPCIÓN',
++    'calendar_add_event_section_date': 'FECHA',
++    'calendar_add_event_section_duration': 'DURACIÓN',
++    'calendar_add_event_section_type': 'TIPO DE EVENTO',
++    'calendar_add_event_section_actions': 'BOTONES DE ACCIÓN',
++    'calendar_add_event_title_placeholder_default': 'Título',
++    'calendar_add_event_title_placeholder_focus': 'Título de Focus',
++    'calendar_add_event_title_placeholder_birthday':
++        'Título del cumpleaños (p. ej. María)',
++    'calendar_add_event_description_placeholder_default':
++        'Descripción (opcional)',
++    'calendar_add_event_description_placeholder_focus': 'Contexto (opcional)',
++    'calendar_add_event_description_placeholder_birthday': 'Notas (opcional)',
++    'calendar_event_all_day': 'Todo el día',
++    'calendar_event_minutes_short': 'min',
++    'calendar_event_weekly_short': 'semanal',
++    'calendar_event_birthday_repeats_yearly': 'Cumpleaños • se repite cada año',
++
++    // Blackout
++    'blackout_description':
++        'Máxima concentración. Una vez activado, las distracciones quedan bloqueadas hasta que termine la sesión.',
++    'blackout_mode_subtitle': 'Sprint protegido con controles más estrictos',
++    'blackout_confirm_title': '¿Activar el modo Blackout?',
++    'blackout_confirm_body':
++        'Todas las apps excepto Teléfono, Mensajes y Calendario no estarán disponibles hasta que termine la sesión.',
++    'blackout_confirm_start': 'Iniciar sesión',
++    'blackout_start_session': 'Iniciar sesión',
++    'blackout_active': 'BLACKOUT ACTIVO',
++    'blackout_active_description':
++        'Todas las apps y sitios web quedan bloqueados hasta que termine la sesión.',
++    'blackout_locked': 'BLOQUEADO',
++    'blackout_remaining': 'restante',
++    'blackout_request_exit': 'SOLICITAR SALIDA ({minutes} MIN)',
++    'blackout_return_to_session': 'VOLVER A LA SESIÓN',
++    'blackout_wait_for_countdown': 'ESPERA A LA CUENTA ATRÁS',
++    'blackout_exit_countdown': 'CUENTA ATRÁS DE SALIDA',
++    'blackout_exit_hint':
++        'Si la pantalla se apaga, la cuenta atrás se reinicia a 10:00.',
++    'blackout_quit_now': 'SALIR AHORA',
++    'blackout_action_enable': 'Activar',
++    'blackout_action_open_settings': 'Abrir ajustes',
++    'blackout_action_refresh': 'Actualizar',
++    'blackout_action_unavailable': 'No disponible',
++    'blackout_essential_apps': 'Apps esenciales',
++    'blackout_essential_note':
++        'El modo Blackout bloquea todo excepto las apps esenciales que se muestran arriba.',
++    'blackout_phone': 'Teléfono',
++    'blackout_messages': 'Mensajes',
++    'blackout_error_activation_failed_title': 'Modo Blackout no disponible',
++    'blackout_error_activation_failed_message_android':
++        'WakeApp no pudo iniciar la protección de Blackout en Android en este dispositivo. Revisa los permisos de protección requeridos y vuelve a intentarlo.',
++    'blackout_error_activation_failed_message_ios':
++        'WakeApp no pudo iniciar la sesión protegida de Blackout en este dispositivo. Revisa el acceso de Screen Time / Family Controls y vuelve a intentarlo.',
++    'blackout_error_permissions_title_android':
++        'Activa el acceso de protección de Android',
++    'blackout_error_permissions_title_ios':
++        'Activa el acceso de Tiempo en pantalla',
++    'blackout_error_permissions_message_android':
++        'El modo Blackout puede aplicar el bloqueo en este dispositivo Android, pero Accesibilidad o Acceso de uso están desactivados. Reactiva el acceso de protección de Android antes de iniciar una sesión protegida.',
++    'blackout_error_permissions_message_ios':
++        'El modo Blackout puede aplicar el bloqueo en este iPhone, pero el acceso de Screen Time / Family Controls está desactivado. Reactívalo en Ajustes de iOS antes de iniciar una sesión protegida.',
++    'blackout_error_setup_required_title': 'Configuración requerida',
++    'blackout_error_setup_required_message_android':
++        'Activa los permisos de protección de Android para aplicar las protecciones de Blackout.',
++    'blackout_error_setup_required_message_ios':
++        'Activa los permisos de Screen Time / Family Controls para aplicar las protecciones de Blackout.',
++    'blackout_error_unsupported_title': 'Runtime no compatible',
++    'blackout_error_unsupported_message_android':
++        'Esta build no expone los servicios de protección de Android requeridos para el modo Blackout, por lo que la sesión no se puede aplicar aquí.',
++    'blackout_error_unsupported_message_ios':
++        'Esta build no expone la protección de Apple Screen Time / Family Controls, por lo que el modo Blackout no puede aplicar la sesión aquí.',
++    'blackout_protection_grant_android':
++        'Concede permisos de protección de Android para habilitar sesiones protegidas de Blackout',
++    'blackout_protection_grant_ios':
++        'Concede permisos de Tiempo en pantalla para habilitar sesiones protegidas de Blackout',
++    'blackout_protection_granted': 'Acceso de protección concedido',
++    'blackout_protection_off_android':
++        'El acceso de protección de Android está desactivado. Reactívalo en Ajustes de Android para un modo Blackout reforzado',
++    'blackout_protection_off_ios':
++        'El acceso de Tiempo en pantalla está desactivado. Reactívalo en Ajustes de iOS para un modo Blackout reforzado',
++    'blackout_protection_unavailable_android':
++        'La protección de Android no está disponible en este runtime',
++    'blackout_protection_unavailable_ios':
++        'La protección de Apple Screen Time no está disponible en este runtime',
++
++    // Tasks
++    'tasks': 'Tareas',
++    'tasks_add_task': 'Añadir tarea',
++    'tasks_created': 'Creado',
++    'tasks_description': 'Descripción',
++    'tasks_due': 'Fecha límite',
++    'tasks_duration_1_day': '1 día',
++    'tasks_duration_1_hour': '1 hora',
++    'tasks_duration_2_hours': '2 horas',
++    'tasks_duration_half_day': 'Medio día',
++    'tasks_duration_several_days': 'Varios días',
++    'tasks_duration_under_30min': 'Menos de 30 min',
++    'tasks_duration_unplanned': 'Sin plan',
++    'tasks_empty': 'Sin tareas',
++    'tasks_est_duration': 'Duración estimada',
++    'tasks_history_empty': 'Aún no hay tareas completadas',
++    'tasks_importance_average': 'Media',
++    'tasks_importance_crucial': 'Crítica',
++    'tasks_importance_essential': 'Esencial',
++    'tasks_importance_low': 'Baja',
++    'tasks_initialize_task': 'Crea tu primera tarea',
++    'tasks_mark_done': 'Marcar como hecha',
++    'tasks_matrix_do_now': 'Haz ahora',
++    'tasks_matrix_do_now_subtitle': 'Alto impacto, poco esfuerzo',
++    'tasks_matrix_eliminate': 'Eliminar',
++    'tasks_matrix_eliminate_subtitle': 'Bajo impacto, mucho esfuerzo',
++    'tasks_matrix_if_time': 'Si hay tiempo',
++    'tasks_matrix_if_time_subtitle': 'Bajo impacto, poco esfuerzo',
++    'tasks_matrix_impact_axis': 'Impacto',
++    'tasks_matrix_plan': 'Planifica',
++    'tasks_matrix_plan_subtitle': 'Alto impacto, mucho esfuerzo',
++    'tasks_matrix_time_axis': 'Esfuerzo',
++    'tasks_new_task': 'Nueva tarea',
++    'tasks_no_description': 'Sin descripción',
++    'tasks_no_priorities': 'Aún no hay prioridades',
++    'tasks_no_priorities_subtitle':
++        'Añade tu primera prioridad para empezar a ejecutar.',
++    'tasks_other_tasks': 'Otras tareas',
++    'tasks_picker_clear': 'Borrar',
++    'tasks_picker_done': 'Listo',
++    'tasks_priority': 'Prioridad',
++    'tasks_reopen_task': 'Reabrir tarea',
++    'tasks_set_deadline': 'Establecer fecha límite',
++    'tasks_swipe_hint_history': 'Desliza para reabrir',
++    'tasks_swipe_hint_list': 'Desliza para completar o reabrir',
++    'tasks_swipe_hint_matrix': 'Toca para ver detalles',
++    'tasks_sync_deadline_to_calendar':
++        'Sincronizar fecha límite con el calendario',
++    'tasks_tab_subtitle_history': 'Tareas completadas',
++    'tasks_tab_subtitle_matrix': 'Mapa de prioridades',
++    'tasks_tab_subtitle_todo': 'Lista de ejecución',
++    'tasks_tab_title_history': 'Historial',
++    'tasks_tab_title_matrix': 'Matriz',
++    'tasks_tab_title_todo': 'Por hacer',
++    'tasks_task_title_placeholder': 'Título de la tarea',
++    'tasks_your_priorities': 'Tus prioridades',
+*** End Patch

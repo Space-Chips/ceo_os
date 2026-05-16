@@ -1,0 +1,25 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/ios/Runner.xcodeproj/project.pbxproj
+@@
+ 			8578F98F2F4379B50038063F /* Build configuration list for PBXNativeTarget "CeoWidgetsExtension" */ = {
+ 				isa = XCConfigurationList;
+ 				buildConfigurations = (
+ 					8578F98B2F4379B50038063F /* Debug */,
+ 					8578F98C2F4379B50038063F /* Release */,
+ 					8578F98D2F4379B50038063F /* Profile */,
+ 				);
+ 				defaultConfigurationIsVisible = 0;
+ 				defaultConfigurationName = Release;
+ 			};
++			902D615C7F5841E4B0E9C9D2 /* Build configuration list for PBXNativeTarget "FocusActivityMonitorExtension" */ = {
++				isa = XCConfigurationList;
++				buildConfigurations = (
++					88D6050D4C554E189EB6AF6F /* Debug */,
++					C39C6B8B1FE3487DA4527DA8 /* Release */,
++					131E291FEE79432E894ACBB6 /* Profile */,
++				);
++				defaultConfigurationIsVisible = 0;
++				defaultConfigurationName = Release;
++			};
+ 			97C146E91CF9000F007C117D /* Build configuration list for PBXProject "Runner" */ = {
+*** End Patch

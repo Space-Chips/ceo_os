@@ -1,0 +1,170 @@
+import 'package:flutter/cupertino.dart';
+import 'package:provider/provider.dart';
+
+import '../../../core/providers/language_provider.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_typography.dart';
+import 'focus_preparation_checklist_view.dart';
+import 'focus_preparation_demo_view.dart';
+import 'focus_preparation_intro_view.dart';
+import 'focus_preparation_models.dart';
+
+Future<FocusPreparationFlowOutcome?> showFocusPreparationFlow({
+  required BuildContext context,
+  required FocusPreparationLaunchContext launchContext,
+}) {
+  return Navigator.of(context).push<FocusPreparationFlowOutcome>(
+    CupertinoPageRoute(
+      fullscreenDialog: true,
+      builder: (_) => FocusPreparationFlowView(launchContext: launchContext),
+    ),
+  );
+}
+
+class FocusPreparationFlowView extends StatefulWidget {
+  const FocusPreparationFlowView({super.key, required this.launchContext});
+
+  final FocusPreparationLaunchContext launchContext;
+
+  @override
+  State<FocusPreparationFlowView> createState() =>
+      _FocusPreparationFlowViewState();
+}
+
+class _FocusPreparationFlowViewState extends State<FocusPreparationFlowView> {
+  final PageController _controller = PageController();
+  int _index = 0;
+  bool _animating = false;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Future<void> _goTo(int index) async {
+    if (_animating) return;
+    _animating = true;
+    setState(() => _index = index);
+    await _controller.animateToPage(
+      index,
+      duration: const Duration(milliseconds: 360),
+      curve: Curves.easeInOutCubic,
+    );
+    _animating = false;
+  }
+
+  void _finish(FocusPreparationFlowOutcome outcome) {
+    Navigator.of(context).pop(outcome);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final language = context.watch<LanguageProvider>();
+    final showTopSkip = _index != 2;
+    return CupertinoPageScaffold(
+      backgroundColor: AppColors.background,
+      child: SafeArea(
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                AppColors.background,
+                AppColors.cardBackgroundStrong.withValues(alpha: 0.96),
+              ],
+            ),
+          ),
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 10, 16, 8),
+                child: Row(
+                  children: [
+                    _progressPills(),
+                    const Spacer(),
+                    if (showTopSkip)
+                      CupertinoButton(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
+                        minimumSize: Size.zero,
+                        onPressed: () =>
+                            _finish(FocusPreparationFlowOutcome.skipped),
+                        child: Text(
+                          language.t('focus_skip'),
+                          style: AppTypography.callout.copyWith(
+                            color: AppColors.secondaryLabel.withValues(
+                              alpha: 0.85,
+                            ),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: PageView(
+                  controller: _controller,
+                  physics: const NeverScrollableScrollPhysics(),
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(22, 10, 22, 20),
+                      child: FocusPreparationIntroView(
+                        onContinue: () => _goTo(1),
+                        onSkip: () =>
+                            _finish(FocusPreparationFlowOutcome.skipped),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(22, 10, 22, 20),
+                      child: FocusPreparationDemoView(
+                        onPrimary: () => _goTo(2),
+                        onSecondary: () =>
+                            _finish(FocusPreparationFlowOutcome.skipped),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(22, 10, 22, 20),
+                      child: FocusPreparationChecklistView(
+                        onDone: () =>
+                            _finish(FocusPreparationFlowOutcome.completed),
+                        onSkip: () =>
+                            _finish(FocusPreparationFlowOutcome.skipped),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _progressPills() {
+    return Row(
+      children: List.generate(
+        3,
+        (i) => AnimatedContainer(
+          duration: const Duration(milliseconds: 240),
+          curve: Curves.easeOutCubic,
+          margin: EdgeInsets.only(right: i == 2 ? 0 : 8),
+          width: i == _index ? 28 : 8,
+          height: 8,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(999),
+            color: i == _index
+                ? AppColors.accent
+                : AppColors.tertiaryLabel.withValues(alpha: 0.35),
+          ),
+        ),
+      ),
+    );
+  }
+}

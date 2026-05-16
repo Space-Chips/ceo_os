@@ -1,0 +1,28 @@
+*** Begin Patch
+*** Update File: lib/features/control_center_setup/widgets/fly_to_slot_overlay.dart
+@@
+ class FlyToSlotOverlay {
+   static Future<void> flyItem({
+     required BuildContext context,
++    required TickerProvider vsync,
+     required Rect from,
+     required Rect to,
+     required ControlCenterItem item,
+   }) async {
+     final overlay = Overlay.of(context);
+     if (overlay == null) return;
+ 
+     final controller = AnimationController(
+-      vsync: overlay,
++      vsync: vsync,
+       duration: const Duration(milliseconds: 520),
+     );
+@@
+-    controller.forward();
+-    await controller.forward().orCancel.catchError((_) {});
++    await controller.forward().orCancel.catchError((_) {});
+     entry.remove();
+     controller.dispose();
+   }
+ }
+*** End Patch

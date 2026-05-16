@@ -1,0 +1,14 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/home/home_screen.dart
+@@
+       child: GlassCard(
+         padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
+         borderRadius: 22,
+         level: GlassCardLevel.elevated,
+         showEdgeGlow: false,
++        showTopHighlight: false,
+         gradientColors: [
+           AppColors.dashboardGradientStart,
+           AppColors.dashboardGradientEnd.withValues(alpha: 0.992),
+         ],
+*** End Patch

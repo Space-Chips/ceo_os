@@ -1,0 +1,31 @@
+*** Begin Patch
+*** Update File: lib/features/home/stats_screen.dart
+@@
+ import '../../core/widgets/rank_art.dart';
+ 
++String _localizedRankDisplay(BuildContext context, String rawRankName) {
++  final language = context.watch<LanguageProvider>();
++  switch (RankArt.canonicalKey(rawRankName)) {
++    case 'awakened':
++      return language.t('rank_awakened');
++    case 'immortal':
++      return language.t('rank_immortal');
++    case 'diamond':
++      return language.t('rank_diamond');
++    case 'platinum':
++      return language.t('rank_platinum');
++    case 'gold':
++      return language.t('rank_gold');
++    case 'silver':
++      return language.t('rank_silver');
++    case 'bronze':
++      return language.t('rank_bronze');
++    case 'sleeping':
++    default:
++      return language.t('rank_asleep');
++  }
++}
++
+ class StatsScreen extends StatefulWidget {
+   const StatsScreen({super.key});
+*** End Patch

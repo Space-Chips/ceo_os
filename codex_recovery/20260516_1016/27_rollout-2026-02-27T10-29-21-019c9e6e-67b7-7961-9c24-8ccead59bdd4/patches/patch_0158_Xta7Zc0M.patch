@@ -1,0 +1,108 @@
+*** Begin Patch
+*** Add File: /Users/timo/ceo_os/lib/components/ambient_backdrop.dart
++import 'package:flutter/cupertino.dart';
++
++import '../core/theme/app_colors.dart';
++
++class AmbientBackdrop extends StatelessWidget {
++  final Widget child;
++
++  const AmbientBackdrop({super.key, required this.child});
++
++  @override
++  Widget build(BuildContext context) {
++    return Stack(
++      children: [
++        Positioned.fill(
++          child: DecoratedBox(
++            decoration: BoxDecoration(
++              gradient: LinearGradient(
++                begin: Alignment.topCenter,
++                end: Alignment.bottomCenter,
++                colors: [
++                  AppColors.background,
++                  AppColors.backgroundLight.withValues(alpha: 0.92),
++                  AppColors.background.withValues(alpha: 0.98),
++                ],
++              ),
++            ),
++          ),
++        ),
++        const _AmbientBlob(
++          top: -120,
++          left: -80,
++          size: 260,
++          tone: _BlobTone.primary,
++          opacity: 0.18,
++        ),
++        const _AmbientBlob(
++          top: 120,
++          right: -110,
++          size: 290,
++          tone: _BlobTone.secondary,
++          opacity: 0.14,
++        ),
++        const _AmbientBlob(
++          bottom: -140,
++          left: 40,
++          size: 320,
++          tone: _BlobTone.primary,
++          opacity: 0.1,
++        ),
++        child,
++      ],
++    );
++  }
++}
++
++enum _BlobTone { primary, secondary }
++
++class _AmbientBlob extends StatelessWidget {
++  final double? top;
++  final double? left;
++  final double? right;
++  final double? bottom;
++  final double size;
++  final _BlobTone tone;
++  final double opacity;
++
++  const _AmbientBlob({
++    this.top,
++    this.left,
++    this.right,
++    this.bottom,
++    required this.size,
++    required this.tone,
++    required this.opacity,
++  });
++
++  @override
++  Widget build(BuildContext context) {
++    final color = tone == _BlobTone.primary
++        ? AppColors.primaryOrange
++        : AppColors.accentSecondary;
++    return Positioned(
++      top: top,
++      left: left,
++      right: right,
++      bottom: bottom,
++      child: IgnorePointer(
++        child: Container(
++          width: size,
++          height: size,
++          decoration: BoxDecoration(
++            shape: BoxShape.circle,
++            boxShadow: [
++              BoxShadow(
++                color: color.withValues(alpha: opacity),
++                blurRadius: 120,
++                spreadRadius: 18,
++              ),
++            ],
++          ),
++        ),
++      ),
++    );
++  }
++}
+*** End Patch

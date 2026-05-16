@@ -1,0 +1,8 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/habits/habits_screen.dart
+@@
+   if (firstConfirmed != true) return false;
++  if (!context.mounted) return false;
+ 
+   final secondConfirmed = await showCupertinoDialog<bool>(
+*** End Patch

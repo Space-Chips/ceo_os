@@ -1,0 +1,25 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/services/family_controls_local_store.dart
+@@
+   Future<void> setBlockedAppTime(String id, int minutes) async {
+@@
+     await _saveRows(_blockedAppsKey, next);
+   }
++
++  Future<void> updateBlockedAppName(String id, String appName) async {
++    final trimmed = appName.trim();
++    if (trimmed.isEmpty) return;
++    final rows = await _loadRows(_blockedAppsKey);
++    final next = rows
++        .map(
++          (row) => row['id'] == id
++              ? {
++                  ...row,
++                  'app_name': trimmed,
++                }
++              : row,
++        )
++        .toList(growable: false);
++    await _saveRows(_blockedAppsKey, next);
++  }
+*** End Patch

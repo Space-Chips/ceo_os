@@ -1,0 +1,134 @@
+*** Begin Patch
+*** Update File: android/app/src/main/kotlin/com/wakeapp/ceoos/BlockGateActivity.kt
+@@
+ class BlockGateActivity : Activity() {
+@@
+     private lateinit var subtitleView: TextView
+     private lateinit var homeLabel: TextView
+     private lateinit var primaryButton: TextView
+     private var primaryAction: String = "go_home"
++    private var blockedBrowserPackage: String? = null
+@@
+     override fun onCreate(savedInstanceState: Bundle?) {
+         super.onCreate(savedInstanceState)
+         isVisible = true
+         window.setBackgroundDrawableResource(android.R.color.transparent)
++        overridePendingTransition(0, 0)
+         setFinishOnTouchOutside(false)
+         buildUi()
+         applyIntent(intent)
+     }
+@@
+     private fun goHome() {
+         isVisible = false
+         val homeIntent = Intent(Intent.ACTION_MAIN).apply {
+             addCategory(Intent.CATEGORY_HOME)
+             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+         }
+         startActivity(homeIntent)
+         finish()
++        overridePendingTransition(0, 0)
+     }
+ 
+     private fun goBackToBrowser() {
+         isVisible = false
+         BlockingAccessibilityService.navigateBackFromBlockGate()
+         finish()
++        overridePendingTransition(0, 0)
++    }
++
++    private fun goBrowserHome() {
++        val browserPackage = blockedBrowserPackage?.trim().orEmpty()
++        if (browserPackage.isEmpty()) {
++            goHome()
++            return
++        }
++
++        isVisible = false
++        val intent = Intent(Intent.ACTION_MAIN).apply {
++            addCategory(Intent.CATEGORY_APP_BROWSER)
++            `package` = browserPackage
++            addFlags(
++                Intent.FLAG_ACTIVITY_NEW_TASK or
++                    Intent.FLAG_ACTIVITY_CLEAR_TOP or
++                    Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED or
++                    Intent.FLAG_ACTIVITY_NO_ANIMATION,
++            )
++        }
++
++        val launchIntent = packageManager.getLaunchIntentForPackage(browserPackage)?.apply {
++            addFlags(
++                Intent.FLAG_ACTIVITY_NEW_TASK or
++                    Intent.FLAG_ACTIVITY_CLEAR_TOP or
++                    Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED or
++                    Intent.FLAG_ACTIVITY_NO_ANIMATION,
++            )
++        }
++
++        try {
++            if (packageManager.resolveActivity(intent, 0) != null) {
++                startActivity(intent)
++            } else if (launchIntent != null) {
++                startActivity(launchIntent)
++            } else {
++                goHome()
++                return
++            }
++        } catch (_: Exception) {
++            goHome()
++            return
++        }
++
++        finish()
++        overridePendingTransition(0, 0)
+     }
+ 
+     private fun runPrimaryAction() {
+         when (primaryAction) {
+             "go_back" -> goBackToBrowser()
++            "go_browser_home" -> goBrowserHome()
+             else -> goHome()
+         }
+     }
+@@
+     private fun openWakeApp() {
+         isVisible = false
+         val launchIntent = packageManager.getLaunchIntentForPackage(packageName)?.apply {
+-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
++            addFlags(
++                Intent.FLAG_ACTIVITY_NEW_TASK or
++                    Intent.FLAG_ACTIVITY_CLEAR_TOP or
++                    Intent.FLAG_ACTIVITY_NO_ANIMATION,
++            )
+         }
+         if (launchIntent != null) {
+             startActivity(launchIntent)
+             finish()
++            overridePendingTransition(0, 0)
+         }
+     }
+ 
+     private fun applyIntent(intent: Intent?) {
++        blockedBrowserPackage = intent?.getStringExtra(EXTRA_PACKAGE_NAME)?.trim()?.ifEmpty { null }
+         kickerView.text = intent?.getStringExtra(EXTRA_KICKER)?.uppercase() ?: "BLOCKED"
+         titleView.text = intent?.getStringExtra(EXTRA_TITLE) ?: "This app is blocked"
+         subtitleView.text =
+             intent?.getStringExtra(EXTRA_SUBTITLE)
+                 ?: "WakeApp is preventing access right now."
+         primaryAction = intent?.getStringExtra(EXTRA_PRIMARY_ACTION) ?: "go_home"
+         val primaryLabelText = intent?.getStringExtra(EXTRA_PRIMARY_LABEL)
+-            ?: if (primaryAction == "go_back") "Back to Browser" else "Return to Home"
++            ?: if (primaryAction == "go_browser_home" || primaryAction == "go_back") {
++                "Browser Home"
++            } else {
++                "Return to Home"
++            }
+         primaryButton.text = primaryLabelText
+-        homeLabel.text = if (primaryAction == "go_back") "Back" else "Home"
++        homeLabel.text = if (primaryAction == "go_browser_home" || primaryAction == "go_back") {
++            "Browser"
++        } else {
++            "Home"
++        }
+     }
+*** End Patch

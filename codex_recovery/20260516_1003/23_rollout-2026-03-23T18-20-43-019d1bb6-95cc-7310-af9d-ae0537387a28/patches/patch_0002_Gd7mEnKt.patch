@@ -1,0 +1,142 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/router/app_router.dart
+@@
+ import 'dart:async';
+ import 'dart:ui';
++import 'package:flutter/foundation.dart';
+ import 'package:flutter/cupertino.dart';
+ import 'package:flutter/material.dart';
+@@
+-            GoRoute(
+-              path: '/debug/database',
+-              pageBuilder: (context, state) =>
+-                  const NoTransitionPage(child: DatabaseDebugScreen()),
+-            ),
+-            GoRoute(
+-              path: '/debug/themes',
+-              pageBuilder: (context, state) =>
+-                  const NoTransitionPage(child: ThemePreviewScreen()),
+-            ),
++            if (kDebugMode)
++              GoRoute(
++                path: '/debug/database',
++                pageBuilder: (context, state) =>
++                    const NoTransitionPage(child: DatabaseDebugScreen()),
++              ),
++            if (kDebugMode)
++              GoRoute(
++                path: '/debug/themes',
++                pageBuilder: (context, state) =>
++                    const NoTransitionPage(child: ThemePreviewScreen()),
++              ),
+*** Update File: /Users/timo/ceo_os/lib/features/profile/profile_screen.dart
+@@
++import 'package:flutter/foundation.dart';
+ import 'package:flutter/cupertino.dart';
+ import 'package:flutter/services.dart';
+@@
+     final languageCode = (_appSettings?.languageCode ?? 'en').toLowerCase();
+     final notificationsEnabled = _appSettings?.notificationsEnabled ?? true;
+@@
+     final enabledChannels = [
+       if (habitEnabled) 'H',
+       if (calendarEnabled) 'C',
+       if (focusEnabled) 'F',
+     ].length;
++    final showDebugTools = kDebugMode;
+@@
+-                  const SizedBox(height: 24),
+-                  _sectionHeader('DEBUG'),
+-                  const SizedBox(height: 10),
+-                  CustomPaint(
+-                    painter: _DashedBorderPainter(
+-                      color: AppColors.borderStrong,
+-                      radius: 16,
+-                    ),
+-                    child: Container(
+-                      decoration: BoxDecoration(
+-                        borderRadius: BorderRadius.circular(16),
+-                        color: AppColors.sectionBackground,
+-                      ),
+-                      child: Column(
+-                        children: [
+-                          _settingRow(
+-                            label: 'DATABASE WRITE CHECKS',
+-                            onTap: () => context.push('/debug/database'),
+-                            leadingIcon: CupertinoIcons.lab_flask,
+-                            leadingColor: AppColors.tertiaryLabel,
+-                            trailing: Icon(
+-                              CupertinoIcons.chevron_right,
+-                              size: 16,
+-                              color: AppColors.tertiaryLabel.withValues(
+-                                alpha: 0.4,
+-                              ),
+-                            ),
+-                          ),
+-                          _divider(),
+-                          _settingRow(
+-                            label: 'THEME PREVIEW',
+-                            onTap: () => context.push('/debug/themes'),
+-                            leadingIcon: CupertinoIcons.paintbrush,
+-                            leadingColor: AppColors.tertiaryLabel,
+-                            trailing: Icon(
+-                              CupertinoIcons.chevron_right,
+-                              size: 16,
+-                              color: AppColors.tertiaryLabel.withValues(
+-                                alpha: 0.4,
+-                              ),
+-                            ),
+-                          ),
+-                        ],
+-                      ),
+-                    ),
+-                  ),
++                  if (showDebugTools) ...[
++                    const SizedBox(height: 24),
++                    _sectionHeader('DEBUG'),
++                    const SizedBox(height: 10),
++                    CustomPaint(
++                      painter: _DashedBorderPainter(
++                        color: AppColors.borderStrong,
++                        radius: 16,
++                      ),
++                      child: Container(
++                        decoration: BoxDecoration(
++                          borderRadius: BorderRadius.circular(16),
++                          color: AppColors.sectionBackground,
++                        ),
++                        child: Column(
++                          children: [
++                            _settingRow(
++                              label: 'DATABASE WRITE CHECKS',
++                              onTap: () => context.push('/debug/database'),
++                              leadingIcon: CupertinoIcons.lab_flask,
++                              leadingColor: AppColors.tertiaryLabel,
++                              trailing: Icon(
++                                CupertinoIcons.chevron_right,
++                                size: 16,
++                                color: AppColors.tertiaryLabel.withValues(
++                                  alpha: 0.4,
++                                ),
++                              ),
++                            ),
++                            _divider(),
++                            _settingRow(
++                              label: 'THEME PREVIEW',
++                              onTap: () => context.push('/debug/themes'),
++                              leadingIcon: CupertinoIcons.paintbrush,
++                              leadingColor: AppColors.tertiaryLabel,
++                              trailing: Icon(
++                                CupertinoIcons.chevron_right,
++                                size: 16,
++                                color: AppColors.tertiaryLabel.withValues(
++                                  alpha: 0.4,
++                                ),
++                              ),
++                            ),
++                          ],
++                        ),
++                      ),
++                    ),
++                  ],
+*** End Patch

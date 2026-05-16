@@ -1,0 +1,78 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/calendar/calendar_screen.dart
+@@
+           Align(
+             alignment: Alignment.centerRight,
+-            child: GestureDetector(
+-              onTap: () async {
+-                final taskProvider = context.read<TaskProvider>();
+-                await context.push('/event-types');
+-                if (!mounted) return;
+-                await _loadEventTypes();
+-                await taskProvider.loadEvents();
+-              },
+-              child: GlassCard(
+-                padding: const EdgeInsets.symmetric(
+-                  horizontal: 16,
+-                  vertical: 10,
+-                ),
+-                borderRadius: 18,
+-                level: GlassCardLevel.standard,
+-                border: Border.all(color: AppColors.glassBorder, width: 0.8),
+-                child: Text(
+-                  _loadingEventTypes ? 'Types…' : 'Types',
+-                  style: AppTypography.mono.copyWith(
+-                    fontSize: 12,
+-                    fontWeight: FontWeight.w800,
+-                    color: AppColors.label,
++            child: _CalendarPressScale(
++              onTap: () async {
++                final taskProvider = context.read<TaskProvider>();
++                await context.push('/event-types');
++                if (!mounted) return;
++                await _loadEventTypes();
++                await taskProvider.loadEvents();
++              },
++              child: Container(
++                padding: const EdgeInsets.symmetric(
++                  horizontal: 14,
++                  vertical: 10,
++                ),
++                decoration: BoxDecoration(
++                  color: AppColors.white.withValues(alpha: 0.05),
++                  borderRadius: BorderRadius.circular(14),
++                  border: Border.all(
++                    color: AppColors.white.withValues(alpha: 0.06),
++                    width: 1,
+                   ),
+                 ),
++                child: Text(
++                  _loadingEventTypes ? 'Types…' : 'Types',
++                  style: AppTypography.body.copyWith(
++                    fontSize: 14,
++                    fontWeight: FontWeight.w600,
++                    color: AppColors.label,
++                  ),
++                ),
+               ),
+             ),
+           ),
+@@
+         _squareControlButton(
+           icon: CupertinoIcons.chevron_left,
+-          onTap: _navigatePrevious,
++          onTap: () {
++            _navigatePrevious();
++          },
+           size: isYearly ? 40 : 50,
+         ),
+@@
+         _squareControlButton(
+           icon: CupertinoIcons.chevron_right,
+-          onTap: _navigateNext,
++          onTap: () {
++            _navigateNext();
++          },
+           size: isYearly ? 40 : 50,
+         ),
+*** End Patch

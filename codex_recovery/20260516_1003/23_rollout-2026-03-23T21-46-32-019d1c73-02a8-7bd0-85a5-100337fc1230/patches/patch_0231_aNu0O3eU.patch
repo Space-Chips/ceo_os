@@ -1,0 +1,93 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/setup/setup_flow_screen.dart
+@@
+       case SetupStep.accessibility:
+         _maybeAutoAdvance(controller, step, controller.accessibilityGranted);
+         return _PermissionStep(
+           stepIndex: 1,
+-          title: 'Enable instant blocking',
+-          subtitle:
+-              'Accessibility lets Screen Time react the moment an app opens, so blocks feel immediate.',
++          title: 'Enable instant blocking',
++          subtitle:
++              'Accessibility lets Screen Time detect the active app and block it immediately.',
++          icon: CupertinoIcons.hand_raised_fill,
++          accent: AppColors.accent,
+           reassurance:
+               'Screen Time never reads your messages or captures your screen. It only detects which app is active to enforce your focus rules on‑device.',
+           instructions: const [
+             'Tap “Open settings”.',
+-            'Choose Screen Time under Installed services.',
+-            'Turn the service on and confirm.',
+-            'Return to Screen Time.',
++            'Enable Screen Time under Installed services.',
++            'We’ll bring you back automatically.',
+           ],
++          troubleshoot: const [
++            'If the switch is disabled, open App info → Allow restricted settings.',
++            'If Screen Time is missing, scroll to Downloaded services.',
++          ],
+           isGranted: controller.accessibilityGranted,
+           showSuccess: _showStepSuccess,
+           onOpenSettings: controller.openAccessibilitySettings,
+           onContinue: controller.advance,
+         );
+       case SetupStep.usageAccess:
+         _maybeAutoAdvance(controller, step, controller.usageGranted);
+         return _PermissionStep(
+           stepIndex: 2,
+-          title: 'Track usage accurately',
+-          subtitle:
+-              'Usage access keeps your limits, reports, and focus sessions accurate in the background.',
++          title: 'Track usage accurately',
++          subtitle:
++              'Usage access keeps your limits, reports, and focus sessions accurate.',
++          icon: CupertinoIcons.chart_bar_fill,
++          accent: AppColors.focusSecondary,
+           instructions: const [
+             'Tap “Open settings”.',
+-            'Find Screen Time in the list.',
+-            'Enable usage access.',
+-            'Return to Screen Time.',
++            'Allow Screen Time in the list.',
++            'We’ll bring you back automatically.',
+           ],
++          troubleshoot: const [
++            'If Screen Time is missing, open Settings → Apps → Screen Time.',
++            'Then open Usage access and allow it.',
++          ],
+           isGranted: controller.usageGranted,
+           showSuccess: _showStepSuccess,
+           onOpenSettings: controller.openUsageAccessSettings,
+           onContinue: controller.advance,
+         );
+       case SetupStep.overlay:
+         _maybeAutoAdvance(controller, step, controller.overlayGranted);
+         return _PermissionStep(
+           stepIndex: 3,
+-          title: 'Show the block screen',
+-          subtitle:
+-              'Overlay permission lets Screen Time display the block screen on top of blocked apps.',
++          title: 'Show the block screen',
++          subtitle:
++              'Overlay permission lets the block screen appear above blocked apps.',
++          icon: CupertinoIcons.rectangle_stack_fill,
++          accent: AppColors.focusPrimary,
+           instructions: const [
+             'Tap “Open settings”.',
+-            'Find Screen Time in the list.',
+-            'Enable “Display over other apps”.',
+-            'Return to Screen Time.',
++            'Allow “Display over other apps”.',
++            'We’ll bring you back automatically.',
+           ],
++          troubleshoot: const [
++            'If you can’t toggle it, open Special app access → Display over other apps.',
++            'Then enable WakeApp and return.',
++          ],
+           isGranted: controller.overlayGranted,
+           showSuccess: _showStepSuccess,
+           onOpenSettings: controller.openOverlaySettings,
+           onContinue: controller.advance,
+         );
+*** End Patch

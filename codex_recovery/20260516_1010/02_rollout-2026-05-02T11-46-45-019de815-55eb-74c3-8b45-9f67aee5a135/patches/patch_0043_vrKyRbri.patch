@@ -1,0 +1,83 @@
+*** Begin Patch
+*** Update File: lib/features/widget_configuration/widget_configuration_screen.dart
+@@
+-  Widget _modeCard({
+-    required CeoWidgetMode mode,
++  Widget _defaultModeCard({
++    required CeoWidgetMode? mode,
+     required String label,
+     required IconData icon,
+   }) {
+-    final selected = _mode == mode;
++    final selected = _defaultMode == mode;
+     return _WidgetPressable(
+-      onTap: _saving ? null : () => _setMode(mode),
++      onTap: _saving ? null : () => _setDefaultMode(mode),
+       pressedScale: 0.98,
+       borderRadius: 18,
+       child: Container(
+@@
+           ],
+         ),
+       ),
+     );
+   }
++
++  Widget _widgetToggleCard({
++    required String label,
++    required IconData icon,
++    required bool value,
++    required ValueChanged<bool> onChanged,
++  }) {
++    return Container(
++      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
++      decoration: BoxDecoration(
++        borderRadius: BorderRadius.circular(18),
++        color: AppColors.cardBackgroundAlt,
++        border: Border.all(color: AppColors.borderStrong, width: 1),
++        boxShadow: [
++          BoxShadow(
++            color: AppColors.glassShadow,
++            blurRadius: 30,
++            offset: Offset(0, 10),
++            spreadRadius: -12,
++          ),
++        ],
++      ),
++      child: Row(
++        children: [
++          Container(
++            width: 44,
++            height: 44,
++            decoration: BoxDecoration(
++              borderRadius: BorderRadius.circular(14),
++              color: AppColors.topBarControlBackground,
++              border: Border.all(color: AppColors.topBarControlBorder),
++            ),
++            child: Icon(icon, color: AppColors.label, size: 20),
++          ),
++          const SizedBox(width: 12),
++          Expanded(
++            child: Text(
++              label,
++              maxLines: 2,
++              overflow: TextOverflow.ellipsis,
++              style: AppTypography.title3.copyWith(
++                fontSize: 17,
++                fontWeight: FontWeight.w700,
++                color: AppColors.label,
++                height: 1.1,
++              ),
++            ),
++          ),
++          const SizedBox(width: 12),
++          CupertinoSwitch(
++            value: value,
++            onChanged: _saving ? null : onChanged,
++            activeColor: AppColors.accent,
++          ),
++        ],
++      ),
++    );
++  }
+*** End Patch

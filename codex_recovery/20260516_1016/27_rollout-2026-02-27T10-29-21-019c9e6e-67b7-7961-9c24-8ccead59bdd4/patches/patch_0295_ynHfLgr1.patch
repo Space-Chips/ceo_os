@@ -1,0 +1,38 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/ios/Runner.xcodeproj/project.pbxproj
+@@
+ /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+ 			8578F98E2F4379B50038063F /* Exceptions for "CeoWidgets" folder in "CeoWidgetsExtension" target */ = {
+@@
+ 				target = 8578F9742F4379B20038063F /* CeoWidgetsExtension */;
+ 			};
++			E750774FE82E43A5A8E0BB63 /* Exceptions for "FocusActivityMonitor" folder in "FocusActivityMonitorExtension" target */ = {
++				isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
++				membershipExceptions = (
++					Info.plist,
++					FocusActivityMonitor.entitlements,
++				);
++				target = 84C0EEF5E0064471B8DD0227 /* FocusActivityMonitorExtension */;
++			};
+ /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+ 
+ /* Begin PBXFileSystemSynchronizedRootGroup section */
+ 			8578F97B2F4379B20038063F /* CeoWidgets */ = {
+@@
+ 				path = CeoWidgets;
+ 				sourceTree = "<group>";
+ 			};
++			ABFC1660CF1F4F18865A63F1 /* FocusActivityMonitor */ = {
++				isa = PBXFileSystemSynchronizedRootGroup;
++				exceptions = (
++					E750774FE82E43A5A8E0BB63 /* Exceptions for "FocusActivityMonitor" folder in "FocusActivityMonitorExtension" target */,
++				);
++				explicitFileTypes = {
++				};
++				explicitFolders = (
++				);
++				path = FocusActivityMonitor;
++				sourceTree = "<group>";
++			};
+ /* End PBXFileSystemSynchronizedRootGroup section */
+*** End Patch

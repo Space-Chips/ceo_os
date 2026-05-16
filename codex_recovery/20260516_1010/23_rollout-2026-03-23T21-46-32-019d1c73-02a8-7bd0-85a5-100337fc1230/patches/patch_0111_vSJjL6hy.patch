@@ -1,0 +1,64 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/debug/theme_preview_screen.dart
+@@
+-                    const _PreviewHero(),
++                    _PreviewHero(),
+                     const SizedBox(height: 18),
+-                    const _PreviewButtonsAndControls(),
++                    _PreviewButtonsAndControls(),
+                     const SizedBox(height: 18),
+-                    const _PreviewTextAndStates(),
++                    _PreviewTextAndStates(),
+                     const SizedBox(height: 18),
+-                    const _PreviewSurfaces(),
++                    _PreviewSurfaces(),
+@@
+-        const _PreviewTopBar(),
++        _PreviewTopBar(),
+         const SizedBox(height: 24),
+-        const _PreviewDashboardCard(),
++        _PreviewDashboardCard(),
+         const SizedBox(height: 18),
+-        const _PreviewModuleGrid(),
++        _PreviewModuleGrid(),
+@@
+-          const _SquareControl(icon: CupertinoIcons.bolt_fill),
++          _SquareControl(icon: CupertinoIcons.bolt_fill),
+           const SizedBox(width: 8),
+-          const _SquareControl(icon: CupertinoIcons.doc_text_fill),
++          _SquareControl(icon: CupertinoIcons.doc_text_fill),
+@@
+-      children: const [
++      children: [
+         Expanded(
+           child: _ModulePreviewCard(
+             title: 'To-Do',
+             icon: CupertinoIcons.check_mark_circled,
+           ),
+         ),
+         SizedBox(width: 14),
+         Expanded(
+           child: _ModulePreviewCard(
+             title: 'Screen Time',
+             icon: CupertinoIcons.shield,
+           ),
+         ),
+       ],
+@@
+-              const Expanded(child: _TogglePreview(enabled: true)),
++              Expanded(child: _TogglePreview(enabled: true)),
+               const SizedBox(width: 12),
+-              const Expanded(child: _TogglePreview(enabled: false)),
++              Expanded(child: _TogglePreview(enabled: false)),
+@@
+-            children: const [
+-              Expanded(child: _ProgressPreview()),
+-              SizedBox(width: 12),
+-              Expanded(child: _FocusRingPreview()),
+-            ],
++            children: [
++              Expanded(child: _ProgressPreview()),
++              SizedBox(width: 12),
++              Expanded(child: _FocusRingPreview()),
++            ],
+*** End Patch

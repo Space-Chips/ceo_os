@@ -1,0 +1,166 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/auth/auth_support.dart
+@@
+ Future<void> copySupportEmail(BuildContext context) async {
+@@
+   );
+ }
++
++class AuthTrustFooter extends StatelessWidget {
++  const AuthTrustFooter({super.key});
++
++  @override
++  Widget build(BuildContext context) {
++    return Column(
++      children: [
++        Text(
++          'By continuing, you agree to the Terms of Use and Privacy Policy.',
++          textAlign: TextAlign.center,
++          style: AppTypography.caption1.copyWith(
++            color: AppColors.tertiaryLabel,
++            height: 1.4,
++          ),
++        ),
++        const SizedBox(height: 10),
++        Wrap(
++          alignment: WrapAlignment.center,
++          spacing: 12,
++          runSpacing: 8,
++          children: [
++            _AuthInlineLink(
++              label: 'TERMS',
++              onTap: () => showAuthLegalDialog(
++                context,
++                title: 'TERMS OF USE',
++                body:
++                    'CEO OS provides productivity, planning, and focus tools. Premium subscriptions may renew automatically unless canceled in your Apple ID settings.',
++              ),
++            ),
++            _AuthInlineLink(
++              label: 'PRIVACY',
++              onTap: () => showAuthLegalDialog(
++                context,
++                title: 'PRIVACY POLICY',
++                body:
++                    'CEO OS uses Supabase for account and cloud sync infrastructure, Google Sign-In when selected by the user, RevenueCat and Apple for purchases, and Apple system APIs for Screen Time, notifications, widgets, and scheduling.',
++              ),
++            ),
++            _AuthInlineLink(
++              label: 'SUPPORT',
++              onTap: () => copySupportEmail(context),
++            ),
++          ],
++        ),
++      ],
++    );
++  }
++}
++
++class _AuthInlineLink extends StatelessWidget {
++  final String label;
++  final VoidCallback onTap;
++
++  const _AuthInlineLink({required this.label, required this.onTap});
++
++  @override
++  Widget build(BuildContext context) {
++    return CupertinoButton(
++      padding: EdgeInsets.zero,
++      minimumSize: Size.zero,
++      onPressed: onTap,
++      child: Text(
++        label,
++        style: AppTypography.mono.copyWith(
++          fontSize: 11,
++          color: AppColors.primaryOrange,
++          letterSpacing: 1.2,
++        ),
++      ),
++    );
++  }
++}
+*** Update File: /Users/timo/ceo_os/lib/features/auth/login_screen.dart
+@@
+-                    _AuthTrustFooter(),
++                    const AuthTrustFooter(),
+                     const SizedBox(height: 20),
+@@
+-}
+-
+-class _AuthTrustFooter extends StatelessWidget {
+-  @override
+-  Widget build(BuildContext context) {
+-    return Column(
+-      children: [
+-        Text(
+-          'By continuing, you agree to the Terms of Use and Privacy Policy.',
+-          textAlign: TextAlign.center,
+-          style: AppTypography.caption1.copyWith(
+-            color: AppColors.tertiaryLabel,
+-            height: 1.4,
+-          ),
+-        ),
+-        const SizedBox(height: 10),
+-        Wrap(
+-          alignment: WrapAlignment.center,
+-          spacing: 12,
+-          runSpacing: 8,
+-          children: [
+-            _AuthInlineLink(
+-              label: 'TERMS',
+-              onTap: () => showAuthLegalDialog(
+-                context,
+-                title: 'TERMS OF USE',
+-                body:
+-                    'CEO OS provides productivity, planning, and focus tools. Premium subscriptions may renew automatically unless canceled in your Apple ID settings.',
+-              ),
+-            ),
+-            _AuthInlineLink(
+-              label: 'PRIVACY',
+-              onTap: () => showAuthLegalDialog(
+-                context,
+-                title: 'PRIVACY POLICY',
+-                body:
+-                    'CEO OS uses Supabase for account and cloud sync infrastructure, Google Sign-In when selected by the user, RevenueCat and Apple for purchases, and Apple system APIs for Screen Time, notifications, widgets, and scheduling.',
+-              ),
+-            ),
+-            _AuthInlineLink(
+-              label: 'SUPPORT',
+-              onTap: () => copySupportEmail(context),
+-            ),
+-          ],
+-        ),
+-      ],
+-    );
+-  }
+-}
+-
+-class _AuthInlineLink extends StatelessWidget {
+-  final String label;
+-  final VoidCallback onTap;
+-
+-  const _AuthInlineLink({required this.label, required this.onTap});
+-
+-  @override
+-  Widget build(BuildContext context) {
+-    return CupertinoButton(
+-      padding: EdgeInsets.zero,
+-      minimumSize: Size.zero,
+-      onPressed: onTap,
+-      child: Text(
+-        label,
+-        style: AppTypography.mono.copyWith(
+-          fontSize: 11,
+-          color: AppColors.primaryOrange,
+-          letterSpacing: 1.2,
+-        ),
+-      ),
+-    );
+-  }
+ }
+*** Update File: /Users/timo/ceo_os/lib/features/auth/signup_screen.dart
+@@
+-                    _AuthTrustFooter(),
++                    const AuthTrustFooter(),
+                     const SizedBox(height: 20),
+*** End Patch

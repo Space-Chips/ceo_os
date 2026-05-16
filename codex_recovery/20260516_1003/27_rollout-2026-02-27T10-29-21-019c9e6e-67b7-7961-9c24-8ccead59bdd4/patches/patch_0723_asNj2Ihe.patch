@@ -1,0 +1,38 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/theme/app_colors.dart
+@@
+   static bool get isDark => ThemeRuntime.preset.isDark;
+   static String get themeId => ThemeRuntime.preset.id;
++  static bool get isCarbonSystem => themeId == 'carbon_system';
+@@
+   static Color get systemBlue => accent;
+   static Color get systemRed => error;
++
++  // Carbon micro-accents: restrained, slightly colored, never neon.
++  static const Color _carbonWarmTone = Color(0xFFB48A63);
++  static const Color _carbonCoolTone = Color(0xFF7D93A7);
++  static const Color _carbonNoteTone = Color(0xFF8A8397);
++  static const Color _carbonSageTone = Color(0xFF809789);
++
++  static Color get streakAccent =>
++      isCarbonSystem ? _carbonWarmTone : primaryOrange;
++  static Color get focusControlAccent =>
++      isCarbonSystem ? _carbonCoolTone : accentIcon;
++  static Color get notesControlAccent =>
++      isCarbonSystem ? _carbonNoteTone : accentIcon;
++  static Color get screenTimeDailyAccentBorder => isCarbonSystem
++      ? _carbonCoolTone.withValues(alpha: 0.46)
++      : selectionOutline;
++  static Color get familyCreateAccent =>
++      isCarbonSystem ? _carbonWarmTone : accent;
++  static Color get habitsWeekAccent =>
++      isCarbonSystem ? _carbonSageTone : scoreValue;
++  static Color get habitsCompletionAccent =>
++      isCarbonSystem ? _carbonSageTone : accent;
++  static Color get habitsOpenRingAccent => isCarbonSystem
++      ? _carbonSageTone.withValues(alpha: 0.34)
++      : white.withValues(alpha: 0.25);
++  static Color get habitsTodayRingAccent => isCarbonSystem
++      ? _carbonWarmTone.withValues(alpha: 0.62)
++      : primaryOrange.withValues(alpha: 0.6);
+*** End Patch

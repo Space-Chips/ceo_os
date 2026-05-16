@@ -1,0 +1,24 @@
+*** Begin Patch
+*** Update File: lib/core/services/home_widget_service.dart
+@@
+     if (enabledFocus) {
+       final focusDuration =
+           (await HomeWidget.getWidgetData<int>(
+             keyFocusDurationMinutes,
+             defaultValue: 25,
+           )) ??
+           25;
++      final focusIsOn = focus == null ? false : (focus.state != FocusState.idle);
+       futures.add(
+         HomeWidget.saveWidgetData<int>(
+           keyFocusDurationMinutes,
+           focusDuration.clamp(5, 180),
+         ),
+       );
++      futures.add(HomeWidget.saveWidgetData<bool>(keyFocusIsOn, focusIsOn));
+       futures.addAll([
+         HomeWidget.renderFlutterWidget(
+           FocusWidgetSquareView(
+             language: language,
+             durationMinutes: focusDuration.clamp(5, 180),
+*** End Patch

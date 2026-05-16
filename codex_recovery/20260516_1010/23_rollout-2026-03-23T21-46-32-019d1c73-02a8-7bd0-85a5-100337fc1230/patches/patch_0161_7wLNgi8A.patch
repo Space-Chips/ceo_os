@@ -1,0 +1,18 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/android/app/src/main/kotlin/com/wakeapp/ceoos/BlockingAccessibilityService.kt
+@@
+-        val gateLaunched = when (decision) {
+-            BlockDecision.Allow -> {
+-                blockingOverlay.hide()
+-                blockingNavigator.dismiss(this)
+-                false
+-            }
++        val gateLaunched = when (decision) {
++            BlockDecision.Allow -> {
++                blockingOverlay.hide()
++                if (!BlockGateActivity.isVisible) {
++                    blockingNavigator.dismiss(this)
++                }
++                false
++            }
+*** End Patch

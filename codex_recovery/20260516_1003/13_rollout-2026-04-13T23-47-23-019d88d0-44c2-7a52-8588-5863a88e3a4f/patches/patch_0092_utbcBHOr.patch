@@ -1,0 +1,58 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/ios/Runner/AppDelegate.swift
+@@
+-        let merged = mergeSelections(encodedPayloads: payloads)
+-        let hasPayloadSelection = hasSelection(merged)
+-
+-        if ceoEnabled {
+-            store.shield.applications = nil
+-            store.shield.applicationCategories = ShieldSettings.ActivityCategoryPolicy.all(except: Set())
+-            store.shield.webDomains = hasPayloadSelection ? merged.webDomainTokens : nil
+-            return
+-        }
+-
+-        guard hasPayloadSelection else {
+-            store.clearAllSettings()
+-            return
+-        }
+-
+-        store.shield.applications = merged.applicationTokens
+-        store.shield.applicationCategories = ShieldSettings.ActivityCategoryPolicy.specific(merged.categoryTokens)
+-        store.shield.webDomains = merged.webDomainTokens
++        var merged = mergeSelections(encodedPayloads: payloads)
++        if classicEnabled {
++            merged.webDomainTokens.formUnion(
++                webDomainTokens(
++                    from: defaults.stringArray(forKey: classicWebsiteDomainsStorageKey) ?? []
++                )
++            )
++        }
++        if classicPauseEnabled {
++            merged.webDomainTokens.formUnion(
++                webDomainTokens(
++                    from: defaults.stringArray(forKey: classicPauseWebsiteDomainsStorageKey) ?? []
++                )
++            )
++        }
++
++        let hasPayloadSelection = hasSelection(merged)
++
++        if ceoEnabled {
++            store.shield.applications = nil
++            store.shield.applicationCategories = ShieldSettings.ActivityCategoryPolicy.all(except: Set())
++            if #available(iOS 16.0, *) {
++                store.shield.webDomainCategories = .all(except: Set())
++            }
++            store.shield.webDomains = hasPayloadSelection ? merged.webDomainTokens : nil
++            return
++        }
++
++        guard hasPayloadSelection else {
++            store.clearAllSettings()
++            return
++        }
++
++        store.shield.applications = merged.applicationTokens
++        store.shield.applicationCategories = ShieldSettings.ActivityCategoryPolicy.specific(merged.categoryTokens)
++        store.shield.webDomains = merged.webDomainTokens
+*** End Patch

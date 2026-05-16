@@ -1,0 +1,194 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/docs/google_play_submission_packet.md
+@@
+-# Google Play Submission Packet — CEO OS
++# Google Play Submission Packet — WakeApp
+@@
+-Project: CEO OS  
++Project: WakeApp  
+@@
+-Because CEO OS uses `AccessibilityService`, Google requires:
++Because WakeApp uses `AccessibilityService`, Google requires:
+@@
+-For CEO OS, the package name to keep is:
++For WakeApp, the package name to keep is:
+@@
+-- if CEO OS requires login for meaningful review, keep a working reviewer account ready
++- if WakeApp requires login for meaningful review, keep a working reviewer account ready
+@@
+-For CEO OS, expect at least these data domains to be reviewed carefully:
++For WakeApp, expect at least these data domains to be reviewed carefully:
+@@
+-Implication for CEO OS:
++Implication for WakeApp:
+@@
+-Implication for CEO OS:
++Implication for WakeApp:
+@@
+-Implication for CEO OS:
++Implication for WakeApp:
+@@
+-Implication for CEO OS:
++Implication for WakeApp:
+@@
+-## 5. CEO OS Android Listing Rules
++## 5. WakeApp Android Listing Rules
+@@
+-CEO OS is a personal focus and self-control app.
++WakeApp is a personal focus and self-control app.
+@@
+-Android website blocking depends on what supported browsers expose through the accessibility tree, so CEO OS does not claim universal website blocking across all Android browsers or web views.
++Android website blocking depends on what supported browsers expose through the accessibility tree, so WakeApp does not claim universal website blocking across all Android browsers or web views.
+@@
+-CEO OS status today:
++WakeApp status today:
+@@
+-CEO OS status today:
++WakeApp status today:
+@@
+-CEO OS status today:
++WakeApp status today:
+*** Update File: /Users/timo/ceo_os/docs/google_play_console_field_guide.md
+@@
+-# Google Play Console Field Guide — CEO OS
++# Google Play Console Field Guide — WakeApp
+@@
+-Project: CEO OS  
++Project: WakeApp  
+@@
+-`CEO OS`
++`WakeApp`
+@@
+-`CEO OS`
++`WakeApp`
+@@
+-CEO OS is a focus app and personal control center for concentration, discipline, and daily execution. It combines app blocking, website limits, daily limits, routines, tasks, habits, and notes in one place so you can manage your environment more intentionally.
++WakeApp is a focus app and personal control center for concentration, discipline, and daily execution. It combines app blocking, website limits, daily limits, routines, tasks, habits, and notes in one place so you can manage your environment more intentionally.
+@@
+-Use CEO OS to:
++Use WakeApp to:
+@@
+-- activate CEO Mode for stricter focus protection
++- activate Blackout Mode for stricter focus protection
+@@
+-On Android, CEO OS uses on-device protection flows to apply the restrictions you choose. Accessibility is used to detect when a selected distracting app or supported website is opened, Usage Access is used for daily-limit enforcement, and display-over-other-apps permission is used to show the blocking shield.
++On Android, WakeApp uses on-device protection flows to apply the restrictions you choose. Accessibility is used to detect when a selected distracting app or supported website is opened, Usage Access is used for daily-limit enforcement, and display-over-other-apps permission is used to show the blocking shield.
+@@
+-CEO OS is designed for self-control, productivity, and digital wellbeing. It does not present itself as a disability accessibility tool, and it does not claim universal website blocking across all Android browsers or web views.
++WakeApp is designed for self-control, productivity, and digital wellbeing. It does not present itself as a disability accessibility tool, and it does not claim universal website blocking across all Android browsers or web views.
+@@
+-2. CEO Mode
++2. Blackout Mode
+@@
+-CEO OS requires login to access the main product flows.
++WakeApp requires login to access the main product flows.
+@@
+-For the current CEO OS product positioning, expect a low rating if there is:
++For the current WakeApp product positioning, expect a low rating if there is:
+@@
+-Users can delete their account directly inside CEO OS. If they no longer have access to the app, they can request account deletion through the public support page linked here.
++Users can delete their account directly inside WakeApp. If they no longer have access to the app, they can request account deletion through the public support page linked here.
+@@
+-CEO OS uses Android Accessibility to detect when a selected distracting app or supported website is opened and to apply the blocking shield on-device. This is a core user-facing feature used for Focus Mode, CEO Mode, scheduled pauses, and daily-limit enforcement.
++WakeApp uses Android Accessibility to detect when a selected distracting app or supported website is opened and to apply the blocking shield on-device. This is a core user-facing feature used for Focus Mode, Blackout Mode, scheduled pauses, and daily-limit enforcement.
+@@
+-CEO OS does not use Accessibility for ads, hidden UI manipulation, or unrelated analytics.
++WakeApp does not use Accessibility for ads, hidden UI manipulation, or unrelated analytics.
+@@
+-CEO OS uses Usage Access to measure real device usage for selected apps and supported websites so daily limits can be enforced accurately on-device.
++WakeApp uses Usage Access to measure real device usage for selected apps and supported websites so daily limits can be enforced accurately on-device.
+@@
+-CEO OS does not use this access for advertising, profiling, or unrelated analytics.
++WakeApp does not use this access for advertising, profiling, or unrelated analytics.
+@@
+-CEO OS uses display-over-other-apps permission to present the blocking shield when a blocked app or supported website is opened. This permission is used only for the app’s core focus and restriction features.
++WakeApp uses display-over-other-apps permission to present the blocking shield when a blocked app or supported website is opened. This permission is used only for the app’s core focus and restriction features.
+@@
+-CEO OS does not rely on broad package visibility for general app inventory. App selection is limited to launcher-visible apps needed for user-facing blocking configuration.
++WakeApp does not rely on broad package visibility for general app inventory. App selection is limited to launcher-visible apps needed for user-facing blocking configuration.
+@@
+-For the current CEO OS positioning:
++For the current WakeApp positioning:
+*** Update File: /Users/timo/ceo_os/docs/google_play_release_dependencies.md
+@@
+-# Google Play Release Dependencies — CEO OS
++# Google Play Release Dependencies — WakeApp
+@@
+-Project: CEO OS  
++Project: WakeApp  
+*** Update File: /Users/timo/ceo_os/docs/app_store_submission_packet.md
+@@
+-# App Store Submission Packet — CEO OS
++# App Store Submission Packet — WakeApp
+@@
+-Project: CEO OS  
++Project: WakeApp  
+@@
+-This document is the final Apple-facing submission packet for CEO OS.
++This document is the final Apple-facing submission packet for WakeApp.
+@@
+-CEO OS is a personal focus and self-control app. On iPhone, it uses Apple’s official Screen Time APIs through Family Controls, Managed Settings, and Device Activity to let the user select apps and websites, start protected focus sessions, schedule restriction windows, and apply time-based limits.
++WakeApp is a personal focus and self-control app. On iPhone, it uses Apple’s official Screen Time APIs through Family Controls, Managed Settings, and Device Activity to let the user select apps and websites, start protected focus sessions, schedule restriction windows, and apply time-based limits.
+@@
+-Family Controls / Device Activity data is kept on-device for the individual use case. CEO OS does not sync, export, compare, or server-log Screen Time usage or blocking-attempt data beyond the individual user.
++Family Controls / Device Activity data is kept on-device for the individual use case. WakeApp does not sync, export, compare, or server-log Screen Time usage or blocking-attempt data beyond the individual user.
+@@
+-2. CEO Mode: start a stricter focus session and verify the same Screen Time-based restriction flow.
++2. Blackout Mode: start a stricter focus session and verify the same Screen Time-based restriction flow.
+@@
+-1. Open CEO OS and go to the Screen Time / blocking area.
++1. Open WakeApp and go to the Screen Time / blocking area.
+@@
+-4. Start Focus Mode, CEO Mode, or a classic blocking configuration.
++4. Start Focus Mode, Blackout Mode, or a classic blocking configuration.
+@@
+-- CEO OS is a self-control and digital wellbeing product, not a surveillance or device administration app.
++- WakeApp is a self-control and digital wellbeing product, not a surveillance or device administration app.
+@@
+-CEO OS uses Family Controls because blocking and scheduling are core features of the product on iPhone. Users explicitly choose apps and websites they want to restrict, then start focus sessions, planned pauses, or time-based limits. Family Controls, Managed Settings, and Device Activity are used only to support these user-initiated Screen Time flows.
++WakeApp uses Family Controls because blocking and scheduling are core features of the product on iPhone. Users explicitly choose apps and websites they want to restrict, then start focus sessions, planned pauses, or time-based limits. Family Controls, Managed Settings, and Device Activity are used only to support these user-initiated Screen Time flows.
+@@
+-CEO OS does not request this capability to inspect unrelated activity, access protected data outside the intended framework, or obtain broader device control than necessary for the product. Screen Time usage data and blocking-attempt data are not shared beyond the individual user, including through server logging, screenshots, exports, or social comparisons.
++WakeApp does not request this capability to inspect unrelated activity, access protected data outside the intended framework, or obtain broader device control than necessary for the product. Screen Time usage data and blocking-attempt data are not shared beyond the individual user, including through server logging, screenshots, exports, or social comparisons.
+*** Update File: /Users/timo/ceo_os/docs/real_device_test_plan_blocking_stack.md
+@@
+-Project: CEO OS
++Project: WakeApp
+@@
+-- CEO Mode
++- Blackout Mode
+@@
+-## 1.4 CEO Mode
++## 1.4 Blackout Mode
+@@
+-1. Start CEO Mode.
++1. Start Blackout Mode.
+@@
+-- CEO Mode activates correctly.
++- Blackout Mode activates correctly.
+@@
+-## 2.5 CEO Mode
++## 2.5 Blackout Mode
+@@
+-1. Start CEO Mode.
++1. Start Blackout Mode.
+@@
+-- CEO Mode activates correctly.
++- Blackout Mode activates correctly.
+@@
+-- The state updates without needing to reopen CEO OS.
++- The state updates without needing to reopen WakeApp.
+@@
+-- CEO Mode: PASS / FAIL
++- Blackout Mode: PASS / FAIL
+*** Update File: /Users/timo/ceo_os/docs/ceov1_feature_parity_report.md
+@@
+-| CEOMode | None (removed) | Missing | Dedicated irreversible CEO mode page/logic is not present in Flutter. |
++| CEOMode | None (removed) | Missing | Dedicated irreversible Blackout mode page/logic is not present in Flutter. |
+@@
+-1. CEO Mode parity gap
++1. Blackout Mode parity gap
+@@
+-To claim near-identical CEOV1 behavior, the major remaining work is: CEO mode parity decision and notes tag/search parity.
++To claim near-identical CEOV1 behavior, the major remaining work is: Blackout mode parity decision and notes tag/search parity.
+*** End Patch

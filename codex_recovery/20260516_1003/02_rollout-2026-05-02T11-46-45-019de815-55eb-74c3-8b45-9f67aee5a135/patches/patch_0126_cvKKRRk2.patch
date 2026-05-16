@@ -1,0 +1,202 @@
+*** Begin Patch
+*** Update File: lib/core/services/home_widget_service.dart
+@@
+-class _CeoShortcutCard extends StatelessWidget {
+-  final String title;
+-  final String? buttonLabel;
+-  final String? buttonValue;
+-  final String? presetLeft;
+-  final String? presetRight;
+-  final String footer;
+-  final Color accent;
+-  final bool large;
+-
+-  const _CeoShortcutCard._({
+-    required this.title,
+-    required this.footer,
+-    required this.accent,
+-    required this.large,
+-    this.buttonLabel,
+-    this.buttonValue,
+-    this.presetLeft,
+-    this.presetRight,
+-  });
+-
+-  factory _CeoShortcutCard.small({
+-    required String title,
+-    required String buttonLabel,
+-    required String buttonValue,
+-    required String footer,
+-    required Color accent,
+-  }) {
+-    return _CeoShortcutCard._(
+-      title: title,
+-      footer: footer,
+-      accent: accent,
+-      large: false,
+-      buttonLabel: buttonLabel,
+-      buttonValue: buttonValue,
+-    );
+-  }
+-
+-  factory _CeoShortcutCard.large({
+-    required String title,
+-    required String presetLeft,
+-    required String presetRight,
+-    required String footer,
+-    required Color accent,
+-  }) {
+-    return _CeoShortcutCard._(
+-      title: title,
+-      footer: footer,
+-      accent: accent,
+-      large: true,
+-      presetLeft: presetLeft,
+-      presetRight: presetRight,
+-    );
+-  }
+-
+-  @override
+-  Widget build(BuildContext context) {
+-    return _CeoBaseCard(
+-      headerTitle: title,
+-      headerSubtitle: '',
+-      child: large ? _buildLarge() : _buildSmall(),
+-    );
+-  }
+-
+-  Widget _buildSmall() {
+-    return Column(
+-      crossAxisAlignment: CrossAxisAlignment.start,
+-      children: [
+-        const SizedBox(height: 10),
+-        _bigButton(label: buttonLabel ?? '', value: buttonValue ?? ''),
+-        const Spacer(),
+-        Text(
+-          footer,
+-          style: AppTypography.overline.copyWith(
+-            fontSize: 11,
+-            letterSpacing: 1.8,
+-            color: AppColors.secondaryLabel.withValues(alpha: 0.7),
+-          ),
+-        ),
+-      ],
+-    );
+-  }
+-
+-  Widget _buildLarge() {
+-    return Column(
+-      crossAxisAlignment: CrossAxisAlignment.start,
+-      children: [
+-        const SizedBox(height: 8),
+-        Row(
+-          children: [
+-            Expanded(child: _presetPill(presetLeft ?? '')),
+-            const SizedBox(width: 10),
+-            Expanded(child: _presetPill(presetRight ?? '')),
+-          ],
+-        ),
+-        const Spacer(),
+-        Text(
+-          footer,
+-          style: AppTypography.subhead.copyWith(
+-            fontSize: 12,
+-            height: 1.2,
+-            color: AppColors.secondaryLabel.withValues(alpha: 0.75),
+-            fontWeight: FontWeight.w600,
+-          ),
+-        ),
+-      ],
+-    );
+-  }
+-
+-  Widget _bigButton({required String label, required String value}) {
+-    return Container(
+-      height: 64,
+-      padding: const EdgeInsets.fromLTRB(14, 14, 14, 12),
+-      decoration: BoxDecoration(
+-        borderRadius: BorderRadius.circular(18),
+-        gradient: LinearGradient(
+-          begin: Alignment.topLeft,
+-          end: Alignment.bottomRight,
+-          colors: [accent.withValues(alpha: 0.22), AppColors.cardBackgroundAlt],
+-        ),
+-        border: Border.all(color: accent.withValues(alpha: 0.45)),
+-      ),
+-      child: Row(
+-        children: [
+-          Container(
+-            width: 36,
+-            height: 36,
+-            decoration: BoxDecoration(
+-              color: accent.withValues(alpha: 0.22),
+-              borderRadius: BorderRadius.circular(14),
+-              border: Border.all(color: accent.withValues(alpha: 0.45)),
+-            ),
+-            alignment: Alignment.center,
+-            child: Icon(
+-              CupertinoIcons.play_fill,
+-              size: 16,
+-              color: accent.withValues(alpha: 0.95),
+-            ),
+-          ),
+-          const SizedBox(width: 12),
+-          Expanded(
+-            child: Column(
+-              crossAxisAlignment: CrossAxisAlignment.start,
+-              mainAxisAlignment: MainAxisAlignment.center,
+-              children: [
+-                Text(
+-                  label,
+-                  maxLines: 1,
+-                  overflow: TextOverflow.ellipsis,
+-                  style: AppTypography.callout.copyWith(
+-                    fontSize: 14,
+-                    fontWeight: FontWeight.w800,
+-                    color: AppColors.label.withValues(alpha: 0.95),
+-                    height: 1.05,
+-                  ),
+-                ),
+-                const SizedBox(height: 4),
+-                Text(
+-                  value,
+-                  maxLines: 1,
+-                  overflow: TextOverflow.ellipsis,
+-                  style: AppTypography.caption1.copyWith(
+-                    fontSize: 12,
+-                    fontWeight: FontWeight.w800,
+-                    color: AppColors.secondaryLabel.withValues(alpha: 0.78),
+-                  ),
+-                ),
+-              ],
+-            ),
+-          ),
+-        ],
+-      ),
+-    );
+-  }
+-
+-  Widget _presetPill(String text) {
+-    return Container(
+-      height: 56,
+-      alignment: Alignment.center,
+-      decoration: BoxDecoration(
+-        borderRadius: BorderRadius.circular(18),
+-        color: AppColors.cardBackgroundAlt,
+-        border: Border.all(color: AppColors.pillBorder),
+-      ),
+-      child: Text(
+-        text,
+-        style: AppTypography.title3.copyWith(
+-          fontSize: 20,
+-          fontWeight: FontWeight.w800,
+-          color: accent.withValues(alpha: 0.95),
+-          height: 1,
+-        ),
+-      ),
+-    );
+-  }
+-}
+-
+ class _CeoBaseCard extends StatelessWidget {
+*** End Patch

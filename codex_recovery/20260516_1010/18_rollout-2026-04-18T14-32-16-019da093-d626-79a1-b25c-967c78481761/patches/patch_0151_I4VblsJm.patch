@@ -1,0 +1,15 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/habits/habits_screen.dart
+@@
+   _GoalMeta _objectiveMeta(Objective objective) {
++    final language = context.read<LanguageProvider>();
+     final raw = objective.title?.trim() ?? '';
+     if (raw.isEmpty) {
+-      return const _GoalMeta(name: 'UNTITLED_GOAL');
++      return _GoalMeta(name: language.t('untitled_goal'));
+@@
+     final name = parts.first.trim().isEmpty
+-        ? 'UNTITLED_GOAL'
++        ? language.t('untitled_goal')
+         : parts.first.trim();
+*** End Patch

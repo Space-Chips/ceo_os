@@ -1,0 +1,30 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/repositories/feature_repository.dart
+@@
+   Future<void> updateRestPeriodActive(String id, bool active) async {
+     await _client
+         .from('rest_periods')
+         .update({'active': active})
+         .eq('id', id)
+         .eq('created_by', _currentUserId);
+   }
++
++  Future<void> updateRestPeriod({
++    required String id,
++    DateTime? startTime,
++    DateTime? endTime,
++    bool? active,
++  }) async {
++    final payload = <String, dynamic>{};
++    if (startTime != null) payload['start_time'] = startTime.toIso8601String();
++    if (endTime != null) payload['end_time'] = endTime.toIso8601String();
++    if (active != null) payload['active'] = active;
++    if (payload.isEmpty) return;
++
++    await _client
++        .from('rest_periods')
++        .update(payload)
++        .eq('id', id)
++        .eq('created_by', _currentUserId);
++  }
+*** End Patch

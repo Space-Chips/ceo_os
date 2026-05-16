@@ -1,0 +1,81 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/setup/setup_flow_screen.dart
+@@
+       case SetupStep.welcome:
+         return _WelcomeStep(onContinue: controller.advance);
+-      case SetupStep.usageAccess:
+-        _maybeAutoAdvance(controller, step, controller.usageGranted);
+-        return _PermissionStep(
+-          stepIndex: 1,
+-          title: 'See app activity clearly',
+-          subtitle:
+-              'Usage access lets Screen Time read which apps are active so daily limits and focus rules stay accurate.',
+-          instructions: const [
+-            'Tap “Open settings”.',
+-            'Find Screen Time in the list.',
+-            'Enable usage access.',
+-            'Return to Screen Time.',
+-          ],
+-          isGranted: controller.usageGranted,
+-          showSuccess: _showStepSuccess,
+-          onOpenSettings: controller.openUsageAccessSettings,
+-          onContinue: controller.advance,
+-        );
+       case SetupStep.accessibility:
+         _maybeAutoAdvance(controller, step, controller.accessibilityGranted);
+         return _PermissionStep(
+-          stepIndex: 2,
+-          title: 'Block apps without delay',
+-          subtitle:
+-              'Accessibility lets Screen Time detect the foreground app so blocking can happen instantly.',
++          stepIndex: 1,
++          title: 'Enable instant blocking',
++          subtitle:
++              'Accessibility lets Screen Time react the moment an app opens, so blocks feel immediate.',
+           reassurance:
+-              'Screen Time does not read your messages or capture your screen. It only uses this access to enforce focus protections on-device.',
++              'Screen Time never reads your messages or captures your screen. It only detects which app is active to enforce your focus rules on‑device.',
+           instructions: const [
+             'Tap “Open settings”.',
+             'Choose Screen Time under Installed services.',
+             'Turn the service on and confirm.',
+             'Return to Screen Time.',
+           ],
+           isGranted: controller.accessibilityGranted,
+           showSuccess: _showStepSuccess,
+           onOpenSettings: controller.openAccessibilitySettings,
+           onContinue: controller.advance,
+         );
++      case SetupStep.usageAccess:
++        _maybeAutoAdvance(controller, step, controller.usageGranted);
++        return _PermissionStep(
++          stepIndex: 2,
++          title: 'Track usage accurately',
++          subtitle:
++              'Usage access keeps your limits, reports, and focus sessions accurate in the background.',
++          instructions: const [
++            'Tap “Open settings”.',
++            'Find Screen Time in the list.',
++            'Enable usage access.',
++            'Return to Screen Time.',
++          ],
++          isGranted: controller.usageGranted,
++          showSuccess: _showStepSuccess,
++          onOpenSettings: controller.openUsageAccessSettings,
++          onContinue: controller.advance,
++        );
+       case SetupStep.overlay:
+         _maybeAutoAdvance(controller, step, controller.overlayGranted);
+         return _PermissionStep(
+           stepIndex: 3,
+-          title: 'Show the block screen instantly',
+-          subtitle:
+-              'Overlay permission lets Screen Time display the block screen the moment a blocked app is opened.',
++          title: 'Show the block screen',
++          subtitle:
++              'Overlay permission lets Screen Time display the block screen on top of blocked apps.',
+           instructions: const [
+             'Tap “Open settings”.',
+             'Find Screen Time in the list.',
+             'Enable “Display over other apps”.',
+*** End Patch

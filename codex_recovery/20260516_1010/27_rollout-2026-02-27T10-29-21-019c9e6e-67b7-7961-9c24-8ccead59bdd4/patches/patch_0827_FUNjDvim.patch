@@ -1,0 +1,911 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/auth/onboarding_screen.dart
+@@
+ class _OnboardingPrimaryButton extends StatelessWidget {
+   final String label;
+   final VoidCallback onTap;
+@@
+   Widget build(BuildContext context) {
++    final buttonSurface = Color.alphaBlend(
++      AppColors.accent.withValues(alpha: AppColors.isDark ? 0.16 : 0.1),
++      AppColors.cardBackgroundStrong,
++    );
+     return _OnboardingPressScale(
+       onTap: onTap,
+       child: Container(
+-        height: 56,
++        height: 58,
+         width: double.infinity,
+         decoration: BoxDecoration(
+-          gradient: LinearGradient(
+-            begin: Alignment.centerLeft,
+-            end: Alignment.centerRight,
+-            colors: AppColors.buttonGradient,
+-          ),
+-          borderRadius: BorderRadius.circular(18),
++          color: buttonSurface,
++          borderRadius: BorderRadius.circular(20),
++          border: Border.all(
++            color: AppColors.activeBorder.withValues(
++              alpha: AppColors.isDark ? 0.42 : 0.32,
++            ),
++            width: 0.9,
++          ),
+           boxShadow: [
+             BoxShadow(
+-              color: AppColors.themeGlow.withValues(alpha: 0.25),
+-              blurRadius: 20,
+-              offset: const Offset(0, 6),
++              color: AppColors.glassShadowSoft.withValues(
++                alpha: AppColors.isDark ? 0.22 : 0.14,
++              ),
++              blurRadius: AppColors.isDark ? 18 : 12,
++              offset: const Offset(0, 8),
+             ),
+           ],
+         ),
+         child: Center(
+           child: Text(
+             label,
+-            style: AppTypography.body.copyWith(
++            style: AppTypography.headline.copyWith(
+               fontSize: 16,
+               fontWeight: FontWeight.w600,
+-              color: AppColors.onAccent,
++              color: AppColors.label,
++              letterSpacing: -0.12,
+             ),
+           ),
+         ),
+@@
+   Widget build(BuildContext context) {
+     final selectedTheme = ThemeCatalog.resolveById(selectedThemePresetId);
+     return ListView(
+       children: [
+-        Column(
+-          children: [
+-            Container(
+-              width: 110,
+-              height: 110,
+-              decoration: BoxDecoration(
+-                gradient: LinearGradient(
+-                  begin: Alignment.topCenter,
+-                  end: Alignment.bottomCenter,
+-                  colors: [
+-                    AppColors.cardBackgroundAlt,
+-                    AppColors.cardBackgroundStrong,
+-                  ],
+-                ),
+-                borderRadius: BorderRadius.circular(28),
+-                border: Border.all(
+-                  color: AppColors.white.withValues(alpha: 0.08),
+-                  width: 1,
+-                ),
+-                boxShadow: [
+-                  BoxShadow(
+-                    color: AppColors.black.withValues(alpha: 0.45),
+-                    blurRadius: 30,
+-                    offset: const Offset(0, 12),
+-                  ),
+-                  BoxShadow(
+-                    color: AppColors.accent.withValues(alpha: 0.10),
+-                    blurRadius: 20,
+-                    spreadRadius: -4,
+-                  ),
+-                ],
+-              ),
+-              alignment: Alignment.center,
+-              child: Icon(
+-                CupertinoIcons.check_mark_circled_solid,
+-                size: 38,
+-                color: AppColors.accent,
+-                shadows: [
+-                  Shadow(
+-                    color: AppColors.themeGlow.withValues(alpha: 0.35),
+-                    blurRadius: 10,
+-                  ),
+-                ],
+-              ),
+-            ),
+-            const SizedBox(height: 28),
+-            ConstrainedBox(
+-              constraints: const BoxConstraints(maxWidth: 300),
+-              child: Text(
+-                'Quick setup',
+-                textAlign: TextAlign.center,
+-                style: AppTypography.body.copyWith(
+-                  fontSize: 36,
+-                  fontWeight: FontWeight.w700,
+-                  letterSpacing: 0.4,
+-                  height: 1.15,
+-                ),
+-              ),
+-            ),
+-            const SizedBox(height: 16),
+-            ConstrainedBox(
+-              constraints: const BoxConstraints(maxWidth: 280),
+-              child: Text(
+-                'Define your operating profile before entering the app.',
+-                textAlign: TextAlign.center,
+-                style: AppTypography.body.copyWith(
+-                  fontSize: 15,
+-                  color: AppColors.secondaryLabel.withValues(alpha: 0.7),
+-                  height: 1.5,
+-                ),
+-              ),
+-            ),
+-          ],
++        const SizedBox(height: 8),
++        Column(
++          children: [
++            Icon(
++              CupertinoIcons.square_grid_2x2_fill,
++              size: 34,
++              color: AppColors.secondaryLabel.withValues(alpha: 0.88),
++            ),
++            const SizedBox(height: 24),
++            ConstrainedBox(
++              constraints: const BoxConstraints(maxWidth: 320),
++              child: Text(
++                'Initialize your system',
++                textAlign: TextAlign.center,
++                style: AppTypography.largeTitle.copyWith(
++                  fontSize: 35,
++                  fontWeight: FontWeight.w700,
++                  letterSpacing: -1.0,
++                  height: 1.08,
++                ),
++              ),
++            ),
++            const SizedBox(height: 12),
++            ConstrainedBox(
++              constraints: const BoxConstraints(maxWidth: 300),
++              child: Text(
++                'Define how you operate before entering the system',
++                textAlign: TextAlign.center,
++                style: AppTypography.body.copyWith(
++                  fontSize: 15,
++                  color: AppColors.secondaryLabel.withValues(alpha: 0.76),
++                  height: 1.42,
++                ),
++              ),
++            ),
++          ],
+         ),
+-        const SizedBox(height: 24),
+-        Text(
+-          'CONFIGURATION',
+-          style: AppTypography.body.copyWith(
+-            fontSize: 12,
+-            color: AppColors.secondaryLabel.withValues(alpha: 0.6),
+-            fontWeight: FontWeight.w600,
+-            letterSpacing: 1.5,
+-          ),
+-        ),
+-        const SizedBox(height: 8),
+-        const SizedBox(height: 16),
+-        _QBlock(
+-          label: 'Primary goal',
+-          value: goal,
+-          options: const ['Execution', 'Consistency', 'Focus', 'Planning'],
+-          onChanged: onGoal,
++        const SizedBox(height: 32),
++        _SetupSection(
++          title: 'Primary Orientation',
++          child: _SegmentedSetupControl(
++            value: goal,
++            options: const ['Execution', 'Consistency', 'Focus', 'Planning'],
++            onChanged: onGoal,
++          ),
+         ),
+-        const SizedBox(height: 10),
+-        _QBlock(
+-          label: 'Current discipline',
+-          value: discipline,
+-          options: const ['Beginner', 'Intermediate', 'Advanced'],
+-          onChanged: onDiscipline,
++        const SizedBox(height: 26),
++        _SetupSection(
++          title: 'Current Level',
++          child: _SegmentedSetupControl(
++            value: discipline,
++            options: const ['Beginner', 'Intermediate', 'Advanced'],
++            onChanged: onDiscipline,
++          ),
+         ),
+-        const SizedBox(height: 10),
+-        _QBlock(
+-          label: 'Main focus challenge',
+-          value: focusChallenge,
+-          options: const [
+-            'Distractions',
+-            'Overload',
+-            'Inconsistency',
+-            'Planning',
+-          ],
+-          onChanged: onFocusChallenge,
++        const SizedBox(height: 26),
++        _SetupSection(
++          title: 'Main Constraint',
++          child: _SegmentedSetupControl(
++            value: focusChallenge,
++            options: const ['Distractions', 'Overload', 'Inconsistency'],
++            onChanged: onFocusChallenge,
++          ),
+         ),
+-        const SizedBox(height: 10),
+-        _ThemeSelectorBlock(
+-          selectedThemePresetId: selectedThemePresetId,
+-          onThemeSelected: onThemeSelected,
++        const SizedBox(height: 26),
++        _SetupSection(
++          title: 'System Theme',
++          subtitle: 'Defines the visual environment of your system',
++          child: _ThemeSelectorBlock(
++            selectedThemePresetId: selectedThemePresetId,
++            onThemeSelected: onThemeSelected,
++          ),
+         ),
+-        const SizedBox(height: 10),
+-        GlassCard(
+-          padding: const EdgeInsets.all(12),
+-          borderRadius: 14,
+-          border: Border.all(
+-            color: AppColors.primaryOrange.withValues(alpha: 0.18),
+-            width: 0.55,
+-          ),
++        const SizedBox(height: 26),
++        _SetupSection(
++          title: 'System Profile',
+           child: Column(
+             crossAxisAlignment: CrossAxisAlignment.start,
+             children: [
+-              Text(
+-                'OPERATING_PROFILE'.toUpperCase(),
+-                style: AppTypography.mono.copyWith(
+-                  fontSize: 9,
+-                  color: AppColors.tertiaryLabel,
+-                  letterSpacing: 1.1,
+-                ),
+-              ),
+-              const SizedBox(height: 8),
+-              _summaryRow('GOAL', goal.toUpperCase()),
+-              const SizedBox(height: 4),
+-              _summaryRow('DISCIPLINE', discipline.toUpperCase()),
+-              const SizedBox(height: 4),
+-              _summaryRow('FOCUS', focusChallenge.toUpperCase()),
+-              const SizedBox(height: 4),
+-              _summaryRow('THEME', selectedTheme.name.toUpperCase()),
++              _summaryRow('Orientation', goal),
++              const SizedBox(height: 10),
++              _summaryRow('Level', discipline),
++              const SizedBox(height: 10),
++              _summaryRow('Constraint', focusChallenge),
++              const SizedBox(height: 10),
++              _summaryRow('Theme', selectedTheme.name),
+             ],
+           ),
+         ),
++        const SizedBox(height: 12),
+       ],
+     );
+   }
+ 
+   Widget _summaryRow(String label, String value) {
+     return Row(
+       children: [
+         SizedBox(
+-          width: 72,
++          width: 92,
+           child: Text(
+             label,
+-            style: AppTypography.mono.copyWith(
+-              fontSize: 9,
+-              color: AppColors.tertiaryLabel,
++            style: AppTypography.footnote.copyWith(
++              fontSize: 12,
++              color: AppColors.secondaryLabel.withValues(alpha: 0.74),
++              fontWeight: FontWeight.w500,
+             ),
+           ),
+         ),
+         Expanded(
+           child: Text(
+             value,
+             maxLines: 1,
+             overflow: TextOverflow.ellipsis,
+-            style: AppTypography.mono.copyWith(
+-              fontSize: 10,
+-              color: AppColors.secondaryLabel,
+-              fontWeight: FontWeight.bold,
++            style: AppTypography.callout.copyWith(
++              fontSize: 14,
++              color: AppColors.label,
++              fontWeight: FontWeight.w600,
+             ),
+           ),
+         ),
+@@
+ class _ThemeSelectorBlock extends StatelessWidget {
+@@
+   @override
+   Widget build(BuildContext context) {
+-    final currentThemeId = context.watch<ThemeProvider>().currentPreset.id;
+-    final darkPresets = ThemeCatalog.presets.where((p) => p.isDark).toList();
+-    final lightPresets = ThemeCatalog.presets.where((p) => !p.isDark).toList();
+-
+-    return GlassCard(
+-      padding: const EdgeInsets.all(12),
+-      borderRadius: 14,
+-      child: Column(
+-        crossAxisAlignment: CrossAxisAlignment.start,
+-        children: [
+-          Text(
+-            'Visual theme'.toUpperCase(),
+-            style: AppTypography.mono.copyWith(
+-              fontSize: 9,
+-              color: AppColors.tertiaryLabel,
+-            ),
+-          ),
+-          const SizedBox(height: 8),
+-          Text(
+-            'Pick a color and type system. Preview updates instantly.',
+-            style: AppTypography.mono.copyWith(
+-              fontSize: 10,
+-              color: AppColors.secondaryLabel,
+-            ),
+-          ),
+-          const SizedBox(height: 10),
+-          Text(
+-            'DARK',
+-            style: AppTypography.mono.copyWith(
+-              fontSize: 9,
+-              color: AppColors.tertiaryLabel,
+-              letterSpacing: 1.2,
+-            ),
+-          ),
+-          const SizedBox(height: 8),
+-          SizedBox(
+-            height: 138,
+-            child: ListView.separated(
+-              scrollDirection: Axis.horizontal,
+-              itemCount: darkPresets.length,
+-              separatorBuilder: (_, __) => const SizedBox(width: 10),
+-              itemBuilder: (_, i) {
+-                final preset = darkPresets[i];
+-                return _ThemePreviewCard(
+-                  preset: preset,
+-                  selected: selectedThemePresetId == preset.id,
+-                  isCurrentTheme: currentThemeId == preset.id,
+-                  onTap: () => onThemeSelected(preset.id),
+-                );
+-              },
+-            ),
+-          ),
+-          const SizedBox(height: 10),
+-          Text(
+-            'LIGHT',
+-            style: AppTypography.mono.copyWith(
+-              fontSize: 9,
+-              color: AppColors.tertiaryLabel,
+-              letterSpacing: 1.2,
+-            ),
+-          ),
+-          const SizedBox(height: 8),
+-          SizedBox(
+-            height: 138,
+-            child: ListView.separated(
+-              scrollDirection: Axis.horizontal,
+-              itemCount: lightPresets.length,
+-              separatorBuilder: (_, __) => const SizedBox(width: 10),
+-              itemBuilder: (_, i) {
+-                final preset = lightPresets[i];
+-                return _ThemePreviewCard(
+-                  preset: preset,
+-                  selected: selectedThemePresetId == preset.id,
+-                  isCurrentTheme: currentThemeId == preset.id,
+-                  onTap: () => onThemeSelected(preset.id),
+-                );
+-              },
+-            ),
+-          ),
+-        ],
++    final presets = ThemeCatalog.presets.toList(growable: false);
++
++    return GridView.builder(
++      shrinkWrap: true,
++      physics: const NeverScrollableScrollPhysics(),
++      itemCount: presets.length,
++      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
++        crossAxisCount: 2,
++        crossAxisSpacing: 12,
++        mainAxisSpacing: 12,
++        childAspectRatio: 1.16,
+       ),
++      itemBuilder: (_, i) {
++        final preset = presets[i];
++        return _ThemePreviewCard(
++          preset: preset,
++          selected: selectedThemePresetId == preset.id,
++          onTap: () => onThemeSelected(preset.id),
++        );
++      },
+     );
+   }
+ }
+ 
+ class _ThemePreviewCard extends StatelessWidget {
+   final AppThemePreset preset;
+   final bool selected;
+-  final bool isCurrentTheme;
+   final VoidCallback onTap;
+ 
+   const _ThemePreviewCard({
+     required this.preset,
+     required this.selected,
+-    required this.isCurrentTheme,
+     required this.onTap,
+   });
+ 
+   @override
+   Widget build(BuildContext context) {
+     final palette = preset.palette;
+     final semantic = preset.semantic;
+-    final borderColor = selected ? palette.accent : semantic.cardBorder;
+-    final titleStyle = _previewTitleStyle(
+-      preset.typography,
+-    ).copyWith(color: semantic.primaryText);
+-    final subtitleStyle = _previewBodyStyle(
+-      preset.typography,
+-    ).copyWith(color: semantic.secondaryText, fontSize: 9);
+-
+-    return GestureDetector(
++    final previewBackground = Color.alphaBlend(
++      semantic.cardBorder.withValues(alpha: preset.isDark ? 0.14 : 0.08),
++      semantic.cardBackgroundAlt,
++    );
++    return _OnboardingPressScale(
+       onTap: onTap,
+-      child: AnimatedContainer(
+-        duration: const Duration(milliseconds: 180),
+-        width: 160,
+-        padding: const EdgeInsets.all(10),
++      child: AnimatedContainer(
++        duration: const Duration(milliseconds: 180),
++        curve: Curves.easeOutCubic,
++        padding: const EdgeInsets.all(12),
+         decoration: BoxDecoration(
+-          color: semantic.sectionBackground,
+-          borderRadius: BorderRadius.circular(12),
++          color: semantic.cardBackground,
++          borderRadius: BorderRadius.circular(16),
+           border: Border.all(
+-            color: borderColor.withValues(alpha: selected ? 1 : 0.6),
+-            width: selected ? 1.4 : 0.8,
++            color: selected
++                ? semantic.accentBorder
++                : semantic.cardBorder.withValues(alpha: 0.8),
++            width: selected ? 1.1 : 0.75,
+           ),
+           boxShadow: [
+             if (selected)
+               BoxShadow(
+-                color: palette.accent.withValues(alpha: 0.18),
+-                blurRadius: 16,
+-                spreadRadius: 1,
++                color: semantic.accentGlow.withValues(
++                  alpha: preset.isDark ? 0.12 : 0.08,
++                ),
++                blurRadius: 18,
++                offset: const Offset(0, 8),
+               ),
+           ],
+         ),
+         child: Column(
+           crossAxisAlignment: CrossAxisAlignment.start,
+           children: [
+             Row(
+               children: [
+                 Expanded(
+                   child: Text(
+-                    preset.name.toUpperCase(),
++                    preset.name,
+                     maxLines: 1,
+                     overflow: TextOverflow.ellipsis,
+-                    style: subtitleStyle.copyWith(
+-                      fontSize: 8,
+-                      color: semantic.tertiaryText,
+-                      letterSpacing: 1.2,
++                    style: AppTypography.footnote.copyWith(
++                      fontSize: 12,
++                      color: semantic.primaryText,
++                      fontWeight: FontWeight.w600,
+                     ),
+                   ),
+                 ),
+-                if (isCurrentTheme)
++                if (selected)
+                   Container(
+-                    padding: const EdgeInsets.symmetric(
+-                      horizontal: 5,
+-                      vertical: 2,
+-                    ),
++                    width: 8,
++                    height: 8,
+                     decoration: BoxDecoration(
+-                      color: semantic.accentSurfaceSoft,
+-                      borderRadius: BorderRadius.circular(6),
+-                      border: Border.all(
+-                        color: semantic.accentBorder,
+-                        width: 0.5,
+-                      ),
++                      color: palette.accent,
++                      shape: BoxShape.circle,
+                     ),
+-                    child: Text(
+-                      'CURRENT',
+-                      style: subtitleStyle.copyWith(
+-                        fontSize: 7,
+-                        color: palette.accent,
+-                        fontWeight: FontWeight.w700,
+-                        letterSpacing: 0.6,
+-                      ),
+-                    ),
+                   ),
+               ],
+             ),
+-            const SizedBox(height: 8),
++            const SizedBox(height: 10),
+             Container(
+               width: double.infinity,
+-              height: 56,
+-              padding: const EdgeInsets.all(8),
++              height: 72,
++              padding: const EdgeInsets.all(10),
+               decoration: BoxDecoration(
+-                gradient: LinearGradient(
+-                  begin: Alignment.topLeft,
+-                  end: Alignment.bottomRight,
+-                  colors: [
+-                    semantic.dashboardGradientStart,
+-                    semantic.dashboardGradientEnd,
+-                  ],
+-                ),
+-                color: semantic.cardBackground,
+-                borderRadius: BorderRadius.circular(8),
+-                border: Border.all(color: semantic.cardBorder, width: 0.5),
++                color: previewBackground,
++                borderRadius: BorderRadius.circular(12),
++                border: Border.all(color: semantic.cardBorder, width: 0.5),
+               ),
+               child: Column(
+                 crossAxisAlignment: CrossAxisAlignment.start,
+                 children: [
+-                  Text('CEO OS', style: titleStyle.copyWith(fontSize: 12)),
+-                  const Spacer(),
+                   Row(
+                     children: [
+                       Container(
+-                        width: 18,
+-                        height: 4,
++                        width: 26,
++                        height: 6,
+                         decoration: BoxDecoration(
+-                          color: palette.accent,
+-                          borderRadius: BorderRadius.circular(3),
++                          color: semantic.primaryText.withValues(alpha: 0.92),
++                          borderRadius: BorderRadius.circular(4),
+                         ),
+                       ),
+-                      const SizedBox(width: 4),
++                      const SizedBox(width: 6),
+                       Container(
+-                        width: 12,
+-                        height: 4,
++                        width: 16,
++                        height: 6,
+                         decoration: BoxDecoration(
+-                          color: semantic.cardBorder,
+-                          borderRadius: BorderRadius.circular(3),
++                          color: semantic.tertiaryText.withValues(alpha: 0.55),
++                          borderRadius: BorderRadius.circular(4),
+                         ),
+                       ),
+                     ],
+                   ),
++                  const Spacer(),
++                  Container(
++                    width: 34,
++                    height: 20,
++                    decoration: BoxDecoration(
++                      color: semantic.accentSurfaceSoft,
++                      borderRadius: BorderRadius.circular(8),
++                      border: Border.all(
++                        color: selected
++                            ? semantic.accentBorder
++                            : semantic.cardBorder.withValues(alpha: 0.75),
++                        width: 0.55,
++                      ),
++                    ),
++                  ),
+                 ],
+               ),
+             ),
+-            const SizedBox(height: 8),
++            const SizedBox(height: 8),
+             Text(
+               preset.subtitle,
+               maxLines: 1,
+               overflow: TextOverflow.ellipsis,
+-              style: subtitleStyle,
++              style: AppTypography.caption1.copyWith(
++                fontSize: 10,
++                color: semantic.secondaryText,
++              ),
+             ),
+           ],
+         ),
+       ),
+     );
+   }
+-
+-  TextStyle _previewTitleStyle(AppTypographyProfile profile) {
+-    switch (profile) {
+-      case AppTypographyProfile.technical:
+-        return AppTypography.title3.copyWith(fontWeight: FontWeight.w700);
+-      case AppTypographyProfile.editorial:
+-        return AppTypography.title2.copyWith(fontWeight: FontWeight.w600);
+-      case AppTypographyProfile.neo:
+-        return AppTypography.title3.copyWith(fontWeight: FontWeight.w700);
+-    }
+-  }
+-
+-  TextStyle _previewBodyStyle(AppTypographyProfile profile) {
+-    switch (profile) {
+-      case AppTypographyProfile.technical:
+-        return AppTypography.caption1;
+-      case AppTypographyProfile.editorial:
+-        return AppTypography.footnote;
+-      case AppTypographyProfile.neo:
+-        return AppTypography.caption1;
+-    }
+-  }
+ }
+ 
+-class _QBlock extends StatelessWidget {
+-  final String label;
++class _SetupSection extends StatelessWidget {
++  final String title;
++  final String? subtitle;
++  final Widget child;
++
++  const _SetupSection({
++    required this.title,
++    this.subtitle,
++    required this.child,
++  });
++
++  @override
++  Widget build(BuildContext context) {
++    return GlassCard(
++      padding: const EdgeInsets.all(16),
++      borderRadius: 18,
++      child: Column(
++        crossAxisAlignment: CrossAxisAlignment.start,
++        children: [
++          Text(
++            title,
++            style: AppTypography.title3.copyWith(
++              fontSize: 18,
++              fontWeight: FontWeight.w600,
++              color: AppColors.label,
++            ),
++          ),
++          if (subtitle != null) ...[
++            const SizedBox(height: 4),
++            Text(
++              subtitle!,
++              style: AppTypography.footnote.copyWith(
++                fontSize: 12,
++                color: AppColors.secondaryLabel.withValues(alpha: 0.74),
++              ),
++            ),
++          ],
++          const SizedBox(height: 14),
++          child,
++        ],
++      ),
++    );
++  }
++}
++
++class _SegmentedSetupControl extends StatelessWidget {
+   final String value;
+   final List<String> options;
+   final ValueChanged<String> onChanged;
+ 
+-  const _QBlock({
+-    required this.label,
++  const _SegmentedSetupControl({
+     required this.value,
+     required this.options,
+     required this.onChanged,
+   });
+ 
+   @override
+   Widget build(BuildContext context) {
+-    return GlassCard(
+-      padding: const EdgeInsets.all(12),
+-      borderRadius: 14,
+-      child: Column(
+-        crossAxisAlignment: CrossAxisAlignment.start,
+-        children: [
+-          Text(
+-            label.toUpperCase(),
+-            style: AppTypography.mono.copyWith(
+-              fontSize: 9,
+-              color: AppColors.tertiaryLabel,
+-            ),
+-          ),
+-          const SizedBox(height: 8),
+-          Wrap(
+-            spacing: 8,
+-            runSpacing: 8,
+-            children: options
+-                .map(
+-                  (option) => GestureDetector(
+-                    onTap: () => onChanged(option),
+-                    child: Container(
+-                      padding: const EdgeInsets.symmetric(
+-                        horizontal: 10,
+-                        vertical: 6,
+-                      ),
+-                      decoration: BoxDecoration(
+-                        color: value == option
+-                            ? AppColors.primaryOrange.withValues(alpha: 0.18)
+-                            : AppColors.backgroundLight.withValues(alpha: 0.7),
+-                        borderRadius: BorderRadius.circular(10),
+-                        border: Border.all(
+-                          color: value == option
+-                              ? AppColors.primaryOrange.withValues(alpha: 0.35)
+-                              : AppColors.glassBorder,
+-                          width: 0.5,
+-                        ),
+-                      ),
+-                      child: Text(
+-                        option.toUpperCase(),
+-                        style: AppTypography.mono.copyWith(
+-                          fontSize: 10,
+-                          color: value == option
+-                              ? AppColors.primaryOrange
+-                              : AppColors.secondaryLabel,
+-                        ),
+-                      ),
+-                    ),
+-                  ),
+-                )
+-                .toList(),
+-          ),
+-        ],
++    return LayoutBuilder(
++      builder: (context, constraints) {
++        final spacing = 10.0;
++        final fullWidth = constraints.maxWidth;
++        final halfWidth = (fullWidth - spacing) / 2;
++        final tiles = <Widget>[];
++
++        for (var i = 0; i < options.length; i += 2) {
++          final first = options[i];
++          final second = i + 1 < options.length ? options[i + 1] : null;
++          if (second == null) {
++            tiles.add(_SegmentOptionTile(
++              option: first,
++              selected: value == first,
++              width: fullWidth,
++              onTap: () => onChanged(first),
++            ));
++          } else {
++            tiles.add(
++              Row(
++                children: [
++                  _SegmentOptionTile(
++                    option: first,
++                    selected: value == first,
++                    width: halfWidth,
++                    onTap: () => onChanged(first),
++                  ),
++                  SizedBox(width: spacing),
++                  _SegmentOptionTile(
++                    option: second,
++                    selected: value == second,
++                    width: halfWidth,
++                    onTap: () => onChanged(second),
++                  ),
++                ],
++              ),
++            );
++          }
++        }
++
++        return Column(
++          children: [
++            for (var i = 0; i < tiles.length; i++) ...[
++              if (i > 0) const SizedBox(height: 10),
++              tiles[i],
++            ],
++          ],
++        );
++      },
++    );
++  }
++}
++
++class _SegmentOptionTile extends StatelessWidget {
++  final String option;
++  final bool selected;
++  final double width;
++  final VoidCallback onTap;
++
++  const _SegmentOptionTile({
++    required this.option,
++    required this.selected,
++    required this.width,
++    required this.onTap,
++  });
++
++  @override
++  Widget build(BuildContext context) {
++    final surface = selected
++        ? Color.alphaBlend(
++            AppColors.accent.withValues(alpha: AppColors.isDark ? 0.12 : 0.08),
++            AppColors.cardBackgroundStrong,
++          )
++        : AppColors.cardBackgroundAlt;
++
++    return _OnboardingPressScale(
++      onTap: onTap,
++      child: AnimatedContainer(
++        duration: const Duration(milliseconds: 160),
++        curve: Curves.easeOutCubic,
++        width: width,
++        height: 48,
++        decoration: BoxDecoration(
++          color: surface,
++          borderRadius: BorderRadius.circular(14),
++          border: Border.all(
++            color: selected
++                ? AppColors.activeBorder.withValues(
++                    alpha: AppColors.isDark ? 0.44 : 0.34,
++                  )
++                : AppColors.borderStrong.withValues(alpha: 0.78),
++            width: selected ? 1.0 : 0.8,
++          ),
++          boxShadow: selected
++              ? [
++                  BoxShadow(
++                    color: AppColors.glassShadowSoft.withValues(
++                      alpha: AppColors.isDark ? 0.2 : 0.11,
++                    ),
++                    blurRadius: 12,
++                    offset: const Offset(0, 6),
++                  ),
++                ]
++              : null,
++        ),
++        padding: const EdgeInsets.symmetric(horizontal: 14),
++        alignment: Alignment.center,
++        child: Text(
++          option,
++          maxLines: 1,
++          overflow: TextOverflow.ellipsis,
++          style: AppTypography.callout.copyWith(
++            fontSize: 14,
++            fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
++            color: selected ? AppColors.label : AppColors.secondaryLabel,
++          ),
++        ),
+       ),
+     );
+   }
+ }
+*** End Patch

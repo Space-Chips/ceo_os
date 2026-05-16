@@ -1,0 +1,203 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/android/app/src/main/kotlin/com/wakeapp/ceoos/BlockingAccessibilityService.kt
+@@
+ import android.content.SharedPreferences
+ import android.os.Handler
+ import android.os.Looper
+ import android.os.Process
+ import android.provider.Settings
+ import android.os.SystemClock
+ import android.util.Log
+-import android.view.accessibility.AccessibilityNodeInfo
+ import android.view.accessibility.AccessibilityEvent
+@@
+     @Volatile
+     private var lastUsageFallbackAtElapsed: Long = 0L
+-
+-    @Volatile
+-    private var browserExitGracePackage: String? = null
+-
+-    @Volatile
+-    private var browserExitGraceDomain: String? = null
+-
+-    @Volatile
+-    private var browserExitGraceUntilElapsed: Long = 0L
+@@
+         serviceScope.cancel()
+         gateLauncher.dismiss(this)
+         mainHandler.removeCallbacksAndMessages(null)
+-        browserExitGracePackage = null
+-        browserExitGraceDomain = null
+-        browserExitGraceUntilElapsed = 0L
+         shield?.hide()
+         shield = null
+@@
+-        val effectiveDecision = when (decision) {
+-            is BlockDecision.BlockUrl ->
+-                if (shouldIgnoreDuringBrowserExitGrace(decision, snapshot, startedAtElapsed)) {
+-                    BlockDecision.IgnoreTransient
+-                } else {
+-                    decision
+-                }
+-            else -> decision
+-        }
++        val effectiveDecision = decision
+@@
+         val isWebBlock = blockType.equals("url", ignoreCase = true)
+         val browserPkg = browserPackage?.trim().orEmpty()
+         if (!isWebBlock || browserPkg.isEmpty()) {
+             performGlobalAction(GLOBAL_ACTION_HOME)
+             return
+         }
+-
+-        armBrowserExitGrace(browserPkg, blockedDomain)
+-        mainHandler.postDelayed(
+-            {
+-                if (!attemptCloseBlockedBrowserSurface(browserPkg)) {
+-                    Log.d("WakeBlocking", "browser_exit_step=1 action=fallback_back pkg=$browserPkg")
+-                    performGlobalAction(GLOBAL_ACTION_BACK)
+-                }
+-            },
+-            40L,
+-        )
+-        mainHandler.postDelayed(
+-            {
+-                if (!attemptCloseBlockedBrowserSurface(browserPkg)) {
+-                    Log.d("WakeBlocking", "browser_exit_step=2 action=fallback_back pkg=$browserPkg")
+-                    performGlobalAction(GLOBAL_ACTION_BACK)
+-                }
+-            },
+-            170L,
+-        )
++        // Closing browser tabs deterministically is not reliable across OEM/browser UIs.
++        // We keep a predictable behavior: leave browser context and return to launcher.
+         mainHandler.postDelayed(
+             {
+                 performGlobalAction(GLOBAL_ACTION_HOME)
+             },
+-            330L,
++            80L,
+         )
+         mainHandler.postDelayed(
+             {
+                 performGlobalAction(GLOBAL_ACTION_HOME)
+             },
+-            520L,
++            240L,
+         )
+     }
+-
+-    private fun attemptCloseBlockedBrowserSurface(browserPackage: String): Boolean {
+-        val root = rootInActiveWindow ?: return false
+-        val rootPkg = root.packageName?.toString()?.trim().orEmpty()
+-        if (rootPkg.isEmpty()) return false
+-
+-        val knownBrowserPkgs = linkedSetOf(
+-            browserPackage,
+-            "com.android.chrome",
+-            "com.brave.browser",
+-        )
+-        if (rootPkg !in knownBrowserPkgs && rootPkg != "com.google.android.googlequicksearchbox") {
+-            return false
+-        }
+-
+-        val candidateViewIds = mutableListOf<String>()
+-        for (pkg in knownBrowserPkgs) {
+-            candidateViewIds += "$pkg:id/close_button"
+-            candidateViewIds += "$pkg:id/toolbar_close_button"
+-            candidateViewIds += "$pkg:id/custom_tabs_close_button"
+-            candidateViewIds += "$pkg:id/tab_close_button"
+-            candidateViewIds += "$pkg:id/close"
+-        }
+-
+-        for (viewId in candidateViewIds) {
+-            try {
+-                val nodes = root.findAccessibilityNodeInfosByViewId(viewId)
+-                if (nodes.isNullOrEmpty()) continue
+-                for (node in nodes) {
+-                    if (clickNodeOrClickableAncestor(node)) {
+-                        Log.d("WakeBlocking", "browser_exit action=close_by_id pkg=$browserPackage viewId=$viewId")
+-                        return true
+-                    }
+-                }
+-            } catch (_: Exception) {
+-            }
+-        }
+-
+-        val closeKeywords = listOf(
+-            "close tab",
+-            "close",
+-            "fermer l'onglet",
+-            "fermer",
+-            "dismiss",
+-        )
+-        return clickNodeBySemanticLabel(root, closeKeywords)
+-    }
+-
+-    private fun clickNodeBySemanticLabel(
+-        root: AccessibilityNodeInfo,
+-        keywords: List<String>,
+-    ): Boolean {
+-        val stack = ArrayDeque<AccessibilityNodeInfo>()
+-        val visited = HashSet<Int>()
+-        stack.add(root)
+-
+-        while (stack.isNotEmpty()) {
+-            val node = stack.removeLast()
+-            val identity = System.identityHashCode(node)
+-            if (!visited.add(identity)) continue
+-
+-            val text = node.text?.toString()?.trim()?.lowercase().orEmpty()
+-            val desc = node.contentDescription?.toString()?.trim()?.lowercase().orEmpty()
+-            val labelMatches = keywords.any { keyword ->
+-                text.contains(keyword) || desc.contains(keyword)
+-            }
+-            if (labelMatches && clickNodeOrClickableAncestor(node)) {
+-                Log.d("WakeBlocking", "browser_exit action=close_by_label text=$text desc=$desc")
+-                return true
+-            }
+-
+-            for (i in 0 until node.childCount) {
+-                node.getChild(i)?.let { stack.add(it) }
+-            }
+-        }
+-        return false
+-    }
+-
+-    private fun clickNodeOrClickableAncestor(node: AccessibilityNodeInfo?): Boolean {
+-        var cursor = node
+-        var depth = 0
+-        while (cursor != null && depth < 6) {
+-            val clicked = cursor.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+-            if (clicked) return true
+-            cursor = cursor.parent
+-            depth++
+-        }
+-        return false
+-    }
+@@
+-    private fun armBrowserExitGrace(browserPackage: String, blockedDomain: String?) {
+-        foregroundAppDetector.clearRecentDomain(browserPackage)
+-        browserExitGracePackage = browserPackage
+-        browserExitGraceDomain = blockedDomain?.trim()?.ifEmpty { null }
+-        browserExitGraceUntilElapsed = SystemClock.elapsedRealtime() + 1_200L
+-    }
+-
+-    private fun shouldIgnoreDuringBrowserExitGrace(
+-        decision: BlockDecision.BlockUrl,
+-        snapshot: ForegroundSnapshot,
+-        nowElapsed: Long,
+-    ): Boolean {
+-        val gracePackage = browserExitGracePackage ?: return false
+-        if (nowElapsed > browserExitGraceUntilElapsed) {
+-            browserExitGracePackage = null
+-            browserExitGraceDomain = null
+-            browserExitGraceUntilElapsed = 0L
+-            return false
+-        }
+-        if (snapshot.packageName != gracePackage) return false
+-        val graceDomain = browserExitGraceDomain
+-        return graceDomain == null || decision.target == graceDomain
+-    }
+-
+*** End Patch

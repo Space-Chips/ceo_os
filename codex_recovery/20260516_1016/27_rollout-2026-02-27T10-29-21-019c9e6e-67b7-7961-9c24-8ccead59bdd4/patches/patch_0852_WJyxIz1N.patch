@@ -1,0 +1,54 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/notes_screen.dart
+@@
+ import 'package:intl/intl.dart';
+ 
+ import '../../components/components.dart';
++import '../../core/models/premium_models.dart';
+ import '../../core/repositories/premium_repository.dart';
+ import '../../core/models/task_models.dart';
+ import '../../core/repositories/feature_repository.dart';
+*** Update File: /Users/timo/ceo_os/lib/features/profile/profile_screen.dart
+@@
+ import '../../components/components.dart';
++import '../../core/models/premium_models.dart';
+ import '../../core/models/settings_models.dart';
+ import '../../core/models/user_models.dart';
+@@
+ import '../../core/repositories/user_repository.dart';
+ import '../../core/theme/app_colors.dart';
+ import '../../core/theme/app_typography.dart';
++import '../../core/theme/theme_catalog.dart';
+ import '../../core/widgets/rank_art.dart';
+*** Update File: /Users/timo/ceo_os/lib/features/auth/onboarding_screen.dart
+@@
+                         ? FutureBuilder<PremiumRuntime>(
+                             future: _premiumRuntimeFuture,
+                             builder: (context, snapshot) {
+                               final runtime = snapshot.data;
++                              final themeProvider = context
++                                  .read<ThemeProvider>();
+                               return _Questionnaire(
+@@
+                                 onThemeSelected: (presetId) async {
+                                   final themeCheck = await _premiumRepository
+                                       .canUseTheme(presetId);
+-                                  if (!mounted) return;
++                                  if (!context.mounted) return;
+                                   if (!themeCheck.allowed) {
+                                     await showPremiumGateDialog(
+                                       context,
+@@
+                                   setState(
+                                     () => _selectedThemePresetId = presetId,
+                                   );
+-                                  context
+-                                      .read<ThemeProvider>()
+-                                      .selectThemeForOnboarding(presetId);
++                                  themeProvider.selectThemeForOnboarding(
++                                    presetId,
++                                  );
+                                 },
+                               );
+                             },
+*** End Patch

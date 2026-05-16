@@ -1,0 +1,11 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/focus/focus_preparation/focus_preparation_checklist_view.dart
+@@
+     final steps = [
+       language.t('focus_prep_rule_blocking'),
+       language.t('focus_prep_rule_streak_daily_first'),
+       language.t('focus_prep_rule_streak_once_per_day'),
++      language.t('focus_prep_rule_no_daily_session_required'),
+       language.t('focus_prep_rule_keep_streak_no_quit'),
+     ];
+*** End Patch

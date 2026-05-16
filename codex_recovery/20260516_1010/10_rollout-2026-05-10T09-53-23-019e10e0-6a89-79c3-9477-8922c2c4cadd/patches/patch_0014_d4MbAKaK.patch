@@ -1,0 +1,26 @@
+*** Begin Patch
+*** Update File: lib/components/premium_paywall.dart
+@@
+ Future<void> showPremiumPaywallSheet({
+   required BuildContext context,
+   PremiumRuntime? runtime,
+   PremiumCheckResult? checkResult,
+   String? reason,
+ }) async {
+@@
+   final resolvedReason = reason ?? checkResult?.reason;
++  final isRestrictionGate = checkResult != null;
+   await showCupertinoModalPopup<void>(
+@@
+       runtime: resolvedRuntime,
+       message: message,
+       reason: resolvedReason,
+       limit: checkResult?.limit,
+       current: checkResult?.current,
+       isFr: languageCode.trim().toLowerCase() == 'fr',
++      showRestoreButton: !isRestrictionGate,
++      manageOpensComparison: isRestrictionGate,
+     ),
+   );
+ }
+*** End Patch

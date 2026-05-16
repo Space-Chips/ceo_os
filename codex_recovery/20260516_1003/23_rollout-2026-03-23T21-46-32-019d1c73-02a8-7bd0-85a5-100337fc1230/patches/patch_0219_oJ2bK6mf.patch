@@ -1,0 +1,51 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/services/focus_service.dart
+@@
+   Future<bool> openAccessibilitySettings() async {
+     const method = 'openAccessibilitySettings';
+     if (_shouldSkipMissingMethod(method)) return false;
+     try {
+       final bool? result = await _channel.invokeMethod<bool>(method);
+       return result ?? false;
+@@
+   Future<bool> openUsageAccessSettings() async {
+     const method = 'openUsageAccessSettings';
+     if (_shouldSkipMissingMethod(method)) return false;
+     try {
+       final bool? result = await _channel.invokeMethod<bool>(method);
+       return result ?? false;
+@@
+   Future<bool> openOverlaySettings() async {
+     const method = 'openOverlaySettings';
+     if (_shouldSkipMissingMethod(method)) return false;
+     try {
+       final bool? result = await _channel.invokeMethod<bool>(method);
+       return result ?? false;
+@@
+     }
+   }
++
++  Future<void> setPendingPermissionReturn(AndroidProtectionStep step) async {
++    const method = 'setPendingPermissionReturn';
++    if (_shouldSkipMissingMethod(method)) return;
++    try {
++      await _channel.invokeMethod(method, {'step': step.name});
++    } on PlatformException catch (e) {
++      AppLogger.error("Failed to set pending permission return: '${e.message}'.");
++    } on MissingPluginException {
++      _markMissingMethod(method);
++    }
++  }
++
++  Future<void> clearPendingPermissionReturn() async {
++    const method = 'clearPendingPermissionReturn';
++    if (_shouldSkipMissingMethod(method)) return;
++    try {
++      await _channel.invokeMethod(method);
++    } on PlatformException catch (e) {
++      AppLogger.error("Failed to clear pending permission return: '${e.message}'.");
++    } on MissingPluginException {
++      _markMissingMethod(method);
++    }
++  }
+*** End Patch

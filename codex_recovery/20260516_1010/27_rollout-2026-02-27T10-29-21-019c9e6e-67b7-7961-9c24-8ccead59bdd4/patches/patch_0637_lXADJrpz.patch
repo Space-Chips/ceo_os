@@ -1,0 +1,58 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/focus/focus_screen.dart
+@@
+                             gradient: LinearGradient(
+                               begin: Alignment.topCenter,
+                               end: Alignment.bottomCenter,
+                               colors: [
+-                                AppColors.cardBackgroundAlt,
+-                                AppColors.cardBase,
++                                AppColors.cardBackgroundStrong,
++                                AppColors.cardBackgroundAlt,
+                               ],
+                             ),
+@@
+                               BoxShadow(
+-                                color: AppColors.black.withValues(alpha: 0.5),
+-                                blurRadius: 20,
+-                                offset: const Offset(0, 8),
++                                color: AppColors.glassShadowSoft.withValues(
++                                  alpha: 0.26,
++                                ),
++                                blurRadius: 16,
++                                offset: const Offset(0, 6),
+                               ),
+                             ],
+                           ),
+@@
+                             gradient: LinearGradient(
+                               begin: Alignment.topCenter,
+                               end: Alignment.bottomCenter,
+                               colors: [
+-                                AppColors.cardBackgroundAlt,
+-                                AppColors.cardBase,
++                                AppColors.cardBackgroundStrong,
++                                AppColors.cardBackgroundAlt,
+                               ],
+                             ),
+                             boxShadow: [
+                               BoxShadow(
+-                                color: AppColors.black.withValues(alpha: 0.48),
+-                                blurRadius: 34,
+-                                offset: const Offset(0, 20),
++                                color: AppColors.glassShadow.withValues(
++                                  alpha: 0.22,
++                                ),
++                                blurRadius: 24,
++                                offset: const Offset(0, 14),
+                               ),
+                             ],
+                           ),
+@@
+           borderRadius: BorderRadius.circular(18),
+           border: Border.all(
+-            color: AppColors.white.withValues(alpha: 0.14),
++            color: AppColors.borderStrong,
+             width: 1,
+           ),
+*** End Patch

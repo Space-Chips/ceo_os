@@ -1,0 +1,11 @@
+*** Begin Patch
+*** Update File: lib/core/providers/language_overrides.dart
+@@
+-    'auth_create_account_subtitle': '只需一次设置 WakeApp 登录，随后可在所有设备使用。',
++    'auth_create_account_subtitle': '只需一次设置觉醒应用登录，随后可在所有设备使用。',
+@@
+-    'blackout_prep_intro_title': '为 Blackout 准备你的主屏幕',
+-    'blackout_prep_intro_body': 'iPhone 上部分系统应用仍可见。把它们放进同一个文件夹，让 Blackout 更干净。',
++    'blackout_prep_intro_title': '为封屏准备你的主屏幕',
++    'blackout_prep_intro_body': '苹果手机上部分系统应用仍可见。把它们放进同一个文件夹，让封屏更干净。',
+*** End Patch

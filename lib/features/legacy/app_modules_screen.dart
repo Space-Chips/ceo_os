@@ -1,7 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
 import '../../components/components.dart';
+import '../../core/providers/language_provider.dart';
 import '../../core/repositories/feature_repository.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
@@ -31,12 +33,15 @@ class _AppModulesScreenState extends State<AppModulesScreen> {
     'WinStreak',
     'Rewards',
     'ScreenTime',
+    'ScreenTimeManager',
+    'Rank',
     'EventTypes',
     'BiannualReport',
     'Settings',
   ];
 
   String _label(String id) {
+    final language = context.watch<LanguageProvider>();
     switch (id) {
       case 'Pareto':
         return 'To-Do';
@@ -46,8 +51,10 @@ class _AppModulesScreenState extends State<AppModulesScreen> {
         return 'Win Streak';
       case 'ScreenTime':
         return 'Screen Time';
+      case 'ScreenTimeManager':
+        return 'Screen Time Manager';
       case 'EventTypes':
-        return 'Event Types';
+        return language.t('event_types');
       case 'BiannualReport':
         return 'Biannual Report';
       default:
@@ -108,26 +115,24 @@ class _AppModulesScreenState extends State<AppModulesScreen> {
         leading: CupertinoButton(
           padding: EdgeInsets.zero,
           onPressed: () => context.go('/home'),
-          child: const Icon(
+          child: Icon(
             CupertinoIcons.back,
             color: AppColors.primaryOrange,
           ),
         ),
-        middle: const NeoMonoText(
+        middle: NeoMonoText(
           'APP_MODULES',
           fontSize: 18,
           fontWeight: FontWeight.bold,
         ),
         trailing: _saving
-            ? const CupertinoActivityIndicator(color: AppColors.primaryOrange)
+            ? CupertinoActivityIndicator(color: AppColors.primaryOrange)
             : null,
         backgroundColor: AppColors.background,
         border: null,
       ),
       child: _loading
-          ? const Center(
-              child: CupertinoActivityIndicator(color: AppColors.primaryOrange),
-            )
+          ? Center(child: CupertinoActivityIndicator(color: AppColors.primaryOrange))
           : SafeArea(
               child: ListView.builder(
                 padding: const EdgeInsets.all(20),

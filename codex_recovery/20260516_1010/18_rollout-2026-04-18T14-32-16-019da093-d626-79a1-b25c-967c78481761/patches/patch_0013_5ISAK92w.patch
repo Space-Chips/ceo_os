@@ -1,0 +1,469 @@
+*** Begin Patch
+*** Add File: /Users/timo/ceo_os/lib/features/ceo_mode/blackout_preparation/blackout_preparation_animation_view.dart
++import 'dart:math' as math;
++import 'dart:ui';
++
++import 'package:flutter/cupertino.dart';
++
++import '../../../core/theme/app_colors.dart';
++import '../../../core/theme/app_typography.dart';
++
++class BlackoutPreparationAnimationView extends StatefulWidget {
++  const BlackoutPreparationAnimationView({super.key});
++
++  @override
++  State<BlackoutPreparationAnimationView> createState() =>
++      _BlackoutPreparationAnimationViewState();
++}
++
++class _BlackoutPreparationAnimationViewState
++    extends State<BlackoutPreparationAnimationView>
++    with SingleTickerProviderStateMixin {
++  late final AnimationController _controller = AnimationController(
++    vsync: this,
++    duration: const Duration(milliseconds: 7600),
++  )..repeat();
++
++  @override
++  void dispose() {
++    _controller.dispose();
++    super.dispose();
++  }
++
++  @override
++  Widget build(BuildContext context) {
++    return RepaintBoundary(
++      child: AspectRatio(
++        aspectRatio: 0.63,
++        child: Container(
++          decoration: BoxDecoration(
++            borderRadius: BorderRadius.circular(32),
++            gradient: LinearGradient(
++              begin: Alignment.topCenter,
++              end: Alignment.bottomCenter,
++              colors: [
++                AppColors.cardBackgroundAlt,
++                AppColors.cardBase.withValues(alpha: 0.98),
++              ],
++            ),
++            border: Border.all(
++              color: AppColors.borderStrong.withValues(alpha: 0.95),
++              width: 1,
++            ),
++            boxShadow: [
++              BoxShadow(
++                color: AppColors.black.withValues(alpha: 0.32),
++                blurRadius: 34,
++                offset: const Offset(0, 16),
++                spreadRadius: -10,
++              ),
++            ],
++          ),
++          padding: const EdgeInsets.fromLTRB(14, 14, 14, 16),
++          child: AnimatedBuilder(
++            animation: _controller,
++            builder: (context, _) => _PhoneHomeMock(progress: _controller.value),
++          ),
++        ),
++      ),
++    );
++  }
++}
++
++class _PhoneHomeMock extends StatelessWidget {
++  const _PhoneHomeMock({required this.progress});
++
++  final double progress;
++
++  double _segment(double begin, double end, {Curve curve = Curves.easeInOut}) {
++    final t = ((progress - begin) / (end - begin)).clamp(0.0, 1.0);
++    return curve.transform(t);
++  }
++
++  @override
++  Widget build(BuildContext context) {
++    final phaseEdit = _segment(0.06, 0.16, curve: Curves.easeOutCubic);
++    final phaseDrag = _segment(0.16, 0.34, curve: Curves.easeInOutCubic);
++    final phaseFolderBorn = _segment(0.30, 0.42, curve: Curves.easeOutBack);
++    final phaseFolderOpen = _segment(0.42, 0.56, curve: Curves.easeInOutCubic);
++    final phaseDropMore = _segment(0.56, 0.72, curve: Curves.easeInOutCubic);
++    final phaseRename = _segment(0.70, 0.84, curve: Curves.easeOutCubic);
++    final phaseFinal = _segment(0.84, 1.0, curve: Curves.easeInOutCubic);
++
++    final baseIcons = <_MockIconData>[
++      const _MockIconData(col: 0, row: 0, icon: CupertinoIcons.phone_fill),
++      const _MockIconData(col: 1, row: 0, icon: CupertinoIcons.chat_bubble_2_fill),
++      const _MockIconData(col: 2, row: 0, icon: CupertinoIcons.calendar),
++      const _MockIconData(col: 0, row: 1, icon: CupertinoIcons.video_camera_solid),
++      const _MockIconData(col: 1, row: 1, icon: CupertinoIcons.map_fill),
++      const _MockIconData(col: 2, row: 1, icon: CupertinoIcons.folder_fill),
++      const _MockIconData(col: 0, row: 2, icon: CupertinoIcons.house_fill),
++      const _MockIconData(col: 1, row: 2, icon: CupertinoIcons.location_solid),
++      const _MockIconData(col: 2, row: 2, icon: CupertinoIcons.creditcard_fill),
++      const _MockIconData(col: 0, row: 3, icon: CupertinoIcons.chart_bar_alt_fill),
++      const _MockIconData(col: 1, row: 3, icon: CupertinoIcons.doc_fill),
++      const _MockIconData(col: 2, row: 3, icon: CupertinoIcons.settings_solid),
++    ];
++
++    final dragFrom = const Offset(0, 1);
++    final dragTo = const Offset(1, 1);
++    final dragOffset = Offset.lerp(
++      _iconOrigin(dragFrom.dx.toInt(), dragFrom.dy.toInt()),
++      _iconOrigin(dragTo.dx.toInt(), dragTo.dy.toInt()),
++      phaseDrag,
++    )!;
++
++    final folderCenter = _iconOrigin(1, 1);
++    final dropTargets = [
++      _iconOrigin(2, 1),
++      _iconOrigin(0, 2),
++      _iconOrigin(1, 2),
++      _iconOrigin(2, 2),
++    ];
++
++    return LayoutBuilder(
++      builder: (context, constraints) {
++        final width = constraints.maxWidth;
++        final height = constraints.maxHeight;
++        final iconSize = width * 0.17;
++        final jiggleAmp = 0.018 * phaseEdit;
++        final folderScale = phaseFolderBorn.clamp(0.0, 1.0);
++        final folderOpenScale = lerpDouble(1.0, 1.06, phaseFolderOpen)!;
++        final folderPanelOpacity = phaseFolderOpen;
++        final renameOpacity = phaseRename;
++
++        return Stack(
++          children: [
++            Positioned(
++              left: 0,
++              right: 0,
++              top: 0,
++              child: Center(
++                child: Container(
++                  width: width * 0.22,
++                  height: 5,
++                  decoration: BoxDecoration(
++                    color: AppColors.borderStrong.withValues(alpha: 0.9),
++                    borderRadius: BorderRadius.circular(999),
++                  ),
++                ),
++              ),
++            ),
++            for (final item in baseIcons)
++              if (!(item.col == 0 && item.row == 1))
++                _mockIcon(
++                  item,
++                  iconSize: iconSize,
++                  jiggleAmp: jiggleAmp,
++                  time: progress,
++                  hidden: (item.col == 1 && item.row == 1) ||
++                      (item.col == 2 && item.row == 1 && phaseDropMore > 0.4) ||
++                      (item.col == 0 && item.row == 2 && phaseDropMore > 0.52) ||
++                      (item.col == 1 && item.row == 2 && phaseDropMore > 0.65) ||
++                      (item.col == 2 && item.row == 2 && phaseDropMore > 0.78),
++                ),
++            Positioned(
++              left: dragOffset.dx * width,
++              top: dragOffset.dy * height,
++              child: Opacity(
++                opacity: 1 - phaseFolderOpen,
++                child: Transform.rotate(
++                  angle: math.sin(progress * math.pi * 16) * jiggleAmp,
++                  child: _iconTile(
++                    size: iconSize,
++                    icon: CupertinoIcons.video_camera_solid,
++                    accent: AppColors.warning,
++                    highlight: phaseEdit > 0.12,
++                    pressedScale: lerpDouble(1, 0.93, phaseEdit)!,
++                  ),
++                ),
++              ),
++            ),
++            Positioned(
++              left: folderCenter.dx * width,
++              top: folderCenter.dy * height,
++              child: Transform.scale(
++                scale: folderScale * folderOpenScale,
++                alignment: Alignment.center,
++                child: _folderTile(
++                  size: iconSize,
++                  itemCount: 1 + (phaseDropMore * 4).floor().clamp(0, 4),
++                ),
++              ),
++            ),
++            for (var i = 0; i < dropTargets.length; i++)
++              Positioned(
++                left: Offset.lerp(
++                      dropTargets[i] * width,
++                      folderCenter * width,
++                      (phaseDropMore * (1.1 + i * 0.1)).clamp(0.0, 1.0),
++                    )!
++                    .dx,
++                top: Offset.lerp(
++                      dropTargets[i] * height,
++                      folderCenter * height,
++                      (phaseDropMore * (1.1 + i * 0.1)).clamp(0.0, 1.0),
++                    )!
++                    .dy,
++                child: Opacity(
++                  opacity: (1 - phaseDropMore * (1.0 + i * 0.18)).clamp(0.0, 1.0),
++                  child: _iconTile(
++                    size: iconSize,
++                    icon: i.isEven
++                        ? CupertinoIcons.app_fill
++                        : CupertinoIcons.square_grid_2x2_fill,
++                    accent: AppColors.secondaryLabel,
++                  ),
++                ),
++              ),
++            Positioned.fill(
++              child: IgnorePointer(
++                child: Opacity(
++                  opacity: folderPanelOpacity,
++                  child: Center(
++                    child: Transform.scale(
++                      scale: lerpDouble(0.9, 1.0, folderPanelOpacity)!,
++                      child: _folderPanel(
++                        width: width * 0.74,
++                        height: height * 0.46,
++                        labelOpacity: renameOpacity,
++                      ),
++                    ),
++                  ),
++                ),
++              ),
++            ),
++            Positioned(
++              left: 0,
++              right: 0,
++              bottom: 4,
++              child: Opacity(
++                opacity: (phaseFinal * 1.25).clamp(0.0, 1.0),
++                child: Text(
++                  'Écran plus calme',
++                  textAlign: TextAlign.center,
++                  style: AppTypography.footnote.copyWith(
++                    color: AppColors.secondaryLabel.withValues(alpha: 0.9),
++                    fontSize: 12,
++                  ),
++                ),
++              ),
++            ),
++          ],
++        );
++      },
++    );
++  }
++
++  Widget _mockIcon(
++    _MockIconData item, {
++    required double iconSize,
++    required double jiggleAmp,
++    required double time,
++    required bool hidden,
++  }) {
++    final origin = _iconOrigin(item.col, item.row);
++    final wave = math.sin((time * 2 * math.pi * 2) + (item.col + item.row));
++    return Positioned(
++      left: origin.dx * 1,
++      top: origin.dy * 1,
++      child: Opacity(
++        opacity: hidden ? 0 : 1,
++        child: Transform.rotate(
++          angle: jiggleAmp * wave,
++          child: _iconTile(
++            size: iconSize,
++            icon: item.icon,
++            accent: _iconAccent(item),
++            isEssential: item.row == 0,
++          ),
++        ),
++      ),
++    );
++  }
++
++  Color _iconAccent(_MockIconData item) {
++    if (item.row == 0) return AppColors.success.withValues(alpha: 0.85);
++    if (item.row == 1) return AppColors.info.withValues(alpha: 0.82);
++    if (item.row == 2) return AppColors.warning.withValues(alpha: 0.8);
++    return AppColors.secondaryLabel.withValues(alpha: 0.7);
++  }
++
++  Offset _iconOrigin(int col, int row) {
++    final startX = 0.04;
++    final startY = 0.14;
++    const spacingX = 0.285;
++    const spacingY = 0.17;
++    return Offset(startX + spacingX * col, startY + spacingY * row);
++  }
++}
++
++class _MockIconData {
++  final int col;
++  final int row;
++  final IconData icon;
++
++  const _MockIconData({required this.col, required this.row, required this.icon});
++}
++
++Widget _iconTile({
++  required double size,
++  required IconData icon,
++  required Color accent,
++  bool isEssential = false,
++  bool highlight = false,
++  double pressedScale = 1.0,
++}) {
++  return Transform.scale(
++    scale: pressedScale,
++    child: Container(
++      width: size,
++      height: size,
++      decoration: BoxDecoration(
++        borderRadius: BorderRadius.circular(15),
++        gradient: LinearGradient(
++          begin: Alignment.topLeft,
++          end: Alignment.bottomRight,
++          colors: [
++            Color.alphaBlend(accent.withValues(alpha: 0.18), AppColors.cardRaised),
++            Color.alphaBlend(accent.withValues(alpha: 0.08), AppColors.cardBase),
++          ],
++        ),
++        border: Border.all(
++          color: highlight
++              ? accent.withValues(alpha: 0.8)
++              : AppColors.border.withValues(alpha: 0.85),
++          width: highlight ? 1.2 : 0.8,
++        ),
++        boxShadow: [
++          BoxShadow(
++            color: AppColors.black.withValues(alpha: 0.2),
++            blurRadius: 14,
++            offset: const Offset(0, 8),
++            spreadRadius: -8,
++          ),
++        ],
++      ),
++      alignment: Alignment.center,
++      child: Icon(
++        icon,
++        size: size * 0.38,
++        color: isEssential ? AppColors.label : accent,
++      ),
++    ),
++  );
++}
++
++Widget _folderTile({required double size, required int itemCount}) {
++  return Container(
++    width: size,
++    height: size,
++    decoration: BoxDecoration(
++      borderRadius: BorderRadius.circular(16),
++      gradient: LinearGradient(
++        begin: Alignment.topCenter,
++        end: Alignment.bottomCenter,
++        colors: [
++          AppColors.cardBackgroundStrong.withValues(alpha: 0.98),
++          AppColors.cardBackgroundAlt.withValues(alpha: 0.96),
++        ],
++      ),
++      border: Border.all(color: AppColors.borderStrong, width: 1),
++    ),
++    child: Padding(
++      padding: const EdgeInsets.all(8),
++      child: GridView.count(
++        physics: const NeverScrollableScrollPhysics(),
++        crossAxisCount: 2,
++        crossAxisSpacing: 4,
++        mainAxisSpacing: 4,
++        children: List.generate(
++          itemCount.clamp(1, 4),
++          (index) => Container(
++            decoration: BoxDecoration(
++              borderRadius: BorderRadius.circular(5),
++              color: AppColors.secondaryLabel.withValues(alpha: 0.45),
++            ),
++          ),
++        ),
++      ),
++    ),
++  );
++}
++
++Widget _folderPanel({
++  required double width,
++  required double height,
++  required double labelOpacity,
++}) {
++  return Container(
++    width: width,
++    height: height,
++    decoration: BoxDecoration(
++      borderRadius: BorderRadius.circular(26),
++      color: AppColors.cardBackgroundStrong.withValues(alpha: 0.95),
++      border: Border.all(color: AppColors.borderStrong, width: 1),
++      boxShadow: [
++        BoxShadow(
++          color: AppColors.black.withValues(alpha: 0.28),
++          blurRadius: 20,
++          offset: const Offset(0, 10),
++          spreadRadius: -8,
++        ),
++      ],
++    ),
++    padding: const EdgeInsets.fromLTRB(12, 16, 12, 12),
++    child: Column(
++      children: [
++        Opacity(
++          opacity: labelOpacity,
++          child: Text(
++            'Hors Focus',
++            style: AppTypography.headline.copyWith(
++              fontSize: 15,
++              color: AppColors.label.withValues(alpha: 0.94),
++              fontWeight: FontWeight.w600,
++            ),
++          ),
++        ),
++        const SizedBox(height: 10),
++        Expanded(
++          child: GridView.count(
++            physics: const NeverScrollableScrollPhysics(),
++            crossAxisCount: 3,
++            crossAxisSpacing: 10,
++            mainAxisSpacing: 10,
++            children: List.generate(
++              6,
++              (index) => Container(
++                decoration: BoxDecoration(
++                  borderRadius: BorderRadius.circular(11),
++                  gradient: LinearGradient(
++                    begin: Alignment.topLeft,
++                    end: Alignment.bottomRight,
++                    colors: [
++                      AppColors.secondarySystemBackground.withValues(alpha: 0.92),
++                      AppColors.cardRaised.withValues(alpha: 0.86),
++                    ],
++                  ),
++                  border: Border.all(
++                    color: AppColors.border.withValues(alpha: 0.78),
++                    width: 0.8,
++                  ),
++                ),
++                child: Icon(
++                  index.isEven
++                      ? CupertinoIcons.square_grid_2x2_fill
++                      : CupertinoIcons.app_fill,
++                  size: 15,
++                  color: AppColors.secondaryLabel.withValues(alpha: 0.86),
++                ),
++              ),
++            ),
++          ),
++        ),
++      ],
++    ),
++  );
++}
+*** End Patch

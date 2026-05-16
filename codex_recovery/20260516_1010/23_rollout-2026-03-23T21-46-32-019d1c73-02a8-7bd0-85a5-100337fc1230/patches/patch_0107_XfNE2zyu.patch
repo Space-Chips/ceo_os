@@ -1,0 +1,6 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/ios/Runner.xcodeproj/project.pbxproj
+@@
+-				A1B2C3D4E5F60718293A4B5C /* Strip ScreenTimeReportExtension for Simulator */,
++				A1B2C3D4E5F60718293A4B5C /* Embed ScreenTimeReportExtension (device only) */,
+*** End Patch

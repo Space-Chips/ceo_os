@@ -1,0 +1,9 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/ios/Runner.xcodeproj/project.pbxproj
+@@
+ 			files = (
+ 				8578F9892F4379B50038063F /* CeoWidgetsExtension.appex in Embed Foundation Extensions */,
+ 				20C92EFE0F474936BC58C038 /* FocusActivityMonitorExtension.appex in Embed Foundation Extensions */,
+-				6A3F8A8E4D9C41A5B7C1D201 /* ScreenTimeReportExtension.appex in Embed Foundation Extensions */,
+ 			);
+*** End Patch

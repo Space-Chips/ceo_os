@@ -1,0 +1,14 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/models/settings_models.dart
+@@
+   factory AppSettings.fromJson(Map<String, dynamic> json) {
+     return AppSettings(
+       id: json['id'],
+       createdBy: json['created_by'],
+       activeApps: json['active_apps'] != null
+           ? List<String>.from(json['active_apps'])
+           : null,
+-      themePreset: json['theme_preset'] ?? 'obsidian_dark',
++      themePreset: json['theme_preset'] ?? 'midnight_blue',
+       languageCode: json['language_code'] ?? 'en',
+*** End Patch

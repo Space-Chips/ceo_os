@@ -1,0 +1,147 @@
+*** Begin Patch
+*** Add File: lib/features/control_center_setup/widgets/module_card.dart
++import 'package:flutter/cupertino.dart';
++
++import '../../../components/glass_card.dart';
++import '../../../core/theme/app_colors.dart';
++import '../../../core/theme/app_typography.dart';
++import '../control_center_setup_models.dart';
++import 'jiggle.dart';
++
++class ModuleCard extends StatelessWidget {
++  final ControlCenterModuleItem module;
++  final bool added;
++  final VoidCallback onAdd;
++  final VoidCallback onInfo;
++  final double jigglePhase;
++
++  const ModuleCard({
++    super.key,
++    required this.module,
++    required this.added,
++    required this.onAdd,
++    required this.onInfo,
++    required this.jigglePhase,
++  });
++
++  @override
++  Widget build(BuildContext context) {
++    return Jiggle(
++      phase: jigglePhase,
++      enabled: true,
++      child: GlassCard(
++        level: GlassCardLevel.elevated,
++        padding: const EdgeInsets.all(14),
++        borderRadius: 20,
++        border: Border.all(
++          color: added
++              ? AppColors.accent.withValues(alpha: 0.22)
++              : AppColors.white.withValues(alpha: 0.08),
++          width: 1,
++        ),
++        gradientColors: [
++          AppColors.cardBackgroundStrong,
++          AppColors.cardBase,
++        ],
++        child: Row(
++          children: [
++            Container(
++              width: 46,
++              height: 46,
++              decoration: BoxDecoration(
++                borderRadius: BorderRadius.circular(16),
++                color: AppColors.white.withValues(alpha: 0.05),
++                border: Border.all(
++                  color: AppColors.white.withValues(alpha: 0.08),
++                ),
++              ),
++              child: Icon(module.icon, color: AppColors.accentIcon, size: 24),
++            ),
++            const SizedBox(width: 12),
++            Expanded(
++              child: Column(
++                crossAxisAlignment: CrossAxisAlignment.start,
++                children: [
++                  Text(
++                    module.title,
++                    style: AppTypography.headline.copyWith(
++                      color: AppColors.label,
++                      fontWeight: FontWeight.w800,
++                    ),
++                  ),
++                  const SizedBox(height: 4),
++                  Text(
++                    module.subtitle,
++                    maxLines: 2,
++                    overflow: TextOverflow.ellipsis,
++                    style: AppTypography.footnote.copyWith(
++                      color: AppColors.secondaryLabel.withValues(alpha: 0.7),
++                      height: 1.25,
++                    ),
++                  ),
++                ],
++              ),
++            ),
++            const SizedBox(width: 12),
++            _IconControl(
++              icon: CupertinoIcons.info,
++              onTap: onInfo,
++            ),
++            const SizedBox(width: 10),
++            _IconControl(
++              icon: added ? CupertinoIcons.check_mark : CupertinoIcons.plus,
++              onTap: added ? null : onAdd,
++              enabled: !added,
++              filled: added,
++            ),
++          ],
++        ),
++      ),
++    );
++  }
++}
++
++class _IconControl extends StatelessWidget {
++  final IconData icon;
++  final VoidCallback? onTap;
++  final bool enabled;
++  final bool filled;
++
++  const _IconControl({
++    required this.icon,
++    required this.onTap,
++    this.enabled = true,
++    this.filled = false,
++  });
++
++  @override
++  Widget build(BuildContext context) {
++    final opacity = enabled ? 1.0 : 0.35;
++    return Opacity(
++      opacity: opacity,
++      child: GestureDetector(
++        onTap: enabled ? onTap : null,
++        child: Container(
++          width: 40,
++          height: 40,
++          decoration: BoxDecoration(
++            borderRadius: BorderRadius.circular(14),
++            color: filled
++                ? AppColors.accent.withValues(alpha: 0.16)
++                : AppColors.white.withValues(alpha: 0.05),
++            border: Border.all(
++              color: AppColors.white.withValues(alpha: 0.08),
++            ),
++          ),
++          child: Icon(
++            icon,
++            size: 18,
++            color: filled ? AppColors.accent : AppColors.secondaryLabel,
++          ),
++        ),
++      ),
++    );
++  }
++}
++
+*** End Patch

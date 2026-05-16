@@ -1,0 +1,13 @@
+*** Begin Patch
+*** Update File: lib/features/home/home_screen.dart
+@@
+       unawaited(
+         CeoHomeWidgetService.renderAndUpdateAll(
+           tasks: context.read<TaskProvider>(),
+           habits: context.read<HabitProvider>(),
+           language: context.read<LanguageProvider>(),
+           ceoMode: context.read<CeoModeProvider>(),
++          focus: context.read<FocusProvider>(),
+         ),
+       );
+*** End Patch

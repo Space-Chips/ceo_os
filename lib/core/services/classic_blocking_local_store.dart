@@ -1,0 +1,148 @@
+import 'dart:convert';
+
+import 'package:shared_preferences/shared_preferences.dart';
+
+class ClassicBlockBinding {
+  final String? nativeIdentifier;
+  final String? nativePayload;
+
+  const ClassicBlockBinding({this.nativeIdentifier, this.nativePayload});
+
+  bool get isEnforceable =>
+      (nativeIdentifier?.trim().isNotEmpty ?? false) ||
+      (nativePayload?.trim().isNotEmpty ?? false);
+
+  Map<String, dynamic> toJson() => {
+    if (nativeIdentifier != null) 'native_identifier': nativeIdentifier,
+    if (nativePayload != null) 'native_payload': nativePayload,
+  };
+
+  factory ClassicBlockBinding.fromJson(Map<String, dynamic> json) {
+    return ClassicBlockBinding(
+      nativeIdentifier: (json['native_identifier'] as String?)?.trim(),
+      nativePayload: (json['native_payload'] as String?)?.trim(),
+    );
+  }
+}
+
+class ClassicBlockingLocalStore {
+  static const String _appBindingsKey = 'classic_block_app_bindings_v1';
+  static const String _websiteBindingsKey = 'classic_block_website_bindings_v1';
+
+  Future<Map<String, ClassicBlockBinding>> loadAppBindings() async {
+    return _loadBindings(_appBindingsKey);
+  }
+
+  Future<Map<String, ClassicBlockBinding>> loadWebsiteBindings() async {
+    return _loadBindings(_websiteBindingsKey);
+  }
+
+  Future<void> saveAppBinding({
+    required String rowId,
+    String? nativeIdentifier,
+    String? nativePayload,
+  }) async {
+    await _saveBinding(
+      _appBindingsKey,
+      rowId,
+      ClassicBlockBinding(
+        nativeIdentifier: nativeIdentifier?.trim(),
+        nativePayload: nativePayload?.trim(),
+      ),
+    );
+  }
+
+  Future<void> saveWebsiteBinding({
+    required String rowId,
+    String? nativeIdentifier,
+    String? nativePayload,
+  }) async {
+    await _saveBinding(
+      _websiteBindingsKey,
+      rowId,
+      ClassicBlockBinding(
+        nativeIdentifier: nativeIdentifier?.trim(),
+        nativePayload: nativePayload?.trim(),
+      ),
+    );
+  }
+
+  Future<void> removeAppBinding(String rowId) async {
+    await _removeBinding(_appBindingsKey, rowId);
+  }
+
+  Future<void> removeWebsiteBinding(String rowId) async {
+    await _removeBinding(_websiteBindingsKey, rowId);
+  }
+
+  Future<void> prune({
+    required Set<String> appIds,
+    required Set<String> websiteIds,
+  }) async {
+    await _pruneBindings(_appBindingsKey, appIds);
+    await _pruneBindings(_websiteBindingsKey, websiteIds);
+  }
+
+  Future<Map<String, ClassicBlockBinding>> _loadBindings(String key) async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(key);
+    if (raw == null || raw.trim().isEmpty) return const {};
+    try {
+      final decoded = jsonDecode(raw);
+      if (decoded is! Map<String, dynamic>) return const {};
+      return decoded.map<String, ClassicBlockBinding>((entryKey, value) {
+        final payload = value is Map<String, dynamic>
+            ? value
+            : <String, dynamic>{};
+        return MapEntry(entryKey, ClassicBlockBinding.fromJson(payload));
+      });
+    } catch (_) {
+      return const {};
+    }
+  }
+
+  Future<void> _saveBinding(
+    String key,
+    String rowId,
+    ClassicBlockBinding binding,
+  ) async {
+    final prefs = await SharedPreferences.getInstance();
+    final bindings = await _loadBindings(key);
+    final mutable = Map<String, ClassicBlockBinding>.from(bindings);
+    mutable[rowId] = binding;
+    await prefs.setString(
+      key,
+      jsonEncode(
+        mutable.map((bindingKey, value) => MapEntry(bindingKey, value.toJson())),
+      ),
+    );
+  }
+
+  Future<void> _removeBinding(String key, String rowId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final bindings = await _loadBindings(key);
+    if (!bindings.containsKey(rowId)) return;
+    final mutable = Map<String, ClassicBlockBinding>.from(bindings)
+      ..remove(rowId);
+    await prefs.setString(
+      key,
+      jsonEncode(
+        mutable.map((bindingKey, value) => MapEntry(bindingKey, value.toJson())),
+      ),
+    );
+  }
+
+  Future<void> _pruneBindings(String key, Set<String> validIds) async {
+    final prefs = await SharedPreferences.getInstance();
+    final bindings = await _loadBindings(key);
+    final pruned = Map<String, ClassicBlockBinding>.fromEntries(
+      bindings.entries.where((entry) => validIds.contains(entry.key)),
+    );
+    await prefs.setString(
+      key,
+      jsonEncode(
+        pruned.map((bindingKey, value) => MapEntry(bindingKey, value.toJson())),
+      ),
+    );
+  }
+}

@@ -1,0 +1,17 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/ios/Runner/AppDelegate.swift
+@@
+ private struct NativeBlockedAppTokenIconView: View {
+     let token: ApplicationToken
+ 
+     var body: some View {
+         Label(token)
+             .labelStyle(.iconOnly)
+             .imageScale(.large)
+-            .scaleEffect(1.12)
++            .font(.system(size: 32, weight: .semibold))
++            .scaleEffect(1.28)
+             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+     }
+ }
+*** End Patch

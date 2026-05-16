@@ -1,0 +1,77 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/focus/block_list_sheet.dart
+@@
+ import 'dart:ui';
+ import 'dart:io';
+ import 'package:flutter/cupertino.dart';
+ import 'package:provider/provider.dart';
+ import '../../core/models/block_list_model.dart';
+ import '../../core/providers/focus_provider.dart';
++import '../../core/providers/language_provider.dart';
+ import '../../core/theme/app_colors.dart';
+ import '../../core/theme/app_typography.dart';
+ import '../../components/components.dart';
+ import 'app_selection_sheet.dart';
+@@
+ class _BlockListSheetState extends State<BlockListSheet> {
+@@
+   List<String> _blockedPackages = [];
+   List<String> _blockedCategories = [];
++
++  String _t(String key) => context.read<LanguageProvider>().t(key);
+@@
+               title: Text(
+                 !provider.protectionStatus.isSupported
+-                    ? 'Screen Time Unavailable'
++                    ? _t('ios_setup_permission_unavailable_title')
+                     : provider.protectionStatus.shouldOpenSettings
+-                    ? 'Turn On Screen Time Access'
+-                    : 'Permission Required',
++                    ? _t('focus_turn_on_screen_time_access')
++                    : _t('permission_required'),
+               ),
+               content: Text(
+                 !provider.protectionStatus.isSupported
+-                    ? 'This runtime does not currently expose Apple Screen Time / Family Controls selection. Try again on a supported iPhone build.'
++                    ? _t('focus_notice_ios_runtime_unavailable')
+                     : provider.protectionStatus.shouldOpenSettings
+-                    ? 'To choose apps and websites on iPhone, Screen Time / Family Controls access must be re-enabled in iOS Settings.'
+-                    : 'To choose apps and websites on iPhone, grant Screen Time / Family Controls access when Apple asks for permission.',
++                    ? _t('focus_notice_ios_settings_off')
++                    : _t('focus_notice_ios_timer_only'),
+               ),
+               actions: [
+                 CupertinoDialogAction(
+                   onPressed: () => Navigator.pop(ctx),
+-                  child: const Text('OK'),
++                  child: Text(_t('ok')),
+                 ),
+                 if (provider.protectionStatus.shouldOpenSettings)
+                   CupertinoDialogAction(
+                     isDefaultAction: true,
+                     onPressed: () async {
+                       Navigator.pop(ctx);
+                       await provider.openSystemSettings();
+                     },
+-                    child: const Text('Open Settings'),
++                    child: Text(_t('open_settings')),
+                   ),
+               ],
+             ),
+@@
+           builder: (ctx) => CupertinoAlertDialog(
+-            title: const Text('Use Screen Time Control'),
+-            content: const Text(
+-              'On iPhone, app and website selection is now managed from Screen Time Control with search suggestions. This legacy editor no longer opens the Apple picker.',
++            title: Text(_t('focus_use_screen_time_control_title')),
++            content: Text(
++              _t('focus_use_screen_time_control_body'),
+             ),
+             actions: [
+               CupertinoDialogAction(
+-                child: const Text('OK'),
++                child: Text(_t('ok')),
+                 onPressed: () => Navigator.pop(ctx),
+               ),
+             ],
+*** End Patch

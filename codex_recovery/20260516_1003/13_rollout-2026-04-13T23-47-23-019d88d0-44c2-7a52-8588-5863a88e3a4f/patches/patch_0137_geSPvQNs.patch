@@ -1,0 +1,149 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/screen_time_screen.dart
+@@
+   Future<void> _addBlockedApp() async {
+     if (_saving) return;
+ 
+     if (Platform.isAndroid) {
+       await _openAndroidBlockedAppsEditor();
+       return;
+     }
+ 
+     if (Platform.isIOS) {
+-      final authorized = await _focusService.isAuthorized();
+-      if (!authorized) {
+-        final granted = await _focusService.requestPermissions();
+-        if (!granted) {
+-          await _showNotice(
+-            title: 'Permissions required',
+-            message:
+-                'Allow Screen Time / Family Controls first so selected apps can be blocked during your focus sessions on this device.',
+-          );
+-          return;
+-        }
+-      }
+-      final selection = await _focusService
+-          .openFamilyActivityPickerWithMetadata();
+-      final picked = (selection ?? [])
+-          .where((item) => item.payload.trim().isNotEmpty)
+-          .toList(growable: false);
+-      if (picked.isEmpty) {
+-        await _showNotice(
+-          title: 'Selection canceled',
+-          message:
+-              'Select at least one app in the Apple picker, then tap Done to save your block.',
+-        );
+-        return;
+-      }
+-
+-      await _runMutation(() async {
+-        final existingLabels = _blockedApps
+-            .map((app) => (app.appName ?? '').trim())
+-            .where((name) => name.isNotEmpty)
+-            .toSet();
+-        final existingPayloads = _blockedApps
+-            .map((app) => _appBindings[app.id]?.nativePayload?.trim())
+-            .whereType<String>()
+-            .where((payload) => payload.isNotEmpty)
+-            .toSet();
+-
+-        for (final selected in picked) {
+-          final payload = selected.payload.trim();
+-          if (payload.isEmpty || existingPayloads.contains(payload)) {
+-            continue;
+-          }
+-
+-          final label = _resolvedAppLabel(selected, existingLabels);
+-          existingLabels.add(label);
+-          final record = await _repo.createBlockedAppRecord(label);
+-          if (record == null) continue;
+-          await _classicLocalStore.saveAppBinding(
+-            rowId: record.id,
+-            nativeIdentifier: selected.bundleIdentifier,
+-            nativePayload: payload,
+-          );
+-          existingPayloads.add(payload);
+-        }
+-      });
++      setState(() => _showAddApp = true);
+       return;
+     }
+ 
+     return;
+   }
++
++  Future<void> _addBlockedIosAppSuggestion(_IosAppSuggestion suggestion) async {
++    if (_saving || !Platform.isIOS) return;
++
++    final authorized = await _focusService.isAuthorized();
++    if (!authorized) {
++      final granted = await _focusService.requestPermissions();
++      if (!granted) {
++        await _showNotice(
++          title: 'Permissions required',
++          message:
++              'Allow Screen Time / Family Controls first so selected apps can be blocked during your focus sessions on this device.',
++        );
++        return;
++      }
++    }
++
++    final encoded = await _focusService.encodeApplicationBundleSelection(
++      suggestion.bundleIdentifier,
++    );
++    final payload = encoded?.payload.trim();
++    if (payload == null || payload.isEmpty) {
++      await _showNotice(
++        title: 'App unavailable',
++        message:
++            '${suggestion.label} could not be converted to a Screen Time token on this iPhone.',
++      );
++      return;
++    }
++
++    final existingPayloads = _blockedApps
++        .map((app) => _appBindings[app.id]?.nativePayload?.trim())
++        .whereType<String>()
++        .where((value) => value.isNotEmpty)
++        .toSet();
++    final existingBundles = _appBindings.values
++        .map((binding) => binding.nativeIdentifier?.trim())
++        .whereType<String>()
++        .where((value) => value.isNotEmpty)
++        .toSet();
++    final resolvedBundle =
++        encoded?.bundleIdentifier?.trim().isNotEmpty == true
++        ? encoded!.bundleIdentifier!.trim()
++        : suggestion.bundleIdentifier;
++    if (existingPayloads.contains(payload) ||
++        existingBundles.contains(resolvedBundle)) {
++      await _showNotice(
++        title: 'Already blocked',
++        message: '${suggestion.label} is already in your blocked apps.',
++      );
++      return;
++    }
++
++    await _runMutation(() async {
++      final existingLabels = _blockedApps
++          .map((app) => (app.appName ?? '').trim())
++          .where((name) => name.isNotEmpty)
++          .toSet();
++      final label = _resolvedAppLabel(
++        IosFamilyActivitySelection(
++          payload: payload,
++          appName: encoded?.appName ?? suggestion.label,
++          bundleIdentifier: resolvedBundle,
++        ),
++        existingLabels,
++      );
++      final record = await _repo.createBlockedAppRecord(label);
++      if (record == null) return;
++      await _classicLocalStore.saveAppBinding(
++        rowId: record.id,
++        nativeIdentifier: resolvedBundle,
++        nativePayload: payload,
++      );
++    });
++  }
+*** End Patch

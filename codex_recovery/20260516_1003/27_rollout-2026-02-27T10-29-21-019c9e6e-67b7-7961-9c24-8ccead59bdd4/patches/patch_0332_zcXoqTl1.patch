@@ -1,0 +1,75 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/screen_time_screen.dart
+@@
+   Future<void> _showRemainingDialog({
+     required String title,
+     required int limitMinutes,
+     required int usedMinutes,
+   }) {
+@@
+           'Daily limit: ${limitMinutes}m\nUsed today: ${usedMinutes}m\nRemaining today: ${remaining}m',
+     );
+   }
++
++  Future<void> _editDailyLimit({
++    required String title,
++    required int currentMinutes,
++    required Future<void> Function(int minutes) onSave,
++  }) async {
++    final ctrl = TextEditingController(
++      text: currentMinutes > 0 ? '$currentMinutes' : '',
++    );
++
++    final result = await showCupertinoDialog<String>(
++      context: context,
++      builder: (ctx) => CupertinoAlertDialog(
++        title: Text('Daily limit · $title'),
++        content: Padding(
++          padding: const EdgeInsets.only(top: 8),
++          child: CupertinoTextField(
++            controller: ctrl,
++            keyboardType: TextInputType.number,
++            placeholder: 'Minutes per day (0 = blocked)',
++          ),
++        ),
++        actions: [
++          CupertinoDialogAction(
++            onPressed: () => Navigator.pop(ctx),
++            child: const Text('Cancel'),
++          ),
++          CupertinoDialogAction(
++            onPressed: () => Navigator.pop(ctx, 'clear'),
++            child: const Text('Clear limit'),
++          ),
++          CupertinoDialogAction(
++            isDefaultAction: true,
++            onPressed: () => Navigator.pop(ctx, 'save'),
++            child: const Text('Save'),
++          ),
++        ],
++      ),
++    );
++
++    if (!mounted || result == null) {
++      ctrl.dispose();
++      return;
++    }
++
++    if (result == 'clear') {
++      await _runMutation(() => onSave(0));
++      ctrl.dispose();
++      return;
++    }
++
++    final parsed = int.tryParse(ctrl.text.trim());
++    ctrl.dispose();
++    if (parsed == null || parsed < 0) {
++      await _showNotice(
++        title: 'Invalid value',
++        message: 'Please enter a valid number of minutes.',
++      );
++      return;
++    }
++    await _runMutation(() => onSave(parsed));
++  }
+*** End Patch

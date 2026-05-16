@@ -1,0 +1,7 @@
+*** Begin Patch
+*** Update File: lib/components/components.dart
+@@
+ export 'ambient_backdrop.dart';
+ export 'premium_gate_dialog.dart';
++export 'premium_paywall.dart';
+*** End Patch

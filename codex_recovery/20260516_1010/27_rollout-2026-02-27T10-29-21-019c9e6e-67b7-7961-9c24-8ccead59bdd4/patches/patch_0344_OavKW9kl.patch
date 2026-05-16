@@ -1,0 +1,103 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/screen_time_screen.dart
+@@
+-  int _logTotalSeconds() {
+-    return _logs.fold<int>(
+-      0,
+-      (sum, log) => sum + ((log['duration_seconds'] as num?)?.toInt() ?? 0),
+-    );
+-  }
+-
+@@
+   Widget _sectionHeader({
+     required String title,
+     required String subtitle,
+     required Widget? trailing,
+   }) {
+@@
+                 Text(
+                   title,
+                   style: AppTypography.mono.copyWith(
+                     fontSize: 11,
+                     fontWeight: FontWeight.bold,
+                     letterSpacing: 1.0,
+                   ),
+                 ),
+-                const SizedBox(height: 2),
+-                Text(
+-                  subtitle,
+-                  style: AppTypography.mono.copyWith(
+-                    fontSize: 9,
+-                    color: AppColors.tertiaryLabel,
+-                  ),
+-                ),
++                if (subtitle.trim().isNotEmpty) ...[
++                  const SizedBox(height: 2),
++                  Text(
++                    subtitle,
++                    style: AppTypography.mono.copyWith(
++                      fontSize: 9,
++                      color: AppColors.tertiaryLabel,
++                    ),
++                  ),
++                ],
+               ],
+             ),
+           ),
+           if (trailing != null) trailing,
+         ],
+       ),
+     );
+   }
+-
+-  Widget _metric(String label, String value) {
+-    return Expanded(
+-      child: Column(
+-        crossAxisAlignment: CrossAxisAlignment.start,
+-        children: [
+-          Text(
+-            label,
+-            style: AppTypography.mono.copyWith(
+-              fontSize: 9,
+-              color: AppColors.tertiaryLabel,
+-            ),
+-          ),
+-          const SizedBox(height: 4),
+-          Text(
+-            value,
+-            style: AppTypography.mono.copyWith(
+-              fontSize: 13,
+-              fontWeight: FontWeight.bold,
+-            ),
+-          ),
+-        ],
+-      ),
+-    );
+-  }
+@@
+-  Widget _glowSurface({
+-    required Widget child,
+-    required Color glowColor,
+-    double borderRadius = 16,
+-  }) {
+-    return Stack(
+-      children: [
+-        Positioned.fill(
+-          child: IgnorePointer(
+-            child: Container(
+-              margin: const EdgeInsets.all(8),
+-              decoration: BoxDecoration(
+-                borderRadius: BorderRadius.circular(borderRadius),
+-                boxShadow: [
+-                  BoxShadow(color: glowColor, blurRadius: 28, spreadRadius: 1),
+-                ],
+-              ),
+-            ),
+-          ),
+-        ),
+-        child,
+-      ],
+-    );
+-  }
+ }
+*** End Patch

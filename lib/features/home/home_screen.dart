@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart' show Colors;
 import 'package:go_router/go_router.dart';
@@ -168,7 +170,7 @@ class _HomeScreenState extends State<HomeScreen> {
         id: 'Insights',
         label: 'Dashboard',
         icon: CupertinoIcons.graph_square_fill,
-        route: '/stats',
+        route: '/dashboard',
       ),
       _HomeModule(
         id: 'Leaderboard',
@@ -199,6 +201,18 @@ class _HomeScreenState extends State<HomeScreen> {
         label: 'Screen Time',
         icon: CupertinoIcons.device_phone_portrait,
         route: '/screen-time',
+      ),
+      _HomeModule(
+        id: 'ScreenTimeManager',
+        label: 'Manager',
+        icon: CupertinoIcons.shield_lefthalf_fill,
+        route: '/screen-time-manager',
+      ),
+      _HomeModule(
+        id: 'Rank',
+        label: 'Rank',
+        icon: CupertinoIcons.star_fill,
+        route: '/rank',
       ),
       _HomeModule(
         id: 'EventTypes',
@@ -267,7 +281,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 }
                 final data = snapshot.data;
                 if (data == null) {
-                  return const GlassCard(
+                  return GlassCard(
                     padding: EdgeInsets.all(18),
                     borderRadius: 20,
                     child: Center(
@@ -373,7 +387,7 @@ class _HomeHeader extends StatelessWidget {
         CupertinoButton(
           padding: const EdgeInsets.only(right: 6),
           onPressed: onOpenModules,
-          child: const Icon(
+          child: Icon(
             CupertinoIcons.square_grid_2x2,
             color: AppColors.primaryOrange,
             size: 21,
@@ -393,7 +407,7 @@ class _HomeHeader extends StatelessWidget {
                 width: 0.6,
               ),
             ),
-            child: const Icon(
+            child: Icon(
               CupertinoIcons.person_crop_circle,
               color: AppColors.primaryOrange,
               size: 21,
@@ -413,7 +427,7 @@ class _ControlCenterCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => context.push('/stats'),
+      onTap: () => context.push('/dashboard'),
       child: GlassCard(
         padding: const EdgeInsets.all(20),
         borderRadius: 24,
@@ -426,7 +440,7 @@ class _ControlCenterCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                const Icon(
+                Icon(
                   CupertinoIcons.chart_bar_alt_fill,
                   color: AppColors.primaryOrange,
                   size: 18,
@@ -592,7 +606,7 @@ class _ModuleGrid extends StatelessWidget {
                             ),
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: const Icon(
+                          child: Icon(
                             CupertinoIcons.add,
                             size: 12,
                             color: AppColors.secondaryLabel,

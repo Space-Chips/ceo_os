@@ -1,0 +1,14 @@
+*** Begin Patch
+*** Update File: lib/features/widget_configuration/widget_configuration_screen.dart
+@@
+     final raw = await HomeWidget.getWidgetData<String>(
+       CeoHomeWidgetService.keyDefaultMode,
+       defaultValue: CeoWidgetMode.dashboard.name,
+     );
+     setState(() {
+-      _mode = CeoWidgetMode.tryParse(raw) ?? CeoWidgetMode.dashboard;
++      _mode = CeoWidgetModeParsing.tryParse(raw) ?? CeoWidgetMode.dashboard;
+       _loading = false;
+     });
+   }
+*** End Patch

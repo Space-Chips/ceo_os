@@ -1,0 +1,98 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/android/app/src/main/kotlin/com/wakeapp/ceoos/blocking/LauncherOverlayController.kt
+@@
+ class LauncherOverlayController(
+     private val service: AccessibilityService,
+     private val onBlockedIconTapped: (String) -> Unit,
+ ) {
+     private data class OverlayEntry(
+-        val key: OverlayKey,
++        var key: OverlayKey,
+         val view: View,
++        var bounds: Rect,
+     )
+@@
+         val desired = visibleTargets
+             .filter { blockedPackages.contains(it.packageName) }
+             .associateBy(OverlayKey::from)
++            .toMutableMap()
++
++        // First pass: update/move overlays that still represent the same visual occurrence.
++        for ((_, entry) in overlays) {
++            val matched = desired[entry.key]
++            if (matched != null) {
++                maybeMoveOverlay(entry, matched.bounds)
++                desired.remove(entry.key)
++            }
++        }
++
++        // Second pass: fuzzy match by package+label with strong overlap to avoid remove/add flicker on swipe.
++        val remainingEntries = overlays.values.filter { entry -> !desired.containsKey(entry.key) }
++        val remainingTargets = desired.values.toMutableList()
++        for (entry in remainingEntries) {
++            val target = remainingTargets
++                .filter { it.packageName == entry.key.packageName && it.label == entry.key.label }
++                .firstOrNull { intersectionOverMinArea(entry.bounds, it.bounds) >= 0.45f }
++                ?: continue
++            maybeMoveOverlay(entry, target.bounds)
++            val newKey = OverlayKey.from(target)
++            overlays.remove(entry.key)
++            entry.key = newKey
++            overlays[newKey] = entry
++            desired.remove(newKey)
++            remainingTargets.remove(target)
++        }
+ 
+         val iterator = overlays.entries.iterator()
+         while (iterator.hasNext()) {
+             val (key, entry) = iterator.next()
+             if (!desired.containsKey(key)) {
+@@
+         desired.forEach { (key, target) ->
+             if (overlays.containsKey(key)) return@forEach
+             val view = createOverlayView(target.packageName)
+             addOverlay(view, target.bounds)
+-            overlays[key] = OverlayEntry(key = key, view = view)
++            overlays[key] = OverlayEntry(key = key, view = view, bounds = Rect(target.bounds))
+         }
+     }
+@@
+     private fun removeOverlay(view: View) {
+         try {
+             windowManager?.removeViewImmediate(view)
+         } catch (_: Exception) {
+         }
+     }
++
++    private fun maybeMoveOverlay(entry: OverlayEntry, newBounds: Rect) {
++        if (entry.bounds == newBounds) return
++        val params = buildLayoutParams(newBounds)
++        try {
++            windowManager?.updateViewLayout(entry.view, params)
++            entry.bounds = Rect(newBounds)
++        } catch (_: Exception) {
++        }
++    }
+@@
+     private fun dp(value: Int): Int {
+         return TypedValue.applyDimension(
+             TypedValue.COMPLEX_UNIT_DIP,
+             value.toFloat(),
+             service.resources.displayMetrics,
+         ).toInt()
+     }
++
++    private fun intersectionOverMinArea(a: Rect, b: Rect): Float {
++        val left = maxOf(a.left, b.left)
++        val top = maxOf(a.top, b.top)
++        val right = minOf(a.right, b.right)
++        val bottom = minOf(a.bottom, b.bottom)
++        val width = (right - left).coerceAtLeast(0)
++        val height = (bottom - top).coerceAtLeast(0)
++        if (width == 0 || height == 0) return 0f
++        val intersection = width * height
++        val minArea = minOf(a.width() * a.height(), b.width() * b.height()).coerceAtLeast(1)
++        return intersection.toFloat() / minArea.toFloat()
++    }
+ }
+*** End Patch

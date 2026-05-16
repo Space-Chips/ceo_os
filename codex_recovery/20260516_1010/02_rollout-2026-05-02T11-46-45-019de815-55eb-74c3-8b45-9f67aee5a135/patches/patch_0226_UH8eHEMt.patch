@@ -1,0 +1,14 @@
+*** Begin Patch
+*** Update File: lib/features/premium/upgrade_screen.dart
+@@
+                         } finally {
+-                          if (mounted)
+-                            setState(() => _purchaseInFlight = false);
++                          if (mounted) {
++                            setState(() => _purchaseInFlight = false);
++                          }
+                         }
+                       }
+                     : null,
+               ),
+*** End Patch

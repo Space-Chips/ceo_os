@@ -1,0 +1,11 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/services/stats_engine.dart
+@@
+   List<MilestoneShareCard> _buildMilestoneCards(LifetimeStats? lifetime) {
+-    if (lifetime == null || lifetime.milestonesUnlocked.isEmpty)
++    if (lifetime == null || lifetime.milestonesUnlocked.isEmpty) {
+       return const [];
++    }
+     return lifetime.milestonesUnlocked
+         .map((milestone) {
+*** End Patch

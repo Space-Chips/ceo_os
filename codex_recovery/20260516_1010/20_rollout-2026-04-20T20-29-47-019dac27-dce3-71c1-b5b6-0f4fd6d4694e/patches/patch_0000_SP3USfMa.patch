@@ -1,0 +1,8 @@
+*** Begin Patch
+*** Add File: android/app/src/main/kotlin/com/wakeapp/ceoos/CeoDeviceAdminReceiver.kt
++package com.wakeapp.ceoos
++
++import android.app.admin.DeviceAdminReceiver
++
++class CeoDeviceAdminReceiver : DeviceAdminReceiver()
+*** End Patch

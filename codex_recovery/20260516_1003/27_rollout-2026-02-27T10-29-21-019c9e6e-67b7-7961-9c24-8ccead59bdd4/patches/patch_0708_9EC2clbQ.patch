@@ -1,0 +1,17 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/rank/rank_screen.dart
+@@
+   Widget _rankIconContainer(_RankTierData tier, {required double iconSize}) {
+     final artSize = iconSize >= 64 ? RankArtSize.hero : RankArtSize.md;
+     final containerSize = iconSize + 2;
+-    final artDimension = iconSize + 34;
++    final artDimension = containerSize;
+     return Container(
+       width: containerSize,
+       height: containerSize,
++      clipBehavior: Clip.antiAlias,
+       decoration: BoxDecoration(
+         color: AppColors.white.withValues(alpha: 0.05),
+         borderRadius: BorderRadius.circular(14),
+       ),
+*** End Patch

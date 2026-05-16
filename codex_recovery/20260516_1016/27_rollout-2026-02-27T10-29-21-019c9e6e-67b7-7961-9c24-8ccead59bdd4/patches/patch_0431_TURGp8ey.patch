@@ -1,0 +1,165 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/home/home_screen.dart
+@@
+   @override
+   Widget build(BuildContext context) {
+     return _InteractiveLift(
+       onTap: onOpenDashboard,
+-      borderRadius: 36,
+-      hoverScale: 1.03,
+-      pressedScale: 1.045,
+-      glowColor: AppColors.accentSecondary.withValues(alpha: 0.9),
++      borderRadius: 30,
++      hoverScale: 1.018,
++      pressedScale: 1.028,
++      glowColor: AppColors.edgeGlow,
+       child: GlassCard(
+-        padding: const EdgeInsets.all(18),
+-        borderRadius: 36,
++        padding: const EdgeInsets.all(16),
++        borderRadius: 30,
+         level: GlassCardLevel.elevated,
+-        showEdgeGlow: true,
++        showEdgeGlow: false,
+         gradientColors: [
+-          AppColors.floatingGlassGradient.first.withValues(alpha: 0.94),
+-          AppColors.floatingGlassGradient.last.withValues(alpha: 0.9),
++          AppColors.cardRaised,
++          AppColors.cardBase,
+         ],
+-        border: Border.all(
+-          color: AppColors.glassBorder.withValues(alpha: 0.74),
+-          width: 1.26,
+-        ),
++        border: Border.all(color: AppColors.borderStrong, width: 1),
+         child: SizedBox(
+-          height: 152,
++          height: 150,
+           child: Row(
+             crossAxisAlignment: CrossAxisAlignment.center,
+             children: [
+               Container(
+-                width: 84,
+-                height: 84,
++                width: 78,
++                height: 78,
+                 decoration: BoxDecoration(
+-                  borderRadius: BorderRadius.circular(24),
++                  borderRadius: BorderRadius.circular(20),
+                   gradient: LinearGradient(
+                     begin: Alignment.topLeft,
+                     end: Alignment.bottomRight,
+                     colors: [
+-                      AppColors.backgroundLight.withValues(alpha: 0.95),
+-                      AppColors.background.withValues(alpha: 0.9),
++                      AppColors.surfaceMuted,
++                      AppColors.surface,
+                     ],
+                   ),
+-                  border: Border.all(
+-                    color: AppColors.glassBorder.withValues(alpha: 0.6),
+-                    width: 0.96,
+-                  ),
++                  border: Border.all(color: AppColors.border, width: 0.9),
+                 ),
+                 child: Icon(
+                   CupertinoIcons.chart_bar_alt_fill,
+-                  color: AppColors.accentSecondary,
+-                  size: 36,
++                  color: AppColors.accent,
++                  size: 30,
+                 ),
+               ),
+-              const SizedBox(width: 12),
++              const SizedBox(width: 14),
+               Expanded(
+                 child: Column(
+                   crossAxisAlignment: CrossAxisAlignment.start,
+                   mainAxisAlignment: MainAxisAlignment.center,
+                   children: [
+                     Text(
+                       'Dashboard',
+                       maxLines: 1,
+                       overflow: TextOverflow.ellipsis,
+-                      style: AppTypography.mono.copyWith(
+-                        fontSize: 24,
+-                        fontWeight: FontWeight.w900,
+-                        color: AppColors.label,
+-                      ),
++                      style: AppTypography.title1.copyWith(fontSize: 48 / 2),
+                     ),
+-                    const SizedBox(height: 4),
++                    const SizedBox(height: 2),
+                     Text(
+                       'Your daily control center',
+-                      style: AppTypography.mono.copyWith(
+-                        fontSize: 14,
+-                        color: AppColors.tertiaryLabel,
+-                      ),
++                      style: AppTypography.callout.copyWith(
++                        color: AppColors.secondaryLabel,
++                      ),
+                     ),
+-                    const SizedBox(height: 8),
++                    const SizedBox(height: 6),
+                     Text(
+                       userLabel,
+                       maxLines: 1,
+                       overflow: TextOverflow.ellipsis,
+-                      style: AppTypography.mono.copyWith(
+-                        fontSize: 10,
+-                        color: AppColors.secondaryLabel,
+-                      ),
++                      style: AppTypography.caption1.copyWith(
++                        color: AppColors.tertiaryLabel,
++                      ),
+                     ),
+                   ],
+                 ),
+               ),
+-              const SizedBox(width: 8),
++              const SizedBox(width: 6),
+               Container(
+-                width: 80,
+-                height: 80,
++                width: 74,
++                height: 74,
+                 decoration: BoxDecoration(
+-                  borderRadius: BorderRadius.circular(22),
+-                  color: AppColors.accentSecondary.withValues(alpha: 0.15),
++                  borderRadius: BorderRadius.circular(20),
++                  color: AppColors.accentSoft.withValues(alpha: 0.15),
+                   border: Border.all(
+-                    color: AppColors.accentSecondary.withValues(alpha: 0.7),
+-                    width: 1.34,
++                    color: AppColors.accent.withValues(alpha: 0.65),
++                    width: 1.1,
+                   ),
+                 ),
+                 child: Column(
+                   mainAxisAlignment: MainAxisAlignment.center,
+                   children: [
+                     Text(
+                       '$habitsCount',
+-                      style: AppTypography.mono.copyWith(
+-                        fontSize: 32,
+-                        fontWeight: FontWeight.w900,
+-                        color: AppColors.accentSecondary,
++                      style: AppTypography.timer.copyWith(
++                        fontSize: 30,
++                        fontWeight: FontWeight.w700,
++                        color: AppColors.accent,
+                       ),
+                     ),
+                     Text(
+                       'HABITS',
+-                      style: AppTypography.mono.copyWith(
++                      style: AppTypography.overline.copyWith(
+                         fontSize: 9,
+-                        fontWeight: FontWeight.bold,
+                         color: AppColors.secondaryLabel,
+-                        letterSpacing: 1.2,
+                       ),
+                     ),
+                   ],
+*** End Patch

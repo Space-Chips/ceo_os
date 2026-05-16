@@ -1,0 +1,88 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/leaderboard/leaderboard_screen.dart
+@@
+ import '../../components/components.dart';
+ import '../../core/models/user_models.dart';
+ import '../../core/repositories/user_repository.dart';
+ import '../../core/theme/app_colors.dart';
+ import '../../core/theme/app_typography.dart';
++import '../../core/widgets/rank_art.dart';
+@@
+                           const SizedBox(height: 3),
+-                          Text(
+-                            '${row.rankName ?? 'Bronze'} • ${row.winStreak ?? 0} day streak',
+-                            style: AppTypography.footnote.copyWith(
+-                              fontSize: 13,
+-                              color: AppColors.secondaryLabel.withValues(
+-                                alpha: 0.72,
+-                              ),
+-                            ),
+-                          ),
++                          _rankSummary(
++                            row.rankName ?? 'Bronze',
++                            row.winStreak ?? 0,
++                          ),
+                         ],
+                       ),
+                     ),
+@@
+                           const SizedBox(height: 3),
+-                          Text(
+-                            '${row.friendRankName ?? 'Bronze'} • ${row.friendWinStreak ?? 0} day streak',
+-                            style: AppTypography.footnote.copyWith(
+-                              fontSize: 13,
+-                              color: AppColors.secondaryLabel.withValues(
+-                                alpha: 0.72,
+-                              ),
+-                            ),
+-                          ),
++                          _rankSummary(
++                            row.friendRankName ?? 'Bronze',
++                            row.friendWinStreak ?? 0,
++                          ),
+                         ],
+                       ),
+                     ),
+@@
+               ),
+               const SizedBox(height: 4),
+-              Text(
+-                '${entry.rankName ?? 'Bronze'} • ${entry.winStreak ?? 0} day streak',
+-                style: AppTypography.footnote.copyWith(
+-                  fontSize: 13,
+-                  color: AppColors.secondaryLabel.withValues(alpha: 0.72),
+-                ),
+-              ),
++              _rankSummary(entry.rankName ?? 'Bronze', entry.winStreak ?? 0),
+             ],
+           ),
+         ),
+       ),
+     );
+   }
++
++  Widget _rankSummary(String rankName, int streak) {
++    return Row(
++      children: [
++        RankArt(
++          rankName: rankName,
++          size: RankArtSize.xs,
++          dimension: 16,
++        ),
++        const SizedBox(width: 6),
++        Expanded(
++          child: Text(
++            '$rankName • $streak day streak',
++            maxLines: 1,
++            overflow: TextOverflow.ellipsis,
++            style: AppTypography.footnote.copyWith(
++              fontSize: 13,
++              color: AppColors.secondaryLabel.withValues(alpha: 0.72),
++            ),
++          ),
++        ),
++      ],
++    );
++  }
+ }
+*** End Patch

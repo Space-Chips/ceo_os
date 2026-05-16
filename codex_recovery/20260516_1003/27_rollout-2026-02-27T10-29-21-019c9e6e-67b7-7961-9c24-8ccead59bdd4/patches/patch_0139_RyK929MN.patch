@@ -1,0 +1,209 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/auth/onboarding_screen.dart
+@@
+   @override
+   Widget build(BuildContext context) {
+     final showingQuestionnaire = _page >= _slides.length;
++    final totalSteps = _slides.length + 1;
++    final currentStep = showingQuestionnaire ? totalSteps : (_page + 1);
++    final progress = currentStep / totalSteps;
+ 
+     return CupertinoPageScaffold(
+       backgroundColor: AppColors.background,
+       child: Stack(
+         children: [
+@@
+                   Row(
+                     children: [
+                       Text(
+                         'CEO OS',
+                         style: AppTypography.mono.copyWith(
+@@
+                       ),
+                       const Spacer(),
++                      Container(
++                        padding: const EdgeInsets.symmetric(
++                          horizontal: 8,
++                          vertical: 4,
++                        ),
++                        decoration: BoxDecoration(
++                          borderRadius: BorderRadius.circular(8),
++                          color: AppColors.backgroundLight.withValues(
++                            alpha: 0.72,
++                          ),
++                          border: Border.all(
++                            color: AppColors.glassBorder,
++                            width: 0.5,
++                          ),
++                        ),
++                        child: Text(
++                          'STEP $currentStep/$totalSteps',
++                          style: AppTypography.mono.copyWith(
++                            fontSize: 8,
++                            color: AppColors.secondaryLabel,
++                            fontWeight: FontWeight.bold,
++                            letterSpacing: 0.8,
++                          ),
++                        ),
++                      ),
++                      const SizedBox(width: 10),
+                       CupertinoButton(
+                         padding: EdgeInsets.zero,
+                         minimumSize: Size.zero,
+                         onPressed: () => context.go('/login'),
+                         child: Text(
+@@
+                       ),
+                     ],
+                   ),
++                  const SizedBox(height: 10),
++                  Container(
++                    height: 4,
++                    decoration: BoxDecoration(
++                      borderRadius: BorderRadius.circular(4),
++                      color: AppColors.backgroundLight.withValues(alpha: 0.6),
++                    ),
++                    child: FractionallySizedBox(
++                      widthFactor: progress.clamp(0, 1),
++                      alignment: Alignment.centerLeft,
++                      child: Container(
++                        decoration: BoxDecoration(
++                          borderRadius: BorderRadius.circular(4),
++                          gradient: LinearGradient(
++                            colors: [
++                              AppColors.primaryOrange,
++                              AppColors.primaryOrange.withValues(alpha: 0.72),
++                            ],
++                          ),
++                        ),
++                      ),
++                    ),
++                  ),
+                   const SizedBox(height: 10),
+                   Expanded(
+                     child: showingQuestionnaire
+                         ? _Questionnaire(
+@@
+ class _Slide extends StatelessWidget {
+@@
+   @override
+   Widget build(BuildContext context) {
+     return Column(
+       mainAxisAlignment: MainAxisAlignment.center,
+       children: [
+-        GlassCard(
+-          padding: const EdgeInsets.all(28),
+-          borderRadius: 28,
+-          child: Icon(icon, size: 46, color: AppColors.primaryOrange),
++        Stack(
++          children: [
++            Positioned.fill(
++              child: IgnorePointer(
++                child: Container(
++                  margin: const EdgeInsets.all(10),
++                  decoration: BoxDecoration(
++                    borderRadius: BorderRadius.circular(28),
++                    boxShadow: [
++                      BoxShadow(
++                        color: AppColors.primaryOrange.withValues(alpha: 0.16),
++                        blurRadius: 26,
++                        spreadRadius: 1,
++                      ),
++                    ],
++                  ),
++                ),
++              ),
++            ),
++            GlassCard(
++              padding: const EdgeInsets.all(28),
++              borderRadius: 28,
++              border: Border.all(
++                color: AppColors.primaryOrange.withValues(alpha: 0.25),
++                width: 0.7,
++              ),
++              child: Icon(icon, size: 46, color: AppColors.primaryOrange),
++            ),
++          ],
+         ),
+         const SizedBox(height: 28),
+         Text(
+           title,
+@@
+ class _Questionnaire extends StatelessWidget {
+@@
+   @override
+   Widget build(BuildContext context) {
++    final selectedTheme = ThemeCatalog.resolveById(selectedThemePresetId);
+     return ListView(
+       children: [
+         Text(
+           'Quick setup',
+@@
+         _ThemeSelectorBlock(
+           selectedThemePresetId: selectedThemePresetId,
+           onThemeSelected: onThemeSelected,
+         ),
++        const SizedBox(height: 10),
++        GlassCard(
++          padding: const EdgeInsets.all(12),
++          borderRadius: 14,
++          border: Border.all(
++            color: AppColors.primaryOrange.withValues(alpha: 0.18),
++            width: 0.55,
++          ),
++          child: Column(
++            crossAxisAlignment: CrossAxisAlignment.start,
++            children: [
++              Text(
++                'OPERATING_PROFILE'.toUpperCase(),
++                style: AppTypography.mono.copyWith(
++                  fontSize: 9,
++                  color: AppColors.tertiaryLabel,
++                  letterSpacing: 1.1,
++                ),
++              ),
++              const SizedBox(height: 8),
++              _summaryRow('GOAL', goal.toUpperCase()),
++              const SizedBox(height: 4),
++              _summaryRow('DISCIPLINE', discipline.toUpperCase()),
++              const SizedBox(height: 4),
++              _summaryRow('FOCUS', focusChallenge.toUpperCase()),
++              const SizedBox(height: 4),
++              _summaryRow('THEME', selectedTheme.name.toUpperCase()),
++            ],
++          ),
++        ),
+       ],
+     );
+   }
++
++  Widget _summaryRow(String label, String value) {
++    return Row(
++      children: [
++        SizedBox(
++          width: 72,
++          child: Text(
++            label,
++            style: AppTypography.mono.copyWith(
++              fontSize: 9,
++              color: AppColors.tertiaryLabel,
++            ),
++          ),
++        ),
++        Expanded(
++          child: Text(
++            value,
++            maxLines: 1,
++            overflow: TextOverflow.ellipsis,
++            style: AppTypography.mono.copyWith(
++              fontSize: 10,
++              color: AppColors.secondaryLabel,
++              fontWeight: FontWeight.bold,
++            ),
++          ),
++        ),
++      ],
++    );
++  }
+ }
+*** End Patch

@@ -1,0 +1,92 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/repositories/habit_repository.dart
+@@
+ import 'package:supabase_flutter/supabase_flutter.dart';
+ import 'package:intl/intl.dart';
+ import '../models/habit_models.dart';
+ import '../services/supabase_service.dart';
++import '../utils/app_logger.dart';
+@@
+     } catch (e) {
+-      print('Error getting habits: $e');
++      AppLogger.error('Error getting habits.', e);
+       return [];
+     }
+   }
+@@
+     } catch (e) {
+-      print('Error creating habit: $e');
++      AppLogger.error('Error creating habit.', e);
+       return null;
+     }
+   }
+ 
+   Future<void> archiveHabit(String habitId) async {
+-    await _client.from('habits').update({'archived': true}).eq('id', habitId);
++    await _client
++        .from('habits')
++        .update({'archived': true})
++        .eq('id', habitId)
++        .eq('created_by', _currentUserId);
+   }
+@@
+     } catch (e) {
+-      print('Error getting completions: $e');
++      AppLogger.error('Error getting completions.', e);
+       return [];
+     }
+   }
+@@
+     } catch (e) {
+-      print('Error getting completions for date: $e');
++      AppLogger.error('Error getting completions for date.', e);
+       return [];
+     }
+   }
+@@
+     } catch (e) {
+-      print('Error getting completions range: $e');
++      AppLogger.error('Error getting completions range.', e);
+       return [];
+     }
+   }
+@@
+     final existing = await _client
+         .from('habit_completions')
+         .select()
+         .eq('habit_id', habitId)
++        .eq('created_by', _currentUserId)
+         .eq('date', dateStr)
+         .maybeSingle();
+@@
+       await _client
+           .from('habit_completions')
+           .update({
+             'completed': !current,
+             'state': amount
+                 ?.toString(), // Use state to store the amount if needed
+           })
+-          .eq('id', existing['id']);
++          .eq('id', existing['id'])
++          .eq('created_by', _currentUserId);
+@@
+     await _client
+         .from('habit_completions')
+         .update({
+@@
+           'checked_in_date': completed
+               ? DateTime.now().toIso8601String()
+               : null,
+         })
+-        .eq('id', existing['id']);
++        .eq('id', existing['id'])
++        .eq('created_by', _currentUserId);
+   }
+@@
+     } catch (e) {
+-      print('Error getting habit logs: $e');
++      AppLogger.error('Error getting habit logs.', e);
+       return [];
+     }
+   }
+*** End Patch

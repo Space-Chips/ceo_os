@@ -1,0 +1,20 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/services/stats_engine.dart
+@@
+   int _rankLevelForName(String rankName) {
+     switch (rankName.trim().toLowerCase()) {
+       case 'asleep':
+       case 'panda':
+       case 'starter':
+         return 0;
+@@
+       case 'diamond':
+         return 5;
+       case 'batman':
++      case 'immortal':
+       case 'sigma':
+         return 6;
+       case 'awakened':
+       case 'ceo':
+         return 7;
+*** End Patch

@@ -1,0 +1,20 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/repositories/premium_repository.dart
+@@
+       final premiumRow = await _client
+           .from('app_configs')
+           .select('config_value')
+           .eq('config_key', 'premium')
+           .maybeSingle();
+ 
+       final premiumConfig = premiumRow?['config_value'];
+-      if (premiumConfig is Map<String, dynamic>) {
+-        return PremiumConfig.fromAppConfig(premiumConfig);
++      if (premiumConfig is Map) {
++        return PremiumConfig.fromAppConfig(
++          Map<String, dynamic>.from(premiumConfig),
++        );
+@@
+-  Future<void> _syncLaunchEntitlementsIfNeeded(PremiumConfig config) async {
++  Future<void> _syncLaunchEntitlementsIfNeeded(PremiumConfig _config) async {
+*** End Patch

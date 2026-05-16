@@ -1,0 +1,53 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/services/focus_service.dart
+@@
+ enum PrivateScreenTimeSummaryStatus {
+   available,
+   requiresAuthorization,
+   requiresFullRelaunch,
+   unavailableOnSimulator,
+   unsupported,
+ }
++
++enum AndroidProtectionStep {
++  accessibility,
++  overlay,
++  usageAccess,
++  complete,
++  unknown,
++}
+@@
+ class FocusService {
+@@
+   Future<FocusProtectionStatus> getProtectionStatus() async {
+@@
+   }
++
++  Future<AndroidProtectionStep> getNextAndroidProtectionStep() async {
++    const method = 'getNextProtectionStep';
++    if (_shouldSkipMissingMethod(method)) return AndroidProtectionStep.unknown;
++    try {
++      final String? result = await _channel.invokeMethod<String>(method);
++      switch ((result ?? '').trim().toLowerCase()) {
++        case 'accessibility':
++          return AndroidProtectionStep.accessibility;
++        case 'overlay':
++          return AndroidProtectionStep.overlay;
++        case 'usage_access':
++          return AndroidProtectionStep.usageAccess;
++        case 'complete':
++          return AndroidProtectionStep.complete;
++        default:
++          return AndroidProtectionStep.unknown;
++      }
++    } on PlatformException catch (e) {
++      AppLogger.error("Failed to read next Android protection step: '${e.message}'.");
++      return AndroidProtectionStep.unknown;
++    } on MissingPluginException {
++      _markMissingMethod(method);
++      return AndroidProtectionStep.unknown;
++    }
++  }
+ 
+   Future<bool> openSystemSettings() async {
+*** End Patch

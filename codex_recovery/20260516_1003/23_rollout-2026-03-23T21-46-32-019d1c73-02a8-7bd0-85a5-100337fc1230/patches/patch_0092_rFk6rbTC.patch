@@ -1,0 +1,251 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/ceo_mode/ceo_mode_screen.dart
+@@
+   Widget _exitPendingView(CeoModeProvider ceo) {
+-    return ListView(
+-      padding: const EdgeInsets.symmetric(horizontal: 6),
+-      children: [
+-        _glowSurface(
+-          glowColor: AppColors.error.withValues(alpha: 0.22),
+-          borderRadius: 220,
+-          child: Container(
+-            width: double.infinity,
+-            padding: const EdgeInsets.all(10),
+-            child: AspectRatio(
+-              aspectRatio: 1,
+-              child: GlassCard(
+-                padding: const EdgeInsets.all(10),
+-                borderRadius: 999,
+-                level: GlassCardLevel.elevated,
+-                showEdgeGlow: true,
+-                border: Border.all(
+-                  color: AppColors.error.withValues(alpha: 0.52),
+-                  width: 1.1,
+-                ),
+-                gradientColors: [
+-                  AppColors.primaryOrange.withValues(alpha: 0.25),
+-                  AppColors.backgroundLight.withValues(alpha: 0.9),
+-                ],
+-                child: Column(
+-                  mainAxisAlignment: MainAxisAlignment.center,
+-                  children: [
+-                    Icon(
+-                      CupertinoIcons.timer_fill,
+-                      size: 40,
+-                      color: AppColors.primaryOrange,
+-                    ),
+-                    const SizedBox(height: 8),
+-                    Text(
+-                      'EXIT COUNTDOWN',
+-                      style: AppTypography.mono.copyWith(
+-                        fontSize: 13,
+-                        color: AppColors.warning,
+-                        fontWeight: FontWeight.w900,
+-                        letterSpacing: 1.8,
+-                      ),
+-                    ),
+-                    const SizedBox(height: 8),
+-                    Text(
+-                      ceo.exitCountdownLabel,
+-                      style: AppTypography.timer.copyWith(
+-                        fontSize: 72,
+-                        fontWeight: FontWeight.w900,
+-                        color: AppColors.primaryOrange,
+-                        height: 0.9,
+-                      ),
+-                    ),
+-                  ],
+-                ),
+-              ),
+-            ),
+-          ),
+-        ),
+-        const SizedBox(height: 8),
+-        Text(
+-          'If your screen turns off, countdown restarts to 10:00.',
+-          textAlign: TextAlign.center,
+-          style: AppTypography.mono.copyWith(
+-            fontSize: 12,
+-            color: AppColors.secondaryLabel,
+-          ),
+-        ),
+-        const SizedBox(height: 14),
+-        LiquidButton(
+-          label: 'RETURN TO SESSION',
+-          fullWidth: true,
+-          onPressed: ceo.returnToSession,
+-        ),
+-        const SizedBox(height: 10),
+-        Opacity(
+-          opacity: ceo.canFinalizeExit ? 1 : 0.45,
+-          child: LiquidButton(
+-            label: ceo.canFinalizeExit ? 'QUIT NOW' : 'WAIT FOR COUNTDOWN',
+-            fullWidth: true,
+-            onPressed: ceo.canFinalizeExit ? ceo.finalizeExit : null,
+-          ),
+-        ),
+-      ],
++    return LayoutBuilder(
++      builder: (context, constraints) {
++        final dialSize = constraints.maxWidth.clamp(260.0, 340.0);
++
++        return ListView(
++          padding: const EdgeInsets.fromLTRB(8, 6, 8, 22),
++          children: [
++            Center(
++              child: ConstrainedBox(
++                constraints: const BoxConstraints(maxWidth: 380),
++                child: Column(
++                  children: [
++                    _glowSurface(
++                      glowColor: AppColors.error.withValues(alpha: 0.16),
++                      borderRadius: 220,
++                      child: SizedBox(
++                        width: dialSize,
++                        height: dialSize,
++                        child: DecoratedBox(
++                          decoration: BoxDecoration(
++                            shape: BoxShape.circle,
++                            gradient: RadialGradient(
++                              center: const Alignment(0, -0.08),
++                              radius: 0.92,
++                              colors: [
++                                AppColors.backgroundLight.withValues(alpha: 0.96),
++                                AppColors.cardBackgroundAlt.withValues(alpha: 0.96),
++                                AppColors.background.withValues(alpha: 0.98),
++                              ],
++                              stops: const [0, 0.62, 1],
++                            ),
++                            border: Border.all(
++                              color: AppColors.error.withValues(alpha: 0.38),
++                              width: 1.15,
++                            ),
++                            boxShadow: [
++                              BoxShadow(
++                                color: AppColors.error.withValues(alpha: 0.12),
++                                blurRadius: 44,
++                                spreadRadius: -10,
++                              ),
++                              BoxShadow(
++                                color: AppColors.black.withValues(alpha: 0.22),
++                                blurRadius: 28,
++                                offset: const Offset(0, 14),
++                                spreadRadius: -12,
++                              ),
++                            ],
++                          ),
++                          child: Stack(
++                            alignment: Alignment.center,
++                            children: [
++                              Container(
++                                width: dialSize * 0.82,
++                                height: dialSize * 0.82,
++                                decoration: BoxDecoration(
++                                  shape: BoxShape.circle,
++                                  border: Border.all(
++                                    color: AppColors.white.withValues(alpha: 0.04),
++                                    width: 1,
++                                  ),
++                                ),
++                              ),
++                              Container(
++                                width: dialSize * 0.56,
++                                height: dialSize * 0.56,
++                                decoration: BoxDecoration(
++                                  shape: BoxShape.circle,
++                                  color: AppColors.white.withValues(alpha: 0.015),
++                                ),
++                              ),
++                              Padding(
++                                padding: const EdgeInsets.symmetric(horizontal: 24),
++                                child: Column(
++                                  mainAxisAlignment: MainAxisAlignment.center,
++                                  children: [
++                                    Container(
++                                      width: 44,
++                                      height: 44,
++                                      decoration: BoxDecoration(
++                                        shape: BoxShape.circle,
++                                        color: AppColors.white.withValues(alpha: 0.055),
++                                        border: Border.all(
++                                          color: AppColors.white.withValues(alpha: 0.08),
++                                        ),
++                                      ),
++                                      alignment: Alignment.center,
++                                      child: Icon(
++                                        CupertinoIcons.timer,
++                                        size: 22,
++                                        color: AppColors.secondaryLabel,
++                                      ),
++                                    ),
++                                    const SizedBox(height: 18),
++                                    Text(
++                                      'EXIT COUNTDOWN',
++                                      textAlign: TextAlign.center,
++                                      style: AppTypography.overline.copyWith(
++                                        fontSize: 12,
++                                        color: AppColors.warning,
++                                        fontWeight: FontWeight.w700,
++                                        letterSpacing: 1.8,
++                                      ),
++                                    ),
++                                    const SizedBox(height: 10),
++                                    Text(
++                                      ceo.exitCountdownLabel,
++                                      textAlign: TextAlign.center,
++                                      style: AppTypography.heroDisplay.copyWith(
++                                        fontSize: dialSize < 300 ? 62 : 72,
++                                        fontWeight: FontWeight.w700,
++                                        color: AppColors.label,
++                                        letterSpacing: -2.6,
++                                      ),
++                                    ),
++                                  ],
++                                ),
++                              ),
++                            ],
++                          ),
++                        ),
++                      ),
++                    ),
++                    const SizedBox(height: 18),
++                    ConstrainedBox(
++                      constraints: const BoxConstraints(maxWidth: 290),
++                      child: Text(
++                        'If your screen turns off, countdown restarts to 10:00.',
++                        textAlign: TextAlign.center,
++                        style: AppTypography.footnote.copyWith(
++                          fontSize: 13,
++                          height: 1.42,
++                          color: AppColors.secondaryLabel.withValues(alpha: 0.74),
++                        ),
++                      ),
++                    ),
++                    const SizedBox(height: 18),
++                    LiquidButton(
++                      label: 'RETURN TO SESSION',
++                      fullWidth: true,
++                      onPressed: ceo.returnToSession,
++                    ),
++                    const SizedBox(height: 10),
++                    Opacity(
++                      opacity: ceo.canFinalizeExit ? 1 : 0.45,
++                      child: LiquidButton(
++                        label: ceo.canFinalizeExit
++                            ? 'QUIT NOW'
++                            : 'WAIT FOR COUNTDOWN',
++                        fullWidth: true,
++                        onPressed: ceo.canFinalizeExit ? ceo.finalizeExit : null,
++                      ),
++                    ),
++                  ],
++                ),
++              ),
++            ),
++          ],
++        );
++      },
++    );
+-    );
+   }
+*** End Patch

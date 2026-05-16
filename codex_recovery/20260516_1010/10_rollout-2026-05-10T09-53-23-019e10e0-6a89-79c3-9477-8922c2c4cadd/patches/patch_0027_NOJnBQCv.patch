@@ -1,0 +1,13 @@
+*** Begin Patch
+*** Update File: lib/components/premium_paywall.dart
+@@
+               _HeroPricePill(
+                 isFr: widget.isFr,
+                 priceLabel: hero.priceLabel,
+                 durationLabel: hero.durationLabel,
++                primaryTextColor: palette.primary,
++                secondaryTextColor: palette.secondary,
++                accentColor: palette.accent,
+               ),
+             ],
+*** End Patch

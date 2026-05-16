@@ -1,0 +1,40 @@
+*** Begin Patch
+*** Update File: lib/core/widgets/home_widgets/widget_views.dart
+@@
+-class _StatRow extends StatelessWidget {
+-  final String label;
+-  final String value;
+-
+-  const _StatRow({required this.label, required this.value});
+-
+-  @override
+-  Widget build(BuildContext context) {
+-    return Row(
+-      children: [
+-        Expanded(
+-          child: Text(
+-            label,
+-            maxLines: 1,
+-            overflow: TextOverflow.ellipsis,
+-            style: WidgetDesignTokens.subtitle.copyWith(fontSize: 11),
+-          ),
+-        ),
+-        Text(
+-          value,
+-          maxLines: 1,
+-          overflow: TextOverflow.ellipsis,
+-          style: AppTypography.callout.copyWith(
+-            fontSize: 12,
+-            fontWeight: FontWeight.w800,
+-            color: AppColors.label.withValues(alpha: 0.92),
+-            height: 1,
+-          ),
+-        ),
+-      ],
+-    );
+-  }
+-}
+-
+ class _ProgressBar extends StatelessWidget {
+   final int percent;
+*** End Patch

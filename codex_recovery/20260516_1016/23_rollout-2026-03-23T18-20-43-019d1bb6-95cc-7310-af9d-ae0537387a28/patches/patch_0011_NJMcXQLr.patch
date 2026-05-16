@@ -1,0 +1,107 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/services/focus_service.dart
+@@
+ import 'package:flutter/services.dart';
+ 
+ import '../utils/app_logger.dart';
+ 
++enum FocusPermissionState { unknown, approved, notDetermined, denied, unsupported }
++
++class FocusProtectionStatus {
++  final FocusPermissionState permissionState;
++
++  const FocusProtectionStatus({required this.permissionState});
++
++  static const unknown = FocusProtectionStatus(
++    permissionState: FocusPermissionState.unknown,
++  );
++
++  bool get isAuthorized => permissionState == FocusPermissionState.approved;
++  bool get isSupported => permissionState != FocusPermissionState.unsupported;
++  bool get shouldPrompt =>
++      permissionState == FocusPermissionState.notDetermined ||
++      permissionState == FocusPermissionState.unknown;
++  bool get shouldOpenSettings =>
++      permissionState == FocusPermissionState.denied;
++
++  factory FocusProtectionStatus.fromNativeStatus(String? rawStatus) {
++    switch ((rawStatus ?? '').trim().toLowerCase()) {
++      case 'approved':
++        return const FocusProtectionStatus(
++          permissionState: FocusPermissionState.approved,
++        );
++      case 'not_determined':
++        return const FocusProtectionStatus(
++          permissionState: FocusPermissionState.notDetermined,
++        );
++      case 'denied':
++        return const FocusProtectionStatus(
++          permissionState: FocusPermissionState.denied,
++        );
++      case 'unsupported':
++      case 'unsupported_os':
++        return const FocusProtectionStatus(
++          permissionState: FocusPermissionState.unsupported,
++        );
++      default:
++        return FocusProtectionStatus.unknown;
++    }
++  }
++}
++
+ class AndroidLaunchableApp {
+@@
+   Future<bool> isAuthorized() async {
+@@
+     }
+   }
++
++  Future<FocusProtectionStatus> getProtectionStatus() async {
++    const method = 'getAuthorizationStatus';
++    if (_shouldSkipMissingMethod(method)) {
++      final authorized = await isAuthorized();
++      return authorized
++          ? const FocusProtectionStatus(
++              permissionState: FocusPermissionState.approved,
++            )
++          : FocusProtectionStatus.unknown;
++    }
++    try {
++      final String? result = await _channel.invokeMethod<String>(method);
++      return FocusProtectionStatus.fromNativeStatus(result);
++    } on PlatformException catch (e) {
++      AppLogger.error("Failed to read protection status: '${e.message}'.");
++      final authorized = await isAuthorized();
++      return authorized
++          ? const FocusProtectionStatus(
++              permissionState: FocusPermissionState.approved,
++            )
++          : FocusProtectionStatus.unknown;
++    } on MissingPluginException {
++      _markMissingMethod(method);
++      final authorized = await isAuthorized();
++      return authorized
++          ? const FocusProtectionStatus(
++              permissionState: FocusPermissionState.approved,
++            )
++          : FocusProtectionStatus.unknown;
++    }
++  }
++
++  Future<bool> openSystemSettings() async {
++    const method = 'openSystemSettings';
++    if (_shouldSkipMissingMethod(method)) return false;
++    try {
++      final bool? result = await _channel.invokeMethod<bool>(method);
++      return result ?? false;
++    } on PlatformException catch (e) {
++      AppLogger.error("Failed to open system settings: '${e.message}'.");
++      return false;
++    } on MissingPluginException {
++      _markMissingMethod(method);
++      return false;
++    }
++  }
+@@
+   Future<List<String>?> openFamilyActivityPicker() async {
+*** End Patch

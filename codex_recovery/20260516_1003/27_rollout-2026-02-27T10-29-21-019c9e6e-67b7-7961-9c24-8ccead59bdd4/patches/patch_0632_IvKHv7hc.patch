@@ -1,0 +1,19 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/theme/theme_catalog.dart
+@@
+       inputBackground: inputBackground,
+       inputBorder: palette.borderStrong,
+-      moduleIconBackground: Color.alphaBlend(
+-        palette.borderSubtle.withValues(alpha: 0.72),
+-        palette.surfaceTertiary,
+-      ),
++      moduleIconBackground: Color.alphaBlend(
++        palette.borderStrong.withValues(
++          alpha: tone == AppThemeTone.dark ? 0.34 : 0.2,
++        ),
++        palette.surfaceSecondary,
++      ),
+       dashboardGradientStart: dashboardGradientStart,
+       dashboardGradientEnd: dashboardGradientEnd,
+       overlayScrim: overlayScrim,
+*** End Patch

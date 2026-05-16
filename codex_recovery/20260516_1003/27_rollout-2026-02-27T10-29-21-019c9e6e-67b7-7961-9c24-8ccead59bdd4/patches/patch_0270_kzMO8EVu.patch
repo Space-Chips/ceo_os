@@ -1,0 +1,186 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/repositories/task_repository.dart
+@@
+ class TaskRepository {
+@@
+   Future<List<CalendarEvent>> getAllEvents() async {
+     try {
+       final cutoffDate = DateTime.now().subtract(const Duration(days: 30));
+-      final dateStr =
+-          '${cutoffDate.year}-${cutoffDate.month.toString().padLeft(2, '0')}-${cutoffDate.day.toString().padLeft(2, '0')}';
+-
+-      final response = await _client
+-          .from('calendar_events')
+-          .select()
+-          .eq('created_by', _currentUserId)
+-          .gte('event_date', dateStr)
+-          .order('event_date', ascending: true);
+-
+-      return (response as List)
+-          .map((data) => CalendarEvent.fromJson(data))
+-          .toList();
++      final horizonDate = DateTime.now().add(const Duration(days: 740));
++      final dateStr = _formatDate(cutoffDate);
++
++      final upcomingResponse = await _client
++          .from('calendar_events')
++          .select()
++          .eq('created_by', _currentUserId)
++          .gte('event_date', dateStr)
++          .order('event_date', ascending: true);
++
++      final recurringResponse = await _client
++          .from('calendar_events')
++          .select()
++          .eq('created_by', _currentUserId)
++          .not('recurrence_rule', 'is', null);
++
++      final merged = <String, Map<String, dynamic>>{};
++      for (final item in (upcomingResponse as List)) {
++        final row = Map<String, dynamic>.from(item as Map);
++        final id = row['id'] as String?;
++        if (id != null && id.isNotEmpty) {
++          merged[id] = row;
++        }
++      }
++      for (final item in (recurringResponse as List)) {
++        final row = Map<String, dynamic>.from(item as Map);
++        final id = row['id'] as String?;
++        if (id != null && id.isNotEmpty) {
++          merged[id] = row;
++        }
++      }
++
++      final baseEvents = merged.values
++          .map((data) => CalendarEvent.fromJson(data))
++          .toList();
++
++      return _expandRecurringEvents(
++        baseEvents,
++        cutoffDate: cutoffDate,
++        horizonDate: horizonDate,
++      );
+     } catch (e) {
+       print('Error getting events: $e');
+       return [];
+     }
+   }
+@@
+   Future<void> addEvent(
+@@
+       }
+     }
+   }
++
++  List<CalendarEvent> _expandRecurringEvents(
++    List<CalendarEvent> baseEvents, {
++    required DateTime cutoffDate,
++    required DateTime horizonDate,
++  }) {
++    final output = <CalendarEvent>[];
++
++    for (final event in baseEvents) {
++      final recurrence = (event.recurrenceRule ?? '').trim().toLowerCase();
++      final baseDate = _parseDate(event.eventDate);
++
++      if (recurrence.isEmpty || baseDate == null) {
++        if (baseDate != null &&
++            (baseDate.isBefore(cutoffDate) || baseDate.isAfter(horizonDate))) {
++          continue;
++        }
++        output.add(event);
++        continue;
++      }
++
++      if (recurrence.contains('year')) {
++        for (var year = cutoffDate.year - 1; year <= horizonDate.year; year++) {
++          final occurrenceDate = _safeDate(year, baseDate.month, baseDate.day);
++          if (occurrenceDate.isBefore(cutoffDate) ||
++              occurrenceDate.isAfter(horizonDate)) {
++            continue;
++          }
++          output.add(
++            _cloneWithDate(
++              event,
++              occurrenceDate,
++              suffix: 'y-$year',
++            ),
++          );
++        }
++        continue;
++      }
++
++      if (recurrence.contains('week')) {
++        var occurrenceDate = DateTime(baseDate.year, baseDate.month, baseDate.day);
++        while (occurrenceDate.isBefore(cutoffDate)) {
++          occurrenceDate = occurrenceDate.add(const Duration(days: 7));
++        }
++
++        while (!occurrenceDate.isAfter(horizonDate)) {
++          output.add(
++            _cloneWithDate(
++              event,
++              occurrenceDate,
++              suffix: 'w-${_formatDate(occurrenceDate)}',
++            ),
++          );
++          occurrenceDate = occurrenceDate.add(const Duration(days: 7));
++        }
++        continue;
++      }
++
++      if (!baseDate.isBefore(cutoffDate) && !baseDate.isAfter(horizonDate)) {
++        output.add(event);
++      }
++    }
++
++    output.sort((a, b) {
++      final byDate = (a.eventDate ?? '').compareTo(b.eventDate ?? '');
++      if (byDate != 0) return byDate;
++      return (a.eventTime ?? '').compareTo(b.eventTime ?? '');
++    });
++    return output;
++  }
++
++  CalendarEvent _cloneWithDate(
++    CalendarEvent source,
++    DateTime day, {
++    required String suffix,
++  }) {
++    return CalendarEvent(
++      id: '${source.id}::$suffix',
++      createdBy: source.createdBy,
++      title: source.title,
++      description: source.description,
++      eventDate: _formatDate(day),
++      eventTime: source.eventTime,
++      durationMinutes: source.durationMinutes,
++      sourceType: source.sourceType,
++      sourceId: source.sourceId,
++      recurrenceRule: source.recurrenceRule,
++      eventTypeId: source.eventTypeId,
++      notification24hTime: source.notification24hTime,
++      notification2hTime: source.notification2hTime,
++      notification24hSent: source.notification24hSent,
++      notification2hSent: source.notification2hSent,
++      createdAt: source.createdAt,
++    );
++  }
++
++  DateTime? _parseDate(String? raw) {
++    if (raw == null || raw.isEmpty) return null;
++    return DateTime.tryParse(raw);
++  }
++
++  String _formatDate(DateTime date) {
++    return '${date.year.toString().padLeft(4, '0')}-'
++        '${date.month.toString().padLeft(2, '0')}-'
++        '${date.day.toString().padLeft(2, '0')}';
++  }
++
++  DateTime _safeDate(int year, int month, int day) {
++    final maxDay = DateTime(year, month + 1, 0).day;
++    return DateTime(year, month, day > maxDay ? maxDay : day);
++  }
+ }
+*** End Patch

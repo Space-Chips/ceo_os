@@ -1,0 +1,46 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/models/stats_event_models.dart
+@@
+ class StatsEvent {
+   final String id;
+   final String createdBy;
+   final String eventType;
+   final DateTime eventTime;
++  final String? sourceKey;
+   final Map<String, dynamic> payload;
+   final DateTime? createdAt;
+ 
+   const StatsEvent({
+     required this.id,
+     required this.createdBy,
+     required this.eventType,
+     required this.eventTime,
++    this.sourceKey,
+     required this.payload,
+     this.createdAt,
+   });
+@@
+       id: (json['id'] as String?) ?? '',
+       createdBy: (json['created_by'] as String?) ?? '',
+       eventType: (json['event_type'] as String?) ?? '',
+       eventTime: DateTime.tryParse((json['event_time'] ?? '').toString()) ??
+           DateTime.now(),
++      sourceKey: json['source_key'] as String?,
+       payload: (json['payload'] as Map?)?.map(
+             (key, value) => MapEntry(key.toString(), value),
+           ) ??
+@@
+ class StatsEventInput {
+   final String eventType;
+   final DateTime eventTime;
++  final String? sourceKey;
+   final Map<String, dynamic> payload;
+ 
+   const StatsEventInput({
+     required this.eventType,
+     required this.eventTime,
++    this.sourceKey,
+     this.payload = const {},
+   });
+ }
+*** End Patch

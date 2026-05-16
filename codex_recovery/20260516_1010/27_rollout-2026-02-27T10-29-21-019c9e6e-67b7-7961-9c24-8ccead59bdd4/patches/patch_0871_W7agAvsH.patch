@@ -1,0 +1,10 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/supabase/functions/revenuecat-webhook/index.ts
+@@
+ function normalizeText(value: unknown): string | null {
+   if (typeof value !== 'string') return null;
+   const normalized = value.trim();
+-  return normalized.isEmpty ? null : normalized;
++  return normalized.length == 0 ? null : normalized;
+ }
+*** End Patch

@@ -1,0 +1,26 @@
+*** Begin Patch
+*** Update File: lib/main.dart
+@@
+ import 'dart:ui';
+ 
+ import 'package:flutter/services.dart';
+ import 'package:provider/provider.dart';
+ import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
++import 'package:intl/date_symbol_data_local.dart';
+ import 'package:supabase_flutter/supabase_flutter.dart';
+ import 'core/config/supabase_config.dart';
+ import 'core/providers/auth_provider.dart';
+ import 'core/providers/theme_provider.dart';
+ import 'core/providers/task_provider.dart';
+@@
+ Future<List<String>?> _bootstrapSupabase() async {
++  // Required by `intl` DateFormat for non-English locales (and on some targets
++  // even for 'en'). Without this, `DateFormat(..., locale)` throws a
++  // LocaleDataException at runtime.
++  await initializeDateFormatting();
+   if (!SupabaseConfig.hasRequiredConfiguration) {
+     return SupabaseConfig.missingRequiredKeys;
+   }
+   await Supabase.initialize(
+     url: SupabaseConfig.url,
+*** End Patch

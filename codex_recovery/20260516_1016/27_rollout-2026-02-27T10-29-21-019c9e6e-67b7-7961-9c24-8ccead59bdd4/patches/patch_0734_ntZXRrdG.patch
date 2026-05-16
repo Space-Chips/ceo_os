@@ -1,0 +1,17 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/habits/add_habit_sheet.dart
+@@
+ import 'package:flutter/cupertino.dart';
+ import 'package:provider/provider.dart';
+ 
++import '../../components/components.dart';
+ import '../../core/providers/habit_provider.dart';
+ import '../../core/repositories/feature_repository.dart';
+@@
+     if (!mounted) return;
+     setState(() => _saving = false);
+     if (!result.allowed) {
++      await showPremiumGateDialog(context, result);
+       return;
+     }
+*** End Patch

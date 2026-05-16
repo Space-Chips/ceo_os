@@ -1,0 +1,104 @@
+*** Begin Patch
+*** Update File: android/app/src/main/kotlin/com/wakeapp/ceoos/ForegroundAppDetector.kt
+@@
+-import android.os.Build
+-import android.view.accessibility.AccessibilityEvent
+-import android.view.accessibility.AccessibilityNodeInfo
++import android.graphics.Rect
++import android.os.Build
++import android.view.accessibility.AccessibilityEvent
++import android.view.accessibility.AccessibilityNodeInfo
+@@
+ data class ForegroundSnapshot(
+     val packageName: String?,
+     val className: String?,
+     val eventType: Int,
+     val windowText: List<String>,
+     val detectedBrowserUrl: String? = null,
++    val browserToolbarBounds: Rect? = null,
+     val isBrowser: Boolean = false,
+ )
+@@
+-        val detectedUrl = if (isBrowser) detectBrowserUrl(event, root, windowText) else null
++        val detectedUrl = if (isBrowser) detectBrowserUrl(event, root, windowText) else null
++        val toolbarBounds = if (isBrowser) detectBrowserToolbarBounds(event, root) else null
+ 
+         return ForegroundSnapshot(
+             packageName = packageName,
+             className = className,
+             eventType = event.eventType,
+             windowText = windowText,
+             detectedBrowserUrl = detectedUrl,
++            browserToolbarBounds = toolbarBounds,
+             isBrowser = isBrowser,
+         )
+     }
+@@
+     private fun detectBrowserUrl(
+         event: AccessibilityEvent,
+         root: AccessibilityNodeInfo?,
+         windowText: List<String>,
+     ): String? {
+@@
+         val candidates = prioritized + fallback + windowText
+         return candidates.firstNotNullOfOrNull(BrowserBlockCoordinator::normalizeDomainToken)
+     }
++
++    private fun detectBrowserToolbarBounds(
++        event: AccessibilityEvent,
++        root: AccessibilityNodeInfo?,
++    ): Rect? {
++        val bounds = Rect()
++        val source = event.source
++        if (source != null && isUrlBarNode(source)) {
++            source.getBoundsInScreen(bounds)
++            if (!bounds.isEmpty) return Rect(bounds)
++        }
++
++        if (root == null) return null
++        val visited = mutableSetOf<Int>()
++        var best: Rect? = null
++
++        fun visit(node: AccessibilityNodeInfo?, depth: Int) {
++            if (node == null || depth > 8) return
++            val identity = System.identityHashCode(node)
++            if (!visited.add(identity) || visited.size > 260) return
++
++            if (isUrlBarNode(node)) {
++                node.getBoundsInScreen(bounds)
++                if (!bounds.isEmpty) {
++                    val candidate = Rect(bounds)
++                    if (best == null || candidate.bottom < best!!.bottom) {
++                        best = candidate
++                    }
++                }
++            }
++
++            for (index in 0 until node.childCount) {
++                visit(node.getChild(index), depth + 1)
++            }
++        }
++
++        visit(root, 0)
++        return best
++    }
++
++    private fun isUrlBarNode(node: AccessibilityNodeInfo): Boolean {
++        val viewId = node.viewIdResourceName?.lowercase(Locale.US).orEmpty()
++        if (viewId.isNotEmpty()) {
++            return prioritizedViewIdHints.any { viewId.contains(it) }
++        }
++        val text = node.text?.toString()?.lowercase(Locale.US).orEmpty()
++        if (text.contains("http") || text.contains("www.")) return true
++        val hint = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
++            node.hintText?.toString()?.lowercase(Locale.US).orEmpty()
++        } else {
++            ""
++        }
++        if (hint.contains("search") || hint.contains("address") || hint.contains("url")) {
++            return true
++        }
++        return false
++    }
+ }
+*** End Patch

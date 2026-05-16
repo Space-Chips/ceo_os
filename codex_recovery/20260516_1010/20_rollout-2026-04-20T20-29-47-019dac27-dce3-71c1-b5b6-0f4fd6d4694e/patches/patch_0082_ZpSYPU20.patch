@@ -1,0 +1,132 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/android/app/src/main/kotlin/com/wakeapp/ceoos/BlockGateActivity.kt
+@@
+ import android.graphics.drawable.GradientDrawable
+ import android.os.Build
+ import android.os.Bundle
+-import android.net.Uri
+-import android.util.Log
+ import android.util.TypedValue
+@@
+     private lateinit var subtitleView: TextView
+     private lateinit var homeLabel: TextView
+     private lateinit var primaryButton: TextView
+     private var primaryAction: String = "go_home"
+-    private var blockedBrowserPackage: String? = null
+-    private var blockedDomain: String? = null
+@@
+-    private fun goBrowserHome() {
+-        val browserPackage = blockedBrowserPackage?.trim().orEmpty()
+-        if (browserPackage.isEmpty()) {
+-            goHome()
+-            return
+-        }
+-
+-        isVisible = false
+-        BlockingAccessibilityService.onBrowserHomeRequested(browserPackage, blockedDomain)
+-
+-        val safeUrlIntent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.google.com/")).apply {
+-            `package` = browserPackage
+-            addFlags(
+-                Intent.FLAG_ACTIVITY_NEW_TASK or
+-                    Intent.FLAG_ACTIVITY_CLEAR_TOP or
+-                    Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED or
+-                    Intent.FLAG_ACTIVITY_NO_ANIMATION,
+-            )
+-        }
+-
+-        val blankIntent = Intent(Intent.ACTION_VIEW, Uri.parse("about:blank")).apply {
+-            `package` = browserPackage
+-            addFlags(
+-                Intent.FLAG_ACTIVITY_NEW_TASK or
+-                    Intent.FLAG_ACTIVITY_CLEAR_TOP or
+-                    Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED or
+-                    Intent.FLAG_ACTIVITY_NO_ANIMATION,
+-            )
+-        }
+-
+-        val chromeNewTabIntent = Intent(Intent.ACTION_VIEW, Uri.parse("chrome://newtab")).apply {
+-            `package` = browserPackage
+-            addFlags(
+-                Intent.FLAG_ACTIVITY_NEW_TASK or
+-                    Intent.FLAG_ACTIVITY_CLEAR_TOP or
+-                    Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED or
+-                    Intent.FLAG_ACTIVITY_NO_ANIMATION,
+-            )
+-        }
+-
+-        val launchIntent = packageManager.getLaunchIntentForPackage(browserPackage)?.apply {
+-            addFlags(
+-                Intent.FLAG_ACTIVITY_NEW_TASK or
+-                    Intent.FLAG_ACTIVITY_CLEAR_TOP or
+-                    Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED or
+-                    Intent.FLAG_ACTIVITY_NO_ANIMATION,
+-            )
+-        }
+-
+-        try {
+-            Log.d("BlockGateActivity", "goBrowserHome pkg=$browserPackage domain=$blockedDomain")
+-
+-            // Important: don't use resolveActivity() here; package visibility restrictions can make it lie.
+-            // Just try the intents, and fall back on exceptions.
+-            try {
+-                startActivity(safeUrlIntent)
+-            } catch (e: Exception) {
+-                Log.w("BlockGateActivity", "safeUrlIntent failed: ${e::class.java.simpleName}")
+-            }
+-
+-            if (browserPackage == "com.android.chrome" || browserPackage == "com.brave.browser") {
+-                try {
+-                    startActivity(chromeNewTabIntent)
+-                } catch (_: Exception) {
+-                }
+-            }
+-            try {
+-                startActivity(blankIntent)
+-            } catch (_: Exception) {
+-                if (launchIntent != null) {
+-                    startActivity(launchIntent)
+-                } else {
+-                    goHome()
+-                    return
+-                }
+-            }
+-        } catch (_: Exception) {
+-            goHome()
+-            return
+-        }
+-
+-        finish()
+-        overridePendingTransition(0, 0)
+-    }
+-
+     private fun runPrimaryAction() {
+         when (primaryAction) {
+             "go_back" -> goBackToBrowser()
+-            "go_browser_home" -> goBrowserHome()
+             else -> goHome()
+         }
+     }
+@@
+-        blockedBrowserPackage = intent?.getStringExtra(EXTRA_PACKAGE_NAME)?.trim()?.ifEmpty { null }
+-        blockedDomain = intent?.getStringExtra(EXTRA_DOMAIN)?.trim()?.ifEmpty { null }
+         kickerView.text = intent?.getStringExtra(EXTRA_KICKER)?.uppercase() ?: "BLOCKED"
+         titleView.text = intent?.getStringExtra(EXTRA_TITLE) ?: "This app is blocked"
+         subtitleView.text =
+             intent?.getStringExtra(EXTRA_SUBTITLE)
+                 ?: "WakeApp is preventing access right now."
+         primaryAction = intent?.getStringExtra(EXTRA_PRIMARY_ACTION) ?: "go_home"
+         val primaryLabelText = intent?.getStringExtra(EXTRA_PRIMARY_LABEL)
+-            ?: if (primaryAction == "go_browser_home" || primaryAction == "go_back") {
++            ?: if (primaryAction == "go_back") {
+                 "Browser Home"
+             } else {
+                 "Return to Home"
+             }
+         primaryButton.text = primaryLabelText
+-        homeLabel.text = if (primaryAction == "go_browser_home" || primaryAction == "go_back") {
++        homeLabel.text = if (primaryAction == "go_back") {
+             "Browser"
+         } else {
+             "Home"
+*** End Patch

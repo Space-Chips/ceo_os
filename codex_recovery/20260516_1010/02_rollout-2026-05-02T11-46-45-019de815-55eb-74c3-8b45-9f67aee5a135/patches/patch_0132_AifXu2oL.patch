@@ -1,0 +1,286 @@
+*** Begin Patch
+*** Update File: lib/core/widgets/home_widgets/widget_views.dart
+@@
+ class TodoWidgetSquareView extends StatelessWidget {
+   final LanguageProvider language;
+   final List<ParetoTask> pending;
+ 
+   const TodoWidgetSquareView({
+     super.key,
+     required this.language,
+     required this.pending,
+   });
+ 
+   @override
+   Widget build(BuildContext context) {
+     final remaining = pending.length;
+     final items = pending.take(3).toList();
+     return WidgetRoot(
+       padding: WidgetDesignTokens.padSquare,
+       child: Column(
+         crossAxisAlignment: CrossAxisAlignment.start,
+         children: [
+-          Text('To‑Do', style: WidgetDesignTokens.title),
+-          const SizedBox(height: 4),
+-          Text(
+-            '${language.t('today')} · $remaining ${language.t('widget_remaining')}',
+-            style: WidgetDesignTokens.subtitle,
+-          ),
+-          const SizedBox(height: 12),
+-          Text('YOUR PRIORITIES', style: WidgetDesignTokens.section),
+-          const SizedBox(height: 8),
+-          if (items.isEmpty)
+-            Expanded(
+-              child: Center(
+-                child: Text(
+-                  language.t('widget_no_tasks'),
+-                  style: AppTypography.title3.copyWith(
+-                    fontSize: 15,
+-                    fontWeight: FontWeight.w700,
+-                    color: AppColors.secondaryLabel.withValues(alpha: 0.85),
+-                  ),
+-                ),
+-              ),
+-            )
+-          else ...[
+-            for (var i = 0; i < items.length; i++) ...[
+-              _TodoRow(index: i + 1, task: items[i]),
+-              if (i != items.length - 1) const SizedBox(height: 8),
+-            ],
+-            if (remaining > 3) ...[
+-              const SizedBox(height: 8),
+-              Text(
+-                '+${remaining - 3} ${language.t('widget_more')}',
+-                style: WidgetDesignTokens.subtitle,
+-              ),
+-            ],
+-          ],
++          _WidgetHeader(
++            title: 'To‑Do',
++            subtitle:
++                '${language.t('today')} · $remaining ${language.t('widget_remaining')}',
++          ),
++          const SizedBox(height: 10),
++          Expanded(
++            child: Container(
++              decoration: WidgetDesignTokens.innerSurface(
++                tint: const Color(0xFF191B20),
++              ),
++              child: ClipRRect(
++                borderRadius: BorderRadius.circular(
++                  WidgetDesignTokens.radiusInner,
++                ),
++                child: Column(
++                  crossAxisAlignment: CrossAxisAlignment.start,
++                  children: [
++                    Padding(
++                      padding: const EdgeInsets.fromLTRB(14, 12, 14, 10),
++                      child: Text(
++                        'YOUR PRIORITIES',
++                        style: WidgetDesignTokens.section.copyWith(
++                          fontSize: 11,
++                          letterSpacing: 1.05,
++                          color: AppColors.secondaryLabel.withValues(
++                            alpha: 0.72,
++                          ),
++                        ),
++                      ),
++                    ),
++                    if (items.isEmpty)
++                      Expanded(
++                        child: Center(
++                          child: Text(
++                            language.t('widget_no_tasks'),
++                            style: AppTypography.title3.copyWith(
++                              fontSize: 15,
++                              fontWeight: FontWeight.w700,
++                              color: AppColors.secondaryLabel.withValues(
++                                alpha: 0.85,
++                              ),
++                            ),
++                          ),
++                        ),
++                      )
++                    else
++                      Expanded(
++                        child: Column(
++                          children: [
++                            for (var i = 0; i < items.length; i++) ...[
++                              _TodoCompactRow(index: i + 1, task: items[i]),
++                              if (i != items.length - 1)
++                                Container(
++                                  height: 1,
++                                  margin:
++                                      const EdgeInsets.symmetric(horizontal: 14),
++                                  color:
++                                      AppColors.border.withValues(alpha: 0.55),
++                                ),
++                            ],
++                            if (remaining > 3)
++                              Padding(
++                                padding:
++                                    const EdgeInsets.fromLTRB(14, 10, 14, 12),
++                                child: Align(
++                                  alignment: Alignment.centerLeft,
++                                  child: Text(
++                                    '+${remaining - 3} ${language.t('widget_more')}',
++                                    style:
++                                        WidgetDesignTokens.subtitle.copyWith(
++                                      fontSize: 11,
++                                      color: AppColors.secondaryLabel.withValues(
++                                        alpha: 0.72,
++                                      ),
++                                    ),
++                                  ),
++                                ),
++                              )
++                            else
++                              const SizedBox.shrink(),
++                          ],
++                        ),
++                      ),
++                  ],
++                ),
++              ),
++            ),
++          ),
+         ],
+       ),
+     );
+   }
+ }
+ 
++class _WidgetHeader extends StatelessWidget {
++  final String title;
++  final String subtitle;
++
++  const _WidgetHeader({required this.title, required this.subtitle});
++
++  @override
++  Widget build(BuildContext context) {
++    return Column(
++      crossAxisAlignment: CrossAxisAlignment.start,
++      children: [
++        Text(title, style: WidgetDesignTokens.title),
++        const SizedBox(height: 4),
++        Text(subtitle, style: WidgetDesignTokens.subtitle),
++      ],
++    );
++  }
++}
++
++class _TodoCompactRow extends StatelessWidget {
++  final int index;
++  final ParetoTask task;
++
++  const _TodoCompactRow({required this.index, required this.task});
++
++  @override
++  Widget build(BuildContext context) {
++    final importance = task.importanceLevel ?? task.impactLevel;
++    final cardStyle = TaskImportanceTheme.card(importance);
++    final badge = cardStyle.badge;
++    final badgeLabel = TaskImportanceTheme.detailLabel(importance);
++    final duration = (task.timeDuration ?? '').trim();
++
++    return Padding(
++      padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
++      child: Row(
++        children: [
++          Container(
++            width: 26,
++            height: 26,
++            decoration: BoxDecoration(
++              shape: BoxShape.circle,
++              color: AppColors.cardBackgroundAlt,
++              border: Border.all(
++                color: AppColors.border.withValues(alpha: 0.7),
++              ),
++            ),
++            alignment: Alignment.center,
++            child: Text(
++              '$index',
++              style: AppTypography.caption1.copyWith(
++                fontSize: 12,
++                fontWeight: FontWeight.w800,
++                color: AppColors.secondaryLabel.withValues(alpha: 0.9),
++                height: 1,
++              ),
++            ),
++          ),
++          const SizedBox(width: 10),
++          Expanded(
++            child: Column(
++              crossAxisAlignment: CrossAxisAlignment.start,
++              children: [
++                Text(
++                  task.title,
++                  maxLines: 1,
++                  overflow: TextOverflow.ellipsis,
++                  style: AppTypography.callout.copyWith(
++                    fontSize: 13,
++                    fontWeight: FontWeight.w800,
++                    color: AppColors.label,
++                    height: 1.08,
++                  ),
++                ),
++                const SizedBox(height: 6),
++                Row(
++                  children: [
++                    Container(
++                      padding: const EdgeInsets.symmetric(
++                        horizontal: 8,
++                        vertical: 4,
++                      ),
++                      decoration: BoxDecoration(
++                        borderRadius: BorderRadius.circular(999),
++                        color: badge.background,
++                        border: Border.all(color: badge.border),
++                      ),
++                      child: Text(
++                        badgeLabel,
++                        maxLines: 1,
++                        overflow: TextOverflow.ellipsis,
++                        style: AppTypography.caption1.copyWith(
++                          fontSize: 10.5,
++                          fontWeight: FontWeight.w800,
++                          color: badge.text,
++                          height: 1,
++                        ),
++                      ),
++                    ),
++                    if (duration.isNotEmpty) ...[
++                      const SizedBox(width: 8),
++                      Expanded(
++                        child: Text(
++                          duration,
++                          maxLines: 1,
++                          overflow: TextOverflow.ellipsis,
++                          style: AppTypography.caption1.copyWith(
++                            fontSize: 10.5,
++                            fontWeight: FontWeight.w700,
++                            color: AppColors.secondaryLabel.withValues(
++                              alpha: 0.7,
++                            ),
++                            height: 1,
++                          ),
++                        ),
++                      ),
++                    ],
++                  ],
++                ),
++              ],
++            ),
++          ),
++        ],
++      ),
++    );
++  }
++}
++
+ class _TodoRow extends StatelessWidget {
+   final int index;
+   final ParetoTask task;
+ 
+   const _TodoRow({required this.index, required this.task});
+*** End Patch

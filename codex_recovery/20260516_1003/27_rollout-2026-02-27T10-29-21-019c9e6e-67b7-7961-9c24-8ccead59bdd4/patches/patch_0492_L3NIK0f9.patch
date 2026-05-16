@@ -1,0 +1,236 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/rank/rank_screen.dart
+@@
+   Widget _tierCard(_RankTierData tier, _RankTierData current) {
+@@
+     return Padding(
+-      padding: const EdgeInsets.only(bottom: 8),
+-      child: GlassCard(
+-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+-        borderRadius: 16,
+-        level: isCurrent ? GlassCardLevel.elevated : GlassCardLevel.standard,
+-        showEdgeGlow: isCurrent,
+-        border: Border.all(
+-          color: isCurrent
+-              ? tier.ring.first.withValues(alpha: 0.72)
+-              : AppColors.glassBorder.withValues(alpha: 0.7),
+-          width: isCurrent ? 0.95 : 0.7,
+-        ),
+-        gradientColors: isCurrent
+-            ? [
+-                tier.ring.first.withValues(alpha: 0.18),
+-                AppColors.backgroundLight.withValues(alpha: 0.9),
+-              ]
+-            : null,
+-        child: Row(
+-          children: [
+-            _tierBadge(tier, size: 68),
+-            const SizedBox(width: 12),
+-            Expanded(
+-              child: Column(
+-                crossAxisAlignment: CrossAxisAlignment.start,
+-                children: [
+-                  Text(
+-                    tier.name,
+-                    style: AppTypography.mono.copyWith(
+-                      fontSize: 20,
+-                      color: AppColors.label,
+-                      fontWeight: FontWeight.w900,
+-                    ),
+-                  ),
+-                  const SizedBox(height: 2),
+-                  Text(
+-                    tier.requirements.join(' + '),
+-                    style: AppTypography.mono.copyWith(
+-                      fontSize: 12,
+-                      color: AppColors.secondaryLabel,
+-                    ),
+-                  ),
+-                ],
+-              ),
+-            ),
+-            if (isCurrent)
+-              Icon(
+-                CupertinoIcons.rosette,
+-                color: const Color(0xFFFACC15),
+-                size: 24,
+-              )
+-            else
+-              Text(
+-                unlocked ? 'Unlocked' : 'Locked',
+-                style: AppTypography.mono.copyWith(
+-                  fontSize: 11,
+-                  color: unlocked ? AppColors.success : AppColors.tertiaryLabel,
+-                  fontWeight: FontWeight.w700,
+-                ),
+-              ),
+-          ],
+-        ),
++      padding: const EdgeInsets.only(bottom: 10),
++      child: _RankPressScale(
++        onTap: () {},
++        child: AnimatedOpacity(
++          duration: const Duration(milliseconds: 120),
++          opacity: unlocked ? 1 : 0.7,
++          child: Container(
++            padding: const EdgeInsets.all(18),
++            decoration: _rankCardDecoration(
++              radius: 18,
++              borderColor: isCurrent
++                  ? const Color(0xFFFFB450).withValues(alpha: 0.35)
++                  : AppColors.white.withValues(alpha: 0.06),
++            ),
++            child: Row(
++              children: [
++                _rankIconContainer(tier, iconSize: 42),
++                const SizedBox(width: 12),
++                Expanded(
++                  child: Column(
++                    crossAxisAlignment: CrossAxisAlignment.start,
++                    children: [
++                      Text(
++                        tier.name,
++                        style: AppTypography.callout.copyWith(
++                          fontSize: 20,
++                          color: AppColors.label,
++                          fontWeight: FontWeight.w600,
++                        ),
++                      ),
++                      const SizedBox(height: 2),
++                      Text(
++                        tier.requirements.join(' + '),
++                        style: AppTypography.footnote.copyWith(
++                          fontSize: 12,
++                          color: AppColors.secondaryLabel.withValues(alpha: 0.7),
++                        ),
++                      ),
++                    ],
++                  ),
++                ),
++                if (isCurrent)
++                  Icon(
++                    CupertinoIcons.rosette,
++                    color: const Color(0xFFFACC15),
++                    size: 24,
++                  )
++                else
++                  Text(
++                    unlocked ? 'Unlocked' : 'Locked',
++                    style: AppTypography.caption1.copyWith(
++                      fontSize: 12,
++                      color: unlocked
++                          ? AppColors.success.withValues(alpha: 0.75)
++                          : AppColors.tertiaryLabel.withValues(alpha: 0.6),
++                      fontWeight: FontWeight.w500,
++                    ),
++                  ),
++              ],
++            ),
++          ),
++        ),
+       ),
+     );
+   }
++
++  Widget _rankIconContainer(_RankTierData tier, {required double iconSize}) {
++    return Container(
++      width: iconSize + 20,
++      height: iconSize + 20,
++      decoration: BoxDecoration(
++        color: AppColors.white.withValues(alpha: 0.05),
++        borderRadius: BorderRadius.circular(14),
++      ),
++      alignment: Alignment.center,
++      child: _tierBadge(tier, size: iconSize),
++    );
++  }
++
++  BoxDecoration _rankCardDecoration({
++    double radius = 18,
++    Color? borderColor,
++  }) {
++    return BoxDecoration(
++      gradient: const LinearGradient(
++        begin: Alignment.topCenter,
++        end: Alignment.bottomCenter,
++        colors: [Color(0xFF1A1A1A), Color(0xFF111111)],
++      ),
++      borderRadius: BorderRadius.circular(radius),
++      border: Border.all(
++        color: borderColor ?? AppColors.white.withValues(alpha: 0.06),
++        width: 1,
++      ),
++      boxShadow: [
++        BoxShadow(
++          color: AppColors.black.withValues(alpha: 0.5),
++          blurRadius: 30,
++          offset: const Offset(0, 10),
++        ),
++      ],
++    );
++  }
+@@
+-  Widget _glowSurface({
+-    required Widget child,
+-    required Color glowColor,
+-    double borderRadius = 18,
+-  }) {
+-    return Stack(
+-      children: [
+-        Positioned.fill(
+-          child: IgnorePointer(
+-            child: Container(
+-              margin: const EdgeInsets.all(8),
+-              decoration: BoxDecoration(
+-                borderRadius: BorderRadius.circular(borderRadius),
+-                boxShadow: [
+-                  BoxShadow(color: glowColor, blurRadius: 30, spreadRadius: 1),
+-                ],
+-              ),
+-            ),
+-          ),
+-        ),
+-        child,
+-      ],
+-    );
+-  }
+ }
++
++class _RankPressScale extends StatefulWidget {
++  final Widget child;
++  final VoidCallback onTap;
++
++  const _RankPressScale({required this.child, required this.onTap});
++
++  @override
++  State<_RankPressScale> createState() => _RankPressScaleState();
++}
++
++class _RankPressScaleState extends State<_RankPressScale> {
++  bool _pressed = false;
++
++  void _setPressed(bool value) {
++    if (!mounted || _pressed == value) return;
++    setState(() => _pressed = value);
++  }
++
++  @override
++  Widget build(BuildContext context) {
++    return Listener(
++      onPointerDown: (_) => _setPressed(true),
++      onPointerUp: (_) => _setPressed(false),
++      onPointerCancel: (_) => _setPressed(false),
++      child: AnimatedScale(
++        scale: _pressed ? 1.01 : 1,
++        duration: const Duration(milliseconds: 120),
++        curve: Curves.easeOutCubic,
++        child: GestureDetector(
++          behavior: HitTestBehavior.translucent,
++          onTap: widget.onTap,
++          child: widget.child,
++        ),
++      ),
++    );
++  }
++}
+*** End Patch

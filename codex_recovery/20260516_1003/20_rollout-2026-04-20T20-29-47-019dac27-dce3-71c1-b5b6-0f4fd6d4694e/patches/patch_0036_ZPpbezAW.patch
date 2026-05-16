@@ -1,0 +1,208 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/android/app/src/main/kotlin/com/wakeapp/ceoos/ForegroundAppDetector.kt
+@@
+ class ForegroundAppDetector(
+     private val wakePackageName: String,
+ ) {
+     companion object {
+         private data class BrowserProfile(
+-            val packageNames: Set<String>,
++            val packageName: String,
++            val exactViewIds: Set<String>,
+             val viewIdHints: Set<String>,
+         )
+ 
+         private val browserProfiles = listOf(
+-            // Chromium family kept intentionally narrow (stable channels we validate).
+             BrowserProfile(
+-                packageNames = setOf(
+-                    "com.android.chrome",
+-                    "com.brave.browser",
+-                ),
++                packageName = "com.android.chrome",
++                exactViewIds = setOf(
++                    "com.android.chrome:id/url_bar",
++                    "com.android.chrome:id/search_box",
++                    "com.android.chrome:id/search_src_text",
++                    "com.android.chrome:id/location_bar",
++                ),
+                 viewIdHints = setOf(
+-                    "url_bar",
+-                    "location_bar",
+-                    "address_bar",
+-                    "search_box",
+-                    "search_src_text",
+-                    "omnibox",
++                    ":id/url_bar",
++                    ":id/location_bar",
++                    ":id/search_box",
++                    ":id/search_src_text",
+                 ),
+             ),
+             BrowserProfile(
+-                packageNames = setOf(
+-                    "org.mozilla.firefox",
+-                    "org.mozilla.fenix",
+-                ),
++                packageName = "com.brave.browser",
++                exactViewIds = setOf(
++                    "com.brave.browser:id/url_bar",
++                    "com.brave.browser:id/search_box",
++                    "com.brave.browser:id/search_src_text",
++                    "com.brave.browser:id/location_bar",
++                ),
+                 viewIdHints = setOf(
+-                    "mozac_browser_toolbar_url_view",
+-                    "mozac_browser_toolbar_edit_url_view",
+-                    "search_selector",
+-                    "url_bar",
++                    ":id/url_bar",
++                    ":id/location_bar",
++                    ":id/search_box",
++                    ":id/search_src_text",
+                 ),
+             ),
+             BrowserProfile(
+-                packageNames = setOf(
+-                    "com.huawei.browser",
+-                ),
++                packageName = "com.huawei.browser",
++                exactViewIds = setOf(
++                    "com.huawei.browser:id/url_bar",
++                    "com.huawei.browser:id/address_bar",
++                    "com.huawei.browser:id/url",
++                    "com.huawei.browser:id/address",
++                    "com.huawei.browser:id/search_src_text",
++                ),
+                 viewIdHints = setOf(
+-                    "url_bar",
+-                    "address_bar",
+-                    "search_src_text",
+-                    "hwbrowser:id/url",
+-                    "hwbrowser:id/address",
++                    ":id/url_bar",
++                    ":id/address_bar",
++                    ":id/url",
++                    ":id/address",
++                    ":id/search_src_text",
+                 ),
+             ),
+         )
+ 
+         private val packagesToProfile = buildMap<String, BrowserProfile> {
+             browserProfiles.forEach { profile ->
+-                profile.packageNames.forEach { pkg ->
+-                    put(pkg, profile)
+-                }
++                put(profile.packageName, profile)
+             }
+         }
+     }
+@@
+     private fun detectBrowserUrl(
+         event: AccessibilityEvent,
+         root: AccessibilityNodeInfo?,
+         packageName: String?,
+     ): String? {
+         val profile = packageName?.let { packagesToProfile[it] } ?: return null
+-        val source = event.source
+-        if (source != null) {
+-            extractFromAddressNode(source, profile)?.let { return it }
+-        }
++        event.source?.let { source ->
++            extractFromAddressNode(source, profile)?.let { return it }
++        }
+ 
+         return findAddressBarDomain(root, profile)
+     }
+@@
+     ): String? {
+         if (root == null) return null
+         val visited = mutableSetOf<Int>()
+         var bestDomain: String? = null
+         var bestScore = Int.MIN_VALUE
+ 
+         fun visit(node: AccessibilityNodeInfo?, depth: Int) {
+-            if (node == null || depth > 8) return
++            if (node == null || depth > 10) return
+             val identity = System.identityHashCode(node)
+-            if (!visited.add(identity) || visited.size > 260) return
++            if (!visited.add(identity) || visited.size > 420) return
+ 
+             val extracted = extractFromAddressNode(node, profile)
+             if (extracted != null) {
+                 val score = scoreAddressNode(node, profile)
+                 if (score > bestScore) {
+@@
+     private fun isAddressBarNode(
+         node: AccessibilityNodeInfo,
+         profile: BrowserProfile,
+     ): Boolean {
+         val viewId = node.viewIdResourceName?.lowercase(Locale.US).orEmpty()
+-        if (viewId.isNotEmpty()) {
+-            return profile.viewIdHints.any { viewId.contains(it) }
++        if (viewId.isEmpty()) return false
++        if (profile.exactViewIds.contains(viewId)) return true
++        return profile.viewIdHints.any { viewId.contains(it) }
++    }
++
++    private fun isLikelyToolbarAddressField(bounds: Rect): Boolean {
++        if (bounds.isEmpty) return false
++        if (bounds.top < 0) return false
++        if (bounds.width() <= 0 || bounds.height() <= 0) return false
++        if (bounds.width() < bounds.height() * 2) return false
++        // Restrict to the upper area to avoid page-content false positives.
++        if (bounds.top > 520) return false
++        return true
++    }
++
++    private fun candidateTexts(node: AccessibilityNodeInfo): Sequence<String> = sequence {
++        node.text?.toString()?.let { yield(it) }
++        node.contentDescription?.toString()?.let { yield(it) }
++        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
++            node.hintText?.toString()?.let { yield(it) }
+         }
+-        return false
+     }
+ 
+     private fun scoreAddressNode(
+         node: AccessibilityNodeInfo,
+         profile: BrowserProfile,
+@@
+         val bounds = Rect()
+         node.getBoundsInScreen(bounds)
+         val viewId = node.viewIdResourceName?.lowercase(Locale.US).orEmpty()
+-        val hintScore = profile.viewIdHints.maxOfOrNull { hint ->
+-            if (viewId.contains(hint)) hint.length else 0
+-        } ?: 0
++        val hintScore = when {
++            profile.exactViewIds.contains(viewId) -> 2_000
++            else -> {
++                val hint = profile.viewIdHints.maxOfOrNull { candidate ->
++                    if (viewId.contains(candidate)) candidate.length else 0
++                } ?: 0
++                hint * 100
++            }
++        }
+         val widthScore = bounds.width().coerceAtLeast(0)
+-        val topBias = (2_000 - bounds.top).coerceAtLeast(0)
+-        return hintScore * 80 + widthScore + topBias
++        val topBias = (1_600 - bounds.top).coerceAtLeast(0)
++        return hintScore + widthScore + topBias
++    }
++
++    private fun extractFromAddressNode(
++        node: AccessibilityNodeInfo,
++        profile: BrowserProfile,
++    ): String? {
++        if (!isAddressBarNode(node, profile)) return null
++        val bounds = Rect()
++        node.getBoundsInScreen(bounds)
++        if (!isLikelyToolbarAddressField(bounds)) return null
++        candidateTexts(node).forEach { raw ->
++            BrowserBlockCoordinator.normalizeDomainToken(raw)?.let { return it }
++        }
++        return null
+     }
+ }
+*** End Patch

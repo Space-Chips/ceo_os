@@ -1,0 +1,32 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/packages/home_widget/ios/Classes/SwiftHomeWidgetPlugin.swift
+@@
+       if SwiftHomeWidgetPlugin.groupId == nil {
+         result(notInitializedError)
+         return
+       }
+       if #available(iOS 17.0, *) {
+-        let callbackHandles = call.arguments as! [Int64]
++        guard let callbackHandles = call.arguments as? [Int64],
++              callbackHandles.count >= 2 else {
++          result(
++            FlutterError(
++              code: "-3",
++              message: "InvalidArguments registerBackgroundCallback must receive two callback handles",
++              details: nil))
++          return
++        }
+         let dispatcher = callbackHandles[0]
+         let callback = callbackHandles[1]
+@@
+   ) -> Bool {
+     let launchUrl = (launchOptions[UIApplication.LaunchOptionsKey.url] as? NSURL)?.absoluteURL
+-    if launchUrl != nil && isWidgetUrl(url: launchUrl!) {
+-      initialUrl = launchUrl?.absoluteURL
++    if let launchUrl, isWidgetUrl(url: launchUrl) {
++      initialUrl = launchUrl.absoluteURL
+       latestUrl = initialUrl
+     }
+     return true
+   }
+*** End Patch

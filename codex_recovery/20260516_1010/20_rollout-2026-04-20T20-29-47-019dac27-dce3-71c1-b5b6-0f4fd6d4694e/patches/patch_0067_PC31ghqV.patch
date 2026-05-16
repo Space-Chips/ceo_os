@@ -1,0 +1,11 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/ios/Runner.xcodeproj/project.pbxproj
+@@
+-				shellScript = "/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" embed_and_thin";
++				shellScript = "set -e\n\n# Ensure FLUTTER_ROOT and related vars are present even when Xcode build settings are stale.\nif [ -f \"${SRCROOT}/Flutter/flutter_export_environment.sh\" ]; then\n  . \"${SRCROOT}/Flutter/flutter_export_environment.sh\"\nfi\n\n/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" embed_and_thin\n";
+ 			};
+@@
+-				shellScript = "/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" build";
++				shellScript = "set -e\n\n# Ensure FLUTTER_ROOT and related vars are present even when Xcode build settings are stale.\nif [ -f \"${SRCROOT}/Flutter/flutter_export_environment.sh\" ]; then\n  . \"${SRCROOT}/Flutter/flutter_export_environment.sh\"\nfi\n\n/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" build\n";
+ 			};
+*** End Patch

@@ -1,0 +1,10 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/debug/blocking_debug_screen.dart
+@@
+                   _row('URL / Domain', _stringValue('detectedUrl')),
+                   _row('Event type', _stringValue('eventType')),
+                   _row('Gate launched', _stringValue('gateLaunched')),
++                  _row('Gate failure', _stringValue('gateFailureReason')),
+                   _row('Latency (ms)', _stringValue('latencyMillis')),
+                   _row('Timestamp', _stringValue('timestampMillis')),
+*** End Patch

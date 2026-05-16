@@ -1,0 +1,906 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/home/home_screen.dart
+@@
+   static const Set<String> _defaultEnabledShortcuts = {
+     'rank',
+     'focus',
+     'streak',
+     'notes',
+   };
++  static const List<String> _shortcutOrder = [
++    'rank',
++    'leaderboard',
++    'focus',
++    'family_time',
++    'block_apps',
++    'streak',
++    'notes',
++  ];
+ 
+   Future<DashboardSnapshot>? _snapshotFuture;
+   String _userLabel = 'You';
+   String? _settingsId;
+   Set<String> _activeApps = {..._defaultActiveApps};
+   Set<String> _enabledShortcuts = {..._defaultEnabledShortcuts};
+   bool _hideNoModulesMessage = false;
++  int _winStreak = 0;
+@@
+     await _hydrateUser();
+     if (!mounted) return;
+     await _loadActiveApps();
+     if (!mounted) return;
++    await _loadWinStreak();
++    if (!mounted) return;
+     await _loadHomePreferences();
+     if (!mounted) return;
+ 
+     _reloadSnapshot();
+   }
+@@
+   Future<void> _loadActiveApps() async {
+@@
+     });
+   }
++
++  Future<void> _loadWinStreak() async {
++    final streak = await _userRepository.getWinStreak();
++    if (!mounted) return;
++    setState(() {
++      _winStreak = streak?.currentStreak ?? 0;
++    });
++  }
+@@
+   Future<void> _loadHomePreferences() async {
+     final prefs = await SharedPreferences.getInstance();
+     final shortcuts =
+         prefs.getStringList(_prefsKey('enabled_shortcuts_v1'))?.toSet();
+     var hideNoModules =
+         prefs.getBool(_prefsKey('hide_no_modules_message_v1')) ?? false;
++    final normalizedShortcuts = _normalizeEnabledShortcuts(
++      shortcuts ?? _defaultEnabledShortcuts,
++      _activeApps,
++    );
+ 
+-    if (_activeApps.isNotEmpty && hideNoModules) {
++    if ((_activeApps.length + normalizedShortcuts.length) > 0 && hideNoModules) {
+       hideNoModules = false;
+       await prefs.setBool(_prefsKey('hide_no_modules_message_v1'), false);
+     }
++    await prefs.setStringList(
++      _prefsKey('enabled_shortcuts_v1'),
++      normalizedShortcuts.toList(growable: false),
++    );
+ 
+     if (!mounted) return;
+     setState(() {
+-      if (shortcuts != null && shortcuts.isNotEmpty) {
+-        _enabledShortcuts = shortcuts;
+-      }
++      _enabledShortcuts = normalizedShortcuts;
+       _hideNoModulesMessage = hideNoModules;
+     });
+   }
++
++  int _shortcutCapacityFor(Set<String> activeApps) => 4 - activeApps.length;
++
++  Set<String> _normalizeEnabledShortcuts(
++    Set<String> shortcuts,
++    Set<String> activeApps,
++  ) {
++    final capacity = _shortcutCapacityFor(activeApps).clamp(0, 4);
++    final ordered = _shortcutOrder
++        .where(shortcuts.contains)
++        .take(capacity)
++        .toSet();
++    return ordered;
++  }
+@@
+   Future<bool> _togglePrimaryModule(String moduleId, bool enabled) async {
+     final previous = Set<String>.from(_activeApps);
++    final previousShortcuts = Set<String>.from(_enabledShortcuts);
+     final next = Set<String>.from(_activeApps);
+ 
+     if (enabled) {
+       next.add(moduleId);
+     } else {
+       next.remove(moduleId);
+     }
++    final normalizedShortcuts = _normalizeEnabledShortcuts(
++      _enabledShortcuts,
++      next,
++    );
+ 
+-    setState(() => _activeApps = next);
+-    await _handleNoModulesStateTransition(previous: previous, next: next);
++    setState(() {
++      _activeApps = next;
++      _enabledShortcuts = normalizedShortcuts;
++    });
++    await _handleNoModulesStateTransition(
++      previousApps: previous,
++      previousShortcuts: previousShortcuts,
++      nextApps: next,
++      nextShortcuts: normalizedShortcuts,
++    );
+ 
+     try {
+       final id = await _featureRepository.saveActiveAppsFast(
+         next.toList(),
+         settingsId: _settingsId,
+       );
+       _settingsId = id;
++      final prefs = await SharedPreferences.getInstance();
++      await prefs.setStringList(
++        _prefsKey('enabled_shortcuts_v1'),
++        normalizedShortcuts.toList(growable: false),
++      );
+       return true;
+     } catch (_) {
+       if (mounted) {
+-        setState(() => _activeApps = previous);
++        setState(() {
++          _activeApps = previous;
++          _enabledShortcuts = previousShortcuts;
++        });
+       }
+       return false;
+     }
+   }
+ 
+   Future<void> _handleNoModulesStateTransition({
+-    required Set<String> previous,
+-    required Set<String> next,
++    required Set<String> previousApps,
++    required Set<String> previousShortcuts,
++    required Set<String> nextApps,
++    required Set<String> nextShortcuts,
+   }) async {
+     final prefs = await SharedPreferences.getInstance();
+-    final hadActiveModules = previous.isNotEmpty;
+-    final hasActiveModules = next.isNotEmpty;
++    final hadVisibleItems = previousApps.length + previousShortcuts.length > 0;
++    final hasVisibleItems = nextApps.length + nextShortcuts.length > 0;
+ 
+-    if (hasActiveModules) {
++    if (hasVisibleItems) {
+       if (_hideNoModulesMessage) {
+         if (mounted) {
+           setState(() => _hideNoModulesMessage = false);
+@@
+       return;
+     }
+ 
+-    if (hadActiveModules && !hasActiveModules) {
++    if (hadVisibleItems && !hasVisibleItems) {
+       if (mounted) {
+         setState(() => _hideNoModulesMessage = false);
+       }
+@@
+   Future<void> _toggleShortcut(String shortcutId, bool enabled) async {
+-    final next = Set<String>.from(_enabledShortcuts);
++    final previous = Set<String>.from(_enabledShortcuts);
++    final next = Set<String>.from(_enabledShortcuts);
+     if (enabled) {
++      final capacity = _shortcutCapacityFor(_activeApps);
++      if (_enabledShortcuts.length >= capacity) {
++        return;
++      }
+       next.add(shortcutId);
+     } else {
+       next.remove(shortcutId);
+     }
+ 
+     setState(() => _enabledShortcuts = next);
+ 
+     final prefs = await SharedPreferences.getInstance();
+-    await prefs.setStringList(
+-      _prefsKey('enabled_shortcuts_v1'),
+-      next.toList(growable: false),
+-    );
++    try {
++      await prefs.setStringList(
++        _prefsKey('enabled_shortcuts_v1'),
++        next.toList(growable: false),
++      );
++    } catch (_) {
++      if (!mounted) return;
++      setState(() => _enabledShortcuts = previous);
++    }
+   }
+@@
+             builder: (context, snapshot) {
+               final data = snapshot.data;
++              final rankName = (data?.rankName.trim().isNotEmpty ?? false)
++                  ? data!.rankName.trim()
++                  : 'Starter';
+               final habitsCount =
+                   data?.totalHabits ?? habitProvider.habits.length;
+-              final allCards = <_PrimaryAppCardData>[
++              final appCards = <_PrimaryAppCardData>[
+                 _PrimaryAppCardData(
+                   moduleId: 'Pareto',
+                   title: 'To-Do',
+@@
+                   onTap: () => context.push('/screen-time-manager'),
+                 ),
+               ];
+-              final visibleCards = allCards
++              final visibleAppCards = appCards
+                   .where((card) => card.active)
+                   .toList(growable: false);
+-              final allShortcuts = <_ShortcutCardData>[
+-                _ShortcutCardData(
+-                  shortcutId: 'rank',
++              final shortcutCards = <_PrimaryAppCardData>[
++                _PrimaryAppCardData(
++                  moduleId: 'rank',
+                   title: 'Rank',
+                   icon: CupertinoIcons.star_fill,
+-                  onTap: () => context.push('/rank'),
++                  active: true,
++                  onTap: () => context.push('/rank'),
+                 ),
+-                _ShortcutCardData(
+-                  shortcutId: 'leaderboard',
++                _PrimaryAppCardData(
++                  moduleId: 'leaderboard',
+                   title: 'Leaderboard',
+                   icon: CupertinoIcons.rosette,
+-                  onTap: () => context.push('/leaderboard'),
++                  active: true,
++                  onTap: () => context.push('/leaderboard'),
+                 ),
+-                _ShortcutCardData(
+-                  shortcutId: 'focus',
++                _PrimaryAppCardData(
++                  moduleId: 'focus',
+                   title: 'Focus Mode',
+                   icon: CupertinoIcons.bolt_fill,
+-                  onTap: () => context.push('/focus'),
++                  active: true,
++                  onTap: () => context.push('/focus'),
+                 ),
+-                _ShortcutCardData(
+-                  shortcutId: 'family_time',
++                _PrimaryAppCardData(
++                  moduleId: 'family_time',
+                   title: 'Family Time',
+                   icon: CupertinoIcons.person_2_fill,
+-                  onTap: () => context.push('/family-time'),
++                  active: true,
++                  onTap: () => context.push('/family-time'),
+                 ),
+-                _ShortcutCardData(
+-                  shortcutId: 'block_apps',
++                _PrimaryAppCardData(
++                  moduleId: 'block_apps',
+                   title: 'Block Apps & Sites',
+                   icon: CupertinoIcons.shield_fill,
+-                  onTap: () => context.push('/screen-time'),
++                  active: true,
++                  onTap: () => context.push('/screen-time'),
+                 ),
+-                _ShortcutCardData(
+-                  shortcutId: 'streak',
++                _PrimaryAppCardData(
++                  moduleId: 'streak',
+                   title: 'Streak',
+                   icon: CupertinoIcons.flame_fill,
+-                  onTap: () => context.push('/win-streak'),
++                  active: true,
++                  onTap: () => context.push('/win-streak'),
+                 ),
+-                _ShortcutCardData(
+-                  shortcutId: 'notes',
++                _PrimaryAppCardData(
++                  moduleId: 'notes',
+                   title: 'Notes',
+                   icon: CupertinoIcons.doc_text_fill,
+-                  onTap: () => context.push('/notes'),
++                  active: true,
++                  onTap: () => context.push('/notes'),
+                 ),
+               ];
+-              final visibleShortcuts = allShortcuts
+-                  .where((shortcut) => _enabledShortcuts.contains(shortcut.shortcutId))
++              final visibleShortcutCards = shortcutCards
++                  .where((card) => _enabledShortcuts.contains(card.moduleId))
+                   .toList(growable: false);
++              final visibleCards = [
++                ...visibleAppCards,
++                ...visibleShortcutCards,
++              ].take(4).toList(growable: false);
+               final shouldShowNoModulesMessage =
+                   visibleCards.isEmpty && !_hideNoModulesMessage;
+ 
+@@
+                       _DashboardMainCard(
+                         userLabel: _userLabel,
+                         habitsCount: habitsCount,
+@@
+                       const SizedBox(height: 14),
+                       if (visibleCards.isNotEmpty)
+                         _PrimaryAppsGrid(cards: visibleCards),
+-                      if (visibleCards.isNotEmpty && visibleShortcuts.isNotEmpty)
+-                        const SizedBox(height: 14),
+-                      if (visibleShortcuts.isNotEmpty) ...[
+-                        Text(
+-                          'SHORTCUTS',
+-                          style: AppTypography.overline.copyWith(
+-                            fontSize: 11,
+-                            letterSpacing: 2,
+-                            color: AppColors.secondaryLabel.withValues(
+-                              alpha: 0.5,
+-                            ),
+-                          ),
+-                        ),
+-                        const SizedBox(height: 10),
+-                        _ShortcutsGrid(cards: visibleShortcuts),
+-                      ],
+-                      if ((visibleCards.isNotEmpty || visibleShortcuts.isNotEmpty) &&
+-                          shouldShowNoModulesMessage)
++                      if (visibleCards.isNotEmpty && shouldShowNoModulesMessage)
+                         const SizedBox(height: 14),
+                       if (shouldShowNoModulesMessage)
+                         _NoModulesMessageCard(onDismiss: _dismissNoModulesMessage),
+@@
+                   Positioned(
+                     left: 14,
+                     right: 14,
+                     top: 8,
+-                    child: _TopMenuBar(onOpenMenu: _openSecondaryMenu),
++                    child: _TopShortcutsBar(
++                      rankName: rankName,
++                      winStreak: _winStreak,
++                      onOpenMenu: _openSecondaryMenu,
++                      onOpenRank: () => context.push('/rank'),
++                      onOpenFocus: () => context.push('/focus'),
++                      onOpenNotes: () => context.push('/notes'),
++                      onOpenStreak: () => context.push('/win-streak'),
++                    ),
+                   ),
+                 ],
+               );
+@@
+-class _TopMenuBar extends StatelessWidget {
+-  final VoidCallback onOpenMenu;
+-
+-  const _TopMenuBar({
+-    required this.onOpenMenu,
+-  });
++class _TopShortcutsBar extends StatelessWidget {
++  final String rankName;
++  final int winStreak;
++  final VoidCallback onOpenMenu;
++  final VoidCallback onOpenRank;
++  final VoidCallback onOpenFocus;
++  final VoidCallback onOpenNotes;
++  final VoidCallback onOpenStreak;
++
++  const _TopShortcutsBar({
++    required this.rankName,
++    required this.winStreak,
++    required this.onOpenMenu,
++    required this.onOpenRank,
++    required this.onOpenFocus,
++    required this.onOpenNotes,
++    required this.onOpenStreak,
++  });
+ 
+   @override
+   Widget build(BuildContext context) {
+     return Row(
+       children: [
+-        _InteractiveLift(
++        _ShortcutCircle(
+           onTap: onOpenMenu,
+-          borderRadius: 24,
+-          glowColor: AppColors.edgeGlow,
+-          child: Container(
+-            width: 48,
+-            height: 48,
+-            decoration: BoxDecoration(
+-              shape: BoxShape.circle,
+-              gradient: LinearGradient(
+-                begin: Alignment.topLeft,
+-                end: Alignment.bottomRight,
+-                colors: AppColors.floatingGlassGradient,
+-              ),
+-              border: Border.all(color: AppColors.borderStrong, width: 1),
+-              boxShadow: [
+-                BoxShadow(
+-                  color: AppColors.glassShadow.withValues(alpha: 0.2),
+-                  blurRadius: 12,
+-                  offset: const Offset(0, 6),
+-                  spreadRadius: -8,
+-                ),
+-              ],
+-            ),
+-            child: Icon(
+-              CupertinoIcons.person_fill,
+-              color: AppColors.secondaryLabel,
+-              size: 18,
+-            ),
+-          ),
++          icon: CupertinoIcons.person_fill,
++          iconColor: AppColors.secondaryLabel,
+         ),
+-        const Spacer(),
++        const SizedBox(width: 10),
++        _ShortcutPill(
++          onTap: onOpenRank,
++          label: rankName,
++          textColor: AppColors.warning,
++        ),
++        const SizedBox(width: 10),
++        _ShortcutCircle(
++          onTap: onOpenFocus,
++          icon: CupertinoIcons.bolt_fill,
++          iconColor: AppColors.focusPrimary,
++          glowColor: AppColors.focusPrimary.withValues(alpha: 0.22),
++        ),
++        const SizedBox(width: 10),
++        _ShortcutCircle(
++          onTap: onOpenNotes,
++          icon: CupertinoIcons.doc_text_fill,
++          iconColor: AppColors.accent,
++          glowColor: AppColors.accent.withValues(alpha: 0.22),
++        ),
++        const SizedBox(width: 10),
++        _StreakPill(
++          onTap: onOpenStreak,
++          streakValue: winStreak,
++        ),
+       ],
+     );
+   }
+ }
++
++class _ShortcutPill extends StatelessWidget {
++  final VoidCallback onTap;
++  final String label;
++  final Color textColor;
++
++  const _ShortcutPill({
++    required this.onTap,
++    required this.label,
++    required this.textColor,
++  });
++
++  @override
++  Widget build(BuildContext context) {
++    return Expanded(
++      child: _InteractiveLift(
++        onTap: onTap,
++        borderRadius: 18,
++        glowColor: AppColors.edgeGlowSoft,
++        hoverScale: 1.01,
++        pressedScale: 1.02,
++        child: Container(
++          height: 48,
++          decoration: BoxDecoration(
++            borderRadius: BorderRadius.circular(18),
++            gradient: LinearGradient(
++              begin: Alignment.topCenter,
++              end: Alignment.bottomCenter,
++              colors: [AppColors.cardRaised, AppColors.cardBase],
++            ),
++            border: Border.all(color: AppColors.borderStrong, width: 1),
++          ),
++          alignment: Alignment.center,
++          child: Text(
++            label,
++            maxLines: 1,
++            overflow: TextOverflow.ellipsis,
++            style: AppTypography.callout.copyWith(
++              fontSize: 13,
++              fontWeight: FontWeight.w700,
++              color: textColor,
++            ),
++          ),
++        ),
++      ),
++    );
++  }
++}
++
++class _StreakPill extends StatelessWidget {
++  final VoidCallback onTap;
++  final int streakValue;
++
++  const _StreakPill({
++    required this.onTap,
++    required this.streakValue,
++  });
++
++  @override
++  Widget build(BuildContext context) {
++    return _InteractiveLift(
++      onTap: onTap,
++      borderRadius: 18,
++      glowColor: AppColors.warning.withValues(alpha: 0.18),
++      hoverScale: 1.01,
++      pressedScale: 1.02,
++      child: Container(
++        height: 48,
++        padding: const EdgeInsets.symmetric(horizontal: 14),
++        decoration: BoxDecoration(
++          borderRadius: BorderRadius.circular(18),
++          gradient: LinearGradient(
++            begin: Alignment.topCenter,
++            end: Alignment.bottomCenter,
++            colors: [AppColors.cardRaised, AppColors.cardBase],
++          ),
++          border: Border.all(color: AppColors.borderStrong, width: 1),
++        ),
++        child: Row(
++          mainAxisSize: MainAxisSize.min,
++          children: [
++            Icon(
++              CupertinoIcons.flame_fill,
++              size: 16,
++              color: AppColors.warning,
++            ),
++            const SizedBox(width: 8),
++            Text(
++              '$streakValue',
++              style: AppTypography.callout.copyWith(
++                fontSize: 13,
++                fontWeight: FontWeight.w700,
++                color: AppColors.warning,
++              ),
++            ),
++          ],
++        ),
++      ),
++    );
++  }
++}
++
++class _ShortcutCircle extends StatelessWidget {
++  final VoidCallback onTap;
++  final IconData icon;
++  final Color iconColor;
++  final Color? glowColor;
++
++  const _ShortcutCircle({
++    required this.onTap,
++    required this.icon,
++    required this.iconColor,
++    this.glowColor,
++  });
++
++  @override
++  Widget build(BuildContext context) {
++    return _InteractiveLift(
++      onTap: onTap,
++      borderRadius: 24,
++      glowColor: glowColor ?? AppColors.edgeGlow,
++      hoverScale: 1.01,
++      pressedScale: 1.02,
++      child: Container(
++        width: 48,
++        height: 48,
++        decoration: BoxDecoration(
++          shape: BoxShape.circle,
++          gradient: LinearGradient(
++            begin: Alignment.topLeft,
++            end: Alignment.bottomRight,
++            colors: AppColors.floatingGlassGradient,
++          ),
++          border: Border.all(color: AppColors.borderStrong, width: 1),
++          boxShadow: [
++            BoxShadow(
++              color: AppColors.glassShadow.withValues(alpha: 0.2),
++              blurRadius: 12,
++              offset: const Offset(0, 6),
++              spreadRadius: -8,
++            ),
++          ],
++        ),
++        child: Icon(icon, color: iconColor, size: 18),
++      ),
++    );
++  }
++}
+@@
+-class _ShortcutCardData {
+-  final String shortcutId;
+-  final String title;
+-  final IconData icon;
+-  final VoidCallback onTap;
+-
+-  const _ShortcutCardData({
+-    required this.shortcutId,
+-    required this.title,
+-    required this.icon,
+-    required this.onTap,
+-  });
+-}
+-
+-class _ShortcutsGrid extends StatelessWidget {
+-  final List<_ShortcutCardData> cards;
+-
+-  const _ShortcutsGrid({required this.cards});
+-
+-  Widget _squareCard(_ShortcutCardData data) {
+-    return AspectRatio(
+-      aspectRatio: 1,
+-      child: _ShortcutCard(data: data, compact: true),
+-    );
+-  }
+-
+-  @override
+-  Widget build(BuildContext context) {
+-    return _AdaptiveTwoColumnGrid<_ShortcutCardData>(
+-      items: cards,
+-      spacing: 14,
+-      fullWidthBuilder: (card) => _ShortcutCard(data: card, compact: false),
+-      squareBuilder: (card) => _squareCard(card),
+-    );
+-  }
+-}
+-
+ class _AdaptiveTwoColumnGrid<T> extends StatelessWidget {
+@@
+       case 'ScreenTimeManager':
+         return AppColors.chartD.withValues(alpha: 0.22);
++      case 'rank':
++        return AppColors.warning.withValues(alpha: 0.18);
++      case 'leaderboard':
++        return AppColors.chartC.withValues(alpha: 0.18);
++      case 'focus':
++        return AppColors.focusPrimary.withValues(alpha: 0.18);
++      case 'family_time':
++        return AppColors.chartB.withValues(alpha: 0.18);
++      case 'block_apps':
++        return AppColors.chartD.withValues(alpha: 0.18);
++      case 'streak':
++        return AppColors.warning.withValues(alpha: 0.18);
++      case 'notes':
++        return AppColors.accent.withValues(alpha: 0.18);
+       default:
+         return AppColors.edgeGlowSoft;
+     }
+@@
+-    if (!data.active) {
+-      return GestureDetector(
+-        onTap: () {},
+-        child: Opacity(opacity: 0.52, child: base),
+-      );
+-    }
+-
+     return _InteractiveLift(
+       onTap: data.onTap,
+       borderRadius: 24,
+@@
+       ),
+     );
+   }
+ }
+-
+-class _ShortcutCard extends StatelessWidget {
+-  final _ShortcutCardData data;
+-  final bool compact;
+-
+-  const _ShortcutCard({required this.data, required this.compact});
+-
+-  Color _shortcutGlow(String shortcutId) {
+-    switch (shortcutId) {
+-      case 'rank':
+-        return AppColors.warning.withValues(alpha: 0.2);
+-      case 'leaderboard':
+-        return AppColors.chartC.withValues(alpha: 0.2);
+-      case 'focus':
+-        return AppColors.focusPrimary.withValues(alpha: 0.2);
+-      case 'family_time':
+-        return AppColors.chartB.withValues(alpha: 0.2);
+-      case 'block_apps':
+-        return AppColors.chartD.withValues(alpha: 0.2);
+-      case 'streak':
+-        return AppColors.warning.withValues(alpha: 0.2);
+-      case 'notes':
+-        return AppColors.accent.withValues(alpha: 0.2);
+-      default:
+-        return AppColors.edgeGlowSoft;
+-    }
+-  }
+-
+-  @override
+-  Widget build(BuildContext context) {
+-    final glowColor = _shortcutGlow(data.shortcutId);
+-    return _InteractiveLift(
+-      onTap: data.onTap,
+-      borderRadius: 24,
+-      hoverScale: 1.017,
+-      pressedScale: 1.028,
+-      glowColor: glowColor,
+-      child: GlassCard(
+-        padding: EdgeInsets.all(compact ? 12 : 14),
+-        borderRadius: 24,
+-        level: GlassCardLevel.standard,
+-        showEdgeGlow: false,
+-        gradientColors: [AppColors.cardRaised, AppColors.cardBase],
+-        border: Border.all(color: AppColors.borderStrong, width: 1),
+-        child: SizedBox(
+-          height: compact ? null : 126,
+-          child: Column(
+-            crossAxisAlignment: CrossAxisAlignment.start,
+-            children: [
+-              Container(
+-                width: compact ? 56 : 62,
+-                height: compact ? 56 : 62,
+-                decoration: BoxDecoration(
+-                  borderRadius: BorderRadius.circular(16),
+-                  gradient: LinearGradient(
+-                    begin: Alignment.topLeft,
+-                    end: Alignment.bottomRight,
+-                    colors: [AppColors.surfaceMuted, AppColors.surface],
+-                  ),
+-                  border: Border.all(color: AppColors.border, width: 0.9),
+-                ),
+-                child: Icon(
+-                  data.icon,
+-                  color: AppColors.accent,
+-                  size: compact ? 24 : 27,
+-                ),
+-              ),
+-              const Spacer(),
+-              Text(
+-                data.title,
+-                maxLines: compact ? 2 : 1,
+-                overflow: TextOverflow.ellipsis,
+-                style: AppTypography.title3.copyWith(
+-                  fontSize: compact ? 18 : 17,
+-                  fontWeight: FontWeight.w700,
+-                  color: AppColors.label,
+-                ),
+-              ),
+-            ],
+-          ),
+-        ),
+-      ),
+-    );
+-  }
+-}
+@@
+ class _SecondaryMenuSheet extends StatefulWidget {
+   final Set<String> initialActiveApps;
+   final Set<String> initialEnabledShortcuts;
+   final Future<bool> Function(String moduleId, bool enabled) onToggleModule;
+@@
+ class _SecondaryMenuSheetState extends State<_SecondaryMenuSheet> {
+@@
+   Future<void> _onToggle(_ModuleToggleOption option, bool value) async {
+     final previous = Set<String>.from(_active);
++    final previousShortcuts = Set<String>.from(_shortcuts);
++    final nextActive = Set<String>.from(_active);
++    if (value) {
++      nextActive.add(option.moduleId);
++    } else {
++      nextActive.remove(option.moduleId);
++    }
++    final shortcutCapacity = (4 - nextActive.length).clamp(0, 4);
++    final nextShortcuts = _shortcutOptions
++        .map((option) => option.moduleId)
++        .where(_shortcuts.contains)
++        .take(shortcutCapacity)
++        .toSet();
++
+     setState(() {
+-      if (value) {
+-        _active.add(option.moduleId);
+-      } else {
+-        _active.remove(option.moduleId);
+-      }
++      _active = nextActive;
++      _shortcuts = nextShortcuts;
+       _saving.add(option.moduleId);
+     });
+ 
+     final success = await widget.onToggleModule(option.moduleId, value);
+     if (!mounted) return;
+ 
+     setState(() {
+       if (!success) {
+         _active = previous;
++        _shortcuts = previousShortcuts;
+       }
+       _saving.remove(option.moduleId);
+     });
+   }
+ 
+   Future<void> _onToggleShortcut(_ModuleToggleOption option, bool value) async {
++    final capacity = (4 - _active.length).clamp(0, 4);
++    if (value && !_shortcuts.contains(option.moduleId) && _shortcuts.length >= capacity) {
++      return;
++    }
+     setState(() {
+       if (value) {
+         _shortcuts.add(option.moduleId);
+@@
+   @override
+   Widget build(BuildContext context) {
+     final screen = MediaQuery.of(context).size;
+     final panelWidth = (screen.width * 0.82).clamp(280.0, 380.0);
++    final shortcutCapacity = (4 - _active.length).clamp(0, 4);
+     return SizedBox(
+@@
+                     const SizedBox(height: 16),
+                     Text(
+                       'SHORTCUTS',
+@@
+                     Expanded(
+                       child: ListView.separated(
+                         physics: const BouncingScrollPhysics(),
+@@
+                         itemBuilder: (context, index) {
+                           final option = _shortcutOptions[index];
+                           final enabled = _shortcuts.contains(option.moduleId);
+                           final saving = _saving.contains(option.moduleId);
++                          final canEnable =
++                              enabled || _shortcuts.length < shortcutCapacity;
+                           return _ModuleControlRow(
+                             option: option,
+                             enabled: enabled,
+                             saving: saving,
++                            locked: !canEnable,
+                             onChanged: (value) =>
+                                 _onToggleShortcut(option, value),
+                           );
+@@
+ class _ModuleControlRow extends StatelessWidget {
+   final _ModuleToggleOption option;
+   final bool enabled;
+   final bool saving;
++  final bool locked;
+   final ValueChanged<bool> onChanged;
+ 
+   const _ModuleControlRow({
+     required this.option,
+     required this.enabled,
+     required this.saving,
++    this.locked = false,
+     required this.onChanged,
+   });
+ 
+   @override
+   Widget build(BuildContext context) {
+     return _MenuPressable(
+       pressedScale: 0.98,
+-      onTap: saving ? null : () => onChanged(!enabled),
++      onTap: saving || locked ? null : () => onChanged(!enabled),
+       child: AnimatedContainer(
+@@
+-        child: Row(
++        child: Opacity(
++          opacity: locked ? 0.42 : 1,
++          child: Row(
+           children: [
+             Container(
+@@
+-            if (saving)
++            if (saving)
+               const CupertinoActivityIndicator()
+             else
+               TweenAnimationBuilder<double>(
+@@
+                 child: CupertinoSwitch(
+                   value: enabled,
+-                  onChanged: onChanged,
++                  onChanged: locked ? null : onChanged,
+                   activeTrackColor: AppColors.toggleOn,
+                   inactiveTrackColor: CupertinoColors.white.withValues(
+                     alpha: 0.15,
+                   ),
+                   thumbColor: CupertinoColors.white,
+                 ),
+               ),
+           ],
+-        ),
++        )),
+       ),
+     );
+   }
+ }
+*** End Patch

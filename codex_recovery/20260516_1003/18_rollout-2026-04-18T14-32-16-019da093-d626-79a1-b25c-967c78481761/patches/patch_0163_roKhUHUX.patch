@@ -1,0 +1,64 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/home/home_screen.dart
+@@
+ class _DashboardMainCard extends StatelessWidget {
++  final String title;
+   final int wakeScore;
+   final int tasksCount;
+   final int habitsCount;
+   final int eventsCount;
++  final String tasksLabel;
++  final String habitsLabel;
++  final String eventsLabel;
++  final String yesterdayAlertLabel;
+   final bool showYesterdayHabitAlert;
+   final VoidCallback onOpenDashboard;
+ 
+   const _DashboardMainCard({
++    required this.title,
+     required this.wakeScore,
+     required this.tasksCount,
+     required this.habitsCount,
+     required this.eventsCount,
++    required this.tasksLabel,
++    required this.habitsLabel,
++    required this.eventsLabel,
++    required this.yesterdayAlertLabel,
+     required this.showYesterdayHabitAlert,
+     required this.onOpenDashboard,
+   });
+@@
+                         Text(
+-                          'Dashboard',
++                          title,
+                           maxLines: 1,
+@@
+                             Expanded(
+                               child: _DashboardOverviewMetric(
+-                                label: 'Tasks',
++                                label: tasksLabel,
+                                 value: '$tasksCount',
+                               ),
+                             ),
+                             Expanded(
+                               child: _DashboardOverviewMetric(
+-                                label: 'Habits',
++                                label: habitsLabel,
+                                 value: '$habitsCount',
+                               ),
+                             ),
+                             Expanded(
+                               child: _DashboardOverviewMetric(
+-                                label: 'Events',
++                                label: eventsLabel,
+                                 value: '$eventsCount',
+                               ),
+                             ),
+@@
+                         if (showYesterdayHabitAlert)
+                           Text(
+-                            'Habits from yesterday not validated',
++                            yesterdayAlertLabel,
+                             maxLines: 1,
+                             overflow: TextOverflow.ellipsis,
+*** End Patch

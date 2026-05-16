@@ -1,0 +1,12 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/test/widget_test.dart
+@@
+-    expect(find.text('TERMS'), findsOneWidget);
+-    expect(find.text('PRIVACY'), findsOneWidget);
+-    expect(find.text('SUPPORT'), findsOneWidget);
++    expect(find.text('Terms'), findsOneWidget);
++    expect(find.text('Privacy'), findsOneWidget);
++    expect(find.text('Support'), findsOneWidget);
+   });
+ }
+*** End Patch

@@ -1,0 +1,26 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/screen_time_screen.dart
+@@
+-  String _nextAppSelectionLabel() {
+-    const base = 'Selected apps';
+-    final existing = _blockedApps
+-        .map((app) => (app.appName ?? '').trim())
+-        .where((name) => name.isNotEmpty)
+-        .toSet();
+-    if (!existing.contains(base)) return base;
+-    var index = 2;
+-    while (existing.contains('$base $index')) {
+-      index += 1;
+-    }
+-    return '$base $index';
+-  }
++  String _nextAppSelectionLabelFrom(Set<String> existing) {
++    const base = 'Selected app';
++    if (!existing.contains(base)) return base;
++    var index = 2;
++    while (existing.contains('$base $index')) {
++      index += 1;
++    }
++    return '$base $index';
++  }
+*** End Patch

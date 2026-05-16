@@ -1,0 +1,12 @@
+*** Begin Patch
+*** Update File: ios/CeoWidgets/CeoWidgets.swift
+@@
+-@available(iOSApplicationExtension 17.0, *)
+-#Preview(as: .systemSmall) {
+-    CeoWidgets()
+-} timeline: {
+-    SimpleEntry(date: .now, emoji: "😀")
+-    SimpleEntry(date: .now, emoji: "🤩")
+-}
++// Previews removed to avoid build-time macro/plugin issues in CI/headless builds.
+*** End Patch

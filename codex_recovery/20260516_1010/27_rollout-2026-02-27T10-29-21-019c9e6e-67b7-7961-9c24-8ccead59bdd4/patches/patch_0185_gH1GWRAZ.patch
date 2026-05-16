@@ -1,0 +1,44 @@
+*** Begin Patch
+*** Update File: lib/core/providers/task_provider.dart
+@@
+ import 'package:flutter/material.dart';
++import '../models/premium_models.dart';
+ import '../models/task_models.dart';
++import '../repositories/premium_repository.dart';
+ import '../repositories/task_repository.dart';
+@@
+ class TaskProvider extends ChangeNotifier {
+   final TaskRepository _repository;
++  final PremiumRepository _premiumRepository;
+@@
+   TaskProvider({TaskRepository? repository})
+-    : _repository = repository ?? TaskRepository();
++    : _repository = repository ?? TaskRepository(),
++      _premiumRepository = PremiumRepository();
+@@
+-  Future<void> addTask(
++  Future<PremiumCheckResult> addTask(
+     String title, {
+     String? importance,
+     String? duration,
+@@
+     bool syncToCalendar = false,
+   }) async {
+     try {
++      final premiumCheck = await _premiumRepository.canCreateTask();
++      if (!premiumCheck.allowed) return premiumCheck;
++
+       await _repository.addTask(
+         title,
+         importance: importance,
+@@
+       );
+       await loadTasksWithCompleted(includeCompleted: true);
+       await loadEvents();
++      return const PremiumCheckResult.allowed();
+     } catch (e) {
+       print('Error adding task: $e');
++      return const PremiumCheckResult.allowed();
+     }
+   }
+*** End Patch

@@ -1,0 +1,17 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/auth/onboarding_screen.dart
+@@
+     if (_didLoadInitialTheme) return;
+     final themeProvider = context.read<ThemeProvider>();
+     _selectedThemePresetId = themeProvider.onboardingCurrentThemeId;
++    themeProvider.previewTheme(_selectedThemePresetId);
+     _didLoadInitialTheme = true;
+   }
+@@
+   @override
+   Widget build(BuildContext context) {
+-    final currentThemeId = ThemeProvider().onboardingCurrentThemeId;
++    final currentThemeId = context.watch<ThemeProvider>().currentPreset.id;
+     final darkPresets = ThemeCatalog.presets.where((p) => p.isDark).toList();
+     final lightPresets = ThemeCatalog.presets.where((p) => !p.isDark).toList();
+*** End Patch

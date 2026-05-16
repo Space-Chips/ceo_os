@@ -1,0 +1,54 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/ios/Runner.xcodeproj/project.pbxproj
+@@
+ /* Begin PBXResourcesBuildPhase section */
+ 		331C807F294A63A400263BE5 /* Resources */ = {
+ 			isa = PBXResourcesBuildPhase;
+ 			buildActionMask = 2147483647;
+ 			files = (
+ 			);
+ 			runOnlyForDeploymentPostprocessing = 0;
+ 		};
++		AD1E2F3A4B5C6D7E8F901234 /* Resources */ = {
++			isa = PBXResourcesBuildPhase;
++			buildActionMask = 2147483647;
++			files = (
++			);
++			runOnlyForDeploymentPostprocessing = 0;
++		};
+ 		8578F9732F4379B20038063F /* Resources */ = {
+ 			isa = PBXResourcesBuildPhase;
+ 			buildActionMask = 2147483647;
+@@
+ 		A4A15E0529FC4AD188BBE9D5 /* Sources */ = {
+ 			isa = PBXSourcesBuildPhase;
+ 			buildActionMask = 2147483647;
+ 			files = (
+ 			);
+ 			runOnlyForDeploymentPostprocessing = 0;
+ 		};
++		BC2F3A4B5C6D7E8F90123456 /* Sources */ = {
++			isa = PBXSourcesBuildPhase;
++			buildActionMask = 2147483647;
++			files = (
++			);
++			runOnlyForDeploymentPostprocessing = 0;
++		};
+ /* End PBXSourcesBuildPhase section */
+ 
+ /* Begin PBXTargetDependency section */
+@@
+ 		61CBCB7B69E447D481CE0C9B /* PBXTargetDependency */ = {
+ 			isa = PBXTargetDependency;
+ 			target = 84C0EEF5E0064471B8DD0227 /* FocusActivityMonitorExtension */;
+ 			targetProxy = 1EB7A90D866B4BBD97051971 /* PBXContainerItemProxy */;
+ 		};
++		CD3A4B5C6D7E8F9012345678 /* PBXTargetDependency */ = {
++			isa = PBXTargetDependency;
++			target = 9D0E1F2A3B4C5D6E7F801234 /* ScreenTimeReportExtension */;
++			targetProxy = 2C5E8F0A19C14A5CB6D32001 /* PBXContainerItemProxy */;
++		};
+ 		8578F9882F4379B50038063F /* PBXTargetDependency */ = {
+ 			isa = PBXTargetDependency;
+ 			target = 8578F9742F4379B20038063F /* CeoWidgetsExtension */;
+*** End Patch

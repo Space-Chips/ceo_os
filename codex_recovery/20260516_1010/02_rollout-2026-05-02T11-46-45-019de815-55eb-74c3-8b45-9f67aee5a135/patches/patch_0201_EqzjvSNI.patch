@@ -1,0 +1,99 @@
+*** Begin Patch
+*** Update File: ios/CeoWidgets/CeoHomeWidget.swift
+@@
+       VStack(alignment: .leading, spacing: WidgetLayout.gapL) {
+         Text("Dashboard")
+-          .widgetText(23, .bold, color: WidgetPalette.textPrimary, minScale: 0.82)
++          .widgetText(22, .bold, color: WidgetPalette.textPrimary, minScale: 0.82)
+@@
+       HStack {
+         Text(label)
+-          .widgetText(14, .semibold, color: WidgetPalette.textSecondary, minScale: 0.82)
++          .widgetText(13.5, .semibold, color: WidgetPalette.textSecondary, minScale: 0.82)
+         Spacer(minLength: 8)
+         Text(value)
+-          .widgetText(16, .heavy, color: WidgetPalette.textPrimary, minScale: 0.78)
++          .widgetText(15.5, .heavy, color: WidgetPalette.textPrimary, minScale: 0.78)
+       }
+-      .frame(height: 24)
++      .frame(height: 22)
+     }
+   }
+@@
+             VStack(alignment: .leading, spacing: 4) {
+               Text("Dashboard")
+-                .widgetText(28, .bold, color: WidgetPalette.textPrimary, minScale: 0.82)
++                .widgetText(26, .bold, color: WidgetPalette.textPrimary, minScale: 0.82)
+               Text("Today")
+-                .widgetText(15, .semibold, color: WidgetPalette.textSecondary, minScale: 0.82)
++                .widgetText(14, .semibold, color: WidgetPalette.textSecondary, minScale: 0.82)
+             }
+             Spacer(minLength: 10)
+             Text("\(progress)%")
+-              .widgetText(28, .heavy, color: WidgetPalette.textPrimary, minScale: 0.78)
++              .widgetText(26, .heavy, color: WidgetPalette.textPrimary, minScale: 0.78)
+           }
+@@
+       VStack(alignment: .leading, spacing: WidgetLayout.gapXS) {
+         Text(label)
+-          .widgetText(14, .semibold, color: WidgetPalette.textSecondary, minScale: 0.82)
++          .widgetText(13.5, .semibold, color: WidgetPalette.textSecondary, minScale: 0.82)
+         Text(value)
+-          .widgetText(18, .heavy, color: WidgetPalette.textPrimary, minScale: 0.78)
++          .widgetText(17, .heavy, color: WidgetPalette.textPrimary, minScale: 0.78)
+       }
+@@
+       VStack(alignment: .leading, spacing: WidgetLayout.gapS) {
+         Text("Next")
+-          .widgetText(14, .semibold, color: WidgetPalette.textSecondary, minScale: 0.82)
++          .widgetText(13.5, .semibold, color: WidgetPalette.textSecondary, minScale: 0.82)
+         Text(text.isEmpty ? "No events" : text)
+-          .widgetText(16, .bold, color: WidgetPalette.textPrimary, minScale: 0.8)
++          .widgetText(15, .bold, color: WidgetPalette.textPrimary, minScale: 0.8)
+       }
+@@
+           HStack(alignment: .firstTextBaseline) {
+             Text("Habits")
+-              .widgetText(24, .heavy, color: WidgetPalette.textPrimary, minScale: 0.8)
++              .widgetText(23, .heavy, color: WidgetPalette.textPrimary, minScale: 0.8)
+             Spacer(minLength: 8)
+             Text("\(completed)/\(max(1, total))")
+-              .widgetText(20, .heavy, color: WidgetPalette.textPrimary, minScale: 0.78)
++              .widgetText(19, .heavy, color: WidgetPalette.textPrimary, minScale: 0.78)
+           }
+@@
+         Text(name.isEmpty ? "Habit" : name)
+-          .widgetText(15, .bold, color: WidgetPalette.textPrimary, minScale: 0.8)
++          .widgetText(14.5, .bold, color: WidgetPalette.textPrimary, minScale: 0.8)
+         Spacer(minLength: 0)
+       }
+-      .frame(height: 28)
++      .frame(height: 26)
+     }
+   }
+ }
+@@
+         HStack {
+           Text("To‑Do")
+-            .widgetText(24, .heavy, color: WidgetPalette.textPrimary, minScale: 0.8)
++            .widgetText(23, .heavy, color: WidgetPalette.textPrimary, minScale: 0.8)
+           Spacer(minLength: 8)
+@@
+             Text("\(remaining)")
+-              .widgetText(15, .heavy, color: WidgetPalette.textPrimary, minScale: 0.78)
++              .widgetText(14.5, .heavy, color: WidgetPalette.textPrimary, minScale: 0.78)
+           }
+           .frame(width: 32, height: 32)
+         }
+@@
+         Text(title.isEmpty ? "Task" : title)
+-          .widgetText(15, .bold, color: WidgetPalette.textPrimary, minScale: 0.8)
++          .widgetText(14.5, .bold, color: WidgetPalette.textPrimary, minScale: 0.8)
+         Spacer(minLength: 0)
+       }
+-      .frame(height: 30)
++      .frame(height: 28)
+     }
+   }
+ }
+*** End Patch

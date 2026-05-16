@@ -1,0 +1,27 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/android/app/src/main/kotlin/com/wakeapp/ceoos/MainActivity.kt
+@@
+-        val expected = ComponentName(this, WakeAccessibilityService::class.java).flattenToString()
++        val expected = ComponentName(this, BlockingAccessibilityService::class.java).flattenToString()
+@@
+-                    "getBlockingDebugState" -> result.success(WakeAccessibilityService.debugSnapshot())
++                    "getBlockingDebugState" -> result.success(BlockingAccessibilityService.debugSnapshot())
+@@
+-                        WakeAccessibilityService.requestImmediateEvaluation()
++                        BlockingAccessibilityService.requestImmediateEvaluation()
+@@
+-                        WakeAccessibilityService.requestImmediateEvaluation()
++                        BlockingAccessibilityService.requestImmediateEvaluation()
+@@
+-                        WakeAccessibilityService.requestImmediateEvaluation()
++                        BlockingAccessibilityService.requestImmediateEvaluation()
+@@
+-                        WakeAccessibilityService.requestImmediateEvaluation()
++                        BlockingAccessibilityService.requestImmediateEvaluation()
+@@
+-                        WakeAccessibilityService.requestImmediateEvaluation()
++                        BlockingAccessibilityService.requestImmediateEvaluation()
+@@
+-                        WakeAccessibilityService.requestImmediateEvaluation()
++                        BlockingAccessibilityService.requestImmediateEvaluation()
+*** End Patch

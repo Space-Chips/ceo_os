@@ -1,0 +1,36 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/packages/url_launcher_ios/ios/url_launcher_ios/Sources/url_launcher_ios/URLLauncherPlugin.swift
+@@
+ public final class URLLauncherPlugin: NSObject, FlutterPlugin, UrlLauncherApi {
+ 
+   public static func register(with registrar: FlutterPluginRegistrar) {
+-    let plugin = URLLauncherPlugin(
+-      viewPresenterProvider: DefaultViewPresenterProvider(registrar: registrar))
++    // Keep registration minimal and deterministic at app launch.
++    // Deferring view-controller resolution avoids startup crashes observed
++    // on iOS beta runtimes during plugin registration.
++    let plugin = URLLauncherPlugin(registrar: registrar)
+     UrlLauncherApiSetup.setUp(binaryMessenger: registrar.messenger(), api: plugin)
+     registrar.publish(plugin)
+   }
+ 
+   private var currentSession: URLLaunchSession?
+   private let launcher: Launcher
+-  /// The view presenter provider, for showing a Safari view controller.
+-  private let viewPresenterProvider: ViewPresenterProvider
++  /// Plugin registrar retained for resolving the active presenter lazily.
++  private let registrar: FlutterPluginRegistrar
+ 
+-  init(launcher: Launcher = DefaultLauncher(), viewPresenterProvider: ViewPresenterProvider) {
++  init(launcher: Launcher = DefaultLauncher(), registrar: FlutterPluginRegistrar) {
+     self.launcher = launcher
+-    self.viewPresenterProvider = viewPresenterProvider
++    self.registrar = registrar
+   }
+@@
+-    guard let presenter = viewPresenterProvider.viewPresenter else {
++    guard let presenter = registrar.viewController else {
+       completion(.success(.noUI))
+       return
+     }
+*** End Patch

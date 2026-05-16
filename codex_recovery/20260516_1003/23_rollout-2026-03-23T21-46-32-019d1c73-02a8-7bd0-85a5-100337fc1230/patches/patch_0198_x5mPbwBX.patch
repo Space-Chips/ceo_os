@@ -1,0 +1,98 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/setup/setup_flow_controller.dart
+@@
+ enum SetupStep {
+   welcome,
+-  reflection,
+-  loading,
+-  insight,
+-  overview,
+-  overlay,
+   usageAccess,
+   accessibility,
++  overlay,
+   success,
+ }
+@@
+-  static const _prefReflection = 'screen_time_setup_reflection';
+-
+   final FocusService _focusService;
+   SharedPreferences? _prefs;
+@@
+-  String? _reflectionSelection;
++  String? _legacyReflectionSelection;
+@@
+-  String? get reflectionSelection => _reflectionSelection;
+-
+   bool get overlayGranted => _overlayState == FocusPermissionState.approved;
+@@
+-    _reflectionSelection = _prefs?.getString(_prefReflection);
+-
+     await refreshPermissionStates();
+@@
+-  Future<void> setReflectionSelection(String value) async {
+-    _reflectionSelection = value;
+-    await _prefs?.setString(_prefReflection, value);
+-    notifyListeners();
+-  }
+-
+   Future<void> advance() async {
+@@
+   SetupStep firstMissingPermissionStep() {
+-    if (!overlayGranted) return SetupStep.overlay;
+     if (!usageGranted) return SetupStep.usageAccess;
+     if (!accessibilityGranted) return SetupStep.accessibility;
++    if (!overlayGranted) return SetupStep.overlay;
+     return SetupStep.success;
+   }
+@@
+-  SetupStep _resolveInitialStep(SetupStep? savedStep) {
+-    if (_setupHasRun) {
+-      if (savedStep != null &&
+-          isPermissionStep(savedStep) &&
+-          !isPermissionGrantedFor(savedStep)) {
+-        return savedStep;
+-      }
+-      return SetupStep.overview;
+-    }
+-    return savedStep ?? SetupStep.welcome;
++  SetupStep _resolveInitialStep(SetupStep? savedStep) {
++    if (!_setupHasRun) return SetupStep.welcome;
++    if (allPermissionsGranted) return SetupStep.success;
++    if (savedStep != null &&
++        isPermissionStep(savedStep) &&
++        !isPermissionGrantedFor(savedStep)) {
++      return savedStep;
++    }
++    return firstMissingPermissionStep();
+   }
+@@
+   SetupStep? _stepFromName(String? raw) {
+     if (raw == null || raw.isEmpty) return null;
++    switch (raw) {
++      case 'reflection':
++      case 'loading':
++      case 'insight':
++      case 'overview':
++        return SetupStep.welcome;
++    }
+     for (final step in SetupStep.values) {
+       if (step.name == raw) return step;
+     }
+     return null;
+   }
+ 
+   List<SetupStep> get _orderedSteps => const [
+     SetupStep.welcome,
+-    SetupStep.reflection,
+-    SetupStep.loading,
+-    SetupStep.insight,
+-    SetupStep.overview,
+-    SetupStep.overlay,
+     SetupStep.usageAccess,
+     SetupStep.accessibility,
++    SetupStep.overlay,
+     SetupStep.success,
+   ];
+ }
+*** End Patch

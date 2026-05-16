@@ -1,0 +1,96 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/services/classic_blocking_coordinator.dart
+@@
+ class ClassicBlockingCoordinator {
+@@
+   final ClassicBlockingLocalStore _localStore;
+   final FocusService _focusService;
++
++  String? _clean(String? value) {
++    final trimmed = value?.trim();
++    return (trimmed == null || trimmed.isEmpty) ? null : trimmed;
++  }
+@@
+     final basePackageIdentifiers = <String>{
+       for (final binding in baseAppBindings.values)
+-        if (binding.nativeIdentifier?.trim().isNotEmpty ?? false)
+-          binding.nativeIdentifier!.trim(),
++        if (_clean(binding.nativeIdentifier) != null) _clean(binding.nativeIdentifier)!,
+     }.toList(growable: false);
+@@
+     final basePayloads = <String>{
+       for (final binding in [
+         ...baseAppBindings.values,
+         ...baseWebsiteBindings.values,
+       ])
+-        if (binding.nativePayload?.trim().isNotEmpty ?? false)
+-          binding.nativePayload!.trim(),
++        if (_clean(binding.nativePayload) != null) _clean(binding.nativePayload)!,
+     }.toList(growable: false);
+@@
+     final baseWebsiteDomains = <String>{
+       for (final binding in baseWebsiteBindings.values)
+-        if (binding.nativeIdentifier?.trim().isNotEmpty ?? false)
+-          binding.nativeIdentifier!.trim(),
++        if (_clean(binding.nativeIdentifier) != null) _clean(binding.nativeIdentifier)!,
+     }.toList(growable: false);
+@@
+     final pausePackageIdentifiers = <String>{
+       for (final binding in pauseAppBindings.values)
+-        if (binding.nativeIdentifier?.trim().isNotEmpty ?? false)
+-          binding.nativeIdentifier!.trim(),
++        if (_clean(binding.nativeIdentifier) != null) _clean(binding.nativeIdentifier)!,
+     }.toList(growable: false);
+@@
+     final pausePayloads = <String>{
+       for (final binding in [
+         ...pauseAppBindings.values,
+         ...pauseWebsiteBindings.values,
+       ])
+-        if (binding.nativePayload?.trim().isNotEmpty ?? false)
+-          binding.nativePayload!.trim(),
++        if (_clean(binding.nativePayload) != null) _clean(binding.nativePayload)!,
+     }.toList(growable: false);
+@@
+     final pauseWebsiteDomains = <String>{
+       for (final binding in pauseWebsiteBindings.values)
+-        if (binding.nativeIdentifier?.trim().isNotEmpty ?? false)
+-          binding.nativeIdentifier!.trim(),
++        if (_clean(binding.nativeIdentifier) != null) _clean(binding.nativeIdentifier)!,
+     }.toList(growable: false);
+@@
+       final binding = ClassicBlockBinding(
+         nativeIdentifier:
+-            (existing?.nativeIdentifier?.trim().isNotEmpty ?? false)
+-            ? existing!.nativeIdentifier!.trim()
+-            : normalized,
++            _clean(existing?.nativeIdentifier) ?? normalized,
+         nativePayload: encoded.trim(),
+       );
+@@
+       final binding = appBindings[app.id];
+       if (!_isAppEnforceable(binding)) continue;
+-      final selector = Platform.isIOS
+-          ? binding!.nativePayload!.trim()
+-          : binding!.nativeIdentifier!.trim();
++      final selector = Platform.isIOS
++          ? _clean(binding?.nativePayload)
++          : _clean(binding?.nativeIdentifier);
++      if (selector == null) continue;
+       _mergeDailyLimitEntry(
+         bySelector: bySelector,
+         selector: selector,
+@@
+       final binding = websiteBindings[website.id];
+       if (!_isWebsiteEnforceable(binding)) continue;
+-      final selector = Platform.isIOS
+-          ? binding!.nativePayload!.trim()
+-          : binding!.nativeIdentifier!.trim();
++      final selector = Platform.isIOS
++          ? _clean(binding?.nativePayload)
++          : _clean(binding?.nativeIdentifier);
++      if (selector == null) continue;
+       _mergeDailyLimitEntry(
+         bySelector: bySelector,
+         selector: selector,
+*** End Patch

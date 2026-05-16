@@ -1,0 +1,71 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/auth/onboarding_screen.dart
+@@
+   @override
+   Widget build(BuildContext context) {
++    final isFocusSlide = title == 'Protect Deep Work';
+     return Column(
+       mainAxisAlignment: MainAxisAlignment.center,
+       children: [
+         Container(
+           width: 110,
+@@
+             border: Border.all(
+               color: AppColors.white.withValues(alpha: 0.08),
+               width: 1,
+             ),
+             boxShadow: [
+               BoxShadow(
+-                color: AppColors.black.withValues(alpha: 0.4),
++                color: AppColors.black.withValues(alpha: isFocusSlide ? 0.45 : 0.4),
+                 blurRadius: 30,
+                 offset: const Offset(0, 10),
+               ),
++              if (isFocusSlide)
++                BoxShadow(
++                  color: const Color(0xFF4C7DFF).withValues(alpha: 0.08),
++                  blurRadius: 20,
++                  spreadRadius: -4,
++                ),
+             ],
+           ),
+           alignment: Alignment.center,
+           child: Icon(
+             icon,
+-            size: 36,
++            size: isFocusSlide ? 38 : 36,
+             color: const Color(0xFF4C7DFF),
+             shadows: [
+               Shadow(
+-                color: const Color(0xFF4C7DFF).withValues(alpha: 0.25),
+-                blurRadius: 8,
++                color: const Color(0xFF4C7DFF).withValues(
++                  alpha: isFocusSlide ? 0.35 : 0.25,
++                ),
++                blurRadius: isFocusSlide ? 10 : 8,
+               ),
+             ],
+           ),
+         ),
+         const SizedBox(height: 28),
+         ConstrainedBox(
+           constraints: const BoxConstraints(maxWidth: 300),
+           child: Text(
+             title,
+             style: AppTypography.body.copyWith(
+-              fontSize: 34,
++              fontSize: isFocusSlide ? 36 : 34,
+               fontWeight: FontWeight.w700,
+               letterSpacing: 0.4,
+               height: 1.15,
+             ),
+             textAlign: TextAlign.center,
+           ),
+         ),
+-        const SizedBox(height: 14),
++        SizedBox(height: isFocusSlide ? 16 : 14),
+         ConstrainedBox(
+           constraints: const BoxConstraints(maxWidth: 280),
+           child: Text(
+             subtitle,
+*** End Patch

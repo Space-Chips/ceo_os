@@ -1,0 +1,14 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/ios/Runner/AppDelegate.swift
+@@
+     if #available(iOS 16.0, *) {
+         registrar.register(
+             BlockedAppTokenLabelPlatformViewFactory(),
+             withId: "com.ceoos.app/blocked_app_token_label"
+         )
++        registrar.register(
++            BlockedWebsiteTokenLabelPlatformViewFactory(),
++            withId: "com.ceoos.app/blocked_website_token_label"
++        )
+     }
+*** End Patch

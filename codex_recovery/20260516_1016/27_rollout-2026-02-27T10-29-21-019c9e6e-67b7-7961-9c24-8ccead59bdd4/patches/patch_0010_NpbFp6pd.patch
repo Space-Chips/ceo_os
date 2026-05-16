@@ -1,0 +1,38 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/theme/app_theme.dart
+@@
+-      colorScheme: ColorScheme(
+-        brightness: isDark ? Brightness.dark : Brightness.light,
+-        primary: AppColors.primaryOrange,
+-        secondary: AppColors.primaryOrange,
+-        surface: AppColors.backgroundLight,
+-        onSurface: AppColors.label,
+-        onPrimary: AppColors.white,
+-        onSecondary: AppColors.white,
+-        onError: AppColors.white,
+-        onTertiary: AppColors.label,
+-        tertiary: AppColors.accentSecondary,
+-        tertiaryContainer: AppColors.accentMuted,
+-        onTertiaryContainer: AppColors.label,
+-        primaryContainer: AppColors.accentMuted,
+-        onPrimaryContainer: AppColors.label,
+-        secondaryContainer: AppColors.accentMuted,
+-        onSecondaryContainer: AppColors.label,
+-        surfaceContainerHighest: AppColors.surface,
+-        outline: AppColors.glassBorder,
+-        shadow: Colors.black.withValues(alpha: isDark ? 0.4 : 0.08),
+-        scrim: Colors.black.withValues(alpha: isDark ? 0.5 : 0.15),
+-        error: AppColors.error,
+-      ),
++      colorScheme: (isDark ? const ColorScheme.dark() : const ColorScheme.light())
++          .copyWith(
++            primary: AppColors.primaryOrange,
++            secondary: AppColors.primaryOrange,
++            surface: AppColors.backgroundLight,
++            onSurface: AppColors.label,
++            onPrimary: AppColors.white,
++            onSecondary: AppColors.white,
++            error: AppColors.error,
++            onError: AppColors.white,
++          ),
+*** End Patch

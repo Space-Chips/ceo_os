@@ -1,0 +1,24 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/repositories/advanced_stats_repository.dart
+@@
+-  Future<List<Map<String, dynamic>>> getSourceScreenTimeLogs({
+-    required DateTime start,
+-    required DateTime end,
+-  }) async {
+-    final uid = _currentUserId;
+-    if (uid == null) return const [];
+-
+-    final rows = await _client
+-        .from('screen_time_logs')
+-        .select(
+-          'id, date, entity_type, entity_name, duration_seconds, start_time, end_time, awareness_notifications_shown',
+-        )
+-        .eq('created_by', uid)
+-        .gte('date', _fmtDay(start))
+-        .lte('date', _fmtDay(end))
+-        .order('date', ascending: true);
+-    return (rows as List).cast<Map<String, dynamic>>();
+-  }
+-
+   String _fmtDay(DateTime date) {
+*** End Patch

@@ -1,0 +1,60 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/providers/focus_provider.dart
+@@
+     _startTimer();
++    await _persistSessionState();
+     unawaited(
+       _statsEngine.recordFocusSessionStarted(
+         plannedDurationMinutes: focusDurationMinutes,
+@@
+   void requestEarlyExit() {
+     if (_state != FocusState.focusing) return;
+     _state = FocusState.exitPending;
+     _focusExitReadyAt = DateTime.now().add(
+       const Duration(seconds: _focusExitCountdownSeconds),
+     );
++    unawaited(_persistSessionState());
+     notifyListeners();
+   }
+@@
+   void returnToSession() {
+     if (_state != FocusState.exitPending) return;
+     _state = FocusState.focusing;
+     _focusExitReadyAt = null;
++    unawaited(_persistSessionState());
+     notifyListeners();
+   }
+@@
+   void reset() {
+     _timer?.cancel();
+     _timer = null;
+@@
+     if (_focusShieldOverrideActive) {
+       unawaited(_syncClassicBaselineFromBlockedAppsSites());
+       _focusShieldOverrideActive = false;
+     }
++    unawaited(_clearPersistedSessionState());
+     notifyListeners();
+   }
+@@
+   Future<void> _resetAfterSession() async {
+     _timer?.cancel();
+     _timer = null;
+@@
+     if (_focusShieldOverrideActive) {
+       await _syncClassicBaselineFromBlockedAppsSites();
+       _focusShieldOverrideActive = false;
+     } else {
+       await _refreshBlockingSummary();
+     }
++    await _clearPersistedSessionState();
+   }
+@@
+     if (state == AppLifecycleState.inactive ||
+         state == AppLifecycleState.paused) {
+       _timer?.cancel();
+       _timer = null;
++      unawaited(_persistSessionState());
+       return;
+     }
+*** End Patch

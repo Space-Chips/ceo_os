@@ -1,0 +1,26 @@
+*** Begin Patch
+*** Update File: lib/core/services/home_widget_service.dart
+@@
+-    final todayHabits = habits.habits;
++    final todayHabits = habits.habitsWithCompletedBottom;
+     final totalHabits = todayHabits.length;
+     final doneHabits = habits.completedToday;
++    final completedHabitIds = todayHabits
++        .where((h) => habits.isHabitCompletedToday(h.id))
++        .map((h) => h.id)
++        .toSet();
+@@
+     if (enabledHabits) {
+       futures.addAll([
+         HomeWidget.renderFlutterWidget(
+           HabitsTodayWidgetSquareView(
+             language: language,
+             habits: todayHabits,
+             completed: doneHabits,
+             total: totalHabits,
++            completedHabitIds: completedHabitIds,
+           ),
+           key: _keyHabitsSmall,
+           logicalSize: const Size(170, 170),
+           pixelRatio: 2,
+*** End Patch

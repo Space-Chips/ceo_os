@@ -1,0 +1,86 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/screen_time_screen.dart
+@@
+     final parts = <String>[
+-      if (added > 0) added == 1 ? '1 app added' : '$added apps added',
+-      if (removed > 0) removed == 1 ? '1 app removed' : '$removed apps removed',
++      if (added > 0)
++        added == 1 ? _t('screen_time_one_app_added') : '$added ${_t('screen_time_apps_added')}',
++      if (removed > 0)
++        removed == 1 ? _t('screen_time_one_app_removed') : '$removed ${_t('screen_time_apps_removed')}',
+     ];
+     await _showNotice(
+-      title: 'Blocked apps updated',
++      title: _t('screen_time_blocked_apps_updated'),
+       message: '${parts.join(' · ')}.',
+     );
+@@
+         await _showNotice(
+-          title: 'Permissions required',
+-          message:
+-              'Allow Screen Time / Family Controls first so selected apps can be blocked during your focus sessions on this device.',
++          title: _t('screen_time_permissions_required'),
++          message: _t('screen_time_permissions_required_apps_message'),
+         );
+         return;
+       }
+@@
+       await _showNotice(
+-        title: 'App picker unavailable',
++        title: _t('screen_time_app_picker_unavailable'),
+         message: appPickerError,
+       );
+       return;
+@@
+       await _showNotice(
+-        title: 'No app selected',
+-        message: 'In the Apple picker, choose at least one app then tap Done.',
++        title: _t('screen_time_no_app_selected'),
++        message: _t('screen_time_no_app_selected_message'),
+       );
+       return;
+@@
+     if (normalizedDomain == null) {
+       await _showNotice(
+-        title: 'Valid domain required',
+-        message: 'Enter a website like youtube.com or reddit.com.',
++        title: _t('screen_time_valid_domain_required'),
++        message: _t('screen_time_valid_domain_required_message'),
+       );
+       return;
+@@
+     if (alreadyBlocked) {
+       await _showNotice(
+-        title: 'Already blocked',
+-        message: '$normalizedDomain is already in your blocked websites.',
++        title: _t('screen_time_already_blocked'),
++        message: '$normalizedDomain ${_t('screen_time_already_blocked_message_suffix')}',
+       );
+       return;
+@@
+         await _showNotice(
+-          title: 'Permissions required',
+-          message:
+-              'Allow Screen Time / Family Controls first so selected websites can be blocked during your focus sessions on this device.',
++          title: _t('screen_time_permissions_required'),
++          message: _t('screen_time_permissions_required_websites_message'),
+         );
+         return;
+       }
+@@
+       await _showNotice(
+-        title: 'Website picker unavailable',
++        title: _t('screen_time_website_picker_unavailable'),
+         message: websitePickerError,
+       );
+       return;
+@@
+       await _showNotice(
+-        title: 'No website selected',
+-        message:
+-            'In the Apple picker, choose at least one website/domain (not only apps) then tap Done.',
++        title: _t('screen_time_no_website_selected'),
++        message: _t('screen_time_no_website_selected_message'),
+       );
+       return;
+*** End Patch

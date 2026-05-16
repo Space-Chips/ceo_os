@@ -1,0 +1,42 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/ceo_mode/blackout_preparation/blackout_preparation_checklist_view.dart
+@@
+ import 'package:flutter/cupertino.dart';
++import 'package:provider/provider.dart';
+ 
++import '../../../core/providers/language_provider.dart';
+ import '../../../core/theme/app_colors.dart';
+ import '../../../core/theme/app_typography.dart';
+@@
+   @override
+   Widget build(BuildContext context) {
+-    const steps = [
+-      'Maintiens une app',
+-      'Fais-la glisser sur une autre',
+-      'Crée un dossier “Hors Focus”',
+-      'Ajoute les apps système visibles',
+-    ];
++    final language = context.watch<LanguageProvider>();
++    final steps = [
++      language.t('blackout_prep_step_hold_app'),
++      language.t('blackout_prep_step_drag_on_other'),
++      language.t('blackout_prep_step_create_folder'),
++      language.t('blackout_prep_step_add_system_apps'),
++    ];
+@@
+         Text(
+-          'Fais-le en 20 secondes',
++          language.t('blackout_prep_checklist_title'),
+@@
+         Text(
+-          'Quand c’est terminé, reviens ici.',
++          language.t('blackout_prep_checklist_body'),
+@@
+-        _PrimaryButton(label: 'C’est fait', onTap: onDone),
++        _PrimaryButton(label: language.t('blackout_prep_done'), onTap: onDone),
+@@
+             onPressed: onSkip,
+             child: Text(
+-              'Passer pour l’instant',
++              language.t('focus_skip_for_now'),
+*** End Patch

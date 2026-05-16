@@ -1,0 +1,38 @@
+*** Begin Patch
+*** Update File: android/app/src/main/kotlin/com/wakeapp/ceoos/BrowserBlockCoordinator.kt
+@@
+         fun normalizeDomainToken(raw: String?): String? {
+             val value = raw?.trim()?.lowercase(Locale.US).orEmpty()
+             if (value.isEmpty() || value == "__adult_content__") return null
+ 
+             var normalized = value
+                 .replaceFirst(Regex("^https?://"), "")
+                 .replaceFirst(Regex("^www\\d*\\."), "")
++                .replaceFirst(Regex("^m\\."), "")
+ 
+             if (normalized.contains("@")) {
+                 normalized = normalized.substringAfterLast('@')
+             }
+@@
+             normalized = normalized.substringBefore('/')
+                 .substringBefore('?')
+                 .substringBefore('#')
+                 .substringBefore(':')
+                 .trim('.')
+ 
+-            if (normalized.isNotEmpty() && normalized.contains('.') && !normalized.contains(' ')) {
+-                return normalized
+-            }
+-
+-            val domainRegex = Regex("([a-z0-9-]+\\.)+[a-z]{2,}", RegexOption.IGNORE_CASE)
+-            val match = domainRegex.find(value) ?: return null
+-            val candidate = match.value.lowercase(Locale.US)
+-                .replaceFirst(Regex("^www\\d*\\."), "")
+-                .trim('.')
+-            return if (candidate.isNotEmpty()) candidate else null
++            if (normalized.isEmpty()) return null
++            if (normalized.contains(' ')) return null
++            if (!normalized.contains('.')) return null
++            return normalized
+         }
+*** End Patch

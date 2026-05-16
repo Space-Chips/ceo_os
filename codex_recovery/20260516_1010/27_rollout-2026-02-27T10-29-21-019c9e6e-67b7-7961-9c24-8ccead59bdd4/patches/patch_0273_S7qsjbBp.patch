@@ -1,0 +1,61 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/focus/focus_screen.dart
+@@
+ import 'package:flutter/cupertino.dart';
++import 'package:flutter/material.dart' show TimeOfDay;
+ import 'package:go_router/go_router.dart';
+ import 'package:provider/provider.dart';
+ 
+ import '../../components/components.dart';
+ import '../../core/models/user_models.dart';
+ import '../../core/providers/focus_provider.dart';
+ import '../../core/repositories/feature_repository.dart';
+ import '../../core/theme/app_colors.dart';
+ import '../../core/theme/app_typography.dart';
++import '../calendar/add_event_sheet.dart';
+@@
+   Future<void> _start(FocusProvider provider) async {
+@@
+   }
++
++  void _openPlanSheet(FocusProvider provider) {
++    final now = DateTime.now();
++    final rounded = now.minute <= 55
++        ? TimeOfDay(hour: now.hour, minute: ((now.minute ~/ 5) + 1) * 5 % 60)
++        : TimeOfDay(hour: (now.hour + 1) % 24, minute: 0);
++
++    showCupertinoModalPopup<void>(
++      context: context,
++      builder: (_) => AddEventSheet(
++        selectedDate: now,
++        initialTime: rounded,
++        preset: AddEventPreset.focusPlan,
++        presetDurationMinutes: provider.focusDurationMinutes,
++      ),
++    );
++  }
+@@
+         LiquidButton(
+           label: 'BEGIN FOCUS MODE',
+           fullWidth: true,
+           gradient: const [Color(0xFF8A31F4), Color(0xFF9D45F4)],
+           onPressed: provider.isAuthorized ? () => _start(provider) : null,
+         ),
++        const SizedBox(height: 10),
++        CupertinoButton(
++          padding: const EdgeInsets.symmetric(vertical: 12),
++          color: AppColors.backgroundLight.withValues(alpha: 0.74),
++          borderRadius: BorderRadius.circular(14),
++          onPressed: () => _openPlanSheet(provider),
++          child: Text(
++            'PLAN',
++            style: AppTypography.mono.copyWith(
++              fontSize: 13,
++              color: AppColors.label,
++              fontWeight: FontWeight.w800,
++              letterSpacing: 1.2,
++            ),
++          ),
++        ),
+         if (!provider.isAuthorized) ...[
+*** End Patch

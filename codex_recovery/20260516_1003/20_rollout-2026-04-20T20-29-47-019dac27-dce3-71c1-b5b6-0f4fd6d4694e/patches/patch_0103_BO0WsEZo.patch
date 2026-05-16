@@ -1,0 +1,118 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/android/app/src/main/kotlin/com/wakeapp/ceoos/BlockGateActivity.kt
+@@
+     private lateinit var subtitleView: TextView
+     private lateinit var homeLabel: TextView
+     private lateinit var primaryButton: TextView
+     private var primaryAction: String = "go_home"
+-    private var blockedType: String? = null
+-    private var blockedPackageName: String? = null
+-    private var blockedDomain: String? = null
+ 
+@@
+     override fun onCreate(savedInstanceState: Bundle?) {
+-        blockedType = intent?.getStringExtra(EXTRA_BLOCK_TYPE)?.trim()?.ifEmpty { null }
+-        if (isWebBlock()) {
+-            setTheme(R.style.BlockGateThemeWeb)
+-        } else {
+-            setTheme(R.style.BlockGateTheme)
+-        }
+         super.onCreate(savedInstanceState)
+         isVisible = true
+         window.setBackgroundDrawableResource(android.R.color.transparent)
+         overridePendingTransition(0, 0)
+         setFinishOnTouchOutside(false)
+-        configureWindowForCurrentBlockType()
+         buildUi()
+         applyIntent(intent)
+     }
+@@
+     override fun onNewIntent(intent: Intent?) {
+         super.onNewIntent(intent)
+         setIntent(intent)
+-        val newType = intent?.getStringExtra(EXTRA_BLOCK_TYPE)?.trim()?.ifEmpty { null }
+-        if (newType != blockedType) {
+-            blockedType = newType
+-            recreate()
+-            return
+-        }
+-        configureWindowForCurrentBlockType()
+-        buildUi()
+         applyIntent(intent)
+     }
+@@
+-    private fun isWebBlock(): Boolean = blockedType.equals("url", ignoreCase = true)
+-
+-    private fun navBarHeightPx(): Int {
+-        val resourceId = resources.getIdentifier("navigation_bar_height", "dimen", "android")
+-        if (resourceId <= 0) return 0
+-        return resources.getDimensionPixelSize(resourceId)
+-    }
+-
+-    private fun configureWindowForCurrentBlockType() {
+-        if (isWebBlock()) {
+-            window.setGravity(Gravity.TOP)
+-            val freeBottomHeight = dp(164) + navBarHeightPx()
+-            val screenHeight = resources.displayMetrics.heightPixels
+-            val windowHeight = (screenHeight - freeBottomHeight).coerceAtLeast(dp(300))
+-            window.setLayout(
+-                ViewGroup.LayoutParams.MATCH_PARENT,
+-                windowHeight,
+-            )
+-        } else {
+-            window.setGravity(Gravity.CENTER)
+-            window.setLayout(
+-                ViewGroup.LayoutParams.MATCH_PARENT,
+-                ViewGroup.LayoutParams.MATCH_PARENT,
+-            )
+-        }
+-    }
+-
+     private fun goHome() {
+         isVisible = false
+         finish()
+         overridePendingTransition(0, 0)
+-        BlockingAccessibilityService.navigateHomeFromBlockGate(
+-            blockType = blockedType,
+-            browserPackage = blockedPackageName,
+-            blockedDomain = blockedDomain,
+-        )
++        BlockingAccessibilityService.navigateHomeFromBlockGate()
+@@
+     private fun applyIntent(intent: Intent?) {
+-        blockedType = intent?.getStringExtra(EXTRA_BLOCK_TYPE)?.trim()?.ifEmpty { null }
+-        blockedPackageName = intent?.getStringExtra(EXTRA_PACKAGE_NAME)?.trim()?.ifEmpty { null }
+-        blockedDomain = intent?.getStringExtra(EXTRA_DOMAIN)?.trim()?.ifEmpty { null }
+         kickerView.text = intent?.getStringExtra(EXTRA_KICKER)?.uppercase() ?: "BLOCKED"
+         titleView.text = intent?.getStringExtra(EXTRA_TITLE) ?: "This app is blocked"
+@@
+     private fun buildUi() {
+-        val webBlock = isWebBlock()
+         val root = FrameLayout(this).apply {
+             setBackgroundColor(Color.parseColor("#F00B0D11"))
+             isClickable = true
+             isFocusable = true
+             importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_YES
+@@
+-        root.addView(content, FrameLayout.LayoutParams(
+-            FrameLayout.LayoutParams.MATCH_PARENT,
+-            FrameLayout.LayoutParams.WRAP_CONTENT,
+-            if (webBlock) Gravity.TOP else Gravity.CENTER,
+-        ).apply {
+-            if (webBlock) {
+-                setMargins(dp(16), dp(12), dp(16), dp(0))
+-            } else {
+-                setMargins(dp(24), dp(24), dp(24), dp(24))
+-            }
+-        })
++        root.addView(
++            content,
++            FrameLayout.LayoutParams(
++                FrameLayout.LayoutParams.MATCH_PARENT,
++                FrameLayout.LayoutParams.WRAP_CONTENT,
++                Gravity.CENTER,
++            ).apply {
++                setMargins(dp(24), dp(24), dp(24), dp(24))
++            },
++        )
+*** End Patch

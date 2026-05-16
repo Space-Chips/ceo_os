@@ -1,0 +1,235 @@
+*** Begin Patch
+*** Update File: android/app/src/main/kotlin/com/wakeapp/ceoos/BlockingAccessibilityService.kt
+@@
+ import android.os.Process
+ import android.provider.Settings
+ import android.os.SystemClock
+ import android.util.Log
+ import android.view.accessibility.AccessibilityEvent
+ import com.wakeapp.ceoos.blocking.BlockStateCache
+ import com.wakeapp.ceoos.blocking.BlockingNavigator
+ import com.wakeapp.ceoos.blocking.ForegroundBlockInterceptor
+-import com.wakeapp.ceoos.blocking.LauncherIconTracker
+-import com.wakeapp.ceoos.blocking.LauncherOverlayController
+-import com.wakeapp.ceoos.blocking.LauncherPackageResolver
+ import kotlinx.coroutines.CoroutineScope
+ import kotlinx.coroutines.Dispatchers
+ import kotlinx.coroutines.SupervisorJob
+ import kotlinx.coroutines.cancel
+ import kotlinx.coroutines.launch
+@@
+     private lateinit var gateLauncher: GateLauncher
+     private lateinit var blockingNavigator: BlockingNavigator
+     private lateinit var blockStateCache: BlockStateCache
+-    private lateinit var launcherPackageResolver: LauncherPackageResolver
+-    private lateinit var launcherIconTracker: LauncherIconTracker
+-    private lateinit var launcherOverlayController: LauncherOverlayController
+     private lateinit var foregroundInterceptor: ForegroundBlockInterceptor
+@@
+-    @Volatile
+-    private var lastLauncherRefreshAt: Long = 0L
+-
+-    @Volatile
+-    private var lastWasLauncher: Boolean = false
+-
+     @Volatile
+     private var lastPermissionReturnAt: Long = 0L
+@@
+         gateLauncher = GateLauncher()
+         blockingNavigator = BlockingNavigator(gateLauncher)
+         blockStateCache = BlockStateCache()
+         foregroundInterceptor = ForegroundBlockInterceptor(blockStateCache)
+-        launcherPackageResolver = LauncherPackageResolver(this)
+-        launcherIconTracker = LauncherIconTracker(this)
+-        launcherOverlayController = LauncherOverlayController(this) { tappedPackage ->
+-            handleLauncherTap(tappedPackage)
+-        }
+         registerPolicyListener()
+         evaluateCurrentState()
+         maybeReturnToAppFromSettings(SystemClock.elapsedRealtime())
+@@
+         val now = SystemClock.elapsedRealtime()
+         maybeReturnToAppFromSettings(now)
+         val eventPackage = event.packageName?.toString()?.trim()
+         val rootPackage = rootInActiveWindow?.packageName?.toString()?.trim()
+         val resolvedPackage = eventPackage ?: rootPackage
+-        val isLauncher = launcherPackageResolver.isLauncherPackage(eventPackage) ||
+-            launcherPackageResolver.isLauncherPackage(rootPackage)
+-
+-        if (isLauncher) {
+-            lastWasLauncher = true
+-            handleLauncherOverlay(now)
+-            return
+-        }
+-
+-        if (lastWasLauncher) {
+-            lastWasLauncher = false
+-            launcherOverlayController.clear()
+-        }
+ 
+         val startedAtWall = System.currentTimeMillis()
+         val startedAtElapsed = now
+@@
+                     isBrowserEvent && isBrowserSignalEvent(event.eventType) -> 40L
+                     isBrowserEvent -> 90L
+                     event.eventType == AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED -> 120L
+-                    else -> 220L
++                    else -> 140L
+                 }
+                 if (startedAtElapsed - lastAt < cooldown) {
+                     return
+                 }
+             }
+@@
+         val isBrowser = foregroundAppDetector.isBrowserPackage(resolvedPackage)
+         val snapshot = foregroundAppDetector.createSnapshot(
+             event,
+-            if (isBrowser) rootInActiveWindow else null,
++            rootInActiveWindow,
+         )
+ 
+         handleSnapshot(snapshot, startedAtWall)
+@@
+         prefsListener?.let {
+             getSharedPreferences("FlutterSharedPreferences", MODE_PRIVATE)
+                 .unregisterOnSharedPreferenceChangeListener(it)
+         }
+-        launcherOverlayController.clear()
+         serviceScope.cancel()
+         gateLauncher.dismiss(this)
+     }
+ 
+     private fun evaluateCurrentState() {
+         val root = rootInActiveWindow ?: return
+-        val rootPackage = root.packageName?.toString()?.trim()
+-        if (launcherPackageResolver.isLauncherPackage(rootPackage)) {
+-            handleLauncherOverlay(SystemClock.elapsedRealtime())
+-            return
+-        }
+-
+         val syntheticEvent = AccessibilityEvent.obtain(AccessibilityEvent.TYPE_WINDOWS_CHANGED).apply {
+             packageName = root.packageName
+             className = root.className
+         }
+@@
+-    private fun handleLauncherOverlay(nowElapsed: Long) {
+-        if (nowElapsed - lastLauncherRefreshAt < 120L) return
+-        lastLauncherRefreshAt = nowElapsed
+-        val root = rootInActiveWindow ?: return
+-        val policyState = getPolicyStateFast()
+-        blockStateCache.update(policyState)
+-
+-        val targets = launcherIconTracker.findTargets(root)
+-        if (targets.isEmpty()) {
+-            launcherOverlayController.clear()
+-            return
+-        }
+-
+-        val blockedPackages = targets
+-            .mapNotNull { target ->
+-                val decision = blockStateCache.decisionFor(target.packageName)
+-                if (decision.blocked) target.packageName else null
+-            }
+-            .toSet()
+-
+-        launcherOverlayController.updateOverlays(targets, blockedPackages)
+-    }
+-
+-    private fun handleLauncherTap(packageName: String) {
+-        val decision = blockStateCache.decisionFor(packageName)
+-        if (!decision.blocked) return
+-        val launchResult = blockingNavigator.showBlockedScreen(
+-            context = this,
+-            packageName = packageName,
+-            reason = decision.reason,
+-            reasonKey = decision.reasonKey,
+-        )
+-        if (!launchResult.launched && shouldForceFallback(launchResult.reason)) {
+-            enforceFallback(BlockDecision.BlockApp(packageName, decision.reasonKey ?: "blocked_app"))
+-        }
+-    }
+-
+     private fun handleSnapshot(snapshot: ForegroundSnapshot, startedAt: Long) {
+         if (foregroundAppDetector.isGateSnapshot(snapshot)) {
+             return
+@@
+             BlockDecision.IgnoreTransient -> false
+             is BlockDecision.BlockApp -> {
+-                if (decision.reason != "blackout") {
+-                    if (!policyState.blockedPackages.contains(decision.packageName)) {
+-                        return
+-                    }
+-                }
+                 val launchResult = gateLauncher.launch(this, decision)
+                 if (!launchResult.launched) {
+                     gateFailureReason = launchResult.reason
+@@
+     private fun enforceFallback(decision: BlockDecision) {
+         when (decision) {
+             is BlockDecision.BlockApp -> {
+                 performGlobalAction(GLOBAL_ACTION_HOME)
+             }
+             is BlockDecision.BlockUrl -> {
+-                performGlobalAction(GLOBAL_ACTION_BACK)
++                openBrowserHome(decision.browserPackage)
+             }
+             else -> Unit
+         }
+     }
++
++    private fun openBrowserHome(browserPackage: String?) {
++        val pkg = browserPackage?.trim().orEmpty()
++        if (pkg.isEmpty()) {
++            performGlobalAction(GLOBAL_ACTION_HOME)
++            return
++        }
++
++        val intent = Intent(Intent.ACTION_MAIN).apply {
++            addCategory(Intent.CATEGORY_APP_BROWSER)
++            `package` = pkg
++            addFlags(
++                Intent.FLAG_ACTIVITY_NEW_TASK or
++                    Intent.FLAG_ACTIVITY_CLEAR_TOP or
++                    Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED or
++                    Intent.FLAG_ACTIVITY_NO_ANIMATION,
++            )
++        }
++        val launchIntent = packageManager.getLaunchIntentForPackage(pkg)?.apply {
++            addFlags(
++                Intent.FLAG_ACTIVITY_NEW_TASK or
++                    Intent.FLAG_ACTIVITY_CLEAR_TOP or
++                    Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED or
++                    Intent.FLAG_ACTIVITY_NO_ANIMATION,
++            )
++        }
++
++        try {
++            if (packageManager.resolveActivity(intent, 0) != null) {
++                startActivity(intent)
++                return
++            }
++            if (launchIntent != null) {
++                startActivity(launchIntent)
++                return
++            }
++        } catch (_: Exception) {
++        }
++
++        performGlobalAction(GLOBAL_ACTION_HOME)
++    }
+@@
+         val prefs = getSharedPreferences("FlutterSharedPreferences", MODE_PRIVATE)
+         val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+             if (key in observedPolicyKeys) {
+                 pendingPolicyRefresh = true
+-                launcherPackageResolver.refresh()
+-                launcherIconTracker.refreshIndex()
+-                val rootPackage = rootInActiveWindow?.packageName?.toString()?.trim()
+-                if (launcherPackageResolver.isLauncherPackage(rootPackage)) {
+-                    lastLauncherRefreshAt = 0L
+-                    handleLauncherOverlay(SystemClock.elapsedRealtime())
+-                }
+                 requestImmediateEvaluation()
+             }
+         }
+*** End Patch

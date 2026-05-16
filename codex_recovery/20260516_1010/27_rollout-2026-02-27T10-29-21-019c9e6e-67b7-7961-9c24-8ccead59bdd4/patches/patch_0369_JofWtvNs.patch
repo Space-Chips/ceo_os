@@ -1,0 +1,14 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/components/floating_add_button.dart
+@@
+           boxShadow: [
+             BoxShadow(
+               color: AppColors.primaryOrange.withValues(alpha: 0.35),
+               blurRadius: 18,
+               offset: const Offset(0, 10),
+               spreadRadius: -8,
+             ),
+-          ),
++          ],
+         ),
+*** End Patch

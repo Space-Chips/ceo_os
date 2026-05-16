@@ -1,0 +1,73 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/providers/focus_provider.dart
+@@
+ import '../repositories/premium_repository.dart';
+ import '../services/focus_service.dart';
+ import '../repositories/focus_repository.dart';
+ import '../services/stats_engine.dart';
++import '../utils/app_logger.dart';
+@@
+   bool _isFocusModeActive = false;
+   bool _isAuthorized = false;
++  FocusProtectionStatus _protectionStatus = FocusProtectionStatus.unknown;
+@@
+   bool get isFocusModeActive => _isFocusModeActive;
+   bool get isAuthorized => _isAuthorized;
++  FocusProtectionStatus get protectionStatus => _protectionStatus;
+   List<BlockList> get blockLists => List.unmodifiable(_blockLists);
+@@
+-    _isAuthorized = await _focusService.isAuthorized();
++    await _refreshProtectionStatus();
+@@
+     } on MissingPluginException {
+       // Native screen-time bridge not available on this runtime (ex: simulator).
+       _screenTimeToday = 0;
+       _hourlyUsage = List.filled(24, 0);
+     } catch (e) {
+-      print("ScreenTime error: $e");
++      AppLogger.error('Screen Time refresh failed.', e);
+       _screenTimeToday = 0;
+       _hourlyUsage = List.filled(24, 0);
+     }
+@@
+-    _isAuthorized = await _focusService.isAuthorized();
++    await _refreshProtectionStatus();
+     if (!_isAuthorized) {
+       notifyListeners();
+       // Continue even if unauthorized to allow the internal timer to run.
+@@
+     } catch (e) {
+-      print("Sync to native failed: $e");
++      AppLogger.error('Sync to native focus protection failed.', e);
+     }
+   }
+@@
+   Future<List<String>?> selectAppsNative() async {
+     return await _focusService.openFamilyActivityPicker();
+   }
+ 
+-  Future<void> requestPermissions() async {
+-    await _focusService.requestPermissions();
+-    _isAuthorized = await _focusService.isAuthorized();
++  Future<bool> requestPermissions() async {
++    await _focusService.requestPermissions();
++    await _refreshProtectionStatus();
++    notifyListeners();
++    return _isAuthorized;
++  }
++
++  Future<void> refreshProtectionStatus() async {
++    await _refreshProtectionStatus();
++    notifyListeners();
++  }
++
++  Future<bool> openSystemSettings() async {
++    return _focusService.openSystemSettings();
++  }
++
++  Future<void> _refreshProtectionStatus() async {
++    _protectionStatus = await _focusService.getProtectionStatus();
++    _isAuthorized = _protectionStatus.isAuthorized;
+     notifyListeners();
+   }
+*** End Patch

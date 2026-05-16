@@ -1,0 +1,73 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/android/app/src/main/kotlin/com/wakeapp/ceoos/BlockGateActivity.kt
+@@
+     companion object {
+         const val ACTION_DISMISS = "com.wakeapp.ceoos.action.DISMISS_BLOCK_GATE"
+         const val EXTRA_KICKER = "extra_kicker"
+         const val EXTRA_TITLE = "extra_title"
+         const val EXTRA_SUBTITLE = "extra_subtitle"
++        const val EXTRA_PRIMARY_ACTION = "extra_primary_action"
++        const val EXTRA_PRIMARY_LABEL = "extra_primary_label"
+         @Volatile
+         var isVisible: Boolean = false
+     }
+ 
+     private lateinit var kickerView: TextView
+     private lateinit var titleView: TextView
+     private lateinit var subtitleView: TextView
++    private lateinit var homeLabel: TextView
++    private lateinit var primaryButton: TextView
++    private var primaryAction: String = "go_home"
+@@
+     override fun onStop() {
+         super.onStop()
+         isVisible = false
++        AppBlockingService.onBlockGateHidden()
+         try {
+             unregisterReceiver(dismissReceiver)
+         } catch (_: Exception) {
+         }
+     }
+ 
+     override fun onBackPressed() {
+-        goHome()
++        runPrimaryAction()
+     }
+@@
+     private fun goHome() {
+         isVisible = false
+         val homeIntent = Intent(Intent.ACTION_MAIN).apply {
+             addCategory(Intent.CATEGORY_HOME)
+             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+@@
+         finish()
+         overridePendingTransition(0, 0)
+     }
++
++    private fun goBackToBrowser() {
++        isVisible = false
++        AppBlockingService.navigateBackFromBlockGate()
++        finish()
++        overridePendingTransition(0, 0)
++    }
++
++    private fun runPrimaryAction() {
++        when (primaryAction) {
++            "go_back" -> goBackToBrowser()
++            else -> goHome()
++        }
++    }
+@@
+     private fun applyIntent(intent: Intent?) {
+         kickerView.text = intent?.getStringExtra(EXTRA_KICKER)?.uppercase() ?: "BLOCKED"
+         titleView.text = intent?.getStringExtra(EXTRA_TITLE) ?: "This app is blocked"
+         subtitleView.text =
+             intent?.getStringExtra(EXTRA_SUBTITLE)
+                 ?: "WakeApp is preventing access right now."
++        primaryAction = intent?.getStringExtra(EXTRA_PRIMARY_ACTION) ?: "go_home"
++        val primaryLabelText = intent?.getStringExtra(EXTRA_PRIMARY_LABEL)
++            ?: if (primaryAction == "go_back") "Back to Browser" else "Return to Home"
++        primaryButton.text = primaryLabelText
++        homeLabel.text = if (primaryAction == "go_back") "Back" else "Home"
+     }
+*** End Patch

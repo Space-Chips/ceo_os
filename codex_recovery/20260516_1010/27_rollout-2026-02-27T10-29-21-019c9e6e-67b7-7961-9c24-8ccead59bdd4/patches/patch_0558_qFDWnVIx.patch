@@ -1,0 +1,19 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/notes_screen.dart
+@@
+ class _TagTreeData {
+@@
+   const _TagTreeData({
+     required this.pathToNoteIds,
+     required this.childrenByParent,
+     required this.untaggedCount,
+   });
+ }
++
++class _SplitNoteContent {
++  final String tagLine;
++  final String body;
++
++  const _SplitNoteContent({required this.tagLine, required this.body});
++}
+*** End Patch

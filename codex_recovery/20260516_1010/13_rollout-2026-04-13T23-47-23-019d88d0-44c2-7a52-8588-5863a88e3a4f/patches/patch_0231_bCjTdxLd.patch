@@ -1,0 +1,13 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/ios/Runner/AppDelegate.swift
+@@
+         registrar.register(
+             BlockedWebsiteTokenLabelPlatformViewFactory(),
+             withId: "com.ceoos.app/blocked_website_token_label"
+         )
++        registrar.register(
++            BlockedWebsiteTokenIconPlatformViewFactory(),
++            withId: "com.ceoos.app/blocked_website_token_icon"
++        )
+     }
+*** End Patch

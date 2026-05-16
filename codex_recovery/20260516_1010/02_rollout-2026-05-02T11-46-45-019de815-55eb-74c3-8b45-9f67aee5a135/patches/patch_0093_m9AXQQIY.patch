@@ -1,0 +1,38 @@
+*** Begin Patch
+*** Update File: lib/features/ceo_mode/ceo_mode_screen.dart
+@@
+ class _CeoModeScreenState extends State<CeoModeScreen> {
+@@
+   String _t(String key) => context.watch<LanguageProvider>().t(key);
++  bool _appliedDeepLinkParams = false;
+@@
+   @override
+   void initState() {
+     super.initState();
+     WidgetsBinding.instance.addPostFrameCallback((_) {
+       context.read<CeoModeProvider>().initialize();
+     });
+   }
++
++  @override
++  void didChangeDependencies() {
++    super.didChangeDependencies();
++    if (_appliedDeepLinkParams) return;
++    final params = GoRouterState.of(context).uri.queryParameters;
++    final rawDuration = params['duration'];
++    final rawStart = params['start'];
++    if ((rawDuration == null || rawDuration.trim().isEmpty) &&
++        (rawStart == null || rawStart.trim().isEmpty)) {
++      return;
++    }
++    _appliedDeepLinkParams = true;
++    final duration = int.tryParse(rawDuration ?? '');
++    if (duration != null) {
++      WidgetsBinding.instance.addPostFrameCallback((_) {
++        if (!mounted) return;
++        final provider = context.read<CeoModeProvider>();
++        provider.setDuration(duration.clamp(15, 240));
++      });
++    }
++  }
+*** End Patch

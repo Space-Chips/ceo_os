@@ -1,0 +1,10 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/components/liquid_button.dart
+@@
+                   : (widget.gradient ??
+                         [
+                           AppColors.primaryOrange,
+-                          AppColors.primaryOrange.withRed(200),
++                          AppColors.orangeDim,
+                         ]),
+*** End Patch

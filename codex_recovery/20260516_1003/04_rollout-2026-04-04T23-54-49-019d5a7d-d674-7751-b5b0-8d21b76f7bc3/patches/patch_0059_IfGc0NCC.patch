@@ -1,0 +1,28 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/android/app/src/main/kotlin/com/wakeapp/ceoos/AppBlockingService.kt
+@@
+ class AppBlockingService : AccessibilityService() {
++    private val foregroundMonitorIntervalMillis = 120L
++
+     private fun debugLog(message: String) {
+         if ((applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) != 0) {
+             Log.d("AppBlockingService", message)
+         }
+@@
+             }
+             refreshCurrentDomain()
+             enforceCurrentForegroundIfNeeded()
+-            foregroundMonitorHandler.postDelayed(this, 350L)
++            foregroundMonitorHandler.postDelayed(this, foregroundMonitorIntervalMillis)
+         }
+     }
+@@
+         if (
+             eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED &&
++            eventType != AccessibilityEvent.TYPE_WINDOWS_CHANGED &&
+             eventType != AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED &&
+             eventType != AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED
+         ) {
+             return
+         }
+*** End Patch

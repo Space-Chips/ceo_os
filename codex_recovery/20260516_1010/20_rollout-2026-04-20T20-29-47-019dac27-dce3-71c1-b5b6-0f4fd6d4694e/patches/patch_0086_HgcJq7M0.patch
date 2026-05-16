@@ -1,0 +1,16 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/android/app/src/main/kotlin/com/wakeapp/ceoos/BlockGateActivity.kt
+@@
+     private fun goHome() {
+         isVisible = false
++        finish()
++        overridePendingTransition(0, 0)
+         BlockingAccessibilityService.navigateHomeFromBlockGate(
+             blockType = blockedType,
+             browserPackage = blockedPackageName,
+             blockedDomain = blockedDomain,
+         )
+-        finish()
+-        overridePendingTransition(0, 0)
+     }
+*** End Patch

@@ -1,0 +1,38 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/core/services/stats_engine.dart
+@@
+-    final focusComponent = math.min(25.0, deepWorkTimeMinutes / 10.0);
+-    final habitComponent = habitCompletionRate * 15.0;
+-    final distractionPenalty = distractionAttempts * 0.5;
+-    final sessionPenalty = (focusSessionsBroken * 5.0) + (ceoSessionsBroken * 10.0);
+-    final screenPenalty = distractingTimeMinutes / 15.0;
+-    final completionBonus = sessionCompletionRate * 10.0;
+-
+-    final rawAttention =
+-        50.0 +
+-        focusComponent +
+-        habitComponent +
+-        completionBonus -
+-        distractionPenalty -
+-        sessionPenalty -
+-        screenPenalty;
++    final focusComponent = math.min(25.0, deepWorkTimeMinutes / 10.0);
++    final ceoComponent = math.min(10.0, ceoTimeMinutes / 12.0);
++    final habitComponent = habitCompletionRate * 15.0;
++    final resistanceBonus = math.min(8.0, distractionsBlocked / 2.0);
++    final completionBonus = sessionCompletionRate * 10.0;
++    final distractionPenalty = distractionAttempts * 0.5;
++    final sessionPenalty = (focusSessionsBroken * 5.0) + (ceoSessionsBroken * 10.0);
++    final screenPenalty = distractingTimeMinutes / 15.0;
++
++    final rawAttention =
++        50.0 +
++        focusComponent +
++        ceoComponent +
++        habitComponent +
++        resistanceBonus +
++        completionBonus -
++        distractionPenalty -
++        sessionPenalty -
++        screenPenalty;
+*** End Patch

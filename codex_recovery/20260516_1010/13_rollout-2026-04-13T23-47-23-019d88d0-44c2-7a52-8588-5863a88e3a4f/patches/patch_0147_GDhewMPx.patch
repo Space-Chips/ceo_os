@@ -1,0 +1,15 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/legacy/screen_time_screen.dart
+@@
+     if (Platform.isIOS) {
++      if (_iosWebsitePayloadByDomain.isNotEmpty &&
++          !_iosWebsitePayloadByDomain.containsKey(normalizedDomain)) {
++        await _showNotice(
++          title: 'Website unavailable',
++          message:
++              '$normalizedDomain is not currently supported by the Screen Time website API on this iPhone.',
++        );
++        return;
++      }
+       final authorized = await _focusService.isAuthorized();
+*** End Patch

@@ -1,0 +1,415 @@
+*** Begin Patch
+*** Update File: /Users/timo/ceo_os/lib/features/focus/focus_screen.dart
+@@
+   Widget _header({
+     required String title,
+     bool showHome = false,
+     VoidCallback? trailingTap,
+     IconData? trailingIcon,
+@@
+           if (!showHome && trailingIcon != null)
+-            CupertinoButton(
+-              padding: EdgeInsets.zero,
+-              minimumSize: Size.zero,
+-              onPressed: trailingTap,
+-              child: Icon(
+-                trailingIcon,
+-                size: 20,
+-                color: AppColors.secondaryLabel,
+-              ),
++            _FocusPressScale(
++              onTap: trailingTap ?? () {},
++              scaleWhenPressed: 0.97,
++              child: Container(
++                width: 36,
++                height: 36,
++                decoration: BoxDecoration(
++                  color: AppColors.white.withValues(alpha: 0.06),
++                  borderRadius: BorderRadius.circular(12),
++                  border: Border.all(
++                    color: AppColors.white.withValues(alpha: 0.08),
++                    width: 1,
++                  ),
++                ),
++                alignment: Alignment.center,
++                child: Icon(
++                  trailingIcon,
++                  size: 18,
++                  color: AppColors.secondaryLabel,
++                ),
++              ),
+             ),
+         ],
+       ),
+     );
+   }
+@@
+   Widget _buildActive(FocusProvider provider) {
+     final isFocusing = provider.state == FocusState.focusing;
++    final isBreak =
++        provider.state == FocusState.shortBreak ||
++        provider.state == FocusState.longBreak;
++    final accentColor = isBreak
++        ? const Color(0xFF7ED6A5)
++        : const Color(0xFF4C7DFF);
++    final progressColor = isBreak
++        ? const Color(0x997ED6A5)
++        : const Color(0x994C7DFF);
++    final timerLabel = isFocusing ? 'DEEP WORK' : 'BREAK';
++    final controlTitle = switch (provider.state) {
++      FocusState.focusing => 'Focus Session',
++      FocusState.shortBreak => 'Short Break',
++      FocusState.longBreak => 'Long Break',
++      FocusState.requestingBreak => 'Break Request Pending',
++      FocusState.breakOptionsMenu => 'Break Selection',
++      FocusState.idle => 'Focus Session',
++    };
++
+     return Padding(
+       padding: const EdgeInsets.fromLTRB(20, 10, 20, 22),
+       child: Column(
+         children: [
+           _header(
+@@
+           ),
+-          const SizedBox(height: 18),
++          const SizedBox(height: 22),
+           Text(
+             provider.stateLabel,
+             style: AppTypography.mono.copyWith(
+-              fontSize: 20,
+-              color: AppColors.secondaryLabel,
++              fontSize: 18,
++              color: AppColors.secondaryLabel.withValues(alpha: 0.78),
+               fontWeight: FontWeight.w700,
+             ),
+           ),
+-          const SizedBox(height: 24),
++          const SizedBox(height: 28),
+           Expanded(
+             child: Center(
+-              child: Stack(
+-                alignment: Alignment.center,
+-                children: [
+-                  Container(
+-                    width: 240,
+-                    height: 240,
+-                    decoration: BoxDecoration(
+-                      shape: BoxShape.circle,
+-                      border: Border.all(
+-                        color: AppColors.glassBorder.withValues(alpha: 0.6),
+-                        width: 1,
+-                      ),
+-                    ),
+-                  ),
+-                  SizedBox(
+-                    width: 220,
+-                    height: 220,
+-                    child: CupertinoActivityIndicator(
+-                      color: AppColors.primaryOrange,
+-                    ),
+-                  ),
+-                  Column(
+-                    mainAxisSize: MainAxisSize.min,
+-                    children: [
+-                      Text(
+-                        provider.timerDisplay,
+-                        style: AppTypography.timer.copyWith(
+-                          fontSize: 68,
+-                          color: AppColors.label,
+-                          fontWeight: FontWeight.w900,
+-                          height: 0.95,
+-                        ),
+-                      ),
+-                      Text(
+-                        isFocusing ? 'DEEP WORK' : 'BREAK',
+-                        style: AppTypography.mono.copyWith(
+-                          fontSize: 12,
+-                          color: AppColors.primaryOrange,
+-                          letterSpacing: 2,
+-                          fontWeight: FontWeight.w800,
+-                        ),
+-                      ),
+-                    ],
+-                  ),
+-                ],
++              child: TweenAnimationBuilder<double>(
++                tween: Tween<double>(begin: 0, end: provider.progress),
++                duration: const Duration(milliseconds: 500),
++                curve: Curves.easeOut,
++                builder: (context, animatedProgress, _) {
++                  return SizedBox(
++                    width: 296,
++                    height: 296,
++                    child: Stack(
++                      alignment: Alignment.center,
++                      children: [
++                        CustomPaint(
++                          size: const Size.square(296),
++                          painter: _FocusProgressRingPainter(
++                            progress: animatedProgress,
++                            progressColor: progressColor,
++                          ),
++                        ),
++                        Container(
++                          width: 244,
++                          height: 244,
++                          decoration: BoxDecoration(
++                            shape: BoxShape.circle,
++                            gradient: LinearGradient(
++                              begin: Alignment.topCenter,
++                              end: Alignment.bottomCenter,
++                              colors: [
++                                const Color(0xFF1A1A1A),
++                                const Color(0xFF111111),
++                              ],
++                            ),
++                            boxShadow: [
++                              BoxShadow(
++                                color: AppColors.black.withValues(alpha: 0.48),
++                                blurRadius: 34,
++                                offset: const Offset(0, 20),
++                              ),
++                            ],
++                          ),
++                        ),
++                        Column(
++                          mainAxisSize: MainAxisSize.min,
++                          children: [
++                            AnimatedSwitcher(
++                              duration: const Duration(milliseconds: 220),
++                              switchInCurve: Curves.easeOutCubic,
++                              switchOutCurve: Curves.easeOutCubic,
++                              transitionBuilder: (child, animation) {
++                                return FadeTransition(
++                                  opacity: animation,
++                                  child: child,
++                                );
++                              },
++                              child: Text(
++                                provider.timerDisplay,
++                                key: ValueKey(provider.timerDisplay),
++                                textAlign: TextAlign.center,
++                                style: AppTypography.timer.copyWith(
++                                  fontSize: 104,
++                                  color: AppColors.label,
++                                  fontWeight: FontWeight.w700,
++                                  letterSpacing: 2,
++                                  height: 0.92,
++                                ),
++                              ),
++                            ),
++                            const SizedBox(height: 10),
++                            Text(
++                              timerLabel,
++                              style: AppTypography.mono.copyWith(
++                                fontSize: 13,
++                                color: accentColor.withValues(alpha: 0.78),
++                                letterSpacing: 3,
++                                fontWeight: FontWeight.w700,
++                              ),
++                            ),
++                          ],
++                        ),
++                      ],
++                    ),
++                  );
++                },
+               ),
+             ),
+           ),
+-          const SizedBox(height: 18),
+-          if (provider.state == FocusState.focusing)
+-            LiquidButton(
+-              label: 'REQUEST BREAK',
+-              fullWidth: true,
+-              onPressed: provider.requestBreak,
+-            )
+-          else if (provider.state == FocusState.requestingBreak)
+-            LiquidButton(
+-              label: 'Cancel (${provider.waitTimerDisplay})',
+-              labelStyle: AppTypography.timer.copyWith(
+-                fontSize: 18,
+-                fontWeight: FontWeight.w700,
+-              ),
+-              fullWidth: true,
+-              onPressed: provider.cancelBreakRequest,
+-            )
+-          else if (provider.state == FocusState.breakOptionsMenu)
+-            Row(
+-              children: [
+-                Expanded(
+-                  child: LiquidButton(
+-                    label: '5m break',
+-                    onPressed: () => provider.takeCustomBreak(5),
+-                  ),
+-                ),
+-                const SizedBox(width: 8),
+-                Expanded(
+-                  child: LiquidButton(
+-                    label: '15m break',
+-                    onPressed: () => provider.takeCustomBreak(15),
+-                  ),
+-                ),
+-              ],
+-            )
+-          else
+-            LiquidButton(
+-              label: 'Skip break',
+-              fullWidth: true,
+-              onPressed: provider.skip,
+-            ),
++          const SizedBox(height: 20),
++          Container(
++            width: double.infinity,
++            padding: const EdgeInsets.all(16),
++            decoration: BoxDecoration(
++              gradient: const LinearGradient(
++                begin: Alignment.topCenter,
++                end: Alignment.bottomCenter,
++                colors: [Color(0xFF1A1A1A), Color(0xFF111111)],
++              ),
++              borderRadius: BorderRadius.circular(20),
++              border: Border.all(
++                color: AppColors.white.withValues(alpha: 0.08),
++                width: 1,
++              ),
++              boxShadow: [
++                BoxShadow(
++                  color: AppColors.black.withValues(alpha: 0.45),
++                  blurRadius: 24,
++                  offset: const Offset(0, 12),
++                ),
++              ],
++            ),
++            child: Column(
++              crossAxisAlignment: CrossAxisAlignment.start,
++              children: [
++                Row(
++                  children: [
++                    Expanded(
++                      child: Text(
++                        controlTitle,
++                        style: AppTypography.callout.copyWith(
++                          fontSize: 14,
++                          color: AppColors.secondaryLabel.withValues(
++                            alpha: 0.72,
++                          ),
++                          fontWeight: FontWeight.w600,
++                        ),
++                      ),
++                    ),
++                    AnimatedSwitcher(
++                      duration: const Duration(milliseconds: 220),
++                      transitionBuilder: (child, animation) => FadeTransition(
++                        opacity: animation,
++                        child: child,
++                      ),
++                      child: Text(
++                        provider.state == FocusState.requestingBreak
++                            ? provider.waitTimerDisplay
++                            : provider.timerDisplay,
++                        key: ValueKey(
++                          '${provider.state.name}-${provider.state == FocusState.requestingBreak ? provider.waitTimerDisplay : provider.timerDisplay}',
++                        ),
++                        style: AppTypography.timer.copyWith(
++                          fontSize: 22,
++                          color: AppColors.label,
++                          fontWeight: FontWeight.w600,
++                          height: 1,
++                        ),
++                      ),
++                    ),
++                  ],
++                ),
++                const SizedBox(height: 14),
++                if (provider.state == FocusState.focusing)
++                  _FocusSecondaryButton(
++                    label: 'REQUEST BREAK',
++                    onTap: provider.requestBreak,
++                  )
++                else if (provider.state == FocusState.requestingBreak)
++                  _FocusSecondaryButton(
++                    label: 'Cancel Break Request',
++                    onTap: provider.cancelBreakRequest,
++                  )
++                else if (provider.state == FocusState.breakOptionsMenu)
++                  Row(
++                    children: [
++                      Expanded(
++                        child: _FocusSecondaryButton(
++                          label: '5m break',
++                          onTap: () => provider.takeCustomBreak(5),
++                        ),
++                      ),
++                      const SizedBox(width: 10),
++                      Expanded(
++                        child: _FocusSecondaryButton(
++                          label: '15m break',
++                          onTap: () => provider.takeCustomBreak(15),
++                        ),
++                      ),
++                    ],
++                  )
++                else
++                  _FocusSecondaryButton(
++                    label: 'Skip break',
++                    onTap: provider.skip,
++                  ),
++              ],
++            ),
++          ),
+         ],
+       ),
+     );
+   }
+@@
+ class _FocusPrimaryButton extends StatelessWidget {
+@@
+ }
++
++class _FocusProgressRingPainter extends CustomPainter {
++  final double progress;
++  final Color progressColor;
++
++  const _FocusProgressRingPainter({
++    required this.progress,
++    required this.progressColor,
++  });
++
++  @override
++  void paint(Canvas canvas, Size size) {
++    final center = size.center(Offset.zero);
++    final radius = (size.width / 2) - 10;
++    const startAngle = -1.5707963267948966;
++    final sweep = 6.283185307179586 * progress.clamp(0.0, 1.0);
++
++    final basePaint = Paint()
++      ..color = AppColors.white.withValues(alpha: 0.15)
++      ..style = PaintingStyle.stroke
++      ..strokeWidth = 3
++      ..strokeCap = StrokeCap.round;
++
++    final progressPaint = Paint()
++      ..color = progressColor
++      ..style = PaintingStyle.stroke
++      ..strokeWidth = 3
++      ..strokeCap = StrokeCap.round;
++
++    canvas.drawCircle(center, radius, basePaint);
++    canvas.drawArc(
++      Rect.fromCircle(center: center, radius: radius),
++      startAngle,
++      sweep,
++      false,
++      progressPaint,
++    );
++  }
++
++  @override
++  bool shouldRepaint(covariant _FocusProgressRingPainter oldDelegate) {
++    return oldDelegate.progress != progress ||
++        oldDelegate.progressColor != progressColor;
++  }
++}
+*** End Patch
