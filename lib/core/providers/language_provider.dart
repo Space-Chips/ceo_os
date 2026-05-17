@@ -1,12 +1,18 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../repositories/settings_repository.dart';
+import '../utils/app_logger.dart';
+import 'language_overrides.dart';
 
 class LanguageProvider extends ChangeNotifier {
   static const String _defaultLanguage = 'en';
+  static const String _localLanguageKey = 'language_preference_v1';
+  static const String _cloudSyncPendingKey =
+      'language_preference_cloud_pending_v1';
   static const Set<String> _supportedLanguageCodes = {
     'en',
     'fr',
@@ -24,6 +30,7 @@ class LanguageProvider extends ChangeNotifier {
   StreamSubscription<AuthState>? _authSubscription;
 
   String _languageCode = _defaultLanguage;
+  bool _cloudSyncPending = false;
 
   LanguageProvider({SettingsRepository? settingsRepository}) {
     if (settingsRepository != null) {
@@ -35,12 +42,13 @@ class LanguageProvider extends ChangeNotifier {
   String get languageCode => _languageCode;
 
   Future<void> _init() async {
+    await _hydrateFromLocalPrefs();
     if (_client.auth.currentUser != null) {
       await loadFromSettings();
     }
     _authSubscription = _client.auth.onAuthStateChange.listen((event) async {
       if (event.session?.user == null) {
-        _setLanguage(_defaultLanguage, notify: true);
+        await _hydrateFromLocalPrefs();
         return;
       }
       await loadFromSettings();
@@ -89,6 +97,38 @@ class LanguageProvider extends ChangeNotifier {
     if (notify) notifyListeners();
   }
 
+  Future<void> _syncFromCloudRespectingLocalPreference() async {
+    if (_client.auth.currentUser == null) return;
+    if (_cloudSyncPending) {
+      await _syncLanguageToCloudBestEffort(_languageCode);
+      return;
+    }
+    await loadFromSettings();
+  }
+
+  Future<bool> _syncLanguageToCloudBestEffort(
+    String normalized, {
+    Duration timeout = const Duration(seconds: 4),
+  }) async {
+    try {
+      await _settingsRepository.updateLanguageCode(normalized).timeout(timeout);
+      await _setCloudSyncPending(false);
+      return true;
+    } catch (error) {
+      await _setCloudSyncPending(true);
+      AppLogger.warning(
+        'Language cloud sync failed, local preference kept. $error',
+      );
+      return false;
+    }
+  }
+
+  Future<void> _setCloudSyncPending(bool value) async {
+    _cloudSyncPending = value;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_cloudSyncPendingKey, value);
+  }
+
   @override
   void dispose() {
     _authSubscription?.cancel();
@@ -124,6 +164,25 @@ const Map<String, Map<String, String>> _translations = {
     'settings': 'SETTINGS',
     'app_modules': 'APP_MODULES',
     'notes': 'NOTES',
+    'notes_new_note': 'NEW NOTE',
+    'notes_last_edit': 'LAST EDIT',
+    'notes_untitled': 'Untitled',
+    'notes_search_placeholder': 'Search notes...',
+    'notes_recent': 'RECENT',
+    'notes_all_notes': 'All Notes',
+    'notes_no_tag': 'No Tag',
+    'notes_tag_placeholder': '#work/meeting',
+    'notes_write_placeholder': 'Write your note...',
+    'event_types_create_title': 'Create event type',
+    'event_types_type_name': 'TYPE NAME',
+    'event_types_name_placeholder': 'Work, sport, personal…',
+    'event_types_color': 'COLOR',
+    'event_types_create_button': '+ Create type',
+    'event_types_empty_title': 'No event types yet.',
+    'event_types_empty_subtitle': 'Create your first type to organize events.',
+    'untitled': 'Untitled',
+    'create': 'Create',
+    'creating': 'Creating…',
     'rewards': 'REWARDS',
     'cancel': 'CANCEL',
     'welcome_back': 'Welcome back',
@@ -161,9 +220,23 @@ const Map<String, Map<String, String>> _translations = {
     'block_apps_sites': 'BLOCK_APPS_AND_SITES',
     'screen_time_logs': 'SCREEN_TIME_LOGS',
     'blocking_preview': 'BLOCKING_PREVIEW',
+    'screen_time_tile_protected': 'PROTECTED',
+    'screen_time_tile_targets': 'targets',
+    'screen_time_tile_pauses': 'PAUSES',
+    'screen_time_tile_scheduled': 'scheduled',
+    'screen_time_tile_access': 'ACCESS',
+    'screen_time_tile_approved': 'APPROVED',
+    'screen_time_tile_allow': 'ALLOW',
+    'screen_time_tile_iphone': 'IPHONE',
+    'screen_time_tile_unavailable': 'UNAVAIL',
+    'screen_time_tile_relaunch': 'RELAUNCH',
+    'screen_time_tile_grant_access': 'grant access',
+    'screen_time_tile_real_device_only': 'real device only',
+    'screen_time_tile_ios16_required': 'iOS 16 required',
+    'screen_time_tile_full_restart': 'full restart',
     'see_how_blocking_works': 'See how blocking works',
     'home_dashboard_load_failed': 'Dashboard load failed',
-    'home_dashboard_retry_hint': 'Tap to retry after DB migration.',
+    'home_dashboard_retry_hint': 'Tap to try loading your dashboard again.',
     'no_active_modules':
         'No active modules. Enable modules from the grid button in the header.',
     'mission': 'MISSION',
@@ -424,6 +497,7 @@ const Map<String, Map<String, String>> _translations = {
     'confirm_delete': 'Confirm Delete',
   },
   'fr': {
+    'app_name': 'WakeApp',
     'profile': 'PROFIL',
     'save': 'ENREGISTRER',
     'saving': 'ENREGISTREMENT',
@@ -449,6 +523,15 @@ const Map<String, Map<String, String>> _translations = {
     'settings': 'PARAMÈTRES',
     'app_modules': 'MODULES_APP',
     'notes': 'NOTES',
+    'notes_new_note': 'Nouvelle note',
+    'notes_last_edit': 'Dernière modif',
+    'notes_untitled': 'Sans titre',
+    'notes_search_placeholder': 'Rechercher des notes…',
+    'notes_recent': 'RÉCENT',
+    'notes_all_notes': 'Toutes les notes',
+    'notes_no_tag': 'Sans tag',
+    'notes_tag_placeholder': '#travail/réunion',
+    'notes_write_placeholder': 'Écris ta note…',
     'rewards': 'RÉCOMPENSES',
     'cancel': 'ANNULER',
     'welcome_back': 'Heureux de te revoir',
@@ -466,6 +549,17 @@ const Map<String, Map<String, String>> _translations = {
     'manager': 'GESTIONNAIRE',
     'rank': 'RANG',
     'event_types': 'TYPES_ÉVÉNEMENTS',
+    'event_types_create_title': "Créer un type d'événement",
+    'event_types_type_name': 'NOM DU TYPE',
+    'event_types_name_placeholder': 'Travail, sport, perso…',
+    'event_types_color': 'COULEUR',
+    'event_types_create_button': '+ Créer un type',
+    'event_types_empty_title': "Aucun type pour l'instant.",
+    'event_types_empty_subtitle':
+        'Crée ton premier type pour organiser tes événements.',
+    'untitled': 'Sans titre',
+    'create': 'Créer',
+    'creating': 'Création…',
     'biannual': 'SEMESTRIEL',
     'leaderboard_global': 'GLOBAL',
     'leaderboard_friends': 'AMIS',
@@ -489,7 +583,7 @@ const Map<String, Map<String, String>> _translations = {
     'see_how_blocking_works': 'Voir comment le blocage fonctionne',
     'home_dashboard_load_failed': 'Échec du chargement du dashboard',
     'home_dashboard_retry_hint':
-        'Touchez pour réessayer après la migration de la base.',
+        'Touchez pour recharger votre tableau de bord.',
     'no_active_modules':
         'Aucun module actif. Activez des modules depuis la grille en en-tête.',
     'mission': 'MISSION',

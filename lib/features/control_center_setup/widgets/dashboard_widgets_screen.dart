@@ -111,7 +111,6 @@ class DashboardWidgetSelector extends StatelessWidget {
   }
 }
 
-
 class DashboardWidgetToggle extends StatelessWidget {
   final String label;
   final IconData icon;

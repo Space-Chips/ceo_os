@@ -88,7 +88,10 @@ class _HabitsScreenState extends State<HabitsScreen> {
                             color: AppColors.primaryOrange,
                           ),
                           const SizedBox(height: 12),
-                          Text('No habits yet', style: AppTypography.headline),
+                          Text(
+                            'No habits yet',
+                            style: AppTypography.headline,
+                          ),
                           const SizedBox(height: 8),
                           Text(
                             'Create your first habit to start tracking consistency.',

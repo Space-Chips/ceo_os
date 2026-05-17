@@ -15,13 +15,15 @@ class StatsEngine {
     );
     final monthly = MonthlyStats(
       createdBy: '',
-      month: '${now.year}-${now.month.toString().padLeft(2, '0')}',
+      month: "${now.year}-${now.month.toString().padLeft(2, '0")}',
     );
     final lifetime = LifetimeStats.empty(createdBy: '');
     final heatmap = List.generate(
       30,
-      (index) =>
-          HeatmapCell.fromScore(now.subtract(Duration(days: 29 - index)), 0),
+      (index) => HeatmapCell.fromScore(
+        now.subtract(Duration(days: 29 - index)),
+        0,
+      ),
     );
 
     return AdvancedStatsSnapshot(

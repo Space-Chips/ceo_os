@@ -1,15 +1,20 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart' show Colors, FontWeight, IconData;
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../components/components.dart';
+import '../../core/models/settings_models.dart';
 import '../../core/models/user_models.dart';
 import '../../core/providers/focus_provider.dart';
 import '../../core/repositories/feature_repository.dart';
 import '../../core/repositories/user_repository.dart';
+import '../../core/services/classic_blocking_coordinator.dart';
+import '../../core/services/focus_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
+import '../../core/widgets/rank_art.dart';
+import '../screen_time_setup/screen_time_setup_controller.dart';
+import '../setup/setup_flow_controller.dart';
 
 class ScreenTimeManagerScreen extends StatefulWidget {
   const ScreenTimeManagerScreen({super.key});
@@ -22,10 +27,13 @@ class ScreenTimeManagerScreen extends StatefulWidget {
 class _ScreenTimeManagerScreenState extends State<ScreenTimeManagerScreen> {
   final FeatureRepository _featureRepository = FeatureRepository();
   final UserRepository _userRepository = UserRepository();
+  final ClassicBlockingCoordinator _classicBlockingCoordinator =
+      ClassicBlockingCoordinator();
 
   List<Map<String, dynamic>> _logs = const [];
   UserRank? _rank;
   WinStreak? _streak;
+  int _classicBlockedTargets = 0;
   bool _loading = true;
 
   @override
@@ -46,15 +54,55 @@ class _ScreenTimeManagerScreenState extends State<ScreenTimeManagerScreen> {
       await focus.refreshScreenTime();
       await _userRepository.refreshLeaderboardForMe();
 
-      final logs = await _featureRepository.getScreenTimeLogs(days: 14);
-      final rank = await _userRepository.getUserRank();
-      final streak = await _userRepository.getWinStreak();
+      final results = await Future.wait<dynamic>([
+        _featureRepository.getScreenTimeLogs(days: 14),
+        _userRepository.getUserRank(),
+        _userRepository.getWinStreak(),
+        _featureRepository.getBlockedApps(),
+        _featureRepository.getBlockedWebsites(),
+      ]);
+      final logs = results[0] as List<Map<String, dynamic>>;
+      final rank = results[1] as UserRank?;
+      final streak = results[2] as WinStreak?;
+      final blockedApps = results[3] as List<BlockedApp>;
+      final blockedSites = results[4] as List<BlockedWebsite>;
+      final adultShieldEnabled = blockedSites.any(
+        (site) =>
+            (site.urlDomain ?? '').trim() ==
+            FeatureRepository.adultContentShieldMarker,
+      );
+      final classicBlockedTargets =
+          blockedApps.length +
+          blockedSites
+              .where(
+                (site) =>
+                    (site.urlDomain ?? '').trim() !=
+                  FeatureRepository.adultContentShieldMarker,
+              )
+              .length +
+          (adultShieldEnabled ? 1 : 0);
+      final now = DateTime.now();
+      final plannedPauseCount = restPeriods
+          .where((period) => _isScheduledRest(period, now))
+          .length;
+      await _classicBlockingCoordinator.syncNativeState(
+        apps: blockedApps,
+        websites: blockedSites
+            .where(
+              (site) =>
+                  (site.urlDomain ?? '').trim() !=
+                  FeatureRepository.adultContentShieldMarker,
+            )
+            .toList(growable: false),
+        restPeriods: await _featureRepository.getRestPeriods(),
+      );
 
       if (!mounted) return;
       setState(() {
         _logs = logs;
         _rank = rank;
         _streak = streak;
+        _classicBlockedTargets = classicBlockedTargets;
         _loading = false;
       });
     } catch (_) {
@@ -98,18 +146,6 @@ class _ScreenTimeManagerScreenState extends State<ScreenTimeManagerScreen> {
     return (totalSeconds / 60 / subset.length).round();
   }
 
-  int _blockedTargets(FocusProvider focus) {
-    if (focus.blockLists.isEmpty) return 0;
-    final active = focus.blockLists.firstWhere(
-      (list) => list.id == focus.activeBlockListId,
-      orElse: () => focus.blockLists.first,
-    );
-    var count =
-        active.blockedPackageNames.length + active.blockedCategories.length;
-    if (active.adultBlocking) count += 1;
-    return count;
-  }
-
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
@@ -149,7 +185,7 @@ class _ScreenTimeManagerScreenState extends State<ScreenTimeManagerScreen> {
                         const SizedBox(height: 12),
                         _actionCard(
                           icon: CupertinoIcons.nosign,
-                          iconColor: const Color(0xFF3B82F6),
+                          iconColor: AppColors.accentDeep,
                           title: 'Block Apps & Sites',
                           subtitle: '$blockedTargets blocked • apps, sites, pauses',
                           onTap: () => context.push('/screen-time'),
@@ -157,18 +193,18 @@ class _ScreenTimeManagerScreenState extends State<ScreenTimeManagerScreen> {
                         const SizedBox(height: 8),
                         _actionCard(
                           icon: CupertinoIcons.rosette,
-                          iconColor: const Color(0xFF3B82F6),
-                          title: 'Leaderboard',
+                          iconColor: AppColors.accentIcon,
+                          title: 'Friends & Leaderboard',
                           subtitle: 'Global rankings',
                           onTap: () => context.push('/leaderboard'),
                         ),
                         const SizedBox(height: 8),
                         _actionCard(
-                          icon: CupertinoIcons.shield,
-                          iconColor: const Color(0xFF3B82F6),
-                          title: 'Blocking Preview',
-                          subtitle: 'See how blocking works',
-                          onTap: () => context.push('/focus'),
+                          icon: CupertinoIcons.person_3_fill,
+                          iconColor: AppColors.rankAccent,
+                          title: 'Offline Together',
+                          subtitle: 'Shared no-phone sessions',
+                          onTap: () => context.push('/family-time'),
                         ),
                       ],
                     ),
@@ -193,8 +229,8 @@ class _ScreenTimeManagerScreenState extends State<ScreenTimeManagerScreen> {
                 Icon(CupertinoIcons.back, size: 20, color: AppColors.secondaryLabel),
                 const SizedBox(width: 4),
                 Text(
-                  'Screen Time',
-                  style: AppTypography.mono.copyWith(
+                  _isAndroid ? _t('focus_protection') : _t('screen_time'),
+                  style: AppTypography.callout.copyWith(
                     fontSize: 16,
                     color: AppColors.secondaryLabel,
                     fontWeight: FontWeight.w600,
@@ -217,8 +253,8 @@ class _ScreenTimeManagerScreenState extends State<ScreenTimeManagerScreen> {
                 ),
                 const SizedBox(width: 4),
                 Text(
-                  'Home',
-                  style: AppTypography.mono.copyWith(
+                  _t('home'),
+                  style: AppTypography.callout.copyWith(
                     fontSize: 16,
                     color: AppColors.secondaryLabel,
                     fontWeight: FontWeight.w600,
@@ -230,92 +266,99 @@ class _ScreenTimeManagerScreenState extends State<ScreenTimeManagerScreen> {
         ],
       ),
     );
+    if (onTap == null) return tile;
+    return _ScreenTimePressScale(onTap: onTap, child: tile);
   }
 
   Widget _focusEntryCard() {
-    return GestureDetector(
+    return _ScreenTimePressScale(
       onTap: () => context.push('/focus'),
-      child: _glowSurface(
-        glowColor: AppColors.primaryOrange.withValues(alpha: 0.28),
-        borderRadius: 28,
-        child: GlassCard(
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
-          borderRadius: 28,
-          border: Border.all(
-            color: AppColors.primaryOrange.withValues(alpha: 0.62),
-            width: 1.0,
-          ),
-          gradientColors: [
-            AppColors.primaryOrange.withValues(alpha: 0.28),
-            AppColors.backgroundLight.withValues(alpha: 0.9),
-          ],
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'START SESSION',
-                      style: AppTypography.mono.copyWith(
-                        fontSize: 10,
-                        color: AppColors.warning,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 1.6,
-                      ),
+      child: Container(
+        padding: const EdgeInsets.all(22),
+        decoration: _moduleDecoration(
+          radius: 22,
+          borderColor: AppColors.isDark
+              ? AppColors.activeBorder
+              : AppColors.selectionOutline.withValues(alpha: 0.98),
+          borderWidth: AppColors.isDark ? 1.1 : 1.25,
+          overlay: AppColors.ambientTint.withValues(alpha: AppColors.isDark ? 0.08 : 0.045),
+        ),
+        child: Stack(
+          children: [
+            Positioned(
+              top: 0,
+              left: 10,
+              right: 10,
+              child: IgnorePointer(
+                child: Container(
+                  height: 1,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(999),
+                    color: AppColors.glassHighlight.withValues(
+                      alpha: AppColors.isDark ? 0.22 : 0.28,
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Focus Mode',
-                      style: AppTypography.mono.copyWith(
-                        fontSize: 44,
-                        fontWeight: FontWeight.w900,
-                        color: AppColors.label,
-                        height: 0.95,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      'Deep work environment',
-                      style: AppTypography.mono.copyWith(
-                        fontSize: 15,
-                        color: AppColors.warning,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
-              const SizedBox(width: 12),
-              Container(
-                width: 104,
-                height: 104,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(30),
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      const Color(0xFFFFB685).withValues(alpha: 0.98),
-                      AppColors.primaryOrange.withValues(alpha: 0.95),
+            ),
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _t('screen_time_start_session'),
+                        style: AppTypography.overline.copyWith(
+                          fontSize: 12,
+                          color: AppColors.secondaryLabel.withValues(alpha: 0.62),
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 2,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        _t('focus_mode'),
+                        style: AppTypography.largeTitle.copyWith(
+                          fontSize: 34,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.label,
+                          height: 0.98,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        _t('screen_time_deep_work_environment'),
+                        style: AppTypography.callout.copyWith(
+                          fontSize: 14,
+                          color: AppColors.focusControlAccent,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                     ],
                   ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.primaryOrange.withValues(alpha: 0.33),
-                      blurRadius: 26,
-                      spreadRadius: -6,
+                ),
+                const SizedBox(width: 16),
+                Container(
+                  width: 72,
+                  height: 72,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: AppColors.accentSurfaceSoft,
+                    border: Border.all(
+                      color: AppColors.activeBorder,
+                      width: 1,
                     ),
-                  ],
+                  ),
+                  child: Icon(
+                    CupertinoIcons.bolt,
+                    color: AppColors.accentIcon,
+                    size: 28,
+                  ),
                 ),
-                child: Icon(
-                  CupertinoIcons.bolt_fill,
-                  color: Colors.white,
-                  size: 42,
-                ),
-              ),
-            ],
-          ),
+              ],
+            ),
+          ],
         ),
       ),
     );
@@ -333,50 +376,69 @@ class _ScreenTimeManagerScreenState extends State<ScreenTimeManagerScreen> {
       border: Border.all(color: AppColors.glassBorder.withValues(alpha: 0.8), width: 0.7),
       child: Column(
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: _statLargeTile(
-                  label: 'TODAY',
-                  value: '$todayMinutes',
-                  unit: 'minutes',
-                  accent: const Color(0xFF60A5FA),
-                  highlighted: true,
+          if (AppleReviewCompliance.exposesLocalOnlyFamilyControls)
+            _privateUsageSummaryRow(
+              isAuthorized: isAuthorized,
+              status: privateUsageSummaryStatus,
+              isAvailable: privateUsageSummaryAvailable,
+            )
+          else
+            Row(
+              children: [
+                Expanded(
+                  child: _statLargeTile(
+                    label: _t('screen_time_tile_protected'),
+                    value: '$blockedTargets',
+                    unit: _t('screen_time_tile_targets'),
+                    accent: AppColors.scoreValue,
+                    highlighted: true,
+                    borderColor: AppColors.screenTimeDailyAccentBorder,
+                    onTap: () => context.push('/screen-time?section=apps'),
+                  ),
                 ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _statLargeTile(
-                  label: '7-DAY',
-                  value: '$avg7dMinutes',
-                  unit: 'minutes',
-                  accent: AppColors.secondaryLabel,
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _statLargeTile(
+                    label: _t('screen_time_tile_pauses'),
+                    value: '$plannedPauseCount',
+                    unit: _t('screen_time_tile_scheduled'),
+                    accent: AppColors.secondaryLabel,
+                    onTap: () => context.push('/screen-time?section=pauses'),
+                  ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            ),
           const SizedBox(height: 10),
           Row(
             children: [
               Expanded(
                 child: _statSmallTile(
-                  icon: CupertinoIcons.rosette,
-                  iconColor: const Color(0xFFFACC15),
-                  label: 'RANK',
-                  value: rankName,
-                  valueColor: const Color(0xFFFACC15),
-                  onTap: () => context.push('/rank'),
+                  icon: CupertinoIcons.lock_shield_fill,
+                  iconColor: isAuthorized
+                      ? AppColors.success
+                      : AppColors.primaryOrange,
+                  label: 'ACCESS',
+                  value: isAuthorized ? 'APPROVED' : 'ALLOW',
+                  valueColor: isAuthorized
+                      ? AppColors.success
+                      : AppColors.primaryOrange,
+                  onTap: () => context.push('/screen-time?section=access'),
                 ),
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: _statSmallTile(
-                  icon: CupertinoIcons.flame,
-                  iconColor: AppColors.primaryOrange,
-                  label: 'STREAK',
-                  value: '$streakValue',
-                  valueColor: AppColors.primaryOrange,
-                  onTap: () => context.push('/win-streak'),
+                  icon: CupertinoIcons.star_fill,
+                  iconColor: AppColors.rankAccent,
+                  label: _t('rank'),
+                  value: _localizedRankName(privateRankLabel),
+                  valueColor: AppColors.rankAccent,
+                  leading: RankArt(
+                    rankName: privateRankLabel,
+                    size: RankArtSize.xs,
+                    dimension: 22,
+                  ),
+                  onTap: () => context.push('/rank'),
                 ),
               ),
             ],
@@ -386,12 +448,118 @@ class _ScreenTimeManagerScreenState extends State<ScreenTimeManagerScreen> {
     );
   }
 
+  Widget _privateUsageSummaryRow({
+    required bool isAuthorized,
+    required PrivateScreenTimeSummaryStatus status,
+    required bool isAvailable,
+    required VoidCallback onAccessTap,
+  }) {
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.iOS) {
+      return Row(
+        children: [
+          Expanded(
+            child: _statLargeTile(
+              label: _t('screen_time_tile_protected'),
+              value: '$_classicBlockedTargets',
+              unit: _t('screen_time_tile_targets'),
+              accent: AppColors.scoreValue,
+              highlighted: true,
+              borderColor: AppColors.screenTimeDailyAccentBorder,
+              onTap: () => context.push('/screen-time?section=apps'),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: _statLargeTile(
+              label: _t('screen_time_tile_pauses'),
+              value: '$_plannedPauseCount',
+              unit: _t('screen_time_tile_scheduled'),
+              accent: AppColors.secondaryLabel,
+              onTap: () => context.push('/screen-time?section=pauses'),
+            ),
+          ),
+        ],
+      );
+    }
+
+    if (!isAvailable) {
+      String fallbackTodayValue;
+      String fallbackWeekValue;
+      String fallbackUnit;
+
+      switch (status) {
+        case PrivateScreenTimeSummaryStatus.requiresAuthorization:
+          fallbackTodayValue = _t('screen_time_tile_allow');
+          fallbackWeekValue = _t('screen_time_tile_allow');
+          fallbackUnit = _t('screen_time_tile_grant_access');
+          break;
+        case PrivateScreenTimeSummaryStatus.unavailableOnSimulator:
+          fallbackTodayValue = _t('screen_time_tile_iphone');
+          fallbackWeekValue = _t('screen_time_tile_iphone');
+          fallbackUnit = _t('screen_time_tile_real_device_only');
+          break;
+        case PrivateScreenTimeSummaryStatus.unsupported:
+          fallbackTodayValue = _t('screen_time_tile_unavailable');
+          fallbackWeekValue = _t('screen_time_tile_unavailable');
+          fallbackUnit = _t('screen_time_tile_ios16_required');
+          break;
+        case PrivateScreenTimeSummaryStatus.requiresFullRelaunch:
+          fallbackTodayValue = isAuthorized
+              ? _t('screen_time_tile_relaunch')
+              : _t('screen_time_tile_allow');
+          fallbackWeekValue = isAuthorized
+              ? _t('screen_time_tile_relaunch')
+              : _t('screen_time_tile_allow');
+          fallbackUnit = isAuthorized
+              ? _t('screen_time_tile_full_restart')
+              : _t('screen_time_tile_grant_access');
+          break;
+        case PrivateScreenTimeSummaryStatus.available:
+          fallbackTodayValue = _t('screen_time_tile_allow');
+          fallbackWeekValue = _t('screen_time_tile_allow');
+          fallbackUnit = _t('screen_time_tile_grant_access');
+          break;
+      }
+      return Row(
+        children: [
+          Expanded(
+            child: _statLargeTile(
+              label: _t('today'),
+              value: fallbackTodayValue,
+              unit: fallbackUnit,
+              accent: AppColors.scoreValue,
+              highlighted: true,
+              borderColor: AppColors.screenTimeDailyAccentBorder,
+              onTap: onAccessTap,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: _statLargeTile(
+              label: _t('avg_7d'),
+              value: fallbackWeekValue,
+              unit: fallbackUnit,
+              accent: AppColors.secondaryLabel,
+              onTap: onAccessTap,
+            ),
+          ),
+        ],
+      );
+    }
+
+    return const SizedBox(
+      height: 118,
+      child: UiKitView(viewType: 'com.ceoos.app/private_screen_time_summary'),
+    );
+  }
+
   Widget _statLargeTile({
     required String label,
     required String value,
     required String unit,
     required Color accent,
     bool highlighted = false,
+    Color? borderColor,
   }) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
@@ -412,7 +580,7 @@ class _ScreenTimeManagerScreenState extends State<ScreenTimeManagerScreen> {
             label,
             style: AppTypography.mono.copyWith(
               fontSize: 10,
-              color: AppColors.tertiaryLabel,
+              color: AppColors.secondaryLabel,
               fontWeight: FontWeight.w800,
               letterSpacing: 1.5,
             ),
@@ -432,7 +600,7 @@ class _ScreenTimeManagerScreenState extends State<ScreenTimeManagerScreen> {
             unit,
             style: AppTypography.mono.copyWith(
               fontSize: 12,
-              color: AppColors.secondaryLabel,
+              color: AppColors.tertiaryLabel,
             ),
           ),
         ],
@@ -447,6 +615,7 @@ class _ScreenTimeManagerScreenState extends State<ScreenTimeManagerScreen> {
     required String value,
     required Color valueColor,
     required VoidCallback onTap,
+    Widget? leading,
   }) {
     return GestureDetector(
       onTap: onTap,

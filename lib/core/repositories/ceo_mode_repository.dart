@@ -61,7 +61,7 @@ class CeoModeRepository {
         now.month,
         now.day,
       ).subtract(Duration(days: now.weekday - 1));
-      final lowerBound = '${DateFormat('yyyy-MM-dd').format(weekStart)}T00:00:00';
+      final lowerBound = "${DateFormat('yyyy-MM-dd").format(weekStart)}T00:00:00';
 
       final rows = await _client
           .from('ceo_mode_sessions')

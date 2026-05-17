@@ -170,12 +170,6 @@ class ForegroundAppDetector(
         recentDetectedDomainsByPackage.remove(browserPackage)
     }
 
-    fun clearRecentDomain(packageName: String?) {
-        val browserPackage = packageName?.trim().orEmpty()
-        if (browserPackage.isEmpty()) return
-        recentDetectedDomainsByPackage.remove(browserPackage)
-    }
-
     private fun detectBrowserUrl(
         event: AccessibilityEvent,
         root: AccessibilityNodeInfo?,
@@ -199,20 +193,6 @@ class ForegroundAppDetector(
         val profile = packageName?.let { packagesToProfile[it] } ?: return null
         val bounds = findBestAddressBarBounds(root, profile) ?: return null
         return if (bounds.bottom > 0) bounds.bottom else null
-    }
-
-    private fun detectAddressBarFocused(
-        event: AccessibilityEvent,
-        root: AccessibilityNodeInfo?,
-        packageName: String?,
-    ): Boolean {
-        val profile = packageName?.let { packagesToProfile[it] } ?: return false
-        event.source?.let { source ->
-            if (isAddressBarNode(source, profile) && (source.isFocused || source.isAccessibilityFocused)) {
-                return true
-            }
-        }
-        return isAnyAddressBarFocused(root, profile)
     }
 
     private fun detectAddressBarFocused(
@@ -315,33 +295,6 @@ class ForegroundAppDetector(
 
         visit(root, 0)
         return bestBounds
-    }
-
-    private fun isAnyAddressBarFocused(
-        root: AccessibilityNodeInfo?,
-        profile: BrowserProfile,
-    ): Boolean {
-        if (root == null) return false
-        val visited = mutableSetOf<Int>()
-        var focused = false
-
-        fun visit(node: AccessibilityNodeInfo?, depth: Int) {
-            if (node == null || depth > 10 || focused) return
-            val identity = System.identityHashCode(node)
-            if (!visited.add(identity) || visited.size > 420) return
-
-            if (isAddressBarNode(node, profile) && (node.isFocused || node.isAccessibilityFocused)) {
-                focused = true
-                return
-            }
-
-            for (index in 0 until node.childCount) {
-                visit(node.getChild(index), depth + 1)
-            }
-        }
-
-        visit(root, 0)
-        return focused
     }
 
     private fun isAnyAddressBarFocused(

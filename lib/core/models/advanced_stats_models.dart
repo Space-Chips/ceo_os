@@ -31,10 +31,7 @@ class DailyStats {
     this.ceoStreakValue = 0,
   });
 
-  factory DailyStats.empty({
-    required String createdBy,
-    required DateTime date,
-  }) {
+  factory DailyStats.empty({required String createdBy, required DateTime date}) {
     return DailyStats(createdBy: createdBy, date: date);
   }
 }

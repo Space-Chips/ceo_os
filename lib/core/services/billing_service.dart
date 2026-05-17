@@ -352,34 +352,127 @@ class BillingPackageOption {
   final String title;
   final String priceLabel;
   final String durationLabel;
+  final String? renewalLabel;
+  final String? introOfferLabel;
+  final bool isLifetime;
+  final Package package;
 
   const BillingPackageOption({
     required this.identifier,
     required this.title,
     required this.priceLabel,
     required this.durationLabel,
+    required this.package,
+    this.renewalLabel,
+    this.introOfferLabel,
+    this.isLifetime = false,
   });
 
   factory BillingPackageOption.fromPackage(Package package) {
     final storeProduct = package.storeProduct;
+    final durationLabel = _durationLabelForPackage(package);
+    final renewalLabel = _renewalLabelForPackage(package, storeProduct);
+    final introOfferLabel = _introOfferLabelForProduct(storeProduct);
     return BillingPackageOption(
       identifier: package.identifier,
-      title: storeProduct.title,
+      title: _titleForPackage(package, storeProduct),
       priceLabel: storeProduct.priceString,
-      durationLabel: _durationLabel(package),
+      durationLabel: durationLabel,
+      renewalLabel: renewalLabel,
+      introOfferLabel: introOfferLabel,
+      isLifetime: package.packageType == PackageType.lifetime,
+      package: package,
     );
   }
+}
 
-  static String _durationLabel(Package package) {
-    switch (package.packageType) {
-      case PackageType.monthly:
-        return 'Monthly';
-      case PackageType.annual:
-        return 'Annual';
-      case PackageType.lifetime:
-        return 'Lifetime';
-      default:
-        return package.identifier;
-    }
+String _titleForPackage(Package package, StoreProduct product) {
+  switch (package.packageType) {
+    case PackageType.weekly:
+      return 'Weekly';
+    case PackageType.monthly:
+      return 'Monthly';
+    case PackageType.twoMonth:
+      return '2 Months';
+    case PackageType.threeMonth:
+      return '3 Months';
+    case PackageType.sixMonth:
+      return '6 Months';
+    case PackageType.annual:
+      return 'Annual';
+    case PackageType.lifetime:
+      return 'Lifetime';
+    case PackageType.custom:
+    case PackageType.unknown:
+      return product.title.trim().isEmpty ? 'Premium' : product.title;
   }
+}
+
+String _durationLabelForPackage(Package package) {
+  switch (package.packageType) {
+    case PackageType.weekly:
+      return '1 week';
+    case PackageType.monthly:
+      return '1 month';
+    case PackageType.twoMonth:
+      return '2 months';
+    case PackageType.threeMonth:
+      return '3 months';
+    case PackageType.sixMonth:
+      return '6 months';
+    case PackageType.annual:
+      return '12 months';
+    case PackageType.lifetime:
+      return 'One-time purchase';
+    case PackageType.custom:
+    case PackageType.unknown:
+      return 'Subscription';
+  }
+}
+
+String? _renewalLabelForPackage(Package package, StoreProduct product) {
+  if (package.packageType == PackageType.lifetime) {
+    return 'One-time purchase';
+  }
+
+  final period = product.subscriptionPeriod;
+  if (period == null || period.isEmpty) {
+    return 'Auto-renewable subscription';
+  }
+
+  return switch (period) {
+    'P1W' => 'Auto-renews every week',
+    'P1M' => 'Auto-renews every month',
+    'P2M' => 'Auto-renews every 2 months',
+    'P3M' => 'Auto-renews every 3 months',
+    'P6M' => 'Auto-renews every 6 months',
+    'P1Y' => 'Auto-renews every year',
+    _ => 'Auto-renewable subscription',
+  };
+}
+
+String? _introOfferLabelForProduct(StoreProduct product) {
+  final intro = product.introductoryPrice;
+  if (intro == null) return null;
+
+  final unitLabel = switch (intro.periodUnit) {
+    PeriodUnit.day => intro.periodNumberOfUnits == 1
+        ? 'day'
+        : '${intro.periodNumberOfUnits} days',
+    PeriodUnit.week => intro.periodNumberOfUnits == 1
+        ? 'week'
+        : '${intro.periodNumberOfUnits} weeks',
+    PeriodUnit.month => intro.periodNumberOfUnits == 1
+        ? 'month'
+        : '${intro.periodNumberOfUnits} months',
+    PeriodUnit.year => intro.periodNumberOfUnits == 1
+        ? 'year'
+        : '${intro.periodNumberOfUnits} years',
+    PeriodUnit.unknown => 'period',
+  };
+
+  if (intro.cycles <= 1) {
+    return '${intro.priceString} for the first $unitLabel';
+  }
+  return '${intro.priceString} for ${intro.cycles} billing cycles';
 }

@@ -5,6 +5,8 @@ import 'package:home_widget/home_widget.dart';
 import 'package:provider/provider.dart';
 
 import '../../components/components.dart';
+import '../../core/providers/ceo_mode_provider.dart';
+import '../../core/providers/focus_provider.dart';
 import '../../core/providers/habit_provider.dart';
 import '../../core/providers/language_provider.dart';
 import '../../core/providers/task_provider.dart';
@@ -23,9 +25,11 @@ class WidgetConfigurationScreen extends StatefulWidget {
 class _WidgetConfigurationScreenState extends State<WidgetConfigurationScreen> {
   bool _loading = true;
   bool _saving = false;
-  bool _enabledTodo = true;
-  bool _enabledDashboard = true;
-  bool _enabledHabits = true;
+  bool _enabledTodo = false;
+  bool _enabledDashboard = false;
+  bool _enabledHabitsToday = false;
+  bool _enabledFocus = false;
+  bool _enabledBlackout = false;
   CeoWidgetMode? _defaultMode;
 
   String _t(String key) => context.watch<LanguageProvider>().t(key);
@@ -45,11 +49,15 @@ class _WidgetConfigurationScreenState extends State<WidgetConfigurationScreen> {
     final tasks = context.read<TaskProvider>();
     final habitsProvider = context.read<HabitProvider>();
     final language = context.read<LanguageProvider>();
+    final ceoMode = context.read<CeoModeProvider>();
+    final focusProvider = context.read<FocusProvider>();
     setState(() {
       _saving = true;
       if (todo != null) _enabledTodo = todo;
       if (dashboard != null) _enabledDashboard = dashboard;
-      if (habits != null) _enabledHabits = habits;
+      if (habitsToday != null) _enabledHabitsToday = habitsToday;
+      if (focus != null) _enabledFocus = focus;
+      if (blackout != null) _enabledBlackout = blackout;
     });
     try {
       await Future.wait([
@@ -63,22 +71,34 @@ class _WidgetConfigurationScreenState extends State<WidgetConfigurationScreen> {
             CeoHomeWidgetService.keyEnabledDashboard,
             dashboard,
           ),
-        if (habits != null)
+        if (habitsToday != null)
           HomeWidget.saveWidgetData<bool>(
-            CeoHomeWidgetService.keyEnabledHabits,
-            habits,
+            CeoHomeWidgetService.keyEnabledHabitsToday,
+            habitsToday,
+          ),
+        if (focus != null)
+          HomeWidget.saveWidgetData<bool>(
+            CeoHomeWidgetService.keyEnabledFocus,
+            focus,
+          ),
+        if (blackout != null)
+          HomeWidget.saveWidgetData<bool>(
+            CeoHomeWidgetService.keyEnabledBlackout,
+            blackout,
           ),
       ]);
+      await _ensureWidgetDataLoaded(tasks: tasks, habits: habitsProvider);
       await CeoHomeWidgetService.renderAndUpdateAll(
         tasks: tasks,
         habits: habitsProvider,
         language: language,
+        ceoMode: ceoMode,
+        focus: focusProvider,
       );
     } finally {
       if (mounted) setState(() => _saving = false);
     }
   }
-
 
   Future<void> _load() async {
     setState(() => _loading = true);
@@ -96,14 +116,24 @@ class _WidgetConfigurationScreenState extends State<WidgetConfigurationScreen> {
       defaultValue: false,
     );
     final enabledHabits = await HomeWidget.getWidgetData<bool>(
-      CeoHomeWidgetService.keyEnabledHabits,
+      CeoHomeWidgetService.keyEnabledHabitsToday,
+      defaultValue: false,
+    );
+    final enabledFocus = await HomeWidget.getWidgetData<bool>(
+      CeoHomeWidgetService.keyEnabledFocus,
+      defaultValue: false,
+    );
+    final enabledBlackout = await HomeWidget.getWidgetData<bool>(
+      CeoHomeWidgetService.keyEnabledBlackout,
       defaultValue: false,
     );
     setState(() {
       _defaultMode = CeoWidgetModeParsing.tryParse(rawDefault);
       _enabledTodo = enabledTodo ?? false;
       _enabledDashboard = enabledDashboard ?? false;
-      _enabledHabits = enabledHabits ?? false;
+      _enabledHabitsToday = enabledHabits ?? false;
+      _enabledFocus = enabledFocus ?? false;
+      _enabledBlackout = enabledBlackout ?? false;
       _loading = false;
     });
   }
@@ -113,6 +143,9 @@ class _WidgetConfigurationScreenState extends State<WidgetConfigurationScreen> {
     final tasks = context.read<TaskProvider>();
     final habits = context.read<HabitProvider>();
     final language = context.read<LanguageProvider>();
+    final ceoMode = context.read<CeoModeProvider>();
+    final focusProvider = context.read<FocusProvider>();
+    final focus = context.read<FocusProvider>();
     setState(() {
       _saving = true;
       _defaultMode = mode;
@@ -122,10 +155,13 @@ class _WidgetConfigurationScreenState extends State<WidgetConfigurationScreen> {
         CeoHomeWidgetService.keyDefaultMode,
         mode?.name,
       );
+      await _ensureWidgetDataLoaded(tasks: tasks, habits: habits);
       await CeoHomeWidgetService.renderAndUpdateAll(
         tasks: tasks,
         habits: habits,
         language: language,
+        ceoMode: ceoMode,
+        focus: focusProvider,
       );
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -137,16 +173,31 @@ class _WidgetConfigurationScreenState extends State<WidgetConfigurationScreen> {
     final tasks = context.read<TaskProvider>();
     final habits = context.read<HabitProvider>();
     final language = context.read<LanguageProvider>();
+    final ceoMode = context.read<CeoModeProvider>();
     setState(() => _saving = true);
     try {
+      await _ensureWidgetDataLoaded(tasks: tasks, habits: habits);
       await CeoHomeWidgetService.renderAndUpdateAll(
         tasks: tasks,
         habits: habits,
         language: language,
+        ceoMode: ceoMode,
+        focus: focusProvider,
       );
     } finally {
       if (mounted) setState(() => _saving = false);
     }
+  }
+
+  Future<void> _ensureWidgetDataLoaded({
+    required TaskProvider tasks,
+    required HabitProvider habits,
+  }) async {
+    await Future.wait([
+      tasks.loadTasksWithCompleted(includeCompleted: true),
+      tasks.loadEvents(),
+      habits.loadData(),
+    ]);
   }
 
   Future<void> _pinAndroidWidget() async {
@@ -193,38 +244,55 @@ class _WidgetConfigurationScreenState extends State<WidgetConfigurationScreen> {
                           ),
                           const SizedBox(height: 10),
                           _widgetToggleCard(
-                            label: _t('widget_mode_habits'),
+                            label: _t('widget_mode_habits_today'),
                             icon: CupertinoIcons.flame_fill,
-                            value: _enabledHabits,
-                            onChanged: (value) => _setEnabled(habits: value),
+                            value: _enabledHabitsToday,
+                            onChanged: (value) =>
+                                _setEnabled(habitsToday: value),
+                          ),
+                          const SizedBox(height: 10),
+                          _widgetToggleCard(
+                            label: _t('widget_mode_focus'),
+                            icon: CupertinoIcons.timer,
+                            value: _enabledFocus,
+                            onChanged: (value) => _setEnabled(focus: value),
+                          ),
+                          const SizedBox(height: 10),
+                          _widgetToggleCard(
+                            label: _t('widget_mode_blackout'),
+                            icon: CupertinoIcons.moon_stars_fill,
+                            value: _enabledBlackout,
+                            onChanged: (value) => _setEnabled(blackout: value),
                           ),
                           const SizedBox(height: 22),
-                          _sectionTitle(_t('widget_configuration_default')),
-                          const SizedBox(height: 12),
-                          _defaultModeCard(
-                            mode: null,
-                            label: _t('widget_default_none'),
-                            icon: CupertinoIcons.xmark_circle_fill,
-                          ),
-                          const SizedBox(height: 10),
-                          _defaultModeCard(
-                            mode: CeoWidgetMode.todo,
-                            label: _t('widget_mode_todo'),
-                            icon: CupertinoIcons.check_mark_circled_solid,
-                          ),
-                          const SizedBox(height: 10),
-                          _defaultModeCard(
-                            mode: CeoWidgetMode.dashboard,
-                            label: _t('widget_mode_dashboard'),
-                            icon: CupertinoIcons.rectangle_3_offgrid_fill,
-                          ),
-                          const SizedBox(height: 10),
-                          _defaultModeCard(
-                            mode: CeoWidgetMode.habits,
-                            label: _t('widget_mode_habits'),
-                            icon: CupertinoIcons.flame_fill,
-                          ),
-                          const SizedBox(height: 22),
+                          if (Platform.isAndroid) ...[
+                            _sectionTitle(_t('widget_configuration_default')),
+                            const SizedBox(height: 12),
+                            _defaultModeCard(
+                              mode: null,
+                              label: _t('widget_default_none'),
+                              icon: CupertinoIcons.xmark_circle_fill,
+                            ),
+                            const SizedBox(height: 10),
+                            _defaultModeCard(
+                              mode: CeoWidgetMode.todo,
+                              label: _t('widget_mode_todo'),
+                              icon: CupertinoIcons.check_mark_circled_solid,
+                            ),
+                            const SizedBox(height: 10),
+                            _defaultModeCard(
+                              mode: CeoWidgetMode.dashboard,
+                              label: _t('widget_mode_dashboard'),
+                              icon: CupertinoIcons.rectangle_3_offgrid_fill,
+                            ),
+                            const SizedBox(height: 10),
+                            _defaultModeCard(
+                              mode: CeoWidgetMode.habits,
+                              label: _t('widget_mode_habits'),
+                              icon: CupertinoIcons.flame_fill,
+                            ),
+                            const SizedBox(height: 22),
+                          ],
                           _sectionTitle(_t('widget_configuration_actions')),
                           const SizedBox(height: 12),
                           _actionButton(
@@ -448,7 +516,6 @@ class _WidgetConfigurationScreenState extends State<WidgetConfigurationScreen> {
       ),
     );
   }
-
 
   Widget _actionButton({
     required String label,

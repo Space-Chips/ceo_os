@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -10,14 +12,46 @@ import '../../components/components.dart';
 import '../../core/providers/ceo_mode_provider.dart';
 import '../../core/providers/language_provider.dart';
 import '../../core/services/home_widget_service.dart';
+import '../../core/services/home_widget_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
+import '../../core/utils/android_protection_disclosure.dart';
+import 'blackout_preparation/blackout_preparation_flow_view.dart';
+import 'blackout_preparation/blackout_preparation_models.dart';
 
 class CeoModeScreen extends StatefulWidget {
   const CeoModeScreen({super.key});
 
   @override
   State<CeoModeScreen> createState() => _CeoModeScreenState();
+}
+
+class _PressScale extends StatefulWidget {
+  final Widget child;
+  final double pressedScale;
+
+  const _PressScale({required this.child, this.pressedScale = 0.97});
+
+  @override
+  State<_PressScale> createState() => _PressScaleState();
+}
+
+class _PressScaleState extends State<_PressScale> {
+  bool _pressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Listener(
+      onPointerDown: (_) => setState(() => _pressed = true),
+      onPointerUp: (_) => setState(() => _pressed = false),
+      onPointerCancel: (_) => setState(() => _pressed = false),
+      child: AnimatedScale(
+        scale: _pressed ? widget.pressedScale : 1,
+        duration: const Duration(milliseconds: 120),
+        child: widget.child,
+      ),
+    );
+  }
 }
 
 class _CeoModeScreenState extends State<CeoModeScreen> {
@@ -42,6 +76,12 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
     );
   }
 
+  bool get _isAndroid =>
+      !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
+
+  String _t(String key) => context.watch<LanguageProvider>().t(key);
+  bool _appliedDeepLinkParams = false;
+
   @override
   void initState() {
     super.initState();
@@ -50,11 +90,42 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
     });
   }
 
+  Future<void> _persistWidgetDuration(int minutes) async {
+    await HomeWidget.saveWidgetData<int>(
+      CeoHomeWidgetService.keyBlackoutDurationMinutes,
+      minutes,
+    );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_appliedDeepLinkParams) return;
+    final params = GoRouterState.of(context).uri.queryParameters;
+    final rawDuration = params['duration'];
+    final rawStart = params['start'];
+    if ((rawDuration == null || rawDuration.trim().isEmpty) &&
+        (rawStart == null || rawStart.trim().isEmpty)) {
+      return;
+    }
+    _appliedDeepLinkParams = true;
+    final duration = int.tryParse(rawDuration ?? '');
+    if (duration != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        final provider = context.read<CeoModeProvider>();
+        final clamped = duration.clamp(15, 240);
+        provider.setDuration(clamped);
+        unawaited(_persistWidgetDuration(clamped));
+      });
+    }
+  }
+
   String _durationLabel(int minutes) {
     if (minutes >= 60) {
       final hours = minutes ~/ 60;
       final remainingMinutes = minutes % 60;
-      return '${hours}h ${remainingMinutes.toString().padLeft(2, '0')}';
+      return "${hours}h ${remainingMinutes.toString().padLeft(2, '0")}';
     }
     return '${minutes}m';
   }
@@ -62,6 +133,27 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
   Future<void> _startSession(CeoModeProvider provider) async {
     final confirmed = await _showStartConfirmation(provider);
     if (confirmed != true) return;
+    if (!mounted) return;
+
+    if (provider.shouldShowPreparationFlowBeforeBlackout) {
+      final outcome = await showBlackoutPreparationFlow(
+        context: context,
+        launchContext: BlackoutPreparationLaunchContext.preBlackout,
+      );
+      if (!mounted) return;
+      await provider.persistPreparationOutcome(
+        outcome ?? BlackoutPreparationFlowOutcome.skipped,
+      );
+      if (!mounted) return;
+    }
+
+    if (_isAndroid && !provider.isAuthorized) {
+      final permissionConfirmed = await showAndroidProtectionDisclosure(
+        context: context,
+        nextStep: provider.getNextAndroidProtectionStep,
+      );
+      if (!permissionConfirmed) return;
+    }
 
     await HapticFeedback.mediumImpact();
     final success = await provider.startSession();
@@ -76,11 +168,11 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
       final (title, message) = switch (issue) {
         'block_list' => (
           'Block List Required',
-          'Choose at least one blocked app or category before starting CEO Mode so the session can be enforced.',
+          'Choose at least one blocked app or category before starting CEO Mode so the session can be enforced.'
         ),
         _ => (
           'Setup Required',
-          'Enable Screen Time / Family Controls permissions to enforce CEO Mode protections.',
+          'Enable Screen Time / Family Controls permissions to enforce CEO Mode protections.'
         ),
       };
       await showCupertinoDialog<void>(
@@ -94,11 +186,16 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
                 isDefaultAction: true,
                 onPressed: () async {
                   Navigator.of(ctx).pop();
+                  if (_isAndroid) {
+                    final confirmed = await showAndroidProtectionDisclosure(
+                      context: context,
+                      nextStep: provider.getNextAndroidProtectionStep,
+                    );
+                    if (!confirmed) return;
+                  }
                   await provider.openSystemSettings();
                 },
-                child: Text(
-                  context.read<LanguageProvider>().t('open_settings'),
-                ),
+                child: Text(context.read<LanguageProvider>().t('open_settings')),
               ),
             CupertinoDialogAction(
               onPressed: () => Navigator.of(ctx).pop(),
@@ -110,6 +207,53 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
     }
   }
 
+  Future<void> _handleProtectionAction(CeoModeProvider provider) async {
+    if (_isAndroid) {
+      final confirmed = await showAndroidProtectionDisclosure(
+        context: context,
+        nextStep: provider.getNextAndroidProtectionStep,
+      );
+      if (!confirmed) return;
+    }
+    if (provider.protectionStatus.shouldOpenSettings) {
+      await provider.openSystemSettings();
+      if (!mounted) return;
+      await provider.refreshProtectionStatus();
+      return;
+    }
+    await provider.requestPermissions();
+  }
+
+  String _protectionStatusMessage(CeoModeProvider provider) {
+    final status = provider.protectionStatus;
+    if (provider.isAuthorized) {
+      return _t('blackout_protection_granted');
+    }
+    if (!status.isSupported) {
+      return _isAndroid
+          ? _t('blackout_protection_unavailable_android')
+          : _t('blackout_protection_unavailable_ios');
+    }
+    if (status.shouldOpenSettings) {
+      return _isAndroid
+          ? _t('blackout_protection_off_android')
+          : _t('blackout_protection_off_ios');
+    }
+    return _isAndroid
+        ? _t('blackout_protection_grant_android')
+        : _t('blackout_protection_grant_ios');
+  }
+
+  String _protectionActionLabel(CeoModeProvider provider) {
+    if (provider.isAuthorized) return _t('blackout_action_refresh');
+    if (!provider.protectionStatus.isSupported) {
+      return _t('blackout_action_unavailable');
+    }
+    return provider.protectionStatus.shouldOpenSettings
+        ? _t('blackout_action_open_settings')
+        : _t('blackout_action_enable');
+  }
+
   Future<bool?> _showStartConfirmation(CeoModeProvider provider) {
     return showCupertinoModalPopup<bool>(
       context: context,
@@ -118,13 +262,13 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
           isSurfacePainted: false,
           child: Container(
             decoration: BoxDecoration(
-              color: const Color(0xF314161C),
+              color: AppColors.cardBackgroundAlt.withValues(alpha: 0.96),
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(24),
               ),
-              boxShadow: const [
+              boxShadow: [
                 BoxShadow(
-                  color: Color(0x66000000),
+                  color: AppColors.glassShadow.withValues(alpha: 0.4),
                   blurRadius: 28,
                   offset: Offset(0, -6),
                 ),
@@ -141,13 +285,13 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
                       width: 40,
                       height: 4,
                       decoration: BoxDecoration(
-                        color: CupertinoColors.white.withValues(alpha: 0.14),
+                        color: AppColors.borderStrong,
                         borderRadius: BorderRadius.circular(999),
                       ),
                     ),
                     const SizedBox(height: 18),
                     Text(
-                      'Activate CEO Mode?',
+                      _t('blackout_confirm_title'),
                       textAlign: TextAlign.center,
                       style: AppTypography.title2.copyWith(
                         fontSize: 20,
@@ -157,7 +301,7 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
                     ),
                     const SizedBox(height: 10),
                     Text(
-                      'You will not be able to access blocked apps until the session ends.',
+                      _t('blackout_confirm_body'),
                       textAlign: TextAlign.center,
                       style: AppTypography.body.copyWith(
                         fontSize: 14,
@@ -169,7 +313,7 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
                     Column(
                       children: [
                         Text(
-                          'Session duration',
+                          _t('focus_session_duration'),
                           textAlign: TextAlign.center,
                           style: AppTypography.subhead.copyWith(
                             fontSize: 14,
@@ -180,9 +324,7 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          _confirmationDurationLabel(
-                            provider.selectedDurationMinutes,
-                          ),
+                          _durationLabel(provider.selectedDurationMinutes),
                           textAlign: TextAlign.center,
                           style: AppTypography.title3.copyWith(
                             fontSize: 16,
@@ -197,7 +339,7 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
                       padding: EdgeInsets.zero,
                       onPressed: () => Navigator.of(ctx).pop(false),
                       child: Text(
-                        'Cancel',
+                        _t('cancel'),
                         style: AppTypography.callout.copyWith(
                           color: AppColors.label.withValues(alpha: 0.7),
                           fontWeight: FontWeight.w600,
@@ -214,7 +356,7 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
                           height: 52,
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(16),
-                            gradient: LinearGradient(
+                            gradient: const LinearGradient(
                               begin: Alignment.centerLeft,
                               end: Alignment.centerRight,
                               colors: [Color(0xFFFFB04E), Color(0xFFFFD48A)],
@@ -222,10 +364,10 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
                           ),
                           alignment: Alignment.center,
                           child: Text(
-                            'Start Session',
+                            _t('blackout_confirm_start'),
                             style: AppTypography.callout.copyWith(
                               fontWeight: FontWeight.w700,
-                              color: const Color(0xFF1A1A1A),
+                              color: AppColors.background,
                             ),
                           ),
                         ),
@@ -303,24 +445,20 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
           CupertinoButton(
             padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
             minimumSize: Size.zero,
-            onPressed: ceo.isSessionActive ? null : () => context.go('/home'),
+            onPressed: () => context.go('/home'),
             child: Row(
               children: [
                 Icon(
                   CupertinoIcons.back,
                   size: 20,
-                  color: ceo.isSessionActive
-                      ? AppColors.tertiaryLabel
-                      : AppColors.secondaryLabel,
+                  color: AppColors.secondaryLabel,
                 ),
                 const SizedBox(width: 4),
                 Text(
-                  'Home',
-                  style: AppTypography.mono.copyWith(
+                  _t('home'),
+                  style: AppTypography.callout.copyWith(
                     fontSize: 16,
-                    color: ceo.isSessionActive
-                        ? AppColors.tertiaryLabel
-                        : AppColors.secondaryLabel,
+                    color: AppColors.secondaryLabel,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -340,8 +478,8 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
                 ),
               ),
               child: Text(
-                'LOCKED',
-                style: AppTypography.mono.copyWith(
+                _t('blackout_locked'),
+                style: AppTypography.caption1.copyWith(
                   fontSize: 10,
                   color: AppColors.primaryOrange,
                   fontWeight: FontWeight.bold,
@@ -354,12 +492,64 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
     );
   }
 
+  Widget _CeoCountdownRing({
+    required int remainingSeconds,
+    required int totalSeconds,
+  }) {
+    final total = totalSeconds <= 0 ? 1 : totalSeconds;
+    final progress = (remainingSeconds / total).clamp(0.0, 1.0);
+    final minutes = (remainingSeconds ~/ 60).toString().padLeft(2, '0');
+    final seconds = (remainingSeconds % 60).toString().padLeft(2, '0');
+    return SizedBox(
+      height: 200,
+      width: 200,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          CustomPaint(
+            size: const Size(200, 200),
+            painter: _CountdownRingPainter(
+              progress: progress,
+              baseColor: AppColors.borderStrong.withValues(alpha: 0.2),
+              accentColor: AppColors.primaryOrange,
+            ),
+          ),
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                '$minutes:$seconds',
+                style: AppTypography.heroDisplay.copyWith(
+                  fontSize: 46,
+                  color: AppColors.primaryOrange,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                _t('blackout_remaining'),
+                style: AppTypography.caption1.copyWith(
+                  fontSize: 11,
+                  color: AppColors.secondaryLabel,
+                  letterSpacing: 1.2,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _glowSurface({
+
   Widget _setupView(CeoModeProvider ceo) {
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 6),
       children: [
         Text(
-          'CEO Mode',
+          'Blackout Mode',
           style: AppTypography.mono.copyWith(
             fontSize: 56,
             fontWeight: FontWeight.w900,
@@ -429,9 +619,9 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
                   child: CupertinoPicker(
                     itemExtent: 34,
                     scrollController: FixedExtentScrollController(
-                      initialItem: _durationOptions
-                          .indexWhere((m) => m == ceo.selectedDurationMinutes)
-                          .clamp(0, _durationOptions.length - 1),
+                      initialItem: _durationOptions.indexWhere(
+                        (m) => m == ceo.selectedDurationMinutes,
+                      ).clamp(0, _durationOptions.length - 1),
                     ),
                     onSelectedItemChanged: (index) {
                       final value = _durationOptions[index];
@@ -481,7 +671,7 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'APPROVED APPS (3)',
+                'ESSENTIAL APPS (3)',
                 style: AppTypography.mono.copyWith(
                   fontSize: 11,
                   color: AppColors.tertiaryLabel,
@@ -519,8 +709,8 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
                   ceo.isAuthorized
                       ? 'Protection access granted'
                       : 'Grant Screen Time permissions for stronger enforcement',
-                  style: AppTypography.mono.copyWith(
-                    fontSize: 11,
+                  style: AppTypography.footnote.copyWith(
+                    fontSize: 12,
                     color: AppColors.secondaryLabel,
                   ),
                 ),
@@ -533,73 +723,124 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
                   ceo.isAuthorized ? 'Refresh' : 'Enable',
                   style: AppTypography.mono.copyWith(
                     fontSize: 11,
-                    color: AppColors.primaryOrange,
-                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF4C7DFF),
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
             ],
           ),
         ),
+        const SizedBox(height: 12),
+        Text(
+          _t('blackout_essential_note'),
+          textAlign: TextAlign.center,
+          style: AppTypography.body.copyWith(
+            fontSize: 13,
+            color: AppColors.secondaryLabel.withValues(alpha: 0.55),
+          ),
+        ),
         const SizedBox(height: 16),
-        LiquidButton(
-          label: ceo.isBusy ? 'STARTING...' : 'START CEO SESSION',
-          fullWidth: true,
-          isLoading: ceo.isBusy,
-          onPressed: () => _startSession(ceo),
+        _PressScale(
+          pressedScale: 0.96,
+          child: GestureDetector(
+            onTap: ceo.isBusy ? null : () => _startSession(ceo),
+            child: AnimatedOpacity(
+              duration: const Duration(milliseconds: 140),
+              opacity: ceo.isBusy ? 0.85 : 1,
+              child: Container(
+                width: double.infinity,
+                height: 58,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  gradient: const LinearGradient(
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                    colors: [Color(0xFFFFB04E), Color(0xFFFFD48A)],
+                  ),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x59FFB04E),
+                      blurRadius: 24,
+                      offset: Offset(0, 8),
+                    ),
+                  ],
+                ),
+                alignment: Alignment.center,
+                child: ceo.isBusy
+                    ? CupertinoActivityIndicator(
+                        color: AppColors.onAccent,
+                      )
+                    : Text(
+                        'Start CEO Session',
+                        style: AppTypography.callout.copyWith(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.onAccent,
+                        ),
+                      ),
+              ),
+            ),
+          ),
         ),
       ],
     );
   }
 
   Widget _activeView(CeoModeProvider ceo) {
+    final totalSeconds = ceo.selectedDurationMinutes * 60;
+    final remainingSeconds = ceo.sessionRemainingSeconds;
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 6),
       children: [
         _glowSurface(
-          glowColor: AppColors.primaryOrange.withValues(alpha: 0.28),
-          borderRadius: 30,
-          child: GlassCard(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-            borderRadius: 30,
-            level: GlassCardLevel.elevated,
-            showEdgeGlow: true,
-            border: Border.all(
-              color: AppColors.primaryOrange.withValues(alpha: 0.56),
-              width: 1.0,
+          glowColor: AppColors.primaryOrange.withValues(alpha: 0.22),
+          borderRadius: 32,
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(20, 22, 20, 20),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(32),
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  AppColors.cardBackgroundAlt.withValues(alpha: 0.96),
+                  AppColors.cardBase.withValues(alpha: 0.98),
+                ],
+              ),
+              border: Border.all(
+                color: AppColors.primaryOrange.withValues(alpha: 0.35),
+                width: 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primaryOrange.withValues(alpha: 0.12),
+                  blurRadius: 28,
+                  offset: const Offset(0, 10),
+                ),
+              ],
             ),
             child: Column(
               children: [
-                Icon(
-                  CupertinoIcons.flame_fill,
-                  size: 54,
-                  color: AppColors.primaryOrange,
-                ),
-                const SizedBox(height: 12),
                 Text(
-                  'CEO SESSION ACTIVE',
-                  style: AppTypography.mono.copyWith(
-                    fontSize: 14,
-                    color: AppColors.warning,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 1.8,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  ceo.sessionTimerLabel,
-                  style: AppTypography.timer.copyWith(
-                    fontSize: 64,
-                    fontWeight: FontWeight.w900,
+                  _t('blackout_active'),
+                  style: AppTypography.caption1.copyWith(
+                    fontSize: 12,
                     color: AppColors.primaryOrange,
-                    height: 0.95,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 1.6,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 18),
+                _CeoCountdownRing(
+                  remainingSeconds: remainingSeconds,
+                  totalSeconds: totalSeconds,
+                ),
+                const SizedBox(height: 16),
                 Text(
-                  'Only approved apps should be used during this session.',
+                  _t('blackout_active_description'),
                   textAlign: TextAlign.center,
-                  style: AppTypography.mono.copyWith(
+                  style: AppTypography.subhead.copyWith(
                     fontSize: 13,
                     color: AppColors.secondaryLabel,
                   ),
@@ -609,35 +850,8 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
           ),
         ),
         const SizedBox(height: 14),
-        GlassCard(
-          padding: const EdgeInsets.all(16),
-          borderRadius: 18,
-          level: GlassCardLevel.standard,
-          showEdgeGlow: true,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'APPROVED APPS',
-                style: AppTypography.mono.copyWith(
-                  fontSize: 11,
-                  color: AppColors.tertiaryLabel,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.3,
-                ),
-              ),
-              const SizedBox(height: 10),
-              _approvedAppItem(CupertinoIcons.phone, 'Phone'),
-              const SizedBox(height: 8),
-              _approvedAppItem(CupertinoIcons.chat_bubble_2, 'Messages'),
-              const SizedBox(height: 8),
-              _approvedAppItem(CupertinoIcons.calendar, 'Calendar'),
-            ],
-          ),
-        ),
-        const SizedBox(height: 14),
         LiquidButton(
-          label: 'REQUEST EXIT (10 MIN)',
+          label: _t('blackout_request_exit').replaceAll('{minutes}', '10'),
           fullWidth: true,
           onPressed: ceo.requestExit,
         ),
@@ -671,12 +885,8 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
                               center: const Alignment(0, -0.08),
                               radius: 0.92,
                               colors: [
-                                AppColors.backgroundLight.withValues(
-                                  alpha: 0.96,
-                                ),
-                                AppColors.cardBackgroundAlt.withValues(
-                                  alpha: 0.96,
-                                ),
+                                AppColors.backgroundLight.withValues(alpha: 0.96),
+                                AppColors.cardBackgroundAlt.withValues(alpha: 0.96),
                                 AppColors.background.withValues(alpha: 0.98),
                               ],
                               stops: const [0, 0.62, 1],
@@ -708,9 +918,7 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   border: Border.all(
-                                    color: AppColors.white.withValues(
-                                      alpha: 0.04,
-                                    ),
+                                    color: AppColors.white.withValues(alpha: 0.04),
                                     width: 1,
                                   ),
                                 ),
@@ -720,15 +928,11 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
                                 height: dialSize * 0.56,
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
-                                  color: AppColors.white.withValues(
-                                    alpha: 0.015,
-                                  ),
+                                  color: AppColors.white.withValues(alpha: 0.015),
                                 ),
                               ),
                               Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 24,
-                                ),
+                                padding: const EdgeInsets.symmetric(horizontal: 24),
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
@@ -737,13 +941,9 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
                                       height: 44,
                                       decoration: BoxDecoration(
                                         shape: BoxShape.circle,
-                                        color: AppColors.white.withValues(
-                                          alpha: 0.055,
-                                        ),
+                                        color: AppColors.white.withValues(alpha: 0.055),
                                         border: Border.all(
-                                          color: AppColors.white.withValues(
-                                            alpha: 0.08,
-                                          ),
+                                          color: AppColors.white.withValues(alpha: 0.08),
                                         ),
                                       ),
                                       alignment: Alignment.center,
@@ -755,7 +955,7 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
                                     ),
                                     const SizedBox(height: 18),
                                     Text(
-                                      'EXIT COUNTDOWN',
+                                      _t('blackout_exit_countdown'),
                                       textAlign: TextAlign.center,
                                       style: AppTypography.overline.copyWith(
                                         fontSize: 12,
@@ -787,20 +987,18 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
                     ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 290),
                       child: Text(
-                        'If your screen turns off, countdown restarts to 10:00.',
+                        _t('blackout_exit_hint'),
                         textAlign: TextAlign.center,
                         style: AppTypography.footnote.copyWith(
                           fontSize: 13,
                           height: 1.42,
-                          color: AppColors.secondaryLabel.withValues(
-                            alpha: 0.74,
-                          ),
+                          color: AppColors.secondaryLabel.withValues(alpha: 0.74),
                         ),
                       ),
                     ),
                     const SizedBox(height: 18),
                     LiquidButton(
-                      label: 'RETURN TO SESSION',
+                      label: _t('blackout_return_to_session'),
                       fullWidth: true,
                       onPressed: ceo.returnToSession,
                     ),
@@ -812,9 +1010,7 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
                             ? 'QUIT NOW'
                             : 'WAIT FOR COUNTDOWN',
                         fullWidth: true,
-                        onPressed: ceo.canFinalizeExit
-                            ? ceo.finalizeExit
-                            : null,
+                        onPressed: ceo.canFinalizeExit ? ceo.finalizeExit : null,
                       ),
                     ),
                   ],
@@ -828,24 +1024,36 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
   }
 
   Widget _approvedAppItem(IconData icon, String label) {
-    return GlassCard(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      borderRadius: 12,
-      level: GlassCardLevel.subtle,
-      border: Border.all(
-        color: AppColors.glassBorder.withValues(alpha: 0.82),
-        width: 0.55,
+    return Container(
+      height: 52,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(14),
+        color: AppColors.cardBackgroundAlt,
+        border: Border.all(
+          color: AppColors.border,
+          width: 0.9,
+        ),
       ),
       child: Row(
         children: [
-          Icon(icon, size: 18, color: AppColors.accentSecondary),
-          const SizedBox(width: 10),
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              color: AppColors.moduleIconBackground,
+            ),
+            alignment: Alignment.center,
+            child: Icon(icon, size: 18, color: AppColors.secondaryLabel),
+          ),
+          const SizedBox(width: 12),
           Text(
             label,
-            style: AppTypography.mono.copyWith(
-              fontSize: 14,
-              color: AppColors.secondaryLabel,
-              fontWeight: FontWeight.w700,
+            style: AppTypography.body.copyWith(
+              fontSize: 15,
+              color: AppColors.label,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],
@@ -867,7 +1075,11 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(borderRadius),
                 boxShadow: [
-                  BoxShadow(color: glowColor, blurRadius: 26, spreadRadius: -2),
+                  BoxShadow(
+                    color: glowColor,
+                    blurRadius: 26,
+                    spreadRadius: -2,
+                  ),
                 ],
               ),
             ),
@@ -879,11 +1091,71 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
   }
 }
 
+class _CountdownRingPainter extends CustomPainter {
+  _CountdownRingPainter({
+    required this.progress,
+    required this.baseColor,
+    required this.accentColor,
+  });
+
+  final double progress;
+  final Color baseColor;
+  final Color accentColor;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final strokeWidth = 12.0;
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = (size.shortestSide - strokeWidth) / 2;
+
+    final basePaint =
+        Paint()
+          ..color = baseColor
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = strokeWidth
+          ..strokeCap = StrokeCap.round;
+
+    final progressPaint =
+        Paint()
+          ..shader = SweepGradient(
+            startAngle: -math.pi / 2,
+            endAngle: math.pi * 1.5,
+            colors: [
+              accentColor.withValues(alpha: 0.12),
+              accentColor.withValues(alpha: 0.7),
+              accentColor,
+            ],
+          ).createShader(
+            Rect.fromCircle(center: center, radius: radius),
+          )
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = strokeWidth
+          ..strokeCap = StrokeCap.round;
+
+    canvas.drawCircle(center, radius, basePaint);
+    final sweep = math.pi * 2 * progress;
+    canvas.drawArc(
+      Rect.fromCircle(center: center, radius: radius),
+      -math.pi / 2,
+      sweep,
+      false,
+      progressPaint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _CountdownRingPainter oldDelegate) {
+    return oldDelegate.progress != progress ||
+        oldDelegate.baseColor != baseColor ||
+        oldDelegate.accentColor != accentColor;
+  }
+}
+
 class _PressScale extends StatefulWidget {
   final Widget child;
   final double pressedScale;
 
-  const _PressScale({required this.child, this.pressedScale = 0.97});
+  const _PressScale({required this.child, required this.pressedScale});
 
   @override
   State<_PressScale> createState() => _PressScaleState();
@@ -894,13 +1166,15 @@ class _PressScaleState extends State<_PressScale> {
 
   @override
   Widget build(BuildContext context) {
-    return Listener(
-      onPointerDown: (_) => setState(() => _pressed = true),
-      onPointerUp: (_) => setState(() => _pressed = false),
-      onPointerCancel: (_) => setState(() => _pressed = false),
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onTapDown: (_) => setState(() => _pressed = true),
+      onTapUp: (_) => setState(() => _pressed = false),
+      onTapCancel: () => setState(() => _pressed = false),
       child: AnimatedScale(
         scale: _pressed ? widget.pressedScale : 1,
         duration: const Duration(milliseconds: 120),
+        curve: Curves.easeOut,
         child: widget.child,
       ),
     );

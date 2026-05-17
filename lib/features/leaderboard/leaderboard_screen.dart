@@ -23,7 +23,7 @@ class LeaderboardScreen extends StatefulWidget {
 class _LeaderboardScreenState extends State<LeaderboardScreen> {
   final UserRepository _repository = UserRepository();
 
-  _BoardTab _tab = _BoardTab.global;
+  _BoardTab _tab = _BoardTab.friends;
   bool _loading = true;
   List<LeaderboardEntry> _global = const [];
   List<FriendConnection> _friends = const [];
@@ -34,6 +34,31 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
   void initState() {
     super.initState();
     _load();
+  }
+
+  String _t(String key) => context.read<LanguageProvider>().t(key);
+
+  String _localizedRankName(String rankName) {
+    final canonical = RankArt.displayName(rankName).toLowerCase();
+    switch (canonical) {
+      case 'awakened':
+        return _t('rank_awakened');
+      case 'immortal':
+        return _t('rank_immortal');
+      case 'diamond':
+        return _t('rank_diamond');
+      case 'platinum':
+        return _t('rank_platinum');
+      case 'gold':
+        return _t('rank_gold');
+      case 'silver':
+        return _t('rank_silver');
+      case 'bronze':
+        return _t('rank_bronze');
+      case 'asleep':
+      default:
+        return _t('rank_asleep');
+    }
   }
 
   Future<void> _load() async {
@@ -48,9 +73,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
         if (byLevel != 0) return byLevel;
         final byStreak = (b.winStreak ?? 0).compareTo(a.winStreak ?? 0);
         if (byStreak != 0) return byStreak;
-        return (a.screenTimeAvgMinutes ?? 9999).compareTo(
-          b.screenTimeAvgMinutes ?? 9999,
-        );
+        return a.createdBy.compareTo(b.createdBy);
       });
     final labels = await _repository.getPublicIdentityLabelsByUserIds(
       ranked.map((e) => e.createdBy),
@@ -67,7 +90,9 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
   }
 
   String _identity(LeaderboardEntry entry) {
-    if (_myUserId != null && entry.createdBy == _myUserId) return 'YOU';
+    if (_myUserId != null && entry.createdBy == _myUserId) {
+      return context.read<LanguageProvider>().t('leaderboard_you').toUpperCase();
+    }
     final resolved = _identityLabels[entry.createdBy];
     if (resolved != null && resolved.trim().isNotEmpty) {
       return resolved.trim().toUpperCase();
@@ -80,7 +105,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
     if (name.isNotEmpty) return name.toUpperCase();
     final email = (friend.friendEmail ?? '').trim();
     if (email.isNotEmpty) return email.split('@').first.toUpperCase();
-    return 'FRIEND';
+    return context.read<LanguageProvider>().t('leaderboard_friend').toUpperCase();
   }
 
   int? _myGlobalPosition() {
@@ -101,19 +126,20 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
   Future<void> _inviteFriends() async {
     final inviter = _myUserId ?? 'invite';
     final appStoreUrl = 'https://apps.apple.com/app/id123456789?ref=$inviter';
-    const text = 'Join me on CEO Compass to compare progress and win streaks: ';
+    const text =
+        'Join me on CEO Compass to compare progress and win streaks: ';
     await Clipboard.setData(ClipboardData(text: '$text$appStoreUrl'));
     if (!mounted) return;
     await showCupertinoDialog<void>(
       context: context,
       builder: (ctx) => CupertinoAlertDialog(
-        title: Text('Invite Ready'),
-        content: Text('Invite link copied to clipboard.'),
+        title: const Text('Invite Ready'),
+        content: const Text('Invite link copied to clipboard.'),
         actions: [
           CupertinoDialogAction(
             isDefaultAction: true,
             onPressed: () => Navigator.pop(ctx),
-            child: Text('OK'),
+            child: const Text('OK'),
           ),
         ],
       ),
@@ -128,9 +154,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
       child: AmbientBackdrop(
         child: _loading
             ? Center(
-                child: CupertinoActivityIndicator(
-                  color: AppColors.primaryOrange,
-                ),
+                child: CupertinoActivityIndicator(color: AppColors.primaryOrange),
               )
             : SafeArea(
                 child: Stack(
@@ -145,12 +169,12 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                             Icon(
                               CupertinoIcons.rosette,
                               size: 32,
-                              color: const Color(0xFFFACC15),
+                              color: AppColors.rankAccent,
                             ),
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
-                                'Leaderboards',
+                                _t('leaderboard_title'),
                                 style: AppTypography.largeTitle.copyWith(
                                   fontSize: 32,
                                   color: AppColors.label,
@@ -211,7 +235,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                 ),
                 const SizedBox(width: 4),
                 Text(
-                  'Screen Time',
+                  _t('screen_time'),
                   style: AppTypography.mono.copyWith(
                     fontSize: 16,
                     color: AppColors.secondaryLabel,
@@ -235,7 +259,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                 ),
                 const SizedBox(width: 4),
                 Text(
-                  'Home',
+                  _t('home'),
                   style: AppTypography.mono.copyWith(
                     fontSize: 16,
                     color: AppColors.secondaryLabel,
@@ -269,12 +293,12 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(10),
                   color: _tab == _BoardTab.global
-                      ? AppColors.white.withValues(alpha: 0.12)
-                      : CupertinoColors.transparent,
+                      ? AppColors.accentSurfaceSoft
+                      : AppColors.topBarControlBackground.withValues(alpha: 0),
                 ),
                 child: Center(
                   child: Text(
-                    'Global',
+                    _t('leaderboard_global_tab'),
                     style: AppTypography.callout.copyWith(
                       fontSize: 14,
                       color: AppColors.label.withValues(
@@ -298,12 +322,12 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(10),
                   color: _tab == _BoardTab.friends
-                      ? AppColors.white.withValues(alpha: 0.12)
-                      : CupertinoColors.transparent,
+                      ? AppColors.accentSurfaceSoft
+                      : AppColors.topBarControlBackground.withValues(alpha: 0),
                 ),
                 child: Center(
                   child: Text(
-                    'Friends',
+                    _t('leaderboard_friends_tab'),
                     style: AppTypography.callout.copyWith(
                       fontSize: 14,
                       color: AppColors.label.withValues(
@@ -324,7 +348,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
   List<Widget> _globalBody() {
     return [
       Text(
-        'TOP PERFORMERS',
+        _t('leaderboard_top_performers'),
         style: AppTypography.overline.copyWith(
           fontSize: 14,
           color: AppColors.label,
@@ -338,7 +362,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
           padding: const EdgeInsets.symmetric(vertical: 90),
           child: Center(
             child: Text(
-              'No leaderboard data yet',
+              _t('leaderboard_empty'),
               style: AppTypography.callout.copyWith(
                 fontSize: 16,
                 color: AppColors.secondaryLabel.withValues(alpha: 0.8),
@@ -377,7 +401,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                           ),
                           const SizedBox(height: 3),
                           _rankSummary(
-                            row.rankName ?? 'Bronze',
+                            row.rankName ?? _t('rank_asleep'),
                             row.winStreak ?? 0,
                           ),
                         ],
@@ -400,11 +424,13 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
           Icon(
             CupertinoIcons.person_2,
             size: 24,
-            color: const Color(0xFF22D3EE),
+            color: AppColors.accentIcon,
           ),
           const SizedBox(width: 8),
           Text(
-            'YOUR FRIENDS (${_friends.length})',
+            _t(
+              'leaderboard_your_friends_count',
+            ).replaceAll('{count}', '${_friends.length}'),
             style: AppTypography.callout.copyWith(
               fontSize: 20,
               color: AppColors.label,
@@ -426,7 +452,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
               ),
               const SizedBox(height: 12),
               Text(
-                'No friends added yet',
+                _t('leaderboard_no_friends'),
                 style: AppTypography.callout.copyWith(
                   fontSize: 16,
                   color: AppColors.secondaryLabel.withValues(alpha: 0.8),
@@ -435,7 +461,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
               ),
               const SizedBox(height: 6),
               Text(
-                'Add friends to compare progress!',
+                _t('leaderboard_add_friends_hint'),
                 style: AppTypography.footnote.copyWith(
                   fontSize: 13,
                   color: AppColors.tertiaryLabel.withValues(alpha: 0.6),
@@ -475,7 +501,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                           ),
                           const SizedBox(height: 3),
                           _rankSummary(
-                            row.friendRankName ?? 'Bronze',
+                            row.friendRankName ?? _t('rank_asleep'),
                             row.friendWinStreak ?? 0,
                           ),
                         ],
@@ -489,7 +515,10 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
           );
         }),
       const SizedBox(height: 14),
-      _LeaderboardActionButton(label: 'Invite Friends', onTap: _inviteFriends),
+      _LeaderboardActionButton(
+        label: 'Invite Friends',
+        onTap: _inviteFriends,
+      ),
     ];
   }
 
@@ -497,11 +526,12 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
     return Container(
       width: 32,
       height: 32,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: AppColors.white.withValues(alpha: 0.08),
-        border: Border.all(
-          color: _positionBorderColor(index) ?? CupertinoColors.transparent,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: AppColors.topBarControlBackground,
+          border: Border.all(
+          color: _positionBorderColor(index) ??
+              AppColors.topBarControlBackground.withValues(alpha: 0),
           width: 1,
         ),
       ),
@@ -518,9 +548,18 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
   }
 
   Color? _positionBorderColor(int index) {
-    if (index == 1) return const Color(0xFFFFD700).withValues(alpha: 0.35);
-    if (index == 2) return const Color(0xFFC8C8C8).withValues(alpha: 0.35);
-    if (index == 3) return const Color(0xFFCD7F32).withValues(alpha: 0.35);
+    if (index == 1) {
+      return Color.lerp(AppColors.warning, AppColors.rankAccent, 0.3)!
+          .withValues(alpha: 0.35);
+    }
+    if (index == 2) {
+      return Color.lerp(AppColors.label, AppColors.secondaryLabel, 0.55)!
+          .withValues(alpha: 0.28);
+    }
+    if (index == 3) {
+      return Color.lerp(AppColors.rankAccent, AppColors.warning, 0.62)!
+          .withValues(alpha: 0.35);
+    }
     return null;
   }
 
@@ -528,7 +567,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: AppColors.white.withValues(alpha: 0.08),
+        color: AppColors.topBarControlBackground,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
@@ -547,11 +586,11 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
       gradient: LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        colors: [Color(0xFF1A1A1A), Color(0xFF111111)],
+        colors: [AppColors.cardBackgroundAlt, AppColors.cardBase],
       ),
       borderRadius: BorderRadius.circular(16),
       border: Border.all(
-        color: borderColor ?? AppColors.white.withValues(alpha: 0.06),
+        color: borderColor ?? AppColors.border,
         width: 1,
       ),
       boxShadow: [
@@ -574,11 +613,11 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [Color(0xFF1A1A1A), Color(0xFF111111)],
+          colors: [AppColors.cardBackgroundAlt, AppColors.cardBase],
         ),
         border: Border(
           top: BorderSide(
-            color: AppColors.white.withValues(alpha: 0.08),
+            color: AppColors.borderStrong,
             width: 1,
           ),
         ),
@@ -588,13 +627,13 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: _leaderboardRowDecoration(
-            borderColor: const Color(0xFF508CFF).withValues(alpha: 0.35),
+            borderColor: AppColors.selectionOutline,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Your Position',
+                _t('leaderboard_your_position'),
                 style: AppTypography.caption1.copyWith(
                   fontSize: 12,
                   color: AppColors.secondaryLabel.withValues(alpha: 0.7),
@@ -608,7 +647,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      'YOU',
+                      _t('leaderboard_you').toUpperCase(),
                       style: AppTypography.callout.copyWith(
                         fontSize: 14,
                         color: AppColors.label,
@@ -620,7 +659,10 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                 ],
               ),
               const SizedBox(height: 4),
-              _rankSummary(entry.rankName ?? 'Bronze', entry.winStreak ?? 0),
+              _rankSummary(
+                entry.rankName ?? _t('rank_asleep'),
+                entry.winStreak ?? 0,
+              ),
             ],
           ),
         ),
@@ -631,7 +673,11 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
   Widget _rankSummary(String rankName, int streak) {
     return Row(
       children: [
-        RankArt(rankName: rankName, size: RankArtSize.xs, dimension: 16),
+        RankArt(
+          rankName: rankName,
+          size: RankArtSize.xs,
+          dimension: 16,
+        ),
         const SizedBox(width: 6),
         Expanded(
           child: Text(
@@ -653,7 +699,10 @@ class _LeaderboardPressScale extends StatefulWidget {
   final Widget child;
   final VoidCallback onTap;
 
-  const _LeaderboardPressScale({required this.child, required this.onTap});
+  const _LeaderboardPressScale({
+    required this.child,
+    required this.onTap,
+  });
 
   @override
   State<_LeaderboardPressScale> createState() => _LeaderboardPressScaleState();
@@ -691,10 +740,25 @@ class _LeaderboardActionButton extends StatelessWidget {
   final String label;
   final VoidCallback onTap;
 
-  const _LeaderboardActionButton({required this.label, required this.onTap});
+  const _LeaderboardActionButton({
+    required this.label,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final inviteGradient = AppColors.isCarbonSystem
+        ? [
+            Color.alphaBlend(
+              AppColors.focusControlAccent.withValues(alpha: 0.74),
+              AppColors.cardBackgroundStrong,
+            ),
+            Color.alphaBlend(
+              AppColors.familyCreateAccent.withValues(alpha: 0.54),
+              AppColors.cardBackgroundStrong,
+            ),
+          ]
+        : AppColors.buttonGradient;
     return _LeaderboardPressScale(
       onTap: onTap,
       child: AnimatedScale(
@@ -704,7 +768,7 @@ class _LeaderboardActionButton extends StatelessWidget {
           width: double.infinity,
           padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
-            gradient: LinearGradient(
+            gradient: const LinearGradient(
               begin: Alignment.centerLeft,
               end: Alignment.centerRight,
               colors: [Color(0xFF4C7DFF), Color(0xFF9B4DFF)],
@@ -714,13 +778,17 @@ class _LeaderboardActionButton extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(CupertinoIcons.share, color: AppColors.white, size: 18),
+              Icon(
+                CupertinoIcons.share,
+                color: AppColors.onAccent,
+                size: 18,
+              ),
               const SizedBox(width: 8),
               Text(
                 label,
                 style: AppTypography.callout.copyWith(
                   fontSize: 16,
-                  color: AppColors.white,
+                  color: AppColors.onAccent,
                   fontWeight: FontWeight.w600,
                 ),
               ),

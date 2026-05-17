@@ -1,0 +1,5 @@
+return const _DueInfo(
+  label: 'Tomorrow',
+  color: AppColors.warning,
+  isOverdue: false,
+);

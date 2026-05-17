@@ -113,7 +113,7 @@ class FocusPreparationChecklistView extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             onPressed: onSkip,
             child: Text(
-              language.t('focus_skip_for_now'),
+              "Passer pour l'instant",
               style: AppTypography.callout.copyWith(
                 fontSize: 15,
                 color: AppColors.secondaryLabel.withValues(alpha: 0.84),

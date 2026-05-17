@@ -22,6 +22,19 @@ class ExtractedPatch:
     def read_text(self, encoding="utf-8"):
         return self._text
 
+MISSING = object()
+
+
+class ExtractedPatch:
+    """Small in-memory patch record with the Path-like bits the applier needs."""
+
+    def __init__(self, name, text):
+        self.name = name
+        self._text = text
+
+    def read_text(self, encoding="utf-8"):
+        return self._text
+
 # ========================= TERMINAL UI =========================
 
 class C:
@@ -63,6 +76,9 @@ def ok(msg):
 
 def fail(msg):
     print(f"  {C.RED}[fail]{C.RESET} {msg}")
+
+def skip(msg):
+    print(f"  {C.YELLOW}[skip]{C.RESET} {msg}")
 
 def skip(msg):
     print(f"  {C.YELLOW}[skip]{C.RESET} {msg}")
@@ -125,6 +141,27 @@ def run_cmd(cmd, cwd=None, check=True):
     if check and result.returncode != 0:
         print(f"[ERROR] Command failed: {cmd}\n{result.stderr}")
     return result
+
+
+def branch_exists(repo_path: Path, branch_name: str) -> bool:
+    result = run_cmd(
+        f"git rev-parse --verify --quiet {shlex.quote(branch_name)}",
+        cwd=repo_path,
+        check=False,
+    )
+    return result.returncode == 0
+
+
+def unique_branch_name(repo_path: Path, base_name: str) -> str:
+    if not branch_exists(repo_path, base_name):
+        return base_name
+
+    idx = 2
+    while True:
+        candidate = f"{base_name}-{idx}"
+        if not branch_exists(repo_path, candidate):
+            return candidate
+        idx += 1
 
 
 def branch_exists(repo_path: Path, branch_name: str) -> bool:
@@ -566,6 +603,30 @@ def restore_snapshot(snapshot):
         else:
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(content, encoding="utf-8")
+
+
+def is_obsolete_patch_reason(reason: str) -> bool:
+    obsolete_markers = (
+        "Cannot locate hunk context",
+        "File not found for update",
+        "Move destination already exists",
+        "Add target already exists with different content",
+    )
+    return any(marker in reason for marker in obsolete_markers)
+
+
+def primary_reason(reason: str) -> str:
+    if "Cannot locate hunk context" in reason:
+        return "context changed"
+    if "File not found for update" in reason:
+        return "file missing"
+    if "Move destination already exists" in reason:
+        return "already moved"
+    if "Add target already exists with different content" in reason:
+        return "file already exists differently"
+    if "Patch path escapes target repository" in reason:
+        return "unsafe path"
+    return "apply failed"
 
 
 def is_obsolete_patch_reason(reason: str) -> bool:

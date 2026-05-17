@@ -34,7 +34,7 @@ class FocusPreparationDemoView extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         Text(
-          language.t('focus_prep_demo_body'),
+          'Les apps ciblées deviennent indisponibles jusqu'à la fin du chrono. La session reste active même si tu quittes WakeApp.',
           style: AppTypography.body.copyWith(
             fontSize: 15,
             height: 1.42,

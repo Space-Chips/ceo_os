@@ -269,9 +269,9 @@ class _PreviewTopBar extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-          _SquareControl(icon: CupertinoIcons.bolt_fill),
-          const SizedBox(width: 8),
-          _SquareControl(icon: CupertinoIcons.doc_text_fill),
+                  _SquareControl(icon: CupertinoIcons.bolt_fill),
+                  const SizedBox(width: 8),
+                  _SquareControl(icon: CupertinoIcons.doc_text_fill),
                   const SizedBox(width: 8),
                   Container(
                     height: 40,
@@ -799,7 +799,7 @@ class _TogglePreview extends StatelessWidget {
               child: Container(
                 width: 20,
                 height: 20,
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   shape: BoxShape.circle,
                   color: CupertinoColors.white,
                 ),

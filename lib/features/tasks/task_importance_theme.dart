@@ -101,28 +101,28 @@ class TaskImportanceTheme {
       case 'high':
         return TaskImportanceBadgeStyle(
           background: _essentialOrange.withValues(
-            alpha: AppColors.isDark ? 0.13 : 0.09,
+            alpha: AppColors.isDark ? 0.1 : 0.06,
           ),
           border: _essentialOrange.withValues(
-            alpha: AppColors.isDark ? 0.34 : 0.24,
+            alpha: AppColors.isDark ? 0.24 : 0.16,
           ),
           text: _essentialOrange,
           glow: _essentialOrange.withValues(
-            alpha: AppColors.isDark ? 0.14 : 0.08,
+            alpha: AppColors.isDark ? 0.08 : 0.04,
           ),
         );
       case 'average':
       case 'medium':
         return TaskImportanceBadgeStyle(
           background: _averageYellow.withValues(
-            alpha: AppColors.isDark ? 0.13 : 0.09,
+            alpha: AppColors.isDark ? 0.095 : 0.055,
           ),
           border: _averageYellow.withValues(
-            alpha: AppColors.isDark ? 0.3 : 0.22,
+            alpha: AppColors.isDark ? 0.2 : 0.14,
           ),
           text: _averageYellow,
           glow: _averageYellow.withValues(
-            alpha: AppColors.isDark ? 0.12 : 0.07,
+            alpha: AppColors.isDark ? 0.07 : 0.035,
           ),
         );
       case 'low':
@@ -159,10 +159,10 @@ class TaskImportanceTheme {
       case 'high':
         return TaskImportanceCardStyle(
           border: badgeStyle.border.withValues(
-            alpha: AppColors.isDark ? 0.58 : 0.42,
+            alpha: AppColors.isDark ? 0.42 : 0.28,
           ),
           start: Color.alphaBlend(
-            badgeStyle.text.withValues(alpha: AppColors.isDark ? 0.09 : 0.035),
+            badgeStyle.text.withValues(alpha: AppColors.isDark ? 0.055 : 0.022),
             AppColors.cardBackgroundAlt,
           ),
           end: AppColors.cardBase,
@@ -172,10 +172,10 @@ class TaskImportanceTheme {
       case 'medium':
         return TaskImportanceCardStyle(
           border: badgeStyle.border.withValues(
-            alpha: AppColors.isDark ? 0.52 : 0.38,
+            alpha: AppColors.isDark ? 0.36 : 0.24,
           ),
           start: Color.alphaBlend(
-            badgeStyle.text.withValues(alpha: AppColors.isDark ? 0.075 : 0.03),
+            badgeStyle.text.withValues(alpha: AppColors.isDark ? 0.045 : 0.018),
             AppColors.cardBackgroundAlt,
           ),
           end: AppColors.cardBase,

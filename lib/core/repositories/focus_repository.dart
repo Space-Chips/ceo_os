@@ -1,8 +1,8 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:screen_time/screen_time.dart';
+
+import '../config/apple_review_compliance.dart';
 import '../models/block_list_model.dart';
 import '../models/user_models.dart';
-import '../config/apple_review_compliance.dart';
 import '../services/family_controls_local_store.dart';
 import '../services/supabase_service.dart';
 import '../utils/app_logger.dart';
@@ -11,18 +11,28 @@ class FocusRepository {
   final SupabaseService _supabaseService;
   final FamilyControlsLocalStore _familyControlsLocalStore =
       FamilyControlsLocalStore();
+  final FamilyControlsLocalStore _familyControlsLocalStore;
 
-  FocusRepository({SupabaseService? supabaseService})
-    : _supabaseService = supabaseService ?? SupabaseService();
+  FocusRepository({
+    SupabaseService? supabaseService,
+    FamilyControlsLocalStore? familyControlsLocalStore,
+  }) : _supabaseService = supabaseService ?? SupabaseService(),
+       _familyControlsLocalStore =
+           familyControlsLocalStore ?? FamilyControlsLocalStore();
 
   SupabaseClient get _client => _supabaseService.client;
   String get _currentUserId => _client.auth.currentUser!.id;
+  bool get _useLocalFamilyControlsStorage =>
+      AppleReviewCompliance.exposesLocalOnlyFamilyControls;
   bool get _useLocalFamilyControlsStorage =>
       AppleReviewCompliance.exposesLocalOnlyFamilyControls;
 
   // --- Block Lists ---
 
   Future<List<BlockList>> getBlockLists() async {
+    if (_useLocalFamilyControlsStorage) {
+      return _familyControlsLocalStore.getBlockLists();
+    }
     try {
       final response = await _client
           .from('block_lists')
@@ -37,6 +47,10 @@ class FocusRepository {
   }
 
   Future<void> saveBlockList(BlockList list) async {
+    if (_useLocalFamilyControlsStorage) {
+      await _familyControlsLocalStore.saveBlockList(list);
+      return;
+    }
     await _client.from('block_lists').upsert({
       'id': list.id,
       'created_by': _currentUserId,
@@ -49,6 +63,10 @@ class FocusRepository {
   }
 
   Future<void> updateActiveBlockList(String? activeId) async {
+    if (_useLocalFamilyControlsStorage) {
+      await _familyControlsLocalStore.setActiveBlockList(activeId);
+      return;
+    }
     // Set all to false first
     await _client
         .from('block_lists')
@@ -66,6 +84,10 @@ class FocusRepository {
   }
 
   Future<void> deleteBlockList(String id) async {
+    if (_useLocalFamilyControlsStorage) {
+      await _familyControlsLocalStore.deleteBlockList(id);
+      return;
+    }
     await _client
         .from('block_lists')
         .delete()
@@ -129,9 +151,9 @@ class FocusRepository {
     required List<AppUsage> usage,
   }) async {
     final dateKey =
-        '${day.year.toString().padLeft(4, '0')}-'
-        '${day.month.toString().padLeft(2, '0')}-'
-        '${day.day.toString().padLeft(2, '0')}';
+        "${day.year.toString().padLeft(4, '0")}-'
+        "${day.month.toString().padLeft(2, '0")}-'
+        "${day.day.toString().padLeft(2, '0")}';
 
     try {
       await _client
@@ -175,15 +197,9 @@ class FocusRepository {
     try {
       final today = DateTime(endTime.year, endTime.month, endTime.day);
       final todayKey =
-          '${today.year.toString().padLeft(4, '0')}-'
-          '${today.month.toString().padLeft(2, '0')}-'
-          '${today.day.toString().padLeft(2, '0')}';
-      final yesterday = today.subtract(const Duration(days: 1));
-      final yesterdayKey =
-          '${yesterday.year.toString().padLeft(4, '0')}-'
-          '${yesterday.month.toString().padLeft(2, '0')}-'
-          '${yesterday.day.toString().padLeft(2, '0')}';
-
+          "${today.year.toString().padLeft(4, '0")}-'
+          "${today.month.toString().padLeft(2, '0")}-'
+          "${today.day.toString().padLeft(2, '0")}';
       final current = await _client
           .from('win_streaks')
           .select()
@@ -206,19 +222,16 @@ class FocusRepository {
 
       if (completed) {
         nextTotalCompleted += 1;
-        if (lastSessionDate == todayKey) {
-          nextCurrentStreak = currentStreak == 0 ? 1 : currentStreak;
-        } else if (lastSessionDate == yesterdayKey) {
-          nextCurrentStreak = currentStreak + 1;
-        } else {
-          nextCurrentStreak = 1;
-        }
+        nextCurrentStreak = lastSessionDate == todayKey
+            ? (currentStreak == 0 ? 1 : currentStreak)
+            : (currentStreak + 1);
         nextLongestStreak = nextCurrentStreak > longestStreak
             ? nextCurrentStreak
             : longestStreak;
         nextLastSessionDate = todayKey;
       } else {
         nextTotalFailed += 1;
+        nextCurrentStreak = 0;
       }
 
       await _client.from('win_streaks').upsert({
@@ -297,9 +310,9 @@ class FocusRepository {
       if (sortedDays.isNotEmpty) {
         final latestDay = sortedDays.last;
         lastSessionDate =
-            '${latestDay.year.toString().padLeft(4, '0')}-'
-            '${latestDay.month.toString().padLeft(2, '0')}-'
-            '${latestDay.day.toString().padLeft(2, '0')}';
+            "${latestDay.year.toString().padLeft(4, '0")}-'
+            "${latestDay.month.toString().padLeft(2, '0")}-'
+            "${latestDay.day.toString().padLeft(2, '0")}';
 
         final today = DateTime.now();
         final todayDay = DateTime(today.year, today.month, today.day);

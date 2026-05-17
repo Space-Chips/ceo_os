@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 import '../config/supabase_config.dart';
+import '../repositories/premium_repository.dart';
 
 class AuthSignupResult {
   final bool requiresEmailConfirmation;

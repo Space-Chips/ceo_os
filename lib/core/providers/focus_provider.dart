@@ -53,7 +53,7 @@ class FocusProvider extends ChangeNotifier {
 
   int _totalFocusMinutesToday = 0;
   double _screenTimeToday = 0;
-  final List<double> _hourlyUsage = List.filled(24, 0);
+  List<double> _hourlyUsage = List.filled(24, 0);
   PremiumCheckResult? _lastPremiumCheck;
 
   FocusState get state => _state;

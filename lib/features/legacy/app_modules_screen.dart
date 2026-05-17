@@ -62,6 +62,43 @@ class _AppModulesScreenState extends State<AppModulesScreen> {
     }
   }
 
+  IconData _icon(String id) {
+    switch (id) {
+      case 'Pareto':
+        return CupertinoIcons.checkmark_alt_circle_fill;
+      case 'Habits':
+        return CupertinoIcons.flame_fill;
+      case 'Calendar':
+        return CupertinoIcons.calendar;
+      case 'Focus':
+        return CupertinoIcons.timer_fill;
+      case 'Insights':
+        return CupertinoIcons.graph_square_fill;
+      case 'Leaderboard':
+        return CupertinoIcons.star_fill;
+      case 'Notes':
+        return CupertinoIcons.doc_text_fill;
+      case 'WinStreak':
+        return CupertinoIcons.flame;
+      case 'Rewards':
+        return CupertinoIcons.gift_fill;
+      case 'ScreenTime':
+        return CupertinoIcons.device_phone_portrait;
+      case 'ScreenTimeManager':
+        return CupertinoIcons.shield_lefthalf_fill;
+      case 'Rank':
+        return CupertinoIcons.flag_fill;
+      case 'EventTypes':
+        return CupertinoIcons.square_grid_2x2_fill;
+      case 'BiannualReport':
+        return CupertinoIcons.chart_bar_alt_fill;
+      case 'Settings':
+        return CupertinoIcons.settings;
+      default:
+        return CupertinoIcons.square_grid_2x2;
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -115,24 +152,26 @@ class _AppModulesScreenState extends State<AppModulesScreen> {
         leading: CupertinoButton(
           padding: EdgeInsets.zero,
           onPressed: () => context.go('/home'),
-          child: Icon(
+          child: const Icon(
             CupertinoIcons.back,
             color: AppColors.primaryOrange,
           ),
         ),
-        middle: NeoMonoText(
+        middle: const NeoMonoText(
           'APP_MODULES',
           fontSize: 18,
           fontWeight: FontWeight.bold,
         ),
         trailing: _saving
-            ? CupertinoActivityIndicator(color: AppColors.primaryOrange)
+            ? const CupertinoActivityIndicator(color: AppColors.primaryOrange)
             : null,
         backgroundColor: AppColors.background,
         border: null,
       ),
       child: _loading
-          ? Center(child: CupertinoActivityIndicator(color: AppColors.primaryOrange))
+          ? const Center(
+              child: CupertinoActivityIndicator(color: AppColors.primaryOrange),
+            )
           : SafeArea(
               child: ListView.builder(
                 padding: const EdgeInsets.all(20),

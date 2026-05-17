@@ -98,7 +98,6 @@ class FamilyControlsLocalStore {
     await _saveRows(_blockedAppsKey, next);
   }
 
-
   Future<void> setBlockedAppTime(String id, int minutes) async {
     final safe = minutes < 0 ? 0 : minutes;
     final rows = await _loadRows(_blockedAppsKey);
@@ -183,7 +182,6 @@ class FamilyControlsLocalStore {
         .toList(growable: false);
     await _saveRows(_blockedWebsitesKey, next);
   }
-
 
   Future<void> setBlockedWebsiteTime(String id, int minutes) async {
     final safe = minutes < 0 ? 0 : minutes;

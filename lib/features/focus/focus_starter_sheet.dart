@@ -22,6 +22,8 @@ class _FocusStarterSheetState extends State<FocusStarterSheet> {
   final _titleCtrl = TextEditingController();
   ParetoTask? _selectedTask;
 
+  String _t(String key) => context.read<LanguageProvider>().t(key);
+
   @override
   void dispose() {
     _titleCtrl.dispose();
@@ -132,7 +134,7 @@ class _FocusStarterSheetState extends State<FocusStarterSheet> {
 
                 // Session Title
                 Text(
-                  'SESSION_TITLE',
+                  _t('focus_starter_session_title'),
                   style: AppTypography.mono.copyWith(
                     fontSize: 10,
                     color: AppColors.tertiaryLabel,
@@ -141,14 +143,14 @@ class _FocusStarterSheetState extends State<FocusStarterSheet> {
                 ),
                 const SizedBox(height: 8),
                 GlassInputField(
-                  placeholder: 'DEEP_WORK_SESSION...',
+                  placeholder: _t('focus_starter_session_placeholder'),
                   controller: _titleCtrl,
                 ),
                 const SizedBox(height: 24),
 
                 // Link a Task
                 Text(
-                  'LINK_TASK',
+                  _t('focus_starter_link_task'),
                   style: AppTypography.mono.copyWith(
                     fontSize: 10,
                     color: AppColors.tertiaryLabel,
@@ -160,7 +162,7 @@ class _FocusStarterSheetState extends State<FocusStarterSheet> {
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     child: Text(
-                      'NO_TASKS_AVAILABLE',
+                      _t('focus_starter_no_tasks'),
                       style: AppTypography.mono.copyWith(
                         fontSize: 11,
                         color: AppColors.tertiaryLabel.withOpacity(0.5),
@@ -237,7 +239,7 @@ class _FocusStarterSheetState extends State<FocusStarterSheet> {
 
                 // Duration slider
                 Text(
-                  'SESSION_LENGTH',
+                  _t('focus_starter_session_length'),
                   style: AppTypography.mono.copyWith(
                     fontSize: 10,
                     color: AppColors.tertiaryLabel,
@@ -284,7 +286,7 @@ class _FocusStarterSheetState extends State<FocusStarterSheet> {
 
                 // Start Button
                 LiquidButton(
-                  label: 'START_FOCUS',
+                  label: _t('focus_starter_start_focus'),
                   fullWidth: true,
                   onPressed: _startSession,
                 ),

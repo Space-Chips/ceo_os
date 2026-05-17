@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:go_router/go_router.dart';
 
 import '../core/models/premium_models.dart';
 import '../core/providers/language_provider.dart';
@@ -15,6 +16,7 @@ import '../core/theme/app_typography.dart';
 import 'glass_card.dart';
 import 'legal_document_sheet.dart';
 import 'liquid_button.dart';
+import 'premium_surface_card.dart';
 
 Future<void> showPremiumPaywallSheet({
   required BuildContext context,
@@ -31,15 +33,18 @@ Future<void> showPremiumPaywallSheet({
     languageCode: languageCode,
   );
 
+  final resolvedReason = reason ?? checkResult?.reason;
   await showCupertinoModalPopup<void>(
     context: context,
     barrierColor: AppColors.overlayScrim.withValues(alpha: 0.76),
     builder: (sheetContext) => PremiumPaywallSheet(
       runtime: resolvedRuntime,
       message: message,
+      reason: resolvedReason,
       limit: checkResult?.limit,
       current: checkResult?.current,
       isFr: languageCode.trim().toLowerCase() == 'fr',
+      manageOpensComparison: checkResult != null,
     ),
   );
 }
@@ -47,17 +52,23 @@ Future<void> showPremiumPaywallSheet({
 class PremiumPaywallSheet extends StatelessWidget {
   final PremiumRuntime runtime;
   final PremiumMessage message;
+  final String? reason;
   final int? limit;
   final int? current;
   final bool isFr;
+  final bool showRestoreButton;
+  final bool manageOpensComparison;
 
   const PremiumPaywallSheet({
     super.key,
     required this.runtime,
     required this.message,
     required this.isFr,
+    this.reason,
     this.limit,
     this.current,
+    this.showRestoreButton = false,
+    this.manageOpensComparison = false,
   });
 
   @override
@@ -80,9 +91,12 @@ class PremiumPaywallSheet extends StatelessWidget {
               child: PremiumPaywallContent(
                 runtime: runtime,
                 message: message,
+                reason: reason,
                 limit: limit,
                 current: current,
                 isFr: isFr,
+                showRestoreButton: showRestoreButton,
+                manageOpensComparison: manageOpensComparison,
               ),
             ),
           ),
@@ -90,26 +104,29 @@ class PremiumPaywallSheet extends StatelessWidget {
       ),
     );
   }
+
 }
 
 class PremiumPaywallContent extends StatefulWidget {
   final PremiumRuntime runtime;
   final PremiumMessage message;
+  final String? reason;
   final int? limit;
   final int? current;
   final bool isFr;
-  final String? reason;
   final bool showRestoreButton;
+  final bool manageOpensComparison;
 
   const PremiumPaywallContent({
     super.key,
     required this.runtime,
     required this.message,
     required this.isFr,
+    this.reason,
     this.limit,
     this.current,
-    this.reason,
     this.showRestoreButton = true,
+    this.manageOpensComparison = false,
   });
 
   @override
@@ -121,7 +138,6 @@ class _PremiumPaywallContentState extends State<PremiumPaywallContent> {
       BillingService().getPackageOptions();
   String? _selectedIdentifier;
   bool _purchaseInFlight = false;
-  bool _restoreInFlight = false;
 
   bool get _isAndroid =>
       !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
@@ -129,10 +145,42 @@ class _PremiumPaywallContentState extends State<PremiumPaywallContent> {
   String get _storeName => _isAndroid ? 'Google Play' : 'App Store';
 
   Future<void> _openManageSubscriptions() async {
+    if (widget.manageOpensComparison) {
+      // Close the paywall sheet first, then route to the comparison screen.
+      if (Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+      }
+      await Future<void>.delayed(const Duration(milliseconds: 30));
+      if (!mounted) return;
+      GoRouter.of(context).push('/upgrade');
+      return;
+    }
+
     final Uri uri = _isAndroid
         ? Uri.parse('https://play.google.com/store/account/subscriptions')
         : Uri.parse('https://apps.apple.com/account/subscriptions');
-    await launchUrl(uri, mode: LaunchMode.externalApplication);
+    final launched = await launchUrl(uri, mode: LaunchMode.platformDefault);
+    if (launched) return;
+    if (!mounted) return;
+
+    final title = widget.isFr ? 'Abonnements' : 'Subscriptions';
+    final message = widget.isFr
+        ? "Impossible d'ouvrir la page d'abonnements automatiquement. Ouvre Réglages > Apple ID > Abonnements."
+        : "Couldn't open subscriptions automatically. Open Settings > Apple ID > Subscriptions.";
+    await showCupertinoDialog<void>(
+      context: context,
+      builder: (_) => CupertinoAlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          CupertinoDialogAction(
+            isDefaultAction: true,
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _openTerms() async {
@@ -160,12 +208,99 @@ class _PremiumPaywallContentState extends State<PremiumPaywallContent> {
     );
   }
 
+  BillingPackageOption? _preferredHeroOption(List<BillingPackageOption> options) {
+    if (options.isEmpty) return null;
+    final lower = options.map((o) => o.identifier.toLowerCase()).toList();
+    // Prefer monthly if present (simple price anchor).
+    for (int i = 0; i < options.length; i++) {
+      if (lower[i].contains('month')) return options[i];
+      if (options[i].durationLabel.toLowerCase().contains('month')) return options[i];
+      if (options[i].durationLabel.toLowerCase().contains('mo')) return options[i];
+    }
+    return options.first;
+  }
+
+  List<String> _benefitsOrdered() {
+    final r = (widget.reason ?? '').toLowerCase().trim();
+    if (widget.isFr) {
+      switch (r) {
+        case 'tasks':
+          return const [
+            'Tâches illimitées',
+            'Habitudes illimitées',
+            'Sessions Focus & Blackout étendues',
+            'Rapports avancés + thèmes Premium',
+          ];
+        case 'habits':
+          return const [
+            'Habitudes illimitées',
+            'Tâches illimitées',
+            'Sessions Focus & Blackout étendues',
+            'Rapports avancés + thèmes Premium',
+          ];
+        case 'focus_daily':
+        case 'focus_duration':
+          return const [
+            'Sessions Focus illimitées',
+            'Durées longues débloquées',
+            'Habitudes + tâches illimitées',
+            'Rapports avancés + thèmes Premium',
+          ];
+        case 'ceo_weekly':
+        case 'ceo_duration':
+          return const [
+            'Sessions Blackout illimitées',
+            'Durées longues débloquées',
+            'Habitudes + tâches illimitées',
+            'Rapports avancés + thèmes Premium',
+          ];
+        default:
+          return _benefitsForReason(widget.message, widget.runtime, widget.isFr);
+      }
+    }
+    switch (r) {
+      case 'tasks':
+        return const [
+          'Unlimited tasks',
+          'Unlimited habits',
+          'Extended Focus & Blackout sessions',
+          'Advanced reports + premium themes',
+        ];
+      case 'habits':
+        return const [
+          'Unlimited habits',
+          'Unlimited tasks',
+          'Extended Focus & Blackout sessions',
+          'Advanced reports + premium themes',
+        ];
+      case 'focus_daily':
+      case 'focus_duration':
+        return const [
+          'Unlimited Focus sessions',
+          'Long sessions unlocked',
+          'Unlimited habits + tasks',
+          'Advanced reports + premium themes',
+        ];
+      case 'ceo_weekly':
+      case 'ceo_duration':
+        return const [
+          'Unlimited Blackout sessions',
+          'Long sessions unlocked',
+          'Unlimited habits + tasks',
+          'Advanced reports + premium themes',
+        ];
+      default:
+        return _benefitsForReason(widget.message, widget.runtime, widget.isFr);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<List<BillingPackageOption>>(
       future: _packageOptionsFuture,
       builder: (context, snapshot) {
         final options = snapshot.data ?? const <BillingPackageOption>[];
+        final hero = _preferredHeroOption(options);
         final selected = _resolveSelected(options);
         final purchaseEnabled =
             !_purchaseInFlight &&
@@ -203,6 +338,17 @@ class _PremiumPaywallContentState extends State<PremiumPaywallContent> {
                 color: AppColors.label,
               ),
             ),
+            if (hero != null) ...[
+              const SizedBox(height: 10),
+              _HeroPricePill(
+                isFr: widget.isFr,
+                priceLabel: hero.priceLabel,
+                durationLabel: hero.durationLabel,
+                primaryTextColor: AppColors.label,
+                secondaryTextColor: AppColors.secondaryLabel,
+                accentColor: AppColors.accentText,
+              ),
+            ],
             const SizedBox(height: 10),
             Text(
               widget.message.description,
@@ -298,6 +444,7 @@ class _PremiumPaywallContentState extends State<PremiumPaywallContent> {
               label: _purchaseButtonLabel(selected),
               isLoading: _purchaseInFlight,
               fullWidth: true,
+              height: 54,
               onPressed: purchaseEnabled
                   ? () async {
                       setState(() => _purchaseInFlight = true);
@@ -323,7 +470,7 @@ class _PremiumPaywallContentState extends State<PremiumPaywallContent> {
                               CupertinoDialogAction(
                                 isDefaultAction: true,
                                 onPressed: () => Navigator.of(context).pop(),
-                                child: Text('OK'),
+                                child: const Text('OK'),
                               ),
                             ],
                           ),
@@ -363,7 +510,7 @@ class _PremiumPaywallContentState extends State<PremiumPaywallContent> {
                                       isDefaultAction: true,
                                       onPressed: () =>
                                           Navigator.of(context).pop(),
-                                      child: Text('OK'),
+                                      child: const Text('OK'),
                                     ),
                                   ],
                                 ),
@@ -385,7 +532,7 @@ class _PremiumPaywallContentState extends State<PremiumPaywallContent> {
                         ),
                       ),
                       child: _restoreInFlight
-                          ? CupertinoActivityIndicator()
+                          ? const CupertinoActivityIndicator()
                           : Text(
                               widget.isFr ? 'Restaurer' : 'Restore',
                               style: AppTypography.subhead.copyWith(
@@ -421,84 +568,17 @@ class _PremiumPaywallContentState extends State<PremiumPaywallContent> {
                     ),
                   ),
                 ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: CupertinoButton(
-                    padding: EdgeInsets.zero,
-                    onPressed: _openManageSubscriptions,
-                    child: Container(
-                      height: 46,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(16),
-                        color: AppColors.topBarControlBackground,
-                        border: Border.all(
-                          color: AppColors.border.withValues(alpha: 0.45),
-                        ),
-                      ),
-                      child: Text(
-                        widget.isFr ? 'Gérer' : 'Manage',
-                        style: AppTypography.subhead.copyWith(
-                          color: AppColors.label,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
               ],
             ),
             const SizedBox(height: 14),
             Text(
               widget.isFr
-                  ? (widget.showRestoreButton
-                      ? 'Paiement traité par $_storeName. Abonnement à renouvellement automatique, annulable dans les réglages Apple ID/Google Play. Restaurer disponible ci‑dessus.'
-                      : 'Paiement traité par $_storeName. Abonnement à renouvellement automatique, annulable dans les réglages Apple ID/Google Play.')
-                  : (widget.showRestoreButton
-                      ? 'Billing is processed by $_storeName. Auto‑renewing subscription, cancel anytime in your Apple ID/Google Play settings. Restore is available above.'
-                      : 'Billing is processed by $_storeName. Auto‑renewing subscription, cancel anytime in your Apple ID/Google Play settings.'),
+                  ? "Le paiement Premium est traité par $_storeName. L'accès Premium est activé après confirmation du store et synchronisation du compte."
+                  : 'Premium billing is processed by $_storeName. Premium access is enabled after store confirmation and account sync.',
               style: AppTypography.caption1.copyWith(
                 color: AppColors.secondaryLabel.withValues(alpha: 0.72),
                 height: 1.35,
               ),
-            ),
-            const SizedBox(height: 10),
-            Row(
-              children: [
-                Expanded(
-                  child: CupertinoButton(
-                    padding: EdgeInsets.zero,
-                    onPressed: _openTerms,
-                    child: Text(
-                      widget.isFr ? 'Conditions' : 'Terms',
-                      style: AppTypography.caption1.copyWith(
-                        color: AppColors.secondaryLabel.withValues(alpha: 0.82),
-                        fontWeight: FontWeight.w700,
-                        decoration: TextDecoration.underline,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: CupertinoButton(
-                    padding: EdgeInsets.zero,
-                    onPressed: _openPrivacy,
-                    child: Text(
-                      widget.isFr ? 'Confidentialité' : 'Privacy',
-                      style: AppTypography.caption1.copyWith(
-                        color: AppColors.secondaryLabel.withValues(alpha: 0.82),
-                        fontWeight: FontWeight.w700,
-                        decoration: TextDecoration.underline,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.right,
-                    ),
-                  ),
-                ),
-              ],
             ),
           ],
         );

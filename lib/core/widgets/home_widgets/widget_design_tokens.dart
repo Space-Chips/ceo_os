@@ -26,7 +26,7 @@ class WidgetDesignTokens {
         ],
       );
 
-  static LinearGradient get focusGradient => LinearGradient(
+  static LinearGradient get focusGradient => const LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
         colors: [
@@ -35,7 +35,7 @@ class WidgetDesignTokens {
         ],
       );
 
-  static LinearGradient get blackoutGradient => LinearGradient(
+  static LinearGradient get blackoutGradient => const LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
         colors: [
@@ -43,8 +43,6 @@ class WidgetDesignTokens {
           Color(0xFF07080A),
         ],
       );
-
-
 
   static BoxDecoration outerDecoration() => BoxDecoration(
         borderRadius: BorderRadius.circular(radiusOuter),
@@ -76,35 +74,32 @@ class WidgetDesignTokens {
       );
 
   static TextStyle get title => AppTypography.largeTitle.copyWith(
-        fontSize: 22,
-        height: 1.0,
-        letterSpacing: 0.2,
-        fontWeight: FontWeight.w700,
-        color: AppColors.label,
-      );
+    fontSize: 22,
+    height: 1.0,
+    letterSpacing: 0.2,
+    fontWeight: FontWeight.w700,
+    color: primaryText,
+  );
 
   static TextStyle get subtitle => AppTypography.subhead.copyWith(
-        fontSize: 12,
-        height: 1.2,
-        letterSpacing: 0.2,
-        fontWeight: FontWeight.w600,
-        color: AppColors.secondaryLabel.withValues(alpha: 0.72),
-      );
+    fontSize: 12,
+    height: 1.2,
+    letterSpacing: 0.2,
+    fontWeight: FontWeight.w600,
+    color: secondaryText,
+  );
 
   static TextStyle get section => AppTypography.overline.copyWith(
-        fontSize: 11,
-        letterSpacing: 2.2,
-        fontWeight: FontWeight.w700,
-        color: AppColors.secondaryLabel.withValues(alpha: 0.58),
-      );
+    fontSize: 11,
+    letterSpacing: 2.2,
+    fontWeight: FontWeight.w700,
+    color: tertiaryText,
+  );
 
   static TextStyle get body => AppTypography.callout.copyWith(
-        fontSize: 13,
-        height: 1.1,
-        fontWeight: FontWeight.w700,
-        color: AppColors.label.withValues(alpha: 0.92),
-      );
-
-  static Color get primaryText => AppColors.label;
-  static Color get secondaryText => AppColors.secondaryLabel;
+    fontSize: 13,
+    height: 1.1,
+    fontWeight: FontWeight.w700,
+    color: primaryText.withValues(alpha: 0.92),
+  );
 }

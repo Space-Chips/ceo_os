@@ -42,7 +42,7 @@ class ThemeProvider extends ChangeNotifier {
   String _onboardingCurrentThemeId = ThemeCatalog.defaultPresetId;
 
   AppThemePreset get currentPreset => _currentPreset;
-  AppColorPalette get currentColors => _currentPreset.colors;
+  AppThemePalette get currentColors => _currentPreset.palette;
   AppTypographyProfile get currentTypography => _currentPreset.typography;
   ThemeMode get themeMode =>
       _currentPreset.isDark ? ThemeMode.dark : ThemeMode.light;

@@ -1,18 +1,25 @@
+import 'dart:async';
+import 'dart:ui';
+
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
+import 'package:home_widget/home_widget.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:app_links/app_links.dart';
 import 'core/config/supabase_config.dart';
 import 'core/providers/auth_provider.dart';
 import 'core/providers/theme_provider.dart';
 import 'core/providers/task_provider.dart';
 import 'core/providers/habit_provider.dart';
 import 'core/providers/focus_provider.dart';
-import 'core/providers/language_provider.dart';
 import 'core/providers/ceo_mode_provider.dart';
+import 'core/providers/language_provider.dart';
 import 'features/setup/setup_flow_controller.dart';
 import 'features/screen_time_setup/screen_time_setup_controller.dart';
 import 'core/router/app_router.dart';
+import 'core/services/home_widget_service.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/app_colors.dart';
 import 'core/theme/theme_catalog.dart';
@@ -68,15 +75,56 @@ class CeoOsApp extends StatefulWidget {
 
 class _CeoOsAppState extends State<CeoOsApp> {
   late GoRouter _router;
+  StreamSubscription<Uri?>? _homeWidgetClicks;
+  StreamSubscription<Uri>? _appLinksSub;
+  final AppLinks _appLinks = AppLinks();
 
   @override
   void initState() {
     super.initState();
     _router = AppRouter.create(context);
+    unawaited(_initHomeWidgetLinks());
+    unawaited(_initAppLinks());
+  }
+
+  Future<void> _initHomeWidgetLinks() async {
+    await CeoHomeWidgetService.ensureInitialized();
+    final initial = await HomeWidget.initiallyLaunchedFromHomeWidget();
+    _handleHomeWidgetUri(initial);
+    _homeWidgetClicks = HomeWidget.widgetClicked.listen(_handleHomeWidgetUri);
+  }
+
+  void _handleHomeWidgetUri(Uri? uri) {
+    if (uri == null) return;
+    final path = uri.path;
+    if (path.isEmpty) return;
+    final query = uri.hasQuery ? '?${uri.query}' : '';
+    _router.go('$path$query');
+  }
+
+  Future<void> _initAppLinks() async {
+    try {
+      final initial = await _appLinks.getInitialLink();
+      _handleDeepLink(initial);
+      _appLinksSub = _appLinks.uriLinkStream.listen(_handleDeepLink);
+    } catch (_) {
+      // Best effort only: HomeWidget taps still work through the plugin stream.
+    }
+  }
+
+  void _handleDeepLink(Uri? uri) {
+    if (uri == null) return;
+    if (uri.scheme.toLowerCase() != 'ceoos') return;
+    final path = uri.path;
+    if (path.isEmpty) return;
+    final query = uri.hasQuery ? '?${uri.query}' : '';
+    _router.go('$path$query');
   }
 
   @override
   void dispose() {
+    _homeWidgetClicks?.cancel();
+    _appLinksSub?.cancel();
     _router.dispose();
     super.dispose();
   }
@@ -169,7 +217,7 @@ class StartupConfigurationErrorApp extends StatelessWidget {
                           color: accent.withValues(alpha: 0.14),
                           borderRadius: BorderRadius.circular(999),
                         ),
-                        child: Text(
+                        child: const Text(
                           'Startup blocked',
                           style: TextStyle(
                             color: accent,
@@ -180,7 +228,7 @@ class StartupConfigurationErrorApp extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 18),
-                      Text(
+                      const Text(
                         'WakeApp needs Supabase credentials before it can start.',
                         style: TextStyle(
                           color: textPrimary,
@@ -192,7 +240,7 @@ class StartupConfigurationErrorApp extends StatelessWidget {
                       const SizedBox(height: 12),
                       Text(
                         'Missing values: ${missingKeys.join(', ')}',
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: textSecondary,
                           fontSize: 15,
                           height: 1.4,
@@ -220,7 +268,7 @@ class StartupConfigurationErrorApp extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 16),
-                      Text(
+                      const Text(
                         'If you launch from VS Code, the workspace now prompts for these values automatically on the next run.',
                         style: TextStyle(
                           color: textSecondary,

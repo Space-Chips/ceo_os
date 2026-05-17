@@ -1,23 +1,41 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
+
 import 'app_colors.dart';
 
-/// Typography palette forced to SF Pro across the app.
+/// Disciplined typography system.
+///
+/// Primary family is Inter with robust platform fallbacks.
 class AppTypography {
   AppTypography._();
 
-  static const String _sfProText = '.SF Pro Text';
-  static const String _sfProDisplay = '.SF Pro Display';
+  static const String _primary = '.SF Pro Text';
   static const List<String> _fallbacks = [
     'SF Pro Text',
+    '.SF Pro Text',
     'SF Pro Display',
-    'San Francisco',
+    '.SF Pro Display',
+    // iOS system fonts for non-Latin scripts (helps zh/hi/ar rendering).
+    'PingFang SC',
+    'PingFang TC',
+    'Hiragino Sans',
+    'Hiragino Kaku Gothic ProN',
+    'Geeza Pro',
+    'Devanagari Sangam MN',
+    // Common cross-platform families (Android / desktop).
+    'Noto Sans',
+    'Noto Sans CJK SC',
+    'Noto Sans CJK TC',
+    'Noto Sans Arabic',
+    'Noto Sans Devanagari',
+    'Inter',
+    'SF Pro Text',
+    'SF Pro Display',
     '-apple-system',
     'Helvetica Neue',
-    'Helvetica',
     'Arial',
     'sans-serif',
   ];
+
   static const List<String> _monoFallbacks = [
     'SF Mono',
     'SFMono-Regular',
@@ -27,134 +45,151 @@ class AppTypography {
     'monospace',
   ];
 
-  static TextStyle _displayFont({
-    required Color color,
-    required double letterSpacing,
-  }) => TextStyle(
-    fontFamily: _sfProDisplay,
+  static TextStyle _base({required Color color}) => TextStyle(
+    fontFamily: _primary,
     fontFamilyFallback: _fallbacks,
     color: color,
-    letterSpacing: letterSpacing,
+    decoration: TextDecoration.none,
+    decorationColor: Color(0x00000000),
   );
 
-  static TextStyle _bodyFont({required Color color}) => TextStyle(
-    fontFamily: _sfProText,
-    fontFamilyFallback: _fallbacks,
-    color: color,
-  );
-
-  static TextStyle _monoFont({required Color color}) => TextStyle(
-    fontFamily: 'SF Mono',
-    fontFamilyFallback: _monoFallbacks,
-    color: color,
-  );
-
-  static TextStyle get timer => TextStyle(
-    fontFamily: 'SF Mono',
-    fontFamilyFallback: _monoFallbacks,
+  static TextStyle get timer => _base(
     color: AppColors.label,
+  ).copyWith(
     fontFeatures: const [FontFeature.tabularFigures()],
-    letterSpacing: 0.2,
+    letterSpacing: 0.1,
   );
 
-  static TextStyle get _displayBase =>
-      _displayFont(color: AppColors.label, letterSpacing: -0.5);
+  static TextStyle get mono => _base(
+    color: AppColors.label,
+  ).copyWith(
+    fontFeatures: const [FontFeature.tabularFigures()],
+    letterSpacing: 0.1,
+  );
 
-  static TextStyle get _bodyBase => _bodyFont(color: AppColors.label);
-
-  static TextStyle get mono => _monoFont(color: AppColors.label);
-
-  // ── Type Scale ──
-
-  static TextStyle get largeTitle => _displayBase.copyWith(
-    fontSize: 34,
+  static TextStyle get largeTitle => _base(color: AppColors.label).copyWith(
+    fontSize: 32,
     fontWeight: FontWeight.w700,
-    height: 1.2,
+    height: 1.18,
+    letterSpacing: -0.8,
   );
 
-  static TextStyle get title1 => _displayBase.copyWith(
+  static TextStyle get title1 => _base(color: AppColors.label).copyWith(
     fontSize: 28,
-    fontWeight: FontWeight.w600,
-    height: 1.2,
+    fontWeight: FontWeight.w700,
+    height: 1.18,
+    letterSpacing: -0.65,
   );
 
-  static TextStyle get title2 =>
-      _displayBase.copyWith(fontSize: 22, fontWeight: FontWeight.w600);
-
-  static TextStyle get title3 =>
-      _displayBase.copyWith(fontSize: 20, fontWeight: FontWeight.w500);
-
-  static TextStyle get headline => _bodyBase.copyWith(
-    fontSize: 17,
+  static TextStyle get title2 => _base(color: AppColors.label).copyWith(
+    fontSize: 22,
     fontWeight: FontWeight.w600,
+    height: 1.22,
+    letterSpacing: -0.35,
+  );
+
+  static TextStyle get title3 => _base(color: AppColors.label).copyWith(
+    fontSize: 19,
+    fontWeight: FontWeight.w600,
+    height: 1.24,
     letterSpacing: -0.2,
   );
 
-  static TextStyle get body => _bodyBase.copyWith(
+  static TextStyle get headline => _base(color: AppColors.label).copyWith(
     fontSize: 16,
+    fontWeight: FontWeight.w600,
+    height: 1.28,
+    letterSpacing: -0.05,
+  );
+
+  static TextStyle get body => _base(color: AppColors.label).copyWith(
+    fontSize: 15,
     fontWeight: FontWeight.w400,
-    height: 1.5,
+    height: 1.4,
+    letterSpacing: 0,
   );
 
-  static TextStyle get callout =>
-      _bodyBase.copyWith(fontSize: 15, fontWeight: FontWeight.w400);
-
-  static TextStyle get subhead =>
-      _bodyBase.copyWith(fontSize: 14, fontWeight: FontWeight.w400);
-
-  static TextStyle get footnote => _bodyBase.copyWith(
-    fontSize: 12,
-    fontWeight: FontWeight.w400,
-    color: AppColors.secondaryLabel,
-  );
-
-  static TextStyle get caption1 => _bodyBase.copyWith(
-    fontSize: 11,
-    fontWeight: FontWeight.w400,
-    color: AppColors.tertiaryLabel,
-  );
-
-  static TextStyle get caption2 => _bodyBase.copyWith(
-    fontSize: 10,
-    fontWeight: FontWeight.w400,
-    color: AppColors.quaternaryLabel,
-  );
-
-  // ── Special ──
-
-  static TextStyle get displayMono => mono.copyWith(
-    fontSize: 48,
-    fontWeight: FontWeight.w200,
-    color: AppColors.label,
-  );
-
-  static TextStyle get heroNumber => mono.copyWith(
-    fontSize: 64,
-    fontWeight: FontWeight.w700,
-    letterSpacing: -3,
-    height: 1.0,
-  );
-
-  static TextStyle get focusDisplay => mono.copyWith(
-    fontSize: 54,
+  static TextStyle get callout => _base(color: AppColors.label).copyWith(
+    fontSize: 14,
     fontWeight: FontWeight.w500,
-    letterSpacing: -1,
+    height: 1.35,
   );
 
-  static TextStyle get heroDisplay => _displayBase.copyWith(
-    fontSize: 44,
-    fontWeight: FontWeight.w700,
-    height: 1.04,
+  static TextStyle get subhead => _base(color: AppColors.secondaryLabel).copyWith(
+    fontSize: 13,
+    fontWeight: FontWeight.w500,
+    height: 1.35,
   );
 
-  static TextStyle get overline => _bodyBase.copyWith(
+  static TextStyle get footnote => _base(color: AppColors.secondaryLabel).copyWith(
+    fontSize: 12,
+    fontWeight: FontWeight.w500,
+    height: 1.3,
+  );
+
+  static TextStyle get caption1 => _base(color: AppColors.tertiaryLabel).copyWith(
     fontSize: 11,
-    fontWeight: FontWeight.w700,
-    letterSpacing: 1.0,
-    color: AppColors.secondaryLabel,
+    fontWeight: FontWeight.w500,
+    height: 1.25,
   );
 
-  // ── Legacy aliases ──
+  static TextStyle get caption2 => _base(color: AppColors.quaternaryLabel).copyWith(
+    fontSize: 10,
+    fontWeight: FontWeight.w500,
+    height: 1.2,
+  );
+
+  static TextStyle get overline => _base(color: AppColors.tertiaryLabel).copyWith(
+    fontSize: 10,
+    fontWeight: FontWeight.w600,
+    letterSpacing: 0.8,
+    height: 1.2,
+  );
+
+  static TextStyle get displayMono => timer.copyWith(
+    fontSize: 48,
+    fontWeight: FontWeight.w500,
+    letterSpacing: -1.4,
+    height: 1,
+  );
+
+  static TextStyle get heroNumber => timer.copyWith(
+    fontSize: 56,
+    fontWeight: FontWeight.w700,
+    letterSpacing: -2.8,
+    height: 1,
+  );
+
+  static TextStyle get heroDisplay => TextStyle(
+    fontFamily: '.SF Pro Display',
+    fontFamilyFallback: const [
+      'SF Pro Display',
+      '.SF Pro Text',
+      'SF Pro Text',
+      'Inter',
+      '-apple-system',
+      'Helvetica Neue',
+      'Arial',
+      'sans-serif',
+    ],
+    color: AppColors.label,
+    fontFeatures: const [FontFeature.tabularFigures()],
+    fontSize: 56,
+    fontWeight: FontWeight.w500,
+    letterSpacing: -2.2,
+    height: 1,
+    decoration: TextDecoration.none,
+    decorationColor: Color(0x00000000),
+  );
+
+  static TextStyle get focusDisplay => timer.copyWith(
+    fontSize: 46,
+    fontWeight: FontWeight.w600,
+    letterSpacing: -1.4,
+    height: 1,
+  );
+
+  // Legacy aliases used across the codebase.
   static TextStyle get displayLarge => largeTitle;
   static TextStyle get displayMedium => title1;
   static TextStyle get headingLarge => title2;

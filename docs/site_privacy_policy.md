@@ -1,10 +1,10 @@
-# CEO OS Privacy Policy
+# WakeApp Privacy Policy
 
 Last updated: March 28, 2026
 
-CEO OS ("CEO OS", "we", "our", or "us") provides productivity, focus, planning, and digital wellbeing tools. This Privacy Policy explains what information we process, why we process it, how we use it, when we share it, how long we keep it, and what choices you have.
+WakeApp ("WakeApp", "we", "our", or "us") provides productivity, focus, planning, and digital wellbeing tools. This Privacy Policy explains what information we process, why we process it, how we use it, when we share it, how long we keep it, and what choices you have.
 
-If you do not agree with this Privacy Policy, please do not use CEO OS.
+If you do not agree with this Privacy Policy, please do not use WakeApp.
 
 ## 1. Who We Are
 
@@ -14,18 +14,18 @@ Privacy contact: `INSERT PRIVACY EMAIL`
 Support contact: `timofrmac@gmail.com`  
 Website: `INSERT WEBSITE URL`
 
-## 2. What CEO OS Does
+## 2. What WakeApp Does
 
-CEO OS helps users:
+WakeApp helps users:
 - manage tasks, habits, notes, planning, and focus sessions
 - configure focus routines, schedules, and restrictions
-- on iPhone, use Apple’s Screen Time / Family Controls frameworks to select apps and websites for restriction
+- on iPhone, use Apple's Screen Time / Family Controls frameworks to select apps and websites for restriction
 - on Android, use Android protection permissions such as Accessibility, Usage Access, and display-over-other-apps for on-device blocking and daily-limit enforcement
 - manage Premium access and subscriptions where applicable
 
 ## 3. Information We Process
 
-Depending on how you use CEO OS, we may process the following categories of information:
+Depending on how you use WakeApp, we may process the following categories of information:
 
 ### Account Information
 - email address
@@ -84,26 +84,26 @@ We use information only for legitimate product and operational purposes, includi
 - comply with legal obligations
 - respond to support requests and user inquiries
 
-We do not use your data for targeted advertising in CEO OS.
+We do not use your data for targeted advertising in WakeApp.
 
 ## 5. Apple Screen Time / Family Controls on iPhone
 
-On iPhone, CEO OS may use Apple’s official `Family Controls`, `ManagedSettings`, and `DeviceActivity` frameworks to support app and website restriction features.
+On iPhone, CEO OS may use Apple's official `Family Controls`, `ManagedSettings`, and `DeviceActivity` frameworks to support app and website restriction features.
 
 These features are:
 - initiated by the user
-- limited to the app’s focus, scheduling, and digital wellbeing use cases
-- implemented using Apple’s intended system frameworks
+- limited to the app's focus, scheduling, and digital wellbeing use cases
+- implemented using Apple's intended system frameworks
 - not used for hidden monitoring
 - not used to obtain device control beyond what is necessary for the feature set
 
 We may store configuration related to these features, such as selected apps, websites, schedules, and related settings, in order to provide continuity, syncing, history, or product functionality where applicable.
 
-CEO OS does not claim that these system-based restrictions are stronger than what Apple’s platform APIs actually enforce.
+CEO OS does not claim that these system-based restrictions are stronger than what Apple's platform APIs actually enforce.
 
 ## 6. Android Protection Permissions
 
-On Android, CEO OS may use:
+On Android, WakeApp may use:
 - Accessibility
 - Usage Access
 - display-over-other-apps permission
@@ -115,9 +115,9 @@ More specifically:
 - Usage Access may be used to evaluate time spent on selected apps and supported websites for daily-limit enforcement
 - display-over-other-apps permission may be used to present the blocking shield when a blocked target is opened
 
-CEO OS does not use these Android permissions for ads, hidden UI manipulation, or unrelated analytics.
+WakeApp does not use these Android permissions for ads, hidden UI manipulation, or unrelated analytics.
 
-Android website blocking depends on what supported browsers expose through the accessibility tree, so CEO OS does not claim universal website blocking across all Android browsers or web views.
+Android website blocking depends on what supported browsers expose through the accessibility tree, so WakeApp does not claim universal website blocking across all Android browsers or web views.
 
 ## 7. Legal Bases for Processing
 
@@ -129,7 +129,7 @@ Where applicable law requires a legal basis, we rely on one or more of the follo
 
 ## 8. Third Parties and Service Providers
 
-We may use third-party service providers to operate CEO OS. Depending on your use of the app, these may include:
+We may use third-party service providers to operate WakeApp. Depending on your use of the app, these may include:
 
 ### Supabase
 Used for account infrastructure, authentication, database services, and cloud synchronization.
@@ -155,7 +155,7 @@ We may share information:
 - with platform providers such as Apple or Google when necessary for purchases, billing, and platform functionality
 - with authentication providers if you choose a third-party sign-in method
 - if required by law, legal process, or valid governmental request
-- to protect rights, security, safety, or integrity of CEO OS, our users, or others
+- to protect rights, security, safety, or integrity of WakeApp, our users, or others
 - as part of a merger, financing, reorganization, acquisition, sale of assets, or similar business transaction, subject to applicable law
 
 We do not sell personal information to data brokers.
@@ -164,7 +164,7 @@ We do not sell personal information to data brokers.
 
 Some information may be processed only on your device.
 
-If data is processed locally and is not transmitted off-device in a retained form, it may not be considered “collected” for certain app store disclosure purposes.
+If data is processed locally and is not transmitted off-device in a retained form, it may not be considered "collected" for certain app store disclosure purposes.
 
 If derived data is later transmitted or stored server-side, that server-side data may still be processed under this Privacy Policy.
 
@@ -188,7 +188,7 @@ When your account is deleted:
 - associated app data is deleted unless we are legally required to retain certain information
 - deletion may take a limited amount of time to complete in some cases
 
-If you have an auto-renewable subscription purchased through Apple or Google Play, deleting your CEO OS account does not automatically cancel store billing. You must manage or cancel your subscription through your Apple account or Google Play account if you no longer want to be charged.
+If you have an auto-renewable subscription purchased through Apple or Google Play, deleting your WakeApp account does not automatically cancel store billing. You must manage or cancel your subscription through your Apple account or Google Play account if you no longer want to be charged.
 
 Where supported, we may also provide information directing you to the relevant subscription management page.
 
@@ -212,7 +212,7 @@ Your information may be processed in countries other than the one in which you l
 
 ## 15. Children
 
-CEO OS is not intended for unlawful collection of personal data from children. If you believe a child has provided personal data inappropriately, contact us and we will review the request.
+WakeApp is not intended for unlawful collection of personal data from children. If you believe a child has provided personal data inappropriately, contact us and we will review the request.
 
 ## 16. Your Rights and Choices
 
@@ -246,13 +246,13 @@ If your website does not use those tools, remove this section.
 
 Suggested placeholder:
 
-“We may use standard website technologies such as cookies or server logs on our website. Any website-specific data practices should be described in a separate Cookie Policy or Website Privacy Notice.”
+"We may use standard website technologies such as cookies or server logs on our website. Any website-specific data practices should be described in a separate Cookie Policy or Website Privacy Notice."
 
 ## 19. Changes to This Policy
 
 We may update this Privacy Policy from time to time to reflect changes in the product, our service providers, legal requirements, or our privacy practices.
 
-When we make material changes, we will update the “Last updated” date and may provide additional notice where appropriate.
+When we make material changes, we will update the "Last updated" date and may provide additional notice where appropriate.
 
 ## 20. Contact Us
 

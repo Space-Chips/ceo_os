@@ -113,7 +113,7 @@ class TaskDetailSheet extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppColors.background.withValues(alpha: 0.9),
           borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-          border: Border(
+          border: const Border(
             top: BorderSide(color: AppColors.glassBorder, width: 0.5),
           ),
         ),
@@ -159,7 +159,7 @@ class TaskDetailSheet extends StatelessWidget {
                     ),
                     if (task.deadline != null)
                       _chip(
-                        '${language.t('tasks_due')} ${_formatDate(task.deadline!, language)}',
+                        "${language.t('tasks_due")} ${_formatDate(task.deadline!, language)}',
                         urgencyLabel == 'tasks_overdue'
                             ? AppColors.error
                             : AppColors.primaryOrange,
@@ -240,7 +240,7 @@ class TaskDetailSheet extends StatelessWidget {
                             width: 0.6,
                           ),
                         ),
-                        child: Icon(
+                        child: const Icon(
                           CupertinoIcons.delete,
                           color: AppColors.error,
                           size: 20,
@@ -251,7 +251,7 @@ class TaskDetailSheet extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  '${language.t('tasks_created')} ${_formatDate(task.createdAt, language)}',
+                  "${language.t('tasks_created")} ${_formatDate(task.createdAt, language)}',
                   style: AppTypography.mono.copyWith(
                     fontSize: 9,
                     color: AppColors.quaternaryLabel,

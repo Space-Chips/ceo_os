@@ -200,7 +200,7 @@ class _AppSelectionSheetState extends State<AppSelectionSheet> {
     return Material(
       color: Colors.transparent,
       child: DefaultTextStyle.merge(
-        style: TextStyle(
+        style: const TextStyle(
           decoration: TextDecoration.none,
           decorationColor: Colors.transparent,
         ),

@@ -1,6 +1,7 @@
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../config/apple_review_compliance.dart';
 import '../models/insights_models.dart';
 import '../config/apple_review_compliance.dart';
 import '../services/supabase_service.dart';
@@ -85,6 +86,9 @@ class InsightsRepository {
   }
 
   Future<Map<String, dynamic>?> _fetchOptionalAdvancedLifetime() async {
+    if (!AppleReviewCompliance.allowAdvancedStats) {
+      return null;
+    }
     try {
       final response = await _client
           .from('advanced_lifetime_stats')

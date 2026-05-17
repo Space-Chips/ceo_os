@@ -34,7 +34,7 @@ class FocusPreparationIntroView extends StatelessWidget {
         ),
         const SizedBox(height: 14),
         Text(
-          language.t('focus_prep_intro_body'),
+          'Pendant une session, WakeApp bloque toutes les apps de ta liste, même celles pour lesquelles il restait du temps d'écran.',
           style: AppTypography.body.copyWith(
             fontSize: 16,
             height: 1.45,

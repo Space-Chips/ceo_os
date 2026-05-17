@@ -101,7 +101,9 @@ class _ScreenTimeSetupScreenState extends State<ScreenTimeSetupScreen>
   ) {
     switch (step) {
       case ScreenTimeSetupStep.intro:
-        return _IntroStep(onContinue: controller.advance);
+        return _IntroStep(
+          onContinue: controller.advance,
+        );
       case ScreenTimeSetupStep.value:
         return _ValueStep(
           selection: controller.valueSelection,
@@ -147,7 +149,7 @@ class _SetupLoadingScreen extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                CupertinoActivityIndicator(),
+                const CupertinoActivityIndicator(),
                 const SizedBox(height: 14),
                 Text(
                   t('ios_setup_preparing'),
@@ -170,6 +172,7 @@ class _SetupStepScaffold extends StatelessWidget {
   final bool showBack;
   final VoidCallback? onBack;
   final String? progressLabel;
+  final String? progressLabel;
 
   const _SetupStepScaffold({
     required this.child,
@@ -177,10 +180,12 @@ class _SetupStepScaffold extends StatelessWidget {
     this.showBack = false,
     this.onBack,
     this.progressLabel,
+    this.progressLabel,
   });
 
   @override
   Widget build(BuildContext context) {
+    final t = context.read<LanguageProvider>().t;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 16),
       child: Column(
@@ -201,7 +206,7 @@ class _SetupStepScaffold extends StatelessWidget {
               else
                 const SizedBox(width: 32),
               const Spacer(),
-              _ProgressPill(label: progressLabel ?? 'Setup'),
+              _ProgressPill(label: progressLabel ?? t('ios_setup_progress_label')),
             ],
           ),
           const SizedBox(height: 12),
@@ -211,7 +216,10 @@ class _SetupStepScaffold extends StatelessWidget {
               child: child,
             ),
           ),
-          if (footer != null) ...[const SizedBox(height: 16), footer!],
+          if (footer != null) ...[
+            const SizedBox(height: 16),
+            footer!,
+          ],
         ],
       ),
     );
@@ -228,9 +236,11 @@ class _ProgressPill extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: AppColors.glassSurface,
+        color: AppColors.glassSurfaceSoft,
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: AppColors.border.withValues(alpha: 0.65)),
+        border: Border.all(
+          color: AppColors.border.withValues(alpha: 0.65),
+        ),
       ),
       child: Text(
         label,
@@ -253,7 +263,6 @@ class _IntroStep extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _SetupStepScaffold(
-      footer: LiquidButton(label: 'Start setup', onPressed: onContinue),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -280,7 +289,10 @@ class _IntroStep extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("What you'll unlock", style: AppTypography.title3),
+                Text(
+                  "What you'll unlock",
+                  style: AppTypography.title3,
+                ),
                 const SizedBox(height: 10),
                 _BenefitRow(
                   title: 'Instant blocking',
@@ -297,6 +309,7 @@ class _IntroStep extends StatelessWidget {
           ),
         ],
       ),
+      footer: LiquidButton(label: 'Start setup', onPressed: onContinue),
     );
   }
 }
@@ -318,9 +331,8 @@ class _ValueStep extends StatelessWidget {
     return _SetupStepScaffold(
       showBack: true,
       onBack: () => context.read<ScreenTimeSetupController>().jumpTo(
-        ScreenTimeSetupStep.intro,
-      ),
-      footer: LiquidButton(label: 'Continue', onPressed: onContinue),
+            ScreenTimeSetupStep.intro,
+          ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -353,6 +365,10 @@ class _ValueStep extends StatelessWidget {
           ),
         ],
       ),
+      footer: LiquidButton(
+        label: 'Continue',
+        onPressed: onContinue,
+      ),
     );
   }
 }
@@ -361,21 +377,26 @@ class _OverviewStep extends StatelessWidget {
   final bool isAuthorized;
   final VoidCallback onContinue;
 
-  const _OverviewStep({required this.isAuthorized, required this.onContinue});
+  const _OverviewStep({
+    required this.isAuthorized,
+    required this.onContinue,
+  });
 
   @override
   Widget build(BuildContext context) {
     return _SetupStepScaffold(
       showBack: true,
       onBack: () => context.read<ScreenTimeSetupController>().jumpTo(
-        ScreenTimeSetupStep.value,
-      ),
-      footer: LiquidButton(label: 'Continue setup', onPressed: onContinue),
+            ScreenTimeSetupStep.value,
+          ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 6),
-          Text('Setup checklist', style: AppTypography.title1),
+          Text(
+            'Setup checklist',
+            style: AppTypography.title1,
+          ),
           const SizedBox(height: 10),
           Text(
             "We'll ask for one permission to enable Screen Time protections.",
@@ -423,6 +444,7 @@ class _OverviewStep extends StatelessWidget {
           ),
         ],
       ),
+      footer: LiquidButton(label: 'Continue setup', onPressed: onContinue),
     );
   }
 }
@@ -444,6 +466,7 @@ class _PermissionStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.read<LanguageProvider>().t;
     final isAuthorized = status.isAuthorized;
     final shouldPrompt = status.shouldPrompt;
     final shouldOpenSettings = status.shouldOpenSettings;
@@ -471,14 +494,16 @@ class _PermissionStep extends StatelessWidget {
     return _SetupStepScaffold(
       showBack: true,
       onBack: () => context.read<ScreenTimeSetupController>().jumpTo(
-        ScreenTimeSetupStep.overview,
-      ),
-      footer: LiquidButton(label: actionLabel, onPressed: action),
+            ScreenTimeSetupStep.overview,
+          ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 6),
-          Text(title, style: AppTypography.title1),
+          Text(
+            title,
+            style: AppTypography.title1,
+          ),
           const SizedBox(height: 10),
           Text(
             subtitle,
@@ -495,7 +520,7 @@ class _PermissionStep extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Steps',
+                  t('ios_setup_steps_title'),
                   style: AppTypography.caption1.copyWith(
                     color: AppColors.secondaryLabel,
                     letterSpacing: 0.5,
@@ -514,7 +539,10 @@ class _PermissionStep extends StatelessWidget {
                   text: 'Enable Screen Time access.',
                 ),
                 const SizedBox(height: 8),
-                const _InstructionRow(index: 4, text: 'Return to WakeApp.'),
+                const _InstructionRow(
+                  index: 4,
+                  text: 'Return to WakeApp.',
+                ),
                 const SizedBox(height: 12),
                 if (!isSupported)
                   Text(
@@ -527,9 +555,13 @@ class _PermissionStep extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 18),
-          _PermissionStatusPill(status: status, showSuccess: showSuccess),
+          _PermissionStatusPill(
+            status: status,
+            showSuccess: showSuccess,
+          ),
         ],
       ),
+      footer: LiquidButton(label: actionLabel, onPressed: action),
     );
   }
 }
@@ -604,10 +636,6 @@ class _SuccessStep extends StatelessWidget {
     final t = context.read<LanguageProvider>().t;
     return _SetupStepScaffold(
       progressLabel: t('ios_setup_completed'),
-      footer: LiquidButton(
-        label: t('ios_setup_open_screen_time'),
-        onPressed: onContinue,
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -658,6 +686,10 @@ class _SuccessStep extends StatelessWidget {
           ),
         ],
       ),
+      footer: LiquidButton(
+        label: t('ios_setup_open_screen_time'),
+        onPressed: onContinue,
+      ),
     );
   }
 }
@@ -679,7 +711,8 @@ class _SelectionChip extends StatelessWidget {
         ? AppColors.primaryAccent.withValues(alpha: 0.22)
         : AppColors.glassSurface;
     final border = isSelected ? AppColors.primaryAccent : AppColors.border;
-    final textColor = isSelected ? AppColors.primaryAccent : AppColors.label;
+    final textColor =
+        isSelected ? AppColors.primaryAccent : AppColors.label;
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -718,7 +751,7 @@ class _BenefitRow extends StatelessWidget {
           width: 8,
           height: 8,
           decoration: BoxDecoration(
-            color: AppColors.primaryAccent,
+            color: AppColors.accent,
             shape: BoxShape.circle,
           ),
         ),
@@ -729,7 +762,9 @@ class _BenefitRow extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: AppTypography.body.copyWith(fontWeight: FontWeight.w600),
+                style: AppTypography.body.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               const SizedBox(height: 4),
               Text(
@@ -777,7 +812,10 @@ class _InstructionRow extends StatelessWidget {
         ),
         const SizedBox(width: 10),
         Expanded(
-          child: Text(text, style: AppTypography.body.copyWith(height: 1.4)),
+          child: Text(
+            text,
+            style: AppTypography.body.copyWith(height: 1.4),
+          ),
         ),
       ],
     );

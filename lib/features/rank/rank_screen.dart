@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -7,9 +5,11 @@ import 'package:provider/provider.dart';
 import '../../components/components.dart';
 import '../../core/models/user_models.dart';
 import '../../core/providers/language_provider.dart';
+import '../../core/repositories/focus_repository.dart';
 import '../../core/repositories/user_repository.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
+import '../../core/widgets/rank_art.dart';
 
 class RankScreen extends StatefulWidget {
   const RankScreen({super.key});
@@ -20,56 +20,44 @@ class RankScreen extends StatefulWidget {
 
 class _RankScreenState extends State<RankScreen> {
   final UserRepository _repository = UserRepository();
+  final FocusRepository _focusRepository = FocusRepository();
 
   UserRank? _rank;
   WinStreak? _streak;
   int _daysInApp = 0;
+  int _focusSessionsCompleted = 0;
   bool _loading = true;
 
   String _t(String key) => context.read<LanguageProvider>().t(key);
 
-  static const List<_RankTierData> _tiers = [
+  List<_RankTierData> get _tiers => [
     _RankTierData(
-      name: 'CEO',
+      name: 'Awakened',
       requirements: ['500 day streak', '250h Focus', '250h CEO'],
-      ring: [Color(0xFFFACC15), Color(0xFFFFFFFF), Color(0xFF111111)],
-      glow: Color(0x66FACC15),
     ),
     _RankTierData(
-      name: 'Batman',
+      name: 'Immortal',
       requirements: ['365 day streak', '200h Focus', '100h CEO'],
-      ring: [Color(0xFF6B7280), Color(0xFF111827), Color(0xFF000000)],
-      glow: Color(0x334B5563),
     ),
     _RankTierData(
       name: 'Diamond',
       requirements: ['180 day streak', '200h Focus'],
-      ring: [Color(0xFF7DD3FC), Color(0xFF38BDF8), Color(0xFF0F172A)],
-      glow: Color(0x3358C4FF),
     ),
     _RankTierData(
       name: 'Platinum',
       requirements: ['90 day streak', '60h Focus'],
-      ring: [Color(0xFFE5E7EB), Color(0xFF9CA3AF), Color(0xFF0F172A)],
-      glow: Color(0x33E5E7EB),
     ),
     _RankTierData(
       name: 'Gold',
       requirements: ['50 day streak'],
-      ring: [Color(0xFFFDE047), Color(0xFFEAB308), Color(0xFF0F172A)],
-      glow: Color(0x44FDE047),
     ),
     _RankTierData(
       name: 'Silver',
       requirements: ['15 days in app', '10 day streak'],
-      ring: [Color(0xFFE5E7EB), Color(0xFF9CA3AF), Color(0xFF0F172A)],
-      glow: Color(0x33E5E7EB),
     ),
     _RankTierData(
       name: 'Bronze',
       requirements: ['Starting rank'],
-      ring: [Color(0xFFD4A574), Color(0xFFB87333), Color(0xFF0F172A)],
-      glow: Color(0x44B87333),
     ),
   ];
 
@@ -85,6 +73,8 @@ class _RankScreenState extends State<RankScreen> {
     final rank = await _repository.getUserRank();
     final streak = await _repository.getWinStreak();
     final profile = await _repository.getProfile();
+    final focusSessionsCompleted =
+        await _focusRepository.getCompletedSessionCount();
     final createdAt = profile?.createdAt;
     final daysInApp = createdAt == null
         ? 0
@@ -95,29 +85,84 @@ class _RankScreenState extends State<RankScreen> {
       _rank = rank;
       _streak = streak;
       _daysInApp = daysInApp;
+      _focusSessionsCompleted = focusSessionsCompleted;
       _loading = false;
     });
   }
 
   _RankTierData _currentTier() {
-    final rankName = (_rank?.rankName ?? '').trim().toLowerCase();
+    final serverTier = _serverTier();
+    final localTier = _localFallbackTier();
+    final serverIndex = _tiers.indexWhere((tier) => tier.name == serverTier.name);
+    final localIndex = _tiers.indexWhere((tier) => tier.name == localTier.name);
+    return localIndex < serverIndex ? localTier : serverTier;
+  }
+
+  _RankTierData _serverTier() {
+    final rankName = RankArt.displayName(_rank?.rankName ?? '').toLowerCase();
     final byName = _tiers.where((tier) => tier.name.toLowerCase() == rankName);
     if (byName.isNotEmpty) return byName.first;
 
-    final level = _rank?.rankLevel ?? 1;
-    if (level >= 9) return _tiers[0];
-    if (level == 8) return _tiers[1];
-    if (level == 7) return _tiers[2];
-    if (level == 6) return _tiers[3];
-    if (level == 5) return _tiers[4];
-    if (level == 4) return _tiers[5];
-    return _tiers[6];
+    final level = _rank?.rankLevel ?? 0;
+    if (level >= 7) return _tiers[0];
+    if (level == 6) return _tiers[1];
+    if (level == 5) return _tiers[2];
+    if (level == 4) return _tiers[3];
+    if (level == 3) return _tiers[4];
+    if (level == 2) return _tiers[5];
+    if (level == 1) return _tiers[6];
+    return _tiers[7];
+  }
+
+  _RankTierData _localFallbackTier() {
+    if (_daysInApp >= 7 && _focusSessionsCompleted >= 1) {
+      return _tiers[6];
+    }
+    return _tiers[7];
+  }
+
+  bool _serverRankIsBehind(_RankTierData current) {
+    final serverTier = _serverTier();
+    final currentIndex = _tiers.indexWhere((tier) => tier.name == current.name);
+    final serverIndex = _tiers.indexWhere((tier) => tier.name == serverTier.name);
+    return currentIndex < serverIndex;
   }
 
   _RankTierData? _nextTier(_RankTierData current) {
     final idx = _tiers.indexWhere((tier) => tier.name == current.name);
     if (idx <= 0) return null;
     return _tiers[idx - 1];
+  }
+
+  double _nextRankProgressPercent(_RankTierData? next) {
+    if (next == null) return 100;
+
+    final progress = <double>[];
+    for (final requirement in next.requirements) {
+      final normalized = requirement.toLowerCase().trim();
+      if (normalized.contains('day streak')) {
+        final target = int.tryParse(RegExp(r'(\d+)').firstMatch(normalized)?.group(1) ?? '');
+        if (target != null && target > 0) {
+          progress.add(((_streak?.currentStreak ?? 0) / target).clamp(0, 1).toDouble());
+          continue;
+        }
+      }
+      if (normalized.contains('days in app')) {
+        final target = int.tryParse(RegExp(r'(\d+)').firstMatch(normalized)?.group(1) ?? '');
+        if (target != null && target > 0) {
+          progress.add((_daysInApp / target).clamp(0, 1).toDouble());
+          continue;
+        }
+      }
+    }
+
+    if (progress.isNotEmpty) {
+      return (progress.reduce((a, b) => a + b) / progress.length) * 100;
+    }
+
+    final rankPoints = (_rank?.totalRankPoints ?? 0).toDouble();
+    if (rankPoints <= 0) return 0;
+    return (rankPoints % 100).clamp(0, 100).toDouble();
   }
 
   @override
@@ -131,9 +176,7 @@ class _RankScreenState extends State<RankScreen> {
       child: AmbientBackdrop(
         child: _loading
             ? Center(
-                child: CupertinoActivityIndicator(
-                  color: AppColors.primaryOrange,
-                ),
+                child: CupertinoActivityIndicator(color: AppColors.primaryOrange),
               )
             : SafeArea(
                 child: ListView(
@@ -222,57 +265,63 @@ class _RankScreenState extends State<RankScreen> {
   }
 
   Widget _currentRankHero(_RankTierData tier) {
-    return _glowSurface(
-      glowColor: tier.glow,
-      borderRadius: 28,
-      child: GlassCard(
-        padding: const EdgeInsets.fromLTRB(18, 18, 18, 20),
-        borderRadius: 28,
-        level: GlassCardLevel.elevated,
-        showEdgeGlow: true,
-        border: Border.all(
-          color: tier.ring.first.withValues(alpha: 0.55),
-          width: 0.8,
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color.alphaBlend(
+              AppColors.accentSurfaceSoft.withValues(alpha: 0.8),
+              AppColors.cardBackgroundAlt,
+            ),
+            AppColors.cardBase,
+          ],
         ),
-        gradientColors: [
-          tier.ring[1].withValues(alpha: 0.14),
-          AppColors.backgroundLight.withValues(alpha: 0.88),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: AppColors.activeBorder,
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.black.withValues(alpha: 0.6),
+            blurRadius: 30,
+            offset: const Offset(0, 10),
+          ),
         ],
-        child: Column(
-          children: [
-            _tierBadge(tier, size: 120),
-            const SizedBox(height: 10),
-            SizedBox(
-              width: double.infinity,
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Text(
-                  tier.name,
-                  style: AppTypography.mono.copyWith(
-                    fontSize: 74,
-                    color: AppColors.label,
-                    fontWeight: FontWeight.w900,
-                    height: 0.9,
-                  ),
+      ),
+      child: Column(
+        children: [
+          _rankIconContainer(tier, iconSize: 120),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                _localizedTierName(tier.name),
+                style: AppTypography.largeTitle.copyWith(
+                  fontSize: 52,
+                  color: AppColors.label,
+                  fontWeight: FontWeight.w700,
+                  height: 0.95,
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _pathSection(_RankTierData current, _RankTierData? next) {
-    return GlassCard(
-      padding: const EdgeInsets.all(16),
-      borderRadius: 20,
-      level: GlassCardLevel.standard,
-      showEdgeGlow: true,
-      border: Border.all(
-        color: AppColors.glassBorder.withValues(alpha: 0.74),
-        width: 0.7,
-      ),
+    final progressPercent = _nextRankProgressPercent(next);
+    final serverBehind = _serverRankIsBehind(current);
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: _rankCardDecoration(radius: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -281,55 +330,124 @@ class _RankScreenState extends State<RankScreen> {
               Icon(
                 CupertinoIcons.arrow_up_right,
                 size: 20,
-                color: const Color(0xFFFACC15),
+                color: AppColors.rankAccent,
               ),
               const SizedBox(width: 8),
               Text(
-                next == null ? 'Top Rank Reached' : 'Path to ${next.name}',
-                style: AppTypography.mono.copyWith(
-                  fontSize: 22,
+                next == null
+                    ? _t('rank_top_reached')
+                    : _t('rank_path_to').replaceAll(
+                        '{rank}',
+                        _localizedTierName(next.name),
+                      ),
+                style: AppTypography.callout.copyWith(
+                  fontSize: 16,
                   color: AppColors.label,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 14),
+          if (next != null) ...[
+            Row(
+              children: [
+                Text(
+                  _t('rank_progress'),
+                  style: AppTypography.caption1.copyWith(
+                    fontSize: 12,
+                    color: AppColors.secondaryLabel.withValues(alpha: 0.7),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const Spacer(),
+                Text(
+                  '${progressPercent.round()}%',
+                  style: AppTypography.footnote.copyWith(
+                    fontSize: 13,
+                    color: AppColors.label,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(6),
+              child: Container(
+                height: 8,
+                width: double.infinity,
+                color: AppColors.border,
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: TweenAnimationBuilder<double>(
+                    tween: Tween<double>(
+                      begin: 0,
+                      end: (progressPercent / 100).clamp(0, 1),
+                    ),
+                    duration: const Duration(milliseconds: 500),
+                    curve: Curves.easeOut,
+                    builder: (context, value, child) {
+                      return FractionallySizedBox(
+                        widthFactor: value,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: AppColors.rankAccent,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
           if (next == null)
             Text(
-              'You are currently at the highest tier.',
-              style: AppTypography.mono.copyWith(
-                fontSize: 15,
-                color: AppColors.secondaryLabel,
+              _t('rank_highest_tier'),
+              style: AppTypography.footnote.copyWith(
+                fontSize: 13,
+                color: AppColors.secondaryLabel.withValues(alpha: 0.7),
               ),
             )
+          else if (serverBehind) ...[
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(14),
+                color: AppColors.rankAccent.withValues(alpha: 0.08),
+                border: Border.all(
+                  color: AppColors.rankAccent.withValues(alpha: 0.18),
+                  width: 0.8,
+                ),
+              ),
+              child: Text(
+                _t('rank_requirements_completed_sync_pending'),
+                style: AppTypography.footnote.copyWith(
+                  fontSize: 12,
+                  color: AppColors.secondaryLabel.withValues(alpha: 0.88),
+                  height: 1.35,
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+          ]
           else
             ...next.requirements.map(
               (req) => Padding(
-                padding: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.only(bottom: 10),
                 child: Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 11,
-                  ),
+                  padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(13),
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        AppColors.floatingGlassGradient.first.withValues(
-                          alpha: 0.86,
-                        ),
-                        AppColors.floatingGlassGradient.last.withValues(
-                          alpha: 0.76,
-                        ),
-                      ],
-                    ),
+                    borderRadius: BorderRadius.circular(14),
+                    color: AppColors.white.withValues(alpha: 0.04),
                     border: Border.all(
-                      color: AppColors.glassBorder.withValues(alpha: 0.68),
-                      width: 0.7,
+                      color: AppColors.white.withValues(alpha: 0.08),
+                      width: 1,
                     ),
                   ),
                   child: Row(
@@ -337,15 +455,15 @@ class _RankScreenState extends State<RankScreen> {
                       Icon(
                         CupertinoIcons.bolt,
                         size: 18,
-                        color: const Color(0xFFFACC15),
+                        color: AppColors.rankAccent,
                       ),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
                           req,
-                          style: AppTypography.mono.copyWith(
-                            fontSize: 15,
-                            color: AppColors.secondaryLabel,
+                          style: AppTypography.callout.copyWith(
+                            fontSize: 14,
+                            color: AppColors.secondaryLabel.withValues(alpha: 0.85),
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -361,30 +479,30 @@ class _RankScreenState extends State<RankScreen> {
   }
 
   Widget _statsSection() {
-    return GlassCard(
-      padding: const EdgeInsets.all(16),
-      borderRadius: 20,
-      level: GlassCardLevel.standard,
-      showEdgeGlow: true,
-      border: Border.all(
-        color: AppColors.glassBorder.withValues(alpha: 0.72),
-        width: 0.7,
-      ),
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: _rankCardDecoration(radius: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'YOUR STATS',
-            style: AppTypography.mono.copyWith(
-              fontSize: 22,
+            _t('rank_your_stats'),
+            style: AppTypography.overline.copyWith(
+              fontSize: 14,
+              letterSpacing: 2,
               color: AppColors.label,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w600,
             ),
           ),
+          const SizedBox(height: 14),
+          _statRow(_t('rank_days_in_app'), '$_daysInApp'),
           const SizedBox(height: 10),
-          _statRow('Days in App', '$_daysInApp'),
-          const SizedBox(height: 8),
-          _statRow('Streak', '${_streak?.currentStreak ?? 0} days'),
+          _statRow(
+            _t('rank_streak'),
+            _t(
+              'rank_days_value',
+            ).replaceAll('{count}', '${_streak?.currentStreak ?? 0}'),
+          ),
         ],
       ),
     );
@@ -422,9 +540,7 @@ class _RankScreenState extends State<RankScreen> {
             value,
             style: AppTypography.mono.copyWith(
               fontSize: 17,
-              color: label == 'Streak'
-                  ? const Color(0xFFFF9D43)
-                  : AppColors.label,
+              color: label == 'Streak' ? const Color(0xFFFF9D43) : AppColors.label,
               fontWeight: FontWeight.w900,
             ),
           ),
@@ -486,11 +602,7 @@ class _RankScreenState extends State<RankScreen> {
               ),
             ),
             if (isCurrent)
-              Icon(
-                CupertinoIcons.rosette,
-                color: const Color(0xFFFACC15),
-                size: 24,
-              )
+              Icon(CupertinoIcons.rosette, color: const Color(0xFFFACC15), size: 24)
             else
               Text(
                 unlocked ? 'Unlocked' : 'Locked',
@@ -528,37 +640,49 @@ class _RankScreenState extends State<RankScreen> {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(size * 0.2),
             color: const Color(0xFF060B15),
-            border: Border.all(
-              color: AppColors.glassBorder.withValues(alpha: 0.65),
-            ),
+            border: Border.all(color: AppColors.glassBorder.withValues(alpha: 0.65)),
           ),
         ),
       ),
     );
   }
 
-  Widget _glowSurface({
-    required Widget child,
-    required Color glowColor,
-    double borderRadius = 18,
-  }) {
-    return Stack(
-      children: [
-        Positioned.fill(
-          child: IgnorePointer(
-            child: Container(
-              margin: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(borderRadius),
-                boxShadow: [
-                  BoxShadow(color: glowColor, blurRadius: 30, spreadRadius: 1),
-                ],
-              ),
-            ),
-          ),
+}
+
+class _RankPressScale extends StatefulWidget {
+  final Widget child;
+  final VoidCallback onTap;
+
+  const _RankPressScale({required this.child, required this.onTap});
+
+  @override
+  State<_RankPressScale> createState() => _RankPressScaleState();
+}
+
+class _RankPressScaleState extends State<_RankPressScale> {
+  bool _pressed = false;
+
+  void _setPressed(bool value) {
+    if (!mounted || _pressed == value) return;
+    setState(() => _pressed = value);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Listener(
+      onPointerDown: (_) => _setPressed(true),
+      onPointerUp: (_) => _setPressed(false),
+      onPointerCancel: (_) => _setPressed(false),
+      child: AnimatedScale(
+        scale: _pressed ? 1.01 : 1,
+        duration: const Duration(milliseconds: 120),
+        curve: Curves.easeOutCubic,
+        child: GestureDetector(
+          behavior: HitTestBehavior.translucent,
+          onTap: widget.onTap,
+          child: widget.child,
         ),
-        child,
-      ],
+      ),
     );
   }
 }
@@ -629,7 +753,7 @@ class _IrisPainter extends CustomPainter {
           shadow.withValues(alpha: 0.95),
           primary.withValues(alpha: 0.78),
           secondary.withValues(alpha: 0.76),
-          const Color(0xFF0B111D),
+          AppColors.cardBackgroundStrong,
         ],
         stops: const [0.0, 0.42, 0.76, 1.0],
       ).createShader(Rect.fromCircle(center: c, radius: r));
@@ -641,29 +765,24 @@ class _IrisPainter extends CustomPainter {
       final angle = t * math.pi * 2;
       final inner = pupil + 1 + (math.sin(i * 0.91) + 1) * 4.0;
       final outer = r - (math.cos(i * 1.27) + 1) * 3.8;
-      final p1 = Offset(
-        c.dx + math.cos(angle) * inner,
-        c.dy + math.sin(angle) * inner,
-      );
-      final p2 = Offset(
-        c.dx + math.cos(angle) * outer,
-        c.dy + math.sin(angle) * outer,
-      );
+      final p1 = Offset(c.dx + math.cos(angle) * inner, c.dy + math.sin(angle) * inner);
+      final p2 = Offset(c.dx + math.cos(angle) * outer, c.dy + math.sin(angle) * outer);
       final rayPaint = Paint()
         ..strokeWidth = 1.05
         ..strokeCap = StrokeCap.round
         ..color = Color.lerp(
-          primary,
-          secondary,
-          (math.sin(i * 0.33) + 1) / 2,
-        )!.withValues(alpha: 0.58);
+              primary,
+              secondary,
+              (math.sin(i * 0.33) + 1) / 2,
+            )!
+            .withValues(alpha: 0.58);
       canvas.drawLine(p1, p2, rayPaint);
     }
 
     final ringPaint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.5
-      ..color = const Color(0x88FFFFFF);
+      ..color = AppColors.label.withValues(alpha: 0.5);
     canvas.drawCircle(c, r * 0.98, ringPaint);
   }
 
@@ -678,13 +797,9 @@ class _IrisPainter extends CustomPainter {
 class _RankTierData {
   final String name;
   final List<String> requirements;
-  final List<Color> ring;
-  final Color glow;
 
   const _RankTierData({
     required this.name,
     required this.requirements,
-    required this.ring,
-    required this.glow,
   });
 }

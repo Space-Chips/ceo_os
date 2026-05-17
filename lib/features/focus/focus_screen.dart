@@ -1,4 +1,7 @@
 import 'dart:async';
+
+import 'package:flutter/foundation.dart';
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
@@ -27,6 +30,65 @@ class FocusScreen extends StatefulWidget {
   State<FocusScreen> createState() => _FocusScreenState();
 }
 
+class _FocusProgressRingPainter extends CustomPainter {
+  final double progress;
+  final Color progressColor;
+
+  const _FocusProgressRingPainter({
+    required this.progress,
+    required this.progressColor,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = size.center(Offset.zero);
+    final radius = (size.width / 2) - 10;
+    const startAngle = -1.5707963267948966;
+    final sweep = 6.283185307179586 * progress.clamp(0.0, 1.0);
+
+    final basePaint = Paint()
+      ..color = AppColors.white.withValues(alpha: 0.15)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3
+      ..strokeCap = StrokeCap.round;
+
+    final progressPaint = Paint()
+      ..color = progressColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3
+      ..strokeCap = StrokeCap.round;
+
+    canvas.drawCircle(center, radius, basePaint);
+    canvas.drawArc(
+      Rect.fromCircle(center: center, radius: radius),
+      startAngle,
+      sweep,
+      false,
+      progressPaint,
+    );
+  }
+
+  Future<void> _presentPreparationIfNeeded(FocusProvider provider) async {
+    if (_didPresentPreparationOnEntry) return;
+    if (!provider.shouldShowPreparationFlowBeforeFocus) return;
+    _didPresentPreparationOnEntry = true;
+    final outcome = await showFocusPreparationFlow(
+      context: context,
+      launchContext: FocusPreparationLaunchContext.preFocus,
+    );
+    if (!mounted) return;
+    await provider.persistPreparationOutcome(
+      outcome ?? FocusPreparationFlowOutcome.skipped,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _FocusProgressRingPainter oldDelegate) {
+    return oldDelegate.progress != progress ||
+        oldDelegate.progressColor != progressColor;
+  }
+}
+
 class _FocusScreenState extends State<FocusScreen> {
   final FeatureRepository _repo = FeatureRepository();
   final TextEditingController _customDurationCtrl = TextEditingController();
@@ -36,6 +98,9 @@ class _FocusScreenState extends State<FocusScreen> {
   bool _loading = true;
   bool _didPresentPreparationOnEntry = false;
   bool _appliedDeepLinkParams = false;
+
+  bool get _isAndroid =>
+      !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
 
   @override
   void initState() {
@@ -68,20 +133,6 @@ class _FocusScreenState extends State<FocusScreen> {
         _setDuration(duration);
       });
     }
-  }
-
-  Future<void> _presentPreparationIfNeeded(FocusProvider provider) async {
-    if (_didPresentPreparationOnEntry) return;
-    if (!provider.shouldShowPreparationFlowBeforeFocus) return;
-    _didPresentPreparationOnEntry = true;
-    final outcome = await showFocusPreparationFlow(
-      context: context,
-      launchContext: FocusPreparationLaunchContext.preFocus,
-    );
-    if (!mounted) return;
-    await provider.persistPreparationOutcome(
-      outcome ?? FocusPreparationFlowOutcome.skipped,
-    );
   }
 
   void _openPlanSheet(FocusProvider provider) {
@@ -124,17 +175,26 @@ class _FocusScreenState extends State<FocusScreen> {
   }
 
   Future<bool?> _showProtectionNotice(FocusProvider provider) {
+    final language = context.read<LanguageProvider>();
     final status = provider.protectionStatus;
     final title = status.isSupported
         ? (status.shouldOpenSettings
-              ? 'Turn On Screen Time Access'
-              : 'Blocking Not Active Yet')
-        : 'Blocking Unavailable Here';
+              ? (_isAndroid
+                    ? language.t('focus_turn_on_android_access')
+                    : language.t('focus_turn_on_screen_time_access'))
+              : language.t('focus_blocking_not_active_yet'))
+        : language.t('focus_blocking_unavailable_here');
     final message = status.isSupported
         ? (status.shouldOpenSettings
-              ? 'Focus Mode can block apps and websites on this iPhone, but Screen Time / Family Controls access is currently off. You can re-enable it in iOS Settings, or continue with a timer-only session.'
-              : 'Focus Mode can still start a timer right now, but blocked apps and websites will remain available until Screen Time / Family Controls access is granted.')
-        : 'This runtime does not currently expose Apple Screen Time / Family Controls protection. You can still run the focus timer, but apps and websites will not be blocked.';
+              ? (_isAndroid
+                    ? language.t('focus_notice_android_settings_off')
+                    : language.t('focus_notice_ios_settings_off'))
+              : (_isAndroid
+                    ? language.t('focus_notice_android_timer_only')
+                    : language.t('focus_notice_ios_timer_only')))
+        : (_isAndroid
+              ? language.t('focus_notice_android_runtime_unavailable')
+              : language.t('focus_notice_ios_runtime_unavailable'));
 
     return showCupertinoDialog<bool>(
       context: context,
@@ -147,7 +207,7 @@ class _FocusScreenState extends State<FocusScreen> {
         actions: [
           CupertinoDialogAction(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: Text('Cancel'),
+            child: Text(language.t('cancel')),
           ),
           if (status.shouldOpenSettings)
             CupertinoDialogAction(
@@ -163,12 +223,12 @@ class _FocusScreenState extends State<FocusScreen> {
                 }
                 await provider.openSystemSettings();
               },
-              child: Text('Open Settings'),
+              child: Text(language.t('open_settings')),
             ),
           CupertinoDialogAction(
             isDefaultAction: !status.shouldOpenSettings,
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: Text('Start Timer Only'),
+            child: Text(language.t('focus_start_timer_only')),
           ),
         ],
       ),
@@ -176,20 +236,28 @@ class _FocusScreenState extends State<FocusScreen> {
   }
 
   String _protectionWarningMessage(FocusProvider provider) {
+    final language = context.read<LanguageProvider>();
     final status = provider.protectionStatus;
     if (!status.isSupported) {
-      return 'Apple Screen Time protection is unavailable on this runtime.\nThe focus timer still works, but apps and websites cannot be blocked here.';
+      return _isAndroid
+          ? language.t('focus_warning_android_runtime_unavailable')
+          : language.t('focus_warning_ios_runtime_unavailable');
     }
     if (status.shouldOpenSettings) {
-      return 'Screen Time / Family Controls access is currently off.\nOpen iOS Settings to restore blocked apps and websites during Focus Mode.';
+      return _isAndroid
+          ? language.t('focus_warning_android_access_off')
+          : language.t('focus_warning_ios_access_off');
     }
-    return 'Screen Time / Family Controls access is not enabled yet.\nGrant access to let Focus Mode block selected apps and websites on this device.';
+    return _isAndroid
+        ? language.t('focus_warning_android_not_enabled')
+        : language.t('focus_warning_ios_not_enabled');
   }
 
   String _protectionActionLabel(FocusProvider provider) {
+    final language = context.read<LanguageProvider>();
     return provider.protectionStatus.shouldOpenSettings
-        ? 'Open Settings'
-        : 'Enable protection';
+        ? language.t('open_settings')
+        : language.t('focus_enable_protection');
   }
 
   @override
@@ -344,14 +412,26 @@ class _FocusScreenState extends State<FocusScreen> {
               ),
             ),
           if (!showHome && trailingIcon != null)
-            CupertinoButton(
-              padding: EdgeInsets.zero,
-              minimumSize: Size.zero,
-              onPressed: trailingTap,
-              child: Icon(
-                trailingIcon,
-                size: 20,
-                color: AppColors.secondaryLabel,
+            _FocusPressScale(
+              onTap: trailingTap ?? () {},
+              scaleWhenPressed: 0.97,
+              child: Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: AppColors.topBarControlBackground,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: AppColors.topBarControlBorder,
+                    width: 1,
+                  ),
+                ),
+                alignment: Alignment.center,
+                child: Icon(
+                  trailingIcon,
+                  size: 18,
+                  color: AppColors.secondaryLabel,
+                ),
               ),
             ),
         ],
@@ -360,6 +440,7 @@ class _FocusScreenState extends State<FocusScreen> {
   }
 
   Widget _buildIdle(FocusProvider provider) {
+    final language = context.watch<LanguageProvider>();
     const presets = [25, 45, 90];
     final currentStreak = _streak?.currentStreak ?? 0;
     final sessions = _streak?.totalCompletedSessions ?? 0;
@@ -371,14 +452,14 @@ class _FocusScreenState extends State<FocusScreen> {
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 10, 20, 22),
       children: [
-        _header(title: 'Screen Time', showHome: true),
+        _header(title: _isAndroid ? 'Focus Protection' : 'Screen Time', showHome: true),
         const SizedBox(height: 10),
         SizedBox(
           width: double.infinity,
           child: FittedBox(
             fit: BoxFit.scaleDown,
             child: Text(
-              'ENTER THE ZONE',
+              language.t('focus_enter_zone'),
               textAlign: TextAlign.center,
               style: AppTypography.mono.copyWith(
                 fontSize: 62,
@@ -391,7 +472,7 @@ class _FocusScreenState extends State<FocusScreen> {
         ),
         const SizedBox(height: 10),
         Text(
-          'Select duration',
+          language.t('focus_select_duration'),
           textAlign: TextAlign.center,
           style: AppTypography.mono.copyWith(
             fontSize: 20,
@@ -418,18 +499,22 @@ class _FocusScreenState extends State<FocusScreen> {
                                   begin: Alignment.topLeft,
                                   end: Alignment.bottomRight,
                                   colors: [
-                                    Color(0xFF7E2BF1),
-                                    Color(0xFFA03CF4),
+                                    AppColors.accentSecondary.withValues(
+                                      alpha: 0.96,
+                                    ),
+                                    AppColors.primaryOrange.withValues(
+                                      alpha: 0.9,
+                                    ),
                                   ],
                                 )
                               : LinearGradient(
                                   colors: [
-                                    const Color(
-                                      0xFF0D1B3A,
-                                    ).withValues(alpha: 0.96),
-                                    const Color(
-                                      0xFF0B1A35,
-                                    ).withValues(alpha: 0.92),
+                                    const Color(0xFF0D1B3A).withValues(
+                                      alpha: 0.96,
+                                    ),
+                                    const Color(0xFF0B1A35).withValues(
+                                      alpha: 0.92,
+                                    ),
                                   ],
                                 ),
                           border: Border.all(
@@ -440,11 +525,10 @@ class _FocusScreenState extends State<FocusScreen> {
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color:
-                                  (provider.focusDurationMinutes == preset
-                                          ? const Color(0xFF9D45F4)
-                                          : AppColors.glassShadow)
-                                      .withValues(alpha: 0.24),
+                              color: (provider.focusDurationMinutes == preset
+                                      ? const Color(0xFF9D45F4)
+                                      : AppColors.glassShadow)
+                                  .withValues(alpha: 0.24),
                               blurRadius: 16,
                               offset: const Offset(0, 8),
                               spreadRadius: -8,
@@ -464,7 +548,7 @@ class _FocusScreenState extends State<FocusScreen> {
                               ),
                             ),
                             Text(
-                              'min',
+                              language.t('focus_min'),
                               style: AppTypography.mono.copyWith(
                                 fontSize: 16,
                                 color: provider.focusDurationMinutes == preset
@@ -483,7 +567,7 @@ class _FocusScreenState extends State<FocusScreen> {
         ),
         const SizedBox(height: 20),
         Text(
-          'Custom duration',
+          language.t('focus_custom_duration'),
           style: AppTypography.mono.copyWith(
             fontSize: 18,
             color: AppColors.secondaryLabel,
@@ -524,8 +608,7 @@ class _FocusScreenState extends State<FocusScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   GestureDetector(
-                    onTap: () =>
-                        _setDuration(provider.focusDurationMinutes + 5),
+                    onTap: () => _setDuration(provider.focusDurationMinutes + 5),
                     child: Icon(
                       CupertinoIcons.chevron_up,
                       color: AppColors.secondaryLabel,
@@ -533,8 +616,7 @@ class _FocusScreenState extends State<FocusScreen> {
                   ),
                   const SizedBox(height: 2),
                   GestureDetector(
-                    onTap: () =>
-                        _setDuration(provider.focusDurationMinutes - 5),
+                    onTap: () => _setDuration(provider.focusDurationMinutes - 5),
                     child: Icon(
                       CupertinoIcons.chevron_down,
                       color: AppColors.secondaryLabel,
@@ -545,27 +627,24 @@ class _FocusScreenState extends State<FocusScreen> {
             ],
           ),
         ),
-        const SizedBox(height: 14),
-        GlassCard(
-          padding: const EdgeInsets.all(14),
-          borderRadius: 18,
-          level: GlassCardLevel.elevated,
-          showEdgeGlow: true,
-          border: Border.all(
-            color: const Color(0xFFEF4444).withValues(alpha: 0.8),
-            width: 0.8,
+        const SizedBox(height: 20),
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppColors.error.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: AppColors.error.withValues(alpha: 0.35),
+              width: 1,
+            ),
           ),
-          gradientColors: [
-            const Color(0xFF640A0A).withValues(alpha: 0.86),
-            AppColors.backgroundLight.withValues(alpha: 0.84),
-          ],
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Icon(
                 CupertinoIcons.exclamationmark_triangle,
-                color: Color(0xFFFF6464),
-                size: 26,
+                color: AppColors.error,
+                size: 22,
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -573,20 +652,20 @@ class _FocusScreenState extends State<FocusScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'WARNING',
-                      style: AppTypography.mono.copyWith(
-                        fontSize: 19,
-                        color: const Color(0xFFFF6464),
-                        fontWeight: FontWeight.w900,
+                      language.t('focus_warning'),
+                      style: AppTypography.callout.copyWith(
+                        fontSize: 16,
+                        color: AppColors.error.withValues(alpha: 0.88),
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Early exit will RESET your Win Streak to ZERO',
-                      style: AppTypography.mono.copyWith(
-                        fontSize: 16,
-                        color: AppColors.secondaryLabel,
-                        fontWeight: FontWeight.w600,
+                      language.t('focus_warning_exit_resets_streak'),
+                      style: AppTypography.footnote.copyWith(
+                        fontSize: 14,
+                        color: AppColors.secondaryLabel.withValues(alpha: 0.8),
+                        fontWeight: FontWeight.w500,
                         height: 1.2,
                       ),
                     ),
@@ -596,49 +675,43 @@ class _FocusScreenState extends State<FocusScreen> {
             ],
           ),
         ),
-        const SizedBox(height: 22),
+        const SizedBox(height: 24),
         Text(
-          'Current Streak',
+          language.t('focus_current_streak'),
           textAlign: TextAlign.center,
-          style: AppTypography.mono.copyWith(
-            fontSize: 20,
-            color: AppColors.secondaryLabel,
+          style: AppTypography.overline.copyWith(
+            fontSize: 14,
+            color: AppColors.secondaryLabel.withValues(alpha: 0.7),
             fontWeight: FontWeight.w600,
+            letterSpacing: 2,
           ),
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: 8),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text('🔥', style: TextStyle(fontSize: 58)),
+            const Text('🔥', style: TextStyle(fontSize: 40)),
             const SizedBox(width: 10),
             Text(
               '$currentStreak',
-              style: AppTypography.mono.copyWith(
-                fontSize: 84,
+              style: AppTypography.heroNumber.copyWith(
+                fontSize: 48,
                 color: AppColors.label,
-                fontWeight: FontWeight.w900,
-                height: 0.95,
+                fontWeight: FontWeight.w700,
+                height: 1,
               ),
             ),
           ],
         ),
-        const SizedBox(height: 16),
-        LiquidButton(
-          label: 'BEGIN FOCUS MODE',
-          fullWidth: true,
-          gradient: const [Color(0xFF8A31F4), Color(0xFF9D45F4)],
-          onPressed: () => _start(provider),
+        const SizedBox(height: 22),
+        _FocusPrimaryButton(
+          label: language.t('focus_begin_mode'),
+          onTap: () => _start(provider),
         ),
-        const SizedBox(height: 10),
-        LiquidButton(
-          label: 'PLAN',
-          fullWidth: true,
-          gradient: [
-            AppColors.floatingGlassGradient.first.withValues(alpha: 0.92),
-            AppColors.floatingGlassGradient.last.withValues(alpha: 0.82),
-          ],
-          onPressed: () => _openPlanSheet(provider),
+        const SizedBox(height: 12),
+        _FocusSecondaryButton(
+          label: language.t('focus_plan'),
+          onTap: () => _openPlanSheet(provider),
         ),
         if (!provider.isAuthorized) ...[
           const SizedBox(height: 8),
@@ -666,9 +739,7 @@ class _FocusScreenState extends State<FocusScreen> {
               ),
             ),
           ],
-        ] else if ((provider.lastBlockingSyncError ?? '')
-            .trim()
-            .isNotEmpty) ...[
+        ] else if ((provider.lastBlockingSyncError ?? '').trim().isNotEmpty) ...[
           const SizedBox(height: 8),
           Text(
             provider.lastBlockingSyncError!,
@@ -681,7 +752,7 @@ class _FocusScreenState extends State<FocusScreen> {
         ] else if (!provider.hasConfiguredBlockingTargets) ...[
           const SizedBox(height: 8),
           Text(
-            'No restricted app/site found in Blocked apps & sites.\nFocus timer will run, but nothing can be blocked until you add targets there.',
+            language.t('focus_no_targets_warning'),
             textAlign: TextAlign.center,
             style: AppTypography.mono.copyWith(
               fontSize: 11,
@@ -691,7 +762,16 @@ class _FocusScreenState extends State<FocusScreen> {
         ] else ...[
           const SizedBox(height: 8),
           Text(
-            'Focus will block ${provider.configuredBlockedAppCount} app(s) and ${provider.configuredBlockedWebsiteCount} website(s) from Blocked apps & sites for the full session.',
+            language
+                .t('focus_blocking_summary')
+                .replaceAll(
+                  '{apps}',
+                  provider.configuredBlockedAppCount.toString(),
+                )
+                .replaceAll(
+                  '{websites}',
+                  provider.configuredBlockedWebsiteCount.toString(),
+                ),
             textAlign: TextAlign.center,
             style: AppTypography.mono.copyWith(
               fontSize: 11,
@@ -714,27 +794,27 @@ class _FocusScreenState extends State<FocusScreen> {
               Expanded(
                 child: _miniStat(
                   icon: CupertinoIcons.rosette,
-                  color: const Color(0xFFFACC15),
+                  color: AppColors.rankAccent,
                   value: '${_streak?.longestStreak ?? 0}',
-                  label: 'RECORD',
+                  label: language.t('focus_record'),
                 ),
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: _miniStat(
                   icon: CupertinoIcons.arrow_up_right,
-                  color: const Color(0xFF6EE7B7),
+                  color: AppColors.success,
                   value: '$successRate%',
-                  label: 'SUCCESS',
+                  label: language.t('focus_success'),
                 ),
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: _miniStat(
                   icon: CupertinoIcons.check_mark_circled,
-                  color: const Color(0xFFA78BFA),
+                  color: const Color(0xFF60A5FA),
                   value: '${_streak?.totalCompletedSessions ?? 0}',
-                  label: 'COMPLETE',
+                  label: language.t('focus_complete'),
                 ),
               ),
             ],
@@ -746,14 +826,31 @@ class _FocusScreenState extends State<FocusScreen> {
 
   Widget _buildActive(FocusProvider provider) {
     final isFocusing = provider.state == FocusState.focusing;
+    final isBreak =
+        provider.state == FocusState.shortBreak ||
+        provider.state == FocusState.longBreak;
+    final accentColor = isBreak
+        ? const Color(0xFF7ED6A5)
+        : const Color(0xFF4C7DFF);
+    final progressColor = isBreak
+        ? const Color(0x997ED6A5)
+        : const Color(0x994C7DFF);
+    final timerLabel = isFocusing ? 'DEEP WORK' : 'BREAK';
+    final controlTitle = switch (provider.state) {
+      FocusState.focusing => 'Focus Session',
+      FocusState.shortBreak => 'Short Break',
+      FocusState.longBreak => 'Long Break',
+      FocusState.requestingBreak => 'Break Request Pending',
+      FocusState.breakOptionsMenu => 'Break Selection',
+      FocusState.idle => 'Focus Session',
+    };
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 10, 20, 22),
       child: Column(
         children: [
           _header(
             title: 'Focus',
-            trailingIcon: CupertinoIcons.stop_circle,
-            trailingTap: provider.stopFocus,
           ),
           const SizedBox(height: 18),
           Text(
@@ -851,11 +948,7 @@ class _FocusScreenState extends State<FocusScreen> {
               ],
             )
           else
-            LiquidButton(
-              label: 'Skip break',
-              fullWidth: true,
-              onPressed: provider.skip,
-            ),
+            LiquidButton(label: 'Skip break', fullWidth: true, onPressed: provider.skip),
         ],
       ),
     );
@@ -971,14 +1064,11 @@ class _FocusPrimaryButton extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              AppColors.buttonGradientEnd,
-              AppColors.buttonGradientStart,
-            ],
+            colors: [AppColors.buttonGradientEnd, AppColors.buttonGradientStart],
           ),
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
-            color: AppColors.white.withValues(alpha: 0.14),
+            color: AppColors.borderStrong,
             width: 1,
           ),
         ),
@@ -1010,10 +1100,10 @@ class _FocusSecondaryButton extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
         decoration: BoxDecoration(
-          color: AppColors.white.withValues(alpha: 0.04),
+          color: AppColors.cardBackgroundAlt.withValues(alpha: 0.92),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: AppColors.white.withValues(alpha: 0.08),
+            color: AppColors.borderStrong,
             width: 1,
           ),
         ),

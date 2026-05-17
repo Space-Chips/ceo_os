@@ -33,11 +33,34 @@ class SupabaseConfig {
         if (anonKey.trim().isEmpty) 'SUPABASE_ANON_KEY',
       ];
 
+  static List<String> get missingRequiredKeys {
+    final missing = <String>[];
+    if (url.trim().isEmpty) {
+      missing.add('SUPABASE_URL');
+    }
+    if (anonKey.trim().isEmpty) {
+      missing.add('SUPABASE_ANON_KEY');
+    }
+    return missing;
+  }
+
+  static bool get hasRequiredConfiguration =>
+      missingRequiredKeys.isEmpty;
+
+  static String get missingConfigurationMessage {
+    final missing = missingRequiredKeys;
+    if (missing.isEmpty) {
+      return '';
+    }
+    if (missing.length == 1) {
+      return 'Supabase configuration is missing. Provide ${missing.first}.';
+    }
+    return 'Supabase configuration is missing. Provide ${missing.join(' and ')}.';
+  }
+
   static void validateConfiguration() {
-    if (url.trim().isEmpty || anonKey.trim().isEmpty) {
-      throw StateError(
-        'Supabase configuration is missing. Provide SUPABASE_URL and SUPABASE_ANON_KEY.',
-      );
+    if (!hasRequiredConfiguration) {
+      throw StateError(missingConfigurationMessage);
     }
   }
 }

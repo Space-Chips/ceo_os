@@ -21,16 +21,16 @@ Verify each paywall entry point shows:
 
 Entry points to test:
 - Onboarding premium prompt
-- Gate “limit reached” dialogs (tasks/habits/notes/focus/blackout/etc.)
-- Menu “Upgrade/Abonnement” screen
+- Gate "limit reached" dialogs (tasks/habits/notes/focus/blackout/etc.)
+- Menu "Upgrade/Abonnement" screen
 
 ## Pricing correctness
 
 - Price displayed in the UI must match the store localized price label (prefer RevenueCat `priceLabel` / store product price).
-- Avoid hardcoding “€2.99” in UI if it can diverge by locale, taxes, or future price changes.
+- Avoid hardcoding "€2.99" in UI if it can diverge by locale, taxes, or future price changes.
 - If a price anchor is shown in marketing copy, ensure it is either:
   - derived from store product data, or
-  - clearly described as “from …” and not contradictory.
+  - clearly described as "from …" and not contradictory.
 
 ## Trials (if applicable)
 
@@ -43,16 +43,16 @@ Entry points to test:
 
 Test:
 - Restore on a device where the user has an active subscription → Premium unlocks
-- Restore on a device with no active entitlement → shows a clear message (not “success”)
+- Restore on a device with no active entitlement → shows a clear message (not "success")
 
-## “Locked feature” gating
+## "Locked feature" gating
 
 - When a user hits a free limit, the gate must:
   - explain why (limit reached)
   - show the benefit of upgrading
   - allow dismissal (unless feature is strictly blocked)
 - No dark patterns:
-  - do not hide “Manage subscription”
+  - do not hide "Manage subscription"
   - do not make restore impossible to find
 
 ## TestFlight policy

@@ -98,10 +98,6 @@ class SetupFlowController extends ChangeNotifier {
     await _focusService.clearPendingPermissionReturn();
   }
 
-
-
-
-
   Future<void> refreshPermissionStates() async {
     if (!_requiresAndroidSetup) {
       _overlayState = FocusPermissionState.approved;

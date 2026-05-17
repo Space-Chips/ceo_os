@@ -1,14 +1,9 @@
 import 'package:flutter/services.dart';
+import 'dart:typed_data';
 
 enum FocusPermissionState { unknown, approved, denied, unsupported }
 
-enum AndroidProtectionStep {
-  unknown,
-  overlay,
-  usageAccess,
-  accessibility,
-  complete,
-}
+enum AndroidProtectionStep { unknown, overlay, usageAccess, accessibility, complete }
 
 class FocusProtectionStatus {
   final bool isSupported;
@@ -55,8 +50,7 @@ class AndroidLaunchableApp {
   factory AndroidLaunchableApp.fromMap(Map<String, dynamic> map) {
     final icon = map['iconBytes'] ?? map['icon'];
     return AndroidLaunchableApp(
-      name: (map['name'] ?? map['label'] ?? map['packageName'] ?? '')
-          .toString(),
+      name: (map['name'] ?? map['label'] ?? map['packageName'] ?? '').toString(),
       packageName: (map['packageName'] ?? map['package'] ?? '').toString(),
       iconBytes: icon is Uint8List ? icon : null,
     );
@@ -76,6 +70,53 @@ class FocusService {
     } on MissingPluginException {
       print('Native permissions method missing. Rebuild required.');
       return false;
+    }
+  }
+
+  Future<void> syncScreenTimeTheme(Map<String, dynamic> payload) async {
+    await _invokeVoid('syncScreenTimeTheme', payload);
+  }
+
+  Future<void> syncClassicShieldConfig(
+    List<String> packageNames, [
+    List<String> websitePayloads = const [],
+  ]) async {
+    await _invokeVoid('syncClassicShieldConfig', {
+      'packages': packageNames,
+      'websites': websitePayloads,
+    });
+  }
+
+  Future<void> setClassicShieldEnabled(bool enabled) async {
+    await _invokeVoid('setClassicShieldEnabled', {'enabled': enabled});
+  }
+
+  Future<Map<String, dynamic>> getBlockingDebugState() async {
+    try {
+      final result = await _channel.invokeMapMethod<String, dynamic>(
+        'getBlockingDebugState',
+      );
+      return result ?? const <String, dynamic>{};
+    } on MissingPluginException {
+      return const <String, dynamic>{};
+    } on PlatformException {
+      return const <String, dynamic>{};
+    }
+  }
+
+  Future<List<AndroidLaunchableApp>> listAndroidLaunchableApps() async {
+    try {
+      final result = await _channel.invokeMethod<List<dynamic>>(
+        'listAndroidLaunchableApps',
+      );
+      return (result ?? const <dynamic>[])
+          .whereType<Map>()
+          .map((entry) => AndroidLaunchableApp.fromMap(Map<String, dynamic>.from(entry)))
+          .toList();
+    } on MissingPluginException {
+      return const <AndroidLaunchableApp>[];
+    } on PlatformException {
+      return const <AndroidLaunchableApp>[];
     }
   }
 
@@ -100,9 +141,7 @@ class FocusService {
 
   Future<AndroidProtectionStep> getNextAndroidProtectionStep() async {
     try {
-      final raw = await _channel.invokeMethod<String>(
-        'getNextAndroidProtectionStep',
-      );
+      final raw = await _channel.invokeMethod<String>('getNextAndroidProtectionStep');
       return AndroidProtectionStep.values.firstWhere(
         (step) => step.name == raw,
         orElse: () => AndroidProtectionStep.overlay,
@@ -205,56 +244,6 @@ class FocusService {
       'packages': packageNames,
       'categories': categories,
     });
-  }
-
-  Future<void> syncScreenTimeTheme(Map<String, dynamic> payload) async {
-    await _invokeVoid('syncScreenTimeTheme', payload);
-  }
-
-  Future<void> syncClassicShieldConfig(
-    List<String> packageNames, [
-    List<String> websitePayloads = const [],
-  ]) async {
-    await _invokeVoid('syncClassicShieldConfig', {
-      'packages': packageNames,
-      'websites': websitePayloads,
-    });
-  }
-
-  Future<void> setClassicShieldEnabled(bool enabled) async {
-    await _invokeVoid('setClassicShieldEnabled', {'enabled': enabled});
-  }
-
-  Future<Map<String, dynamic>> getBlockingDebugState() async {
-    try {
-      final result = await _channel.invokeMapMethod<String, dynamic>(
-        'getBlockingDebugState',
-      );
-      return result ?? const <String, dynamic>{};
-    } on MissingPluginException {
-      return const <String, dynamic>{};
-    } on PlatformException {
-      return const <String, dynamic>{};
-    }
-  }
-
-  Future<List<AndroidLaunchableApp>> listAndroidLaunchableApps() async {
-    try {
-      final result = await _channel.invokeMethod<List<dynamic>>(
-        'listAndroidLaunchableApps',
-      );
-      return (result ?? const <dynamic>[])
-          .whereType<Map>()
-          .map(
-            (entry) =>
-                AndroidLaunchableApp.fromMap(Map<String, dynamic>.from(entry)),
-          )
-          .toList();
-    } on MissingPluginException {
-      return const <AndroidLaunchableApp>[];
-    } on PlatformException {
-      return const <AndroidLaunchableApp>[];
-    }
   }
 
   Future<bool> _invokeBool(String method, [Map<String, dynamic>? args]) async {

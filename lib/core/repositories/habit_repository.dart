@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/habit_models.dart';
 import '../services/supabase_service.dart';
 import '../utils/app_logger.dart';
@@ -22,10 +25,29 @@ class HabitRepository {
           .eq('archived', false)
           .order('created_at');
 
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString(_cacheKey('habits_v1'), jsonEncode(response));
+      } catch (_) {
+        // Best effort only.
+      }
+
       return (response as List).map((data) => Habit.fromJson(data)).toList();
     } catch (e) {
       AppLogger.error('Error getting habits.', e);
-      return [];
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final raw = prefs.getString(_cacheKey('habits_v1'));
+        if (raw == null || raw.isEmpty) return [];
+        final decoded = jsonDecode(raw);
+        if (decoded is! List) return [];
+        return decoded
+            .whereType<Map>()
+            .map((row) => Habit.fromJson(Map<String, dynamic>.from(row)))
+            .toList();
+      } catch (_) {
+        return [];
+      }
     }
   }
 
@@ -104,9 +126,6 @@ class HabitRepository {
     await archiveHabit(habitId);
   }
 
-
-
-
   Future<List<HabitCompletion>> getCompletionsForHabit(String habitId) async {
     try {
       final response = await _client
@@ -136,7 +155,7 @@ class HabitRepository {
 
   Future<List<HabitCompletion>> getCompletionsForDate(DateTime date) async {
     final dateStr =
-        '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+        "${date.year}-${date.month.toString().padLeft(2, '0")}-${date.day.toString().padLeft(2, '0')}';
 
     try {
       final response = await _client
@@ -145,12 +164,37 @@ class HabitRepository {
           .eq('created_by', _currentUserId)
           .eq('date', dateStr);
 
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString(
+          _cacheKey('completions_${dateStr}_v1'),
+          jsonEncode(response),
+        );
+      } catch (_) {
+        // Best effort only.
+      }
+
       return (response as List)
           .map((data) => HabitCompletion.fromJson(data))
           .toList();
     } catch (e) {
       AppLogger.error('Error getting completions for date.', e);
-      return [];
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final raw = prefs.getString(_cacheKey('completions_${dateStr}_v1'));
+        if (raw == null || raw.isEmpty) return [];
+        final decoded = jsonDecode(raw);
+        if (decoded is! List) return [];
+        return decoded
+            .whereType<Map>()
+            .map(
+              (row) =>
+                  HabitCompletion.fromJson(Map<String, dynamic>.from(row)),
+            )
+            .toList();
+      } catch (_) {
+        return [];
+      }
     }
   }
 
@@ -160,6 +204,7 @@ class HabitRepository {
   ) async {
     final startStr = DateFormat('yyyy-MM-dd').format(start);
     final endStr = DateFormat('yyyy-MM-dd').format(end);
+    final cacheId = 'range_${startStr}_$endStr';
 
     try {
       final response = await _client
@@ -169,12 +214,37 @@ class HabitRepository {
           .gte('date', startStr)
           .lte('date', endStr);
 
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString(
+          _cacheKey('completions_${cacheId}_v1'),
+          jsonEncode(response),
+        );
+      } catch (_) {
+        // Best effort only.
+      }
+
       return (response as List)
           .map((data) => HabitCompletion.fromJson(data))
           .toList();
     } catch (e) {
       AppLogger.error('Error getting completions range.', e);
-      return [];
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final raw = prefs.getString(_cacheKey('completions_${cacheId}_v1'));
+        if (raw == null || raw.isEmpty) return [];
+        final decoded = jsonDecode(raw);
+        if (decoded is! List) return [];
+        return decoded
+            .whereType<Map>()
+            .map(
+              (row) =>
+                  HabitCompletion.fromJson(Map<String, dynamic>.from(row)),
+            )
+            .toList();
+      } catch (_) {
+        return [];
+      }
     }
   }
 
@@ -184,7 +254,7 @@ class HabitRepository {
     double? amount,
   }) async {
     final dateStr =
-        '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+        "${date.year}-${date.month.toString().padLeft(2, '0")}-${date.day.toString().padLeft(2, '0')}';
 
     // Check if exists
     final existing = await _client

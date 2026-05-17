@@ -87,5 +87,8 @@ class FamilyTimeSessionEvent {
   final String message;
   final DateTime createdAt;
 
-  const FamilyTimeSessionEvent({this.message = '', required this.createdAt});
+  const FamilyTimeSessionEvent({
+    this.message = '',
+    required this.createdAt,
+  });
 }

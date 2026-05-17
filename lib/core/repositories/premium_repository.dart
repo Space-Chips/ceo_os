@@ -10,6 +10,23 @@ class PremiumRepository {
     return PremiumRuntime(config: config);
   }
 
+  Future<PremiumCheckResult> canAccessAdvancedCalendar() async {
+    return const PremiumCheckResult.allowed();
+  }
+
+  Future<PremiumCheckResult> canCreateTask([int currentCount = 0]) async {
+    final runtime = await getRuntime();
+    if (runtime.resolved.canCreateUnlimitedTasks ||
+        currentCount < runtime.config.tasksFreeLimit) {
+      return const PremiumCheckResult.allowed();
+    }
+    return PremiumCheckResult.blocked(
+      reason: 'tasks',
+      limit: runtime.config.tasksFreeLimit,
+      current: currentCount,
+    );
+  }
+
   Future<PremiumCheckResult> canStartFocusSession(int minutes) async {
     final runtime = await getRuntime();
     if (runtime.resolved.canUseExtendedFocus ||
@@ -34,23 +51,6 @@ class PremiumRepository {
       limit: runtime.config.ceoModeFreeMinutesLimit,
       current: minutes,
     );
-  }
-
-  Future<PremiumCheckResult> canCreateTask([int currentCount = 0]) async {
-    final runtime = await getRuntime();
-    if (runtime.resolved.canCreateUnlimitedTasks ||
-        currentCount < runtime.config.tasksFreeLimit) {
-      return const PremiumCheckResult.allowed();
-    }
-    return PremiumCheckResult.blocked(
-      reason: 'tasks',
-      limit: runtime.config.tasksFreeLimit,
-      current: currentCount,
-    );
-  }
-
-  Future<PremiumCheckResult> canAccessAdvancedCalendar() async {
-    return const PremiumCheckResult.allowed();
   }
 
   Future<void> activateClientGraceWindow() async {}

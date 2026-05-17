@@ -381,7 +381,7 @@ class HabitGallerySheet extends StatelessWidget {
                             child: Container(
                               padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
-                                gradient: LinearGradient(
+                                gradient: const LinearGradient(
                                   begin: Alignment.topCenter,
                                   end: Alignment.bottomCenter,
                                   colors: [Color(0xFF1A1A1A), Color(0xFF111111)],
@@ -437,7 +437,7 @@ class HabitGallerySheet extends StatelessWidget {
                                       ],
                                     ),
                                   ),
-                                  Icon(
+                                  const Icon(
                                     CupertinoIcons.chevron_right,
                                     color: AppColors.tertiaryLabel,
                                     size: 16,
@@ -481,7 +481,7 @@ class HabitGallerySheet extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
+                    gradient: const LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: [Color(0xFF2A2A2A), Color(0xFF1A1A1A)],

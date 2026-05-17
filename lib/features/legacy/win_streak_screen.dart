@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../components/components.dart';
 import '../../core/models/user_models.dart';
 import '../../core/providers/language_provider.dart';
+import '../../core/providers/language_provider.dart';
 import '../../core/repositories/feature_repository.dart';
 import '../../core/repositories/focus_repository.dart';
 import '../../core/theme/app_colors.dart';
@@ -55,19 +56,18 @@ class _WinStreakScreenState extends State<WinStreakScreen> {
   String _sessionLine(Map<String, dynamic> row) {
     final duration = (row['duration_minutes'] as num?)?.toInt() ?? 0;
     final completed = row['completed'] == true;
-    return '${completed ? 'Completed' : 'Stopped early'} • ${duration}m';
+    return "${completed ? _t('win_streak_completed") : _t('win_streak_stopped_early')} • ${duration}m';
   }
 
   @override
   Widget build(BuildContext context) {
+    context.watch<LanguageProvider>().languageCode;
     return CupertinoPageScaffold(
       backgroundColor: AppColors.background,
       child: AmbientBackdrop(
         child: _loading
             ? Center(
-                child: CupertinoActivityIndicator(
-                  color: AppColors.primaryOrange,
-                ),
+                child: CupertinoActivityIndicator(color: AppColors.primaryOrange),
               )
             : SafeArea(
                 child: ListView(
@@ -76,54 +76,51 @@ class _WinStreakScreenState extends State<WinStreakScreen> {
                     _topBar(),
                     const SizedBox(height: 10),
                     _mainStreakCard(),
-                    const SizedBox(height: 14),
+                    const SizedBox(height: 20),
                     Row(
                       children: [
                         Expanded(
                           child: _statCard(
                             icon: CupertinoIcons.rosette,
-                            color: const Color(0xFFFACC15),
+                            color: AppColors.warning,
                             value: '${_streak?.longestStreak ?? 0}',
-                            label: 'RECORD',
+                            label: _t('focus_record'),
                           ),
                         ),
                         const SizedBox(width: 10),
                         Expanded(
                           child: _statCard(
                             icon: CupertinoIcons.arrow_up_right,
-                            color: const Color(0xFF6EE7B7),
+                            color: AppColors.success,
                             value: '$_successRate%',
-                            label: 'SUCCESS',
+                            label: _t('focus_success'),
                           ),
                         ),
                         const SizedBox(width: 10),
                         Expanded(
                           child: _statCard(
                             icon: CupertinoIcons.check_mark_circled,
-                            color: const Color(0xFFA78BFA),
+                            color: AppColors.info,
                             value: '${_streak?.totalCompletedSessions ?? 0}',
-                            label: 'COMPLETE',
+                            label: _t('focus_complete'),
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 14),
-                    GlassCard(
-                      padding: const EdgeInsets.all(16),
-                      borderRadius: 22,
-                      border: Border.all(
-                        color: AppColors.glassBorder.withValues(alpha: 0.76),
-                        width: 0.7,
-                      ),
+                    const SizedBox(height: 20),
+                    Container(
+                      padding: const EdgeInsets.all(18),
+                      decoration: _winCardDecoration(radius: 18),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'RECENT SESSIONS',
-                            style: AppTypography.mono.copyWith(
+                            _t('win_streak_recent_sessions'),
+                            style: AppTypography.overline.copyWith(
                               fontSize: 18,
                               color: AppColors.label,
-                              fontWeight: FontWeight.w900,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 1.2,
                             ),
                           ),
                           const SizedBox(height: 14),
@@ -135,49 +132,51 @@ class _WinStreakScreenState extends State<WinStreakScreen> {
                               ),
                               child: Center(
                                 child: Text(
-                                  'No sessions yet. Start your first focus session!',
+                                  _t('win_streak_no_sessions_yet'),
                                   textAlign: TextAlign.center,
-                                  style: AppTypography.mono.copyWith(
-                                    fontSize: 14,
-                                    color: AppColors.tertiaryLabel,
+                                  style: AppTypography.footnote.copyWith(
+                                    fontSize: 13,
+                                    color: AppColors.tertiaryLabel.withValues(
+                                      alpha: 0.65,
+                                    ),
                                     height: 1.35,
                                   ),
                                 ),
                               ),
                             )
                           else
-                            ..._recentSessions
-                                .take(8)
-                                .map(
-                                  (row) => Padding(
-                                    padding: const EdgeInsets.only(bottom: 8),
-                                    child: Container(
-                                      width: double.infinity,
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                        vertical: 10,
+                            ..._recentSessions.take(8).map(
+                              (row) => Padding(
+                                padding: const EdgeInsets.only(bottom: 8),
+                                child: Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 10,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(12),
+                                    color: AppColors.backgroundLight.withValues(
+                                      alpha: 0.66,
+                                    ),
+                                    border: Border.all(
+                                      color: AppColors.glassBorder.withValues(
+                                        alpha: 0.68,
                                       ),
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(12),
-                                        color: AppColors.backgroundLight
-                                            .withValues(alpha: 0.66),
-                                        border: Border.all(
-                                          color: AppColors.glassBorder
-                                              .withValues(alpha: 0.68),
-                                          width: 0.7,
-                                        ),
-                                      ),
-                                      child: Text(
-                                        _sessionLine(row),
-                                        style: AppTypography.mono.copyWith(
-                                          fontSize: 13,
-                                          color: AppColors.secondaryLabel,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
+                                      width: 0.7,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    _sessionLine(row),
+                                    style: AppTypography.mono.copyWith(
+                                      fontSize: 13,
+                                      color: AppColors.secondaryLabel,
+                                      fontWeight: FontWeight.w600,
                                     ),
                                   ),
                                 ),
+                              ),
+                            ),
                         ],
                       ),
                     ),
@@ -205,8 +204,8 @@ class _WinStreakScreenState extends State<WinStreakScreen> {
                   color: AppColors.secondaryLabel,
                 ),
                 const SizedBox(width: 4),
-                Text(
-                  'Screen Time',
+                  Text(
+                  _t('screen_time'),
                   style: AppTypography.callout.copyWith(
                     fontSize: 16,
                     color: AppColors.secondaryLabel,
@@ -229,8 +228,8 @@ class _WinStreakScreenState extends State<WinStreakScreen> {
                   color: AppColors.secondaryLabel,
                 ),
                 const SizedBox(width: 4),
-                Text(
-                  'Home',
+                  Text(
+                  _t('home'),
                   style: AppTypography.callout.copyWith(
                     fontSize: 16,
                     color: AppColors.secondaryLabel,
@@ -247,58 +246,70 @@ class _WinStreakScreenState extends State<WinStreakScreen> {
 
   Widget _mainStreakCard() {
     final streak = _streak?.currentStreak ?? 0;
-    return _glowSurface(
-      glowColor: AppColors.primaryOrange.withValues(alpha: 0.34),
-      borderRadius: 38,
-      child: GlassCard(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 26),
-        borderRadius: 38,
-        border: Border.all(
-          color: AppColors.primaryOrange.withValues(alpha: 0.62),
-          width: 1.1,
-        ),
-        gradientColors: [
-          AppColors.primaryOrange.withValues(alpha: 0.18),
-          AppColors.backgroundLight.withValues(alpha: 0.92),
+    final bestStreak = _streak?.longestStreak ?? 0;
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: _winCardDecoration(radius: 24),
+      child: Column(
+        children: [
+          Icon(
+            CupertinoIcons.flame,
+            size: 36,
+            color: AppColors.primaryOrange.withValues(alpha: 0.9),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            _t('win_streak_current_streak'),
+            style: AppTypography.overline.copyWith(
+              fontSize: 14,
+              color: AppColors.secondaryLabel.withValues(alpha: 0.7),
+              fontWeight: FontWeight.w600,
+              letterSpacing: 2,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            '$streak',
+            style: AppTypography.heroNumber.copyWith(
+              fontSize: 96,
+              color: AppColors.warning,
+              fontWeight: FontWeight.w700,
+              height: 0.92,
+            ),
+          ),
+          const SizedBox(height: 10),
+          RichText(
+            text: TextSpan(
+              style: AppTypography.footnote.copyWith(
+                fontSize: 13,
+                color: AppColors.secondaryLabel.withValues(alpha: 0.7),
+              ),
+              children: [
+                TextSpan(text: "${_t('win_streak_best_streak")}: '),
+                TextSpan(
+                  text:
+                      "$bestStreak ${_t('win_streak_days_suffix")}',
+                  style: AppTypography.footnote.copyWith(
+                    fontSize: 13,
+                    color: AppColors.secondaryLabel.withValues(alpha: 0.85),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            streak == 0
+                ? _t('win_streak_start_first_session')
+                : _t('win_streak_keep_momentum'),
+            style: AppTypography.footnote.copyWith(
+              fontSize: 13,
+              color: AppColors.secondaryLabel.withValues(alpha: 0.6),
+              fontWeight: FontWeight.w500,
+            ),
+          ),
         ],
-        child: Column(
-          children: [
-            Icon(
-              CupertinoIcons.flame_fill,
-              size: 98,
-              color: AppColors.primaryOrange,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'CURRENT STREAK',
-              style: AppTypography.mono.copyWith(
-                fontSize: 18,
-                color: AppColors.primaryOrange.withValues(alpha: 0.86),
-                fontWeight: FontWeight.w900,
-                letterSpacing: 4.2,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              '$streak',
-              style: AppTypography.mono.copyWith(
-                fontSize: 200,
-                color: const Color(0xFFFF9445),
-                fontWeight: FontWeight.w900,
-                height: 0.82,
-              ),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              streak == 0 ? 'Start your first session' : 'Keep the momentum',
-              style: AppTypography.mono.copyWith(
-                fontSize: 16,
-                color: AppColors.secondaryLabel,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -309,65 +320,107 @@ class _WinStreakScreenState extends State<WinStreakScreen> {
     required String value,
     required String label,
   }) {
-    return GlassCard(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
-      borderRadius: 24,
-      border: Border.all(color: color.withValues(alpha: 0.52), width: 0.9),
-      gradientColors: [
-        color.withValues(alpha: 0.1),
-        AppColors.backgroundLight.withValues(alpha: 0.86),
-      ],
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Icon(icon, color: color, size: 34),
-          const SizedBox(height: 6),
-          Text(
-            value,
-            style: AppTypography.mono.copyWith(
-              fontSize: 68,
-              color: color,
-              fontWeight: FontWeight.w900,
-              height: 0.82,
+    return _WinPressScale(
+      onTap: () {},
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: _winCardDecoration(radius: 18),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Container(
+              width: 42,
+              height: 42,
+              decoration: BoxDecoration(
+                color: AppColors.moduleIconBackground,
+                borderRadius: BorderRadius.circular(14),
+              ),
+              alignment: Alignment.center,
+              child: Icon(icon, color: color, size: 20),
             ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: AppTypography.mono.copyWith(
-              fontSize: 11,
-              color: AppColors.tertiaryLabel,
-              fontWeight: FontWeight.w900,
-              letterSpacing: 1.8,
+            const SizedBox(height: 10),
+            Text(
+              value,
+              style: AppTypography.title2.copyWith(
+                fontSize: 28,
+                color: color,
+                fontWeight: FontWeight.w700,
+                height: 0.95,
+              ),
             ),
-          ),
-        ],
+            const SizedBox(height: 6),
+            Text(
+              label,
+              style: AppTypography.caption1.copyWith(
+                fontSize: 12,
+                color: AppColors.tertiaryLabel.withValues(alpha: 0.7),
+                fontWeight: FontWeight.w600,
+                letterSpacing: 1,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _glowSurface({
-    required Widget child,
-    required Color glowColor,
-    double borderRadius = 20,
-  }) {
-    return Stack(
-      children: [
-        Positioned.fill(
-          child: IgnorePointer(
-            child: Container(
-              margin: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(borderRadius),
-                boxShadow: [
-                  BoxShadow(color: glowColor, blurRadius: 30, spreadRadius: 1),
-                ],
-              ),
-            ),
-          ),
+  BoxDecoration _winCardDecoration({double radius = 18}) {
+    return BoxDecoration(
+      gradient: LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [AppColors.cardBackgroundStrong, AppColors.cardBase],
+      ),
+      borderRadius: BorderRadius.circular(radius),
+      border: Border.all(
+        color: AppColors.border,
+        width: 1,
+      ),
+      boxShadow: [
+        BoxShadow(
+          color: AppColors.glassShadow.withValues(alpha: 0.3),
+          blurRadius: 30,
+          offset: const Offset(0, 10),
         ),
-        child,
       ],
+    );
+  }
+}
+
+class _WinPressScale extends StatefulWidget {
+  final Widget child;
+  final VoidCallback onTap;
+
+  const _WinPressScale({required this.child, required this.onTap});
+
+  @override
+  State<_WinPressScale> createState() => _WinPressScaleState();
+}
+
+class _WinPressScaleState extends State<_WinPressScale> {
+  bool _pressed = false;
+
+  void _setPressed(bool value) {
+    if (!mounted || _pressed == value) return;
+    setState(() => _pressed = value);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Listener(
+      onPointerDown: (_) => _setPressed(true),
+      onPointerUp: (_) => _setPressed(false),
+      onPointerCancel: (_) => _setPressed(false),
+      child: AnimatedScale(
+        scale: _pressed ? 1.01 : 1,
+        duration: const Duration(milliseconds: 120),
+        curve: Curves.easeOutCubic,
+        child: GestureDetector(
+          behavior: HitTestBehavior.translucent,
+          onTap: widget.onTap,
+          child: widget.child,
+        ),
+      ),
     );
   }
 }

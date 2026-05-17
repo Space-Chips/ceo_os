@@ -1,7 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../core/providers/language_provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 
@@ -41,21 +43,37 @@ Future<void> showAuthDialog(
   required String title,
   required String message,
 }) async {
+  final language = context.read<LanguageProvider>();
   await showCupertinoDialog<void>(
     context: context,
     builder: (context) => CupertinoAlertDialog(
-      title: Text(title, style: AppTypography.mono.copyWith(fontSize: 16)),
+      title: Text(
+        title,
+        style: AppTypography.headline.copyWith(
+          fontSize: 17,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
       content: Padding(
         padding: const EdgeInsets.only(top: 8),
-        child: Text(message, style: AppTypography.caption1),
+        child: Text(
+          message,
+          style: AppTypography.callout.copyWith(
+            fontSize: 14,
+            color: AppColors.secondaryLabel,
+          ),
+        ),
       ),
       actions: [
         CupertinoDialogAction(
           isDefaultAction: true,
           onPressed: () => Navigator.of(context).pop(),
           child: Text(
-            'OK',
-            style: AppTypography.mono.copyWith(color: AppColors.primaryOrange),
+            language.t('ok'),
+            style: AppTypography.callout.copyWith(
+              color: AppColors.primaryOrange,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
       ],
@@ -68,10 +86,11 @@ class AuthTrustFooter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final language = context.watch<LanguageProvider>();
     return Column(
       children: [
         Text(
-          'By continuing, you agree to the Terms of Use and Privacy Policy.',
+          language.t('auth_trust_footer'),
           textAlign: TextAlign.center,
           style: AppTypography.caption1.copyWith(
             color: AppColors.tertiaryLabel,
@@ -85,25 +104,23 @@ class AuthTrustFooter extends StatelessWidget {
           runSpacing: 8,
           children: [
             _AuthInlineLink(
-              label: 'TERMS',
+              label: language.t('terms_short'),
               onTap: () => showAuthLegalDialog(
                 context,
-                title: 'TERMS OF USE',
-                body:
-                    'WakeApp provides productivity, planning, and focus tools. Premium subscriptions may renew automatically unless canceled in your Apple App Store or Google Play subscription settings.',
+                title: language.t('terms_of_use'),
+                body: language.t('auth_terms_body'),
               ),
             ),
             _AuthInlineLink(
-              label: 'PRIVACY',
+              label: language.t('privacy_short'),
               onTap: () => showAuthLegalDialog(
                 context,
-                title: 'PRIVACY POLICY',
-                body:
-                    'WakeApp uses Supabase for account and cloud sync infrastructure, Google Sign-In when selected by the user, RevenueCat plus Apple or Google Play for purchases, and platform system APIs for blocking, notifications, widgets, and scheduling.',
+                title: language.t('privacy_policy'),
+                body: language.t('auth_privacy_body'),
               ),
             ),
             _AuthInlineLink(
-              label: 'SUPPORT',
+              label: language.t('support_short'),
               onTap: () => copySupportEmail(context),
             ),
           ],
@@ -127,10 +144,10 @@ class _AuthInlineLink extends StatelessWidget {
       onPressed: onTap,
       child: Text(
         label,
-        style: AppTypography.mono.copyWith(
-          fontSize: 11,
+        style: AppTypography.footnote.copyWith(
+          fontSize: 12,
           color: AppColors.primaryOrange,
-          letterSpacing: 1.2,
+          fontWeight: FontWeight.w600,
         ),
       ),
     );
@@ -142,21 +159,37 @@ Future<void> showAuthLegalDialog(
   required String title,
   required String body,
 }) async {
+  final language = context.read<LanguageProvider>();
   await showCupertinoDialog<void>(
     context: context,
     builder: (context) => CupertinoAlertDialog(
-      title: Text(title, style: AppTypography.mono.copyWith(fontSize: 16)),
+      title: Text(
+        title,
+        style: AppTypography.headline.copyWith(
+          fontSize: 17,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
       content: Padding(
         padding: const EdgeInsets.only(top: 8),
-        child: Text(body, style: AppTypography.caption1),
+        child: Text(
+          body,
+          style: AppTypography.callout.copyWith(
+            fontSize: 14,
+            color: AppColors.secondaryLabel,
+          ),
+        ),
       ),
       actions: [
         CupertinoDialogAction(
           isDefaultAction: true,
           onPressed: () => Navigator.of(context).pop(),
           child: Text(
-            'Close',
-            style: AppTypography.mono.copyWith(color: AppColors.primaryOrange),
+            language.t('close'),
+            style: AppTypography.callout.copyWith(
+              color: AppColors.primaryOrange,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
       ],
@@ -166,12 +199,14 @@ Future<void> showAuthLegalDialog(
 
 Future<void> copySupportEmail(BuildContext context) async {
   const supportEmail = 'timofrmac@gmail.com';
+  final language = context.read<LanguageProvider>();
   await Clipboard.setData(const ClipboardData(text: supportEmail));
   if (!context.mounted) return;
   await showAuthDialog(
     context,
-    title: 'SUPPORT',
-    message:
-        'Support email copied: $supportEmail. Include your device, app version, and the steps that caused the issue.',
+    title: language.t('contact_support'),
+    message: language
+        .t('support_email_copied')
+        .replaceAll('timofrmac@gmail.com', supportEmail),
   );
 }

@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/task_models.dart';
 import '../services/supabase_service.dart';
 import '../utils/app_logger.dart';
@@ -25,12 +28,37 @@ class TaskRepository {
 
       final response = await query.order('sort_order', ascending: true);
 
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString(
+          _cacheKey(includeCompleted ? 'tasks_all_v1' : 'tasks_active_v1'),
+          jsonEncode(response),
+        );
+      } catch (_) {
+        // Best effort only.
+      }
+
       return (response as List)
           .map((data) => ParetoTask.fromJson(data))
           .toList();
     } catch (e) {
       AppLogger.error('Error getting tasks.', e);
-      return [];
+      // Offline-first fallback: return last cached snapshot if present.
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final raw = prefs.getString(
+          _cacheKey(includeCompleted ? 'tasks_all_v1' : 'tasks_active_v1'),
+        );
+        if (raw == null || raw.isEmpty) return [];
+        final decoded = jsonDecode(raw);
+        if (decoded is! List) return [];
+        return decoded
+            .whereType<Map>()
+            .map((row) => ParetoTask.fromJson(Map<String, dynamic>.from(row)))
+            .toList();
+      } catch (_) {
+        return [];
+      }
     }
   }
 
@@ -113,7 +141,7 @@ class TaskRepository {
     if (syncToCalendar && deadline != null) {
       await addEvent(
         title,
-        '${deadline.year.toString().padLeft(4, '0')}-${deadline.month.toString().padLeft(2, '0')}-${deadline.day.toString().padLeft(2, '0')}',
+        "${deadline.year.toString().padLeft(4, '0")}-${deadline.month.toString().padLeft(2, '0')}-${deadline.day.toString().padLeft(2, '0')}',
         description: description,
         sourceType: 'task',
         sourceId: response['id'] as String?,
@@ -166,22 +194,79 @@ class TaskRepository {
   Future<List<CalendarEvent>> getAllEvents() async {
     try {
       final cutoffDate = DateTime.now().subtract(const Duration(days: 30));
-      final dateStr =
-          '${cutoffDate.year}-${cutoffDate.month.toString().padLeft(2, '0')}-${cutoffDate.day.toString().padLeft(2, '0')}';
+      final horizonDate = DateTime.now().add(const Duration(days: 740));
+      final dateStr = _formatDate(cutoffDate);
 
-      final response = await _client
+      final upcomingResponse = await _client
           .from('calendar_events')
           .select()
           .eq('created_by', _currentUserId)
           .gte('event_date', dateStr)
           .order('event_date', ascending: true);
 
-      return (response as List)
+      final recurringResponse = await _client
+          .from('calendar_events')
+          .select()
+          .eq('created_by', _currentUserId)
+          .not('recurrence_rule', 'is', null);
+
+      final merged = <String, Map<String, dynamic>>{};
+      for (final item in (upcomingResponse as List)) {
+        final row = Map<String, dynamic>.from(item as Map);
+        final id = row['id'] as String?;
+        if (id != null && id.isNotEmpty) {
+          merged[id] = row;
+        }
+      }
+      for (final item in (recurringResponse as List)) {
+        final row = Map<String, dynamic>.from(item as Map);
+        final id = row['id'] as String?;
+        if (id != null && id.isNotEmpty) {
+          merged[id] = row;
+        }
+      }
+
+      final baseEvents = merged.values
           .map((data) => CalendarEvent.fromJson(data))
           .toList();
+
+      final expanded = _expandRecurringEvents(
+        baseEvents,
+        cutoffDate: cutoffDate,
+        horizonDate: horizonDate,
+      );
+
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString(_cacheKey('events_v1'), jsonEncode(merged.values));
+      } catch (_) {
+        // Best effort only.
+      }
+
+      return expanded;
     } catch (e) {
       AppLogger.error('Error getting events.', e);
-      return [];
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final raw = prefs.getString(_cacheKey('events_v1'));
+        if (raw == null || raw.isEmpty) return [];
+        final decoded = jsonDecode(raw);
+        if (decoded is! List) return [];
+        final baseEvents = decoded
+            .whereType<Map>()
+            .map((row) => CalendarEvent.fromJson(Map<String, dynamic>.from(row)))
+            .toList();
+
+        final cutoffDate = DateTime.now().subtract(const Duration(days: 30));
+        final horizonDate = DateTime.now().add(const Duration(days: 740));
+        return _expandRecurringEvents(
+          baseEvents,
+          cutoffDate: cutoffDate,
+          horizonDate: horizonDate,
+        );
+      } catch (_) {
+        return [];
+      }
     }
   }
 

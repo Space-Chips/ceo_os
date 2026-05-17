@@ -63,8 +63,7 @@ class _BlackoutPreparationAnimationViewState
           padding: const EdgeInsets.fromLTRB(14, 14, 14, 16),
           child: AnimatedBuilder(
             animation: _controller,
-            builder: (context, _) =>
-                _PhoneHomeMock(progress: _controller.value),
+            builder: (context, _) => _PhoneHomeMock(progress: _controller.value),
           ),
         ),
       ),
@@ -95,27 +94,15 @@ class _PhoneHomeMock extends StatelessWidget {
 
     final baseIcons = <_MockIconData>[
       const _MockIconData(col: 0, row: 0, icon: CupertinoIcons.phone_fill),
-      const _MockIconData(
-        col: 1,
-        row: 0,
-        icon: CupertinoIcons.chat_bubble_2_fill,
-      ),
+      const _MockIconData(col: 1, row: 0, icon: CupertinoIcons.chat_bubble_2_fill),
       const _MockIconData(col: 2, row: 0, icon: CupertinoIcons.calendar),
-      const _MockIconData(
-        col: 0,
-        row: 1,
-        icon: CupertinoIcons.video_camera_solid,
-      ),
+      const _MockIconData(col: 0, row: 1, icon: CupertinoIcons.video_camera_solid),
       const _MockIconData(col: 1, row: 1, icon: CupertinoIcons.map_fill),
       const _MockIconData(col: 2, row: 1, icon: CupertinoIcons.folder_fill),
       const _MockIconData(col: 0, row: 2, icon: CupertinoIcons.house_fill),
       const _MockIconData(col: 1, row: 2, icon: CupertinoIcons.location_solid),
       const _MockIconData(col: 2, row: 2, icon: CupertinoIcons.creditcard_fill),
-      const _MockIconData(
-        col: 0,
-        row: 3,
-        icon: CupertinoIcons.chart_bar_alt_fill,
-      ),
+      const _MockIconData(col: 0, row: 3, icon: CupertinoIcons.chart_bar_alt_fill),
       const _MockIconData(col: 1, row: 3, icon: CupertinoIcons.doc_fill),
       const _MockIconData(col: 2, row: 3, icon: CupertinoIcons.settings_solid),
     ];
@@ -126,7 +113,7 @@ class _PhoneHomeMock extends StatelessWidget {
       _iconOrigin(dragFrom.dx.toInt(), dragFrom.dy.toInt()),
       _iconOrigin(dragTo.dx.toInt(), dragTo.dy.toInt()),
       phaseDrag,
-    )!;
+    ) ?? _iconOrigin(dragFrom.dx.toInt(), dragFrom.dy.toInt());
 
     final folderCenter = _iconOrigin(1, 1);
     final dropTargets = [
@@ -143,7 +130,7 @@ class _PhoneHomeMock extends StatelessWidget {
         final iconSize = width * 0.17;
         final jiggleAmp = 0.018 * phaseEdit;
         final folderScale = phaseFolderBorn.clamp(0.0, 1.0);
-        final folderOpenScale = lerpDouble(1.0, 1.06, phaseFolderOpen)!;
+        final folderOpenScale = lerpDouble(1.0, 1.06, phaseFolderOpen) ?? 1.0;
         final folderPanelOpacity = phaseFolderOpen;
         final renameOpacity = phaseRename;
 
@@ -173,15 +160,10 @@ class _PhoneHomeMock extends StatelessWidget {
                   iconSize: iconSize,
                   jiggleAmp: jiggleAmp,
                   time: progress,
-                  hidden:
-                      (item.col == 1 && item.row == 1) ||
+                  hidden: (item.col == 1 && item.row == 1) ||
                       (item.col == 2 && item.row == 1 && phaseDropMore > 0.4) ||
-                      (item.col == 0 &&
-                          item.row == 2 &&
-                          phaseDropMore > 0.52) ||
-                      (item.col == 1 &&
-                          item.row == 2 &&
-                          phaseDropMore > 0.65) ||
+                      (item.col == 0 && item.row == 2 && phaseDropMore > 0.52) ||
+                      (item.col == 1 && item.row == 2 && phaseDropMore > 0.65) ||
                       (item.col == 2 && item.row == 2 && phaseDropMore > 0.78),
                 ),
             Positioned(
@@ -196,7 +178,7 @@ class _PhoneHomeMock extends StatelessWidget {
                     icon: CupertinoIcons.video_camera_solid,
                     accent: AppColors.warning,
                     highlight: phaseEdit > 0.12,
-                    pressedScale: lerpDouble(1, 0.93, phaseEdit)!,
+                    pressedScale: lerpDouble(1, 0.93, phaseEdit) ?? 1.0,
                   ),
                 ),
               ),
@@ -216,20 +198,19 @@ class _PhoneHomeMock extends StatelessWidget {
             for (var i = 0; i < dropTargets.length; i++)
               Positioned(
                 left: Offset.lerp(
-                  dropTargets[i] * width,
-                  folderCenter * width,
-                  (phaseDropMore * (1.1 + i * 0.1)).clamp(0.0, 1.0),
-                )!.dx,
+                      dropTargets[i] * width,
+                      folderCenter * width,
+                      (phaseDropMore * (1.1 + i * 0.1)).clamp(0.0, 1.0),
+                    )!
+                    .dx,
                 top: Offset.lerp(
-                  dropTargets[i] * height,
-                  folderCenter * height,
-                  (phaseDropMore * (1.1 + i * 0.1)).clamp(0.0, 1.0),
-                )!.dy,
+                      dropTargets[i] * height,
+                      folderCenter * height,
+                      (phaseDropMore * (1.1 + i * 0.1)).clamp(0.0, 1.0),
+                    )!
+                    .dy,
                 child: Opacity(
-                  opacity: (1 - phaseDropMore * (1.0 + i * 0.18)).clamp(
-                    0.0,
-                    1.0,
-                  ),
+                  opacity: (1 - phaseDropMore * (1.0 + i * 0.18)).clamp(0.0, 1.0),
                   child: _iconTile(
                     size: iconSize,
                     icon: i.isEven
@@ -245,7 +226,7 @@ class _PhoneHomeMock extends StatelessWidget {
                   opacity: folderPanelOpacity,
                   child: Center(
                     child: Transform.scale(
-                      scale: lerpDouble(0.9, 1.0, folderPanelOpacity)!,
+                      scale: lerpDouble(0.9, 1.0, folderPanelOpacity) ?? 1.0,
                       child: _folderPanel(
                         width: width * 0.74,
                         height: height * 0.46,
@@ -331,11 +312,7 @@ class _MockIconData {
   final int row;
   final IconData icon;
 
-  const _MockIconData({
-    required this.col,
-    required this.row,
-    required this.icon,
-  });
+  const _MockIconData({required this.col, required this.row, required this.icon});
 }
 
 Widget _iconTile({
@@ -357,14 +334,8 @@ Widget _iconTile({
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Color.alphaBlend(
-              accent.withValues(alpha: 0.18),
-              AppColors.cardRaised,
-            ),
-            Color.alphaBlend(
-              accent.withValues(alpha: 0.08),
-              AppColors.cardBase,
-            ),
+            Color.alphaBlend(accent.withValues(alpha: 0.18), AppColors.cardRaised),
+            Color.alphaBlend(accent.withValues(alpha: 0.08), AppColors.cardBase),
           ],
         ),
         border: Border.all(
@@ -481,9 +452,7 @@ Widget _folderPanel({
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      AppColors.secondarySystemBackground.withValues(
-                        alpha: 0.92,
-                      ),
+                      AppColors.secondarySystemBackground.withValues(alpha: 0.92),
                       AppColors.cardRaised.withValues(alpha: 0.86),
                     ],
                   ),

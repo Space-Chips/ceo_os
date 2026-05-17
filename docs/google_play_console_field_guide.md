@@ -1,7 +1,7 @@
-# Google Play Console Field Guide — CEO OS
+# Google Play Console Field Guide — WakeApp
 
 Date: 2026-03-28  
-Project: CEO OS  
+Project: WakeApp  
 Scope: Exact fields, recommended answers, and copy for Play Console setup
 
 ## 1. How to Use This Guide
@@ -22,7 +22,7 @@ If a field is uncertain because it depends on your final business setup, it is m
 
 This guide assumes:
 - the final Android package is `com.wakeapp.ceoos`
-- the app name is `CEO OS`
+- the app name is `WakeApp`
 - the default store language is English
 - the app has account creation
 - the app has no advertising
@@ -39,7 +39,7 @@ If any of those assumptions are false, update the affected fields before submiss
 ### Field: App name
 Recommended value:
 
-`CEO OS`
+`WakeApp`
 
 ### Field: Default language
 Recommended value:
@@ -74,7 +74,7 @@ Accept only if all information is accurate.
 ### App name
 Recommended:
 
-`CEO OS`
+`WakeApp`
 
 ### Short description
 Recommended:
@@ -87,20 +87,20 @@ This is under the 80-character limit and stays within safe claims.
 Recommended:
 
 ```text
-CEO OS is a focus app and personal control center for concentration, discipline, and daily execution. It combines app blocking, website limits, daily limits, routines, tasks, habits, and notes in one place so you can manage your environment more intentionally.
+WakeApp is a focus app and personal control center for concentration, discipline, and daily execution. It combines app blocking, website limits, daily limits, routines, tasks, habits, and notes in one place so you can manage your environment more intentionally.
 
-Use CEO OS to:
+Use WakeApp to:
 - block distracting apps during focus sessions
 - limit selected websites on Android in supported browsers
 - apply daily limits to selected apps and supported websites
 - start Focus Mode for protected work sessions
-- activate CEO Mode for stricter focus protection
+- activate Blackout Mode for stricter focus protection
 - schedule pauses and time-based restrictions
 - manage routines, tasks, habits, and notes from the same control center
 
-On Android, CEO OS uses on-device protection flows to apply the restrictions you choose. Accessibility is used to detect when a selected distracting app or supported website is opened, Usage Access is used for daily-limit enforcement, and display-over-other-apps permission is used to show the blocking shield.
+On Android, WakeApp uses on-device protection flows to apply the restrictions you choose. Accessibility is used to detect when a selected distracting app or supported website is opened, Usage Access is used for daily-limit enforcement, and display-over-other-apps permission is used to show the blocking shield.
 
-CEO OS is designed for self-control, productivity, and digital wellbeing. It does not present itself as a disability accessibility tool, and it does not claim universal website blocking across all Android browsers or web views.
+WakeApp is designed for self-control, productivity, and digital wellbeing. It does not present itself as a disability accessibility tool, and it does not claim universal website blocking across all Android browsers or web views.
 
 Premium features may be offered through subscriptions where available.
 ```
@@ -133,7 +133,7 @@ Avoid:
 ### Screenshots
 Recommended screenshot themes:
 1. Focus Mode
-2. CEO Mode
+2. Blackout Mode
 3. Block Apps & Sites
 4. Daily limits
 5. Habits / planning / task value
@@ -207,7 +207,7 @@ Why:
 Recommended:
 
 ```text
-CEO OS requires login to access the main product flows.
+WakeApp requires login to access the main product flows.
 
 Provide a working reviewer test account and password here before submission.
 
@@ -226,7 +226,7 @@ On Android, the core blocking flow uses Accessibility, Usage Access, and display
 `VERIFY BEFORE SUBMITTING`
 
 Use the official questionnaire truthfully.  
-For the current CEO OS product positioning, expect a low rating if there is:
+For the current WakeApp product positioning, expect a low rating if there is:
 - no violence
 - no sexual content
 - no gambling
@@ -323,7 +323,7 @@ Use the published version of:
 Recommended:
 
 ```text
-Users can delete their account directly inside CEO OS. If they no longer have access to the app, they can request account deletion through the public support page linked here.
+Users can delete their account directly inside WakeApp. If they no longer have access to the app, they can request account deletion through the public support page linked here.
 ```
 
 ---
@@ -338,32 +338,32 @@ Use these prepared docs:
 Recommended:
 
 ```text
-CEO OS uses Android Accessibility to detect when a selected distracting app or supported website is opened and to apply the blocking shield on-device. This is a core user-facing feature used for Focus Mode, CEO Mode, scheduled pauses, and daily-limit enforcement.
+WakeApp uses Android Accessibility to detect when a selected distracting app or supported website is opened and to apply the blocking shield on-device. This is a core user-facing feature used for Focus Mode, Blackout Mode, scheduled pauses, and daily-limit enforcement.
 
-CEO OS does not use Accessibility for ads, hidden UI manipulation, or unrelated analytics.
+WakeApp does not use Accessibility for ads, hidden UI manipulation, or unrelated analytics.
 ```
 
 ### Usage Access explanation
 Recommended:
 
 ```text
-CEO OS uses Usage Access to measure real device usage for selected apps and supported websites so daily limits can be enforced accurately on-device.
+WakeApp uses Usage Access to measure real device usage for selected apps and supported websites so daily limits can be enforced accurately on-device.
 
-CEO OS does not use this access for advertising, profiling, or unrelated analytics.
+WakeApp does not use this access for advertising, profiling, or unrelated analytics.
 ```
 
 ### Overlay explanation
 Recommended:
 
 ```text
-CEO OS uses display-over-other-apps permission to present the blocking shield when a blocked app or supported website is opened. This permission is used only for the app’s core focus and restriction features.
+CEO OS uses display-over-other-apps permission to present the blocking shield when a blocked app or supported website is opened. This permission is used only for the app's core focus and restriction features.
 ```
 
 ### Package visibility explanation if Google asks
 Recommended:
 
 ```text
-CEO OS does not rely on broad package visibility for general app inventory. App selection is limited to launcher-visible apps needed for user-facing blocking configuration.
+WakeApp does not rely on broad package visibility for general app inventory. App selection is limited to launcher-visible apps needed for user-facing blocking configuration.
 ```
 
 ### Accessibility tool status
@@ -371,7 +371,7 @@ Recommended:
 
 Do **not** claim `isAccessibilityTool = true` unless the app is genuinely an accessibility tool for disability support.
 
-For the current CEO OS positioning:
+For the current WakeApp positioning:
 - recommendation: **No**
 
 ---

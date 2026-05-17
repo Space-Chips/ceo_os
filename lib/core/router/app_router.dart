@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/ceo_mode_provider.dart';
 import '../providers/focus_provider.dart';
+import '../providers/language_provider.dart';
 import '../config/apple_review_compliance.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
@@ -29,6 +30,7 @@ import '../../features/debug/theme_preview_screen.dart';
 import '../../features/debug/widget_gallery_screen.dart';
 import '../../features/dashboard/dashboard_screen.dart';
 import '../../features/profile/profile_screen.dart';
+import '../../features/settings/settings_screen.dart';
 import '../../features/leaderboard/leaderboard_screen.dart';
 import '../../features/rank/rank_screen.dart';
 import '../../features/legacy/notes_screen.dart';
@@ -55,9 +57,8 @@ class AppRouter {
     final isAndroid =
         !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
     const envInitialLocation = String.fromEnvironment('INITIAL_LOCATION');
-    final initialLocation = envInitialLocation.trim().isEmpty
-        ? '/home'
-        : envInitialLocation.trim();
+    final initialLocation =
+        envInitialLocation.trim().isEmpty ? '/home' : envInitialLocation.trim();
     return GoRouter(
       initialLocation: initialLocation,
       debugLogDiagnostics: false,
@@ -88,27 +89,6 @@ class AppRouter {
         GoRoute(
           path: '/onboarding',
           builder: (context, state) => const OnboardingScreen(),
-        ),
-        GoRoute(
-          path: '/control-center-setup',
-          builder: (context, state) {
-            final edit = state.uri.queryParameters['edit'] == 'true';
-            return ControlCenterSetupScreen(isEditing: edit);
-          },
-        ),
-        GoRoute(
-          path: '/control-center-setup',
-          builder: (context, state) {
-            final edit = state.uri.queryParameters['edit'] == 'true';
-            return ControlCenterSetupScreen(isEditing: edit);
-          },
-        ),
-        GoRoute(
-          path: '/control-center-setup',
-          builder: (context, state) {
-            final edit = state.uri.queryParameters['edit'] == 'true';
-            return ControlCenterSetupScreen(isEditing: edit);
-          },
         ),
         GoRoute(
           path: '/control-center-setup',
@@ -175,7 +155,7 @@ class AppRouter {
             GoRoute(
               path: '/settings',
               pageBuilder: (context, state) =>
-                  const NoTransitionPage(child: ProfileScreen()),
+                  const NoTransitionPage(child: SettingsScreen()),
             ),
             if (kDebugMode)
               GoRoute(
@@ -194,24 +174,6 @@ class AppRouter {
                 path: '/debug/themes',
                 pageBuilder: (context, state) =>
                     const NoTransitionPage(child: ThemePreviewScreen()),
-              ),
-            if (kDebugMode)
-              GoRoute(
-                path: '/debug/widgets',
-                pageBuilder: (context, state) =>
-                    const NoTransitionPage(child: WidgetGalleryScreen()),
-              ),
-            if (kDebugMode)
-              GoRoute(
-                path: '/debug/widgets',
-                pageBuilder: (context, state) =>
-                    const NoTransitionPage(child: WidgetGalleryScreen()),
-              ),
-            if (kDebugMode)
-              GoRoute(
-                path: '/debug/widgets',
-                pageBuilder: (context, state) =>
-                    const NoTransitionPage(child: WidgetGalleryScreen()),
               ),
             if (kDebugMode)
               GoRoute(
@@ -262,11 +224,12 @@ class AppRouter {
             ),
             GoRoute(
               path: '/screen-time',
-              pageBuilder: (context, state) => NoTransitionPage(
-                child: ScreenTimeScreen(
-                  initialSection: state.uri.queryParameters['section'],
-                ),
-              ),
+              pageBuilder: (context, state) =>
+                  NoTransitionPage(
+                    child: ScreenTimeScreen(
+                      initialSection: state.uri.queryParameters['section'],
+                    ),
+                  ),
             ),
             GoRoute(
               path: '/screen-time-manager',
@@ -333,6 +296,52 @@ class AppRouter {
         return null;
       },
       refreshListenable: context.read<AuthProvider>(),
+    );
+  }
+
+  Future<void> _syncNativePlannedSessionsIfNeeded(
+    FocusProvider focusProvider,
+    List<CalendarEvent> events,
+  ) async {
+    final deduped = <String, CalendarEvent>{};
+    for (final event in events) {
+      if ((event.sourceType ?? '').toLowerCase() != 'focus_plan') continue;
+      if (event.eventDate == null || event.eventTime == null) continue;
+      final rootId = event.id.split('::').first;
+      final existing = deduped[rootId];
+      if (existing == null) {
+        deduped[rootId] = event;
+        continue;
+      }
+      final existingDate = DateTime.tryParse(existing.eventDate ?? '');
+      final newDate = DateTime.tryParse(event.eventDate ?? '');
+      if (existingDate == null || (newDate != null && newDate.isBefore(existingDate))) {
+        deduped[rootId] = event;
+      }
+    }
+    final focusEvents = deduped.values.toList(growable: false);
+
+    final signature = deduped.entries
+        .map(
+          (entry) =>
+              '${entry.key}|${entry.value.eventDate}|${entry.value.eventTime}|${entry.value.durationMinutes}|${entry.value.recurrenceRule}',
+        )
+        .join('||');
+
+    if (signature == _lastNativeScheduleSignature) return;
+    _lastNativeScheduleSignature = signature;
+    await focusProvider.syncPlannedFocusSessions(
+      focusEvents
+          .map(
+            (event) => <String, dynamic>{
+              'id': event.id,
+              'eventDate': event.eventDate,
+              'eventTime': event.eventTime,
+              'durationMinutes': event.durationMinutes,
+              'recurrenceRule': event.recurrenceRule,
+            },
+          )
+          .toList(growable: false),
     );
   }
 }
@@ -454,9 +463,7 @@ class _AppShellState extends State<_AppShell> {
     List<CalendarEvent> events,
   ) async {
     final focusEvents = events
-        .where(
-          (event) => (event.sourceType ?? '').toLowerCase() == 'focus_plan',
-        )
+        .where((event) => (event.sourceType ?? '').toLowerCase() == 'focus_plan')
         .where((event) => event.eventDate != null && event.eventTime != null)
         .toList();
 
@@ -469,19 +476,7 @@ class _AppShellState extends State<_AppShell> {
 
     if (signature == _lastNativeScheduleSignature) return;
     _lastNativeScheduleSignature = signature;
-    await focusProvider.syncPlannedFocusSessions(
-      focusEvents
-          .map(
-            (event) => <String, dynamic>{
-              'id': event.id,
-              'eventDate': event.eventDate,
-              'eventTime': event.eventTime,
-              'durationMinutes': event.durationMinutes,
-              'recurrenceRule': event.recurrenceRule,
-            },
-          )
-          .toList(growable: false),
-    );
+    await focusProvider.syncPlannedFocusSessions(focusEvents);
   }
 
   Future<void> _runFocusPlanTick() async {
@@ -497,10 +492,7 @@ class _AppShellState extends State<_AppShell> {
         _lastEventsRefresh = now;
       }
 
-      await _syncNativePlannedSessionsIfNeeded(
-        focusProvider,
-        taskProvider.events,
-      );
+      await _syncNativePlannedSessionsIfNeeded(focusProvider, taskProvider.events);
 
       for (final event in taskProvider.events) {
         final source = (event.sourceType ?? '').trim().toLowerCase();
@@ -573,9 +565,7 @@ class _AppShellState extends State<_AppShell> {
       SnackBar(
         behavior: SnackBarBehavior.floating,
         duration: const Duration(seconds: 3),
-        content: Text(
-          'Focus mode will start automatically in 5 minutes.',
-        ),
+        content: const Text('Focus mode will start automatically in 5 minutes.'),
       ),
     );
   }
@@ -601,13 +591,17 @@ class _AppShellState extends State<_AppShell> {
         children: [
           widget.child,
           const Positioned.fill(
-            child: IgnorePointer(child: _GlobalAtmosphereLayer()),
+            child: IgnorePointer(
+              child: _GlobalAtmosphereLayer(),
+            ),
           ),
           Positioned.fill(
             child: IgnorePointer(
               child: Opacity(
                 opacity: 0.075,
-                child: CustomPaint(painter: _GlobalNoisePainter()),
+                child: CustomPaint(
+                  painter: _GlobalNoisePainter(),
+                ),
               ),
             ),
           ),

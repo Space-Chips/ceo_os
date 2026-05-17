@@ -1,10 +1,10 @@
 import 'dart:math' as math;
 
-
 import 'package:flutter/cupertino.dart';
 
 import '../core/theme/app_colors.dart';
 
+/// Calm matte backdrop shared by all major screens.
 class AmbientBackdrop extends StatelessWidget {
   final Widget child;
 
@@ -20,40 +20,51 @@ class AmbientBackdrop extends StatelessWidget {
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: [
-                  AppColors.background,
-                  AppColors.backgroundLight.withValues(alpha: 0.92),
-                  AppColors.background.withValues(alpha: 0.98),
-                ],
+                colors: AppColors.backdropGradient,
               ),
             ),
           ),
         ),
-        const _AmbientBlob(
-          top: -120,
-          left: -80,
-          size: 260,
-          tone: _BlobTone.primary,
-          opacity: 0.18,
+        Positioned.fill(
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: const Alignment(-1, -0.6),
+                end: const Alignment(1, 1),
+                colors: [
+                  AppColors.accentSoft.withValues(alpha: AppColors.isDark ? 0.09 : 0.05),
+                  CupertinoColors.transparent,
+                  AppColors.backgroundElevated.withValues(
+                    alpha: AppColors.isDark ? 0.22 : 0.08,
+                  ),
+                ],
+                stops: const [0, 0.48, 1],
+              ),
+            ),
+          ),
         ),
-        const _AmbientBlob(
-          top: 120,
-          right: -110,
-          size: 290,
-          tone: _BlobTone.secondary,
-          opacity: 0.14,
+        Positioned(
+          top: -170,
+          right: -140,
+          child: _SoftAura(
+            size: 320,
+            color: AppColors.accent.withValues(alpha: AppColors.isDark ? 0.1 : 0.08),
+          ),
         ),
-        const _AmbientBlob(
-          bottom: -140,
-          left: 40,
-          size: 320,
-          tone: _BlobTone.primary,
-          opacity: 0.1,
+        Positioned(
+          bottom: -190,
+          left: -120,
+          child: _SoftAura(
+            size: 280,
+            color: AppColors.chartB.withValues(alpha: AppColors.isDark ? 0.08 : 0.05),
+          ),
         ),
         Positioned.fill(
           child: IgnorePointer(
             child: CustomPaint(
-              painter: _BackdropNoisePainter(strength: 0.018),
+              painter: _BackdropNoisePainter(
+                strength: AppColors.isDark ? 0.013 : 0.005,
+              ),
             ),
           ),
         ),
@@ -65,11 +76,11 @@ class AmbientBackdrop extends StatelessWidget {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    CupertinoColors.black.withValues(alpha: 0.06),
+                    AppColors.black.withValues(alpha: AppColors.isDark ? 0.18 : 0.03),
                     CupertinoColors.transparent,
-                    CupertinoColors.black.withValues(alpha: 0.12),
+                    AppColors.black.withValues(alpha: AppColors.isDark ? 0.36 : 0.08),
                   ],
-                  stops: const [0, 0.4, 1],
+                  stops: const [0, 0.44, 1],
                 ),
               ),
             ),
@@ -77,6 +88,33 @@ class AmbientBackdrop extends StatelessWidget {
         ),
         child,
       ],
+    );
+  }
+}
+
+class _SoftAura extends StatelessWidget {
+  final double size;
+  final Color color;
+
+  const _SoftAura({required this.size, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: color,
+              blurRadius: 120,
+              spreadRadius: 16,
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -97,88 +135,39 @@ class _BackdropNoisePainter extends CustomPainter {
         0x9E3779B9;
 
     double next() {
-      seed = (1664525 * seed + 1013904223) & 0x7fffffff;
-      return seed / 0x7fffffff;
+      seed = (seed * 1664525 + 1013904223) & 0xFFFFFFFF;
+      return seed / 0xFFFFFFFF;
     }
 
-    final points = math.max(120, (size.width * size.height / 900).round());
-    for (var i = 0; i < points; i++) {
-      final x = next() * size.width;
-      final y = next() * size.height;
-      final w = 0.5 + (next() * 0.9);
-      final h = 0.5 + (next() * 0.9);
-      lightPaint.color = CupertinoColors.white.withValues(
-        alpha: 0.002 + (next() * strength),
-      );
-      canvas.drawRect(Rect.fromLTWH(x, y, w, h), lightPaint);
+    const step = 6.0;
+    for (var y = 0.0; y < size.height; y += step) {
+      for (var x = 0.0; x < size.width; x += step) {
+        final n = next();
+        if (n < 0.1) {
+          final alpha = strength * (0.3 + next() * 0.7);
+          lightPaint.color = AppColors.white.withValues(alpha: alpha);
+          canvas.drawRect(Rect.fromLTWH(x, y, 1.1, 1.1), lightPaint);
+        } else if (n > 0.9) {
+          final alpha = strength * (0.25 + next() * 0.65);
+          darkPaint.color = AppColors.black.withValues(alpha: alpha);
+          canvas.drawRect(Rect.fromLTWH(x, y, 1.2, 1.2), darkPaint);
+        }
+      }
     }
 
-    final darkPoints = math.max(80, points ~/ 2);
-    for (var i = 0; i < darkPoints; i++) {
-      final x = next() * size.width;
-      final y = next() * size.height;
-      final w = 0.5 + (next() * 0.8);
-      final h = 0.5 + (next() * 0.8);
-      darkPaint.color = CupertinoColors.black.withValues(
-        alpha: 0.0015 + (next() * strength * 0.8),
-      );
-      canvas.drawRect(Rect.fromLTWH(x, y, w, h), darkPaint);
+    final streakPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 0.8
+      ..color = AppColors.white.withValues(alpha: strength * 0.6);
+    final lines = math.max(10, (size.height / 120).round());
+    for (var i = 0; i < lines; i++) {
+      final y = (i + 1) * size.height / (lines + 1);
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), streakPaint);
     }
   }
 
   @override
   bool shouldRepaint(covariant _BackdropNoisePainter oldDelegate) {
     return oldDelegate.strength != strength;
-  }
-}
-
-enum _BlobTone { primary, secondary }
-
-class _AmbientBlob extends StatelessWidget {
-  final double? top;
-  final double? left;
-  final double? right;
-  final double? bottom;
-  final double size;
-  final _BlobTone tone;
-  final double opacity;
-
-  const _AmbientBlob({
-    this.top,
-    this.left,
-    this.right,
-    this.bottom,
-    required this.size,
-    required this.tone,
-    required this.opacity,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final color = tone == _BlobTone.primary
-        ? AppColors.primaryOrange
-        : AppColors.accentSecondary;
-    return Positioned(
-      top: top,
-      left: left,
-      right: right,
-      bottom: bottom,
-      child: IgnorePointer(
-        child: Container(
-          width: size,
-          height: size,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: color.withValues(alpha: opacity),
-                blurRadius: 120,
-                spreadRadius: 18,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 }

@@ -277,7 +277,7 @@ class _SetupLoading extends StatelessWidget {
 }
 
 class _SetupDecorations extends StatelessWidget {
-  const _SetupDecorations();
+  _SetupDecorations();
 
   @override
   Widget build(BuildContext context) {

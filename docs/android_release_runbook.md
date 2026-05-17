@@ -1,7 +1,7 @@
-# Android Release Runbook — CEO OS
+# Android Release Runbook — WakeApp
 
 Date: 2026-03-28  
-Project: CEO OS  
+Project: WakeApp  
 Scope: Exact manual steps to get from repo-ready Android code to a valid Google Play internal test release
 
 ## 1. Goal
@@ -23,7 +23,7 @@ to:
 
 These values are already aligned in the repo:
 - package name: `com.wakeapp.ceoos`
-- app name: `CEO OS`
+- app name: `WakeApp`
 
 Relevant files:
 - [/Users/timo/ceo_os/android/app/build.gradle.kts](/Users/timo/ceo_os/android/app/build.gradle.kts)
@@ -39,7 +39,7 @@ Do not change the package name unless you are absolutely certain, because Google
 In Play Console:
 1. Create app
 2. Default language: choose your main release language
-3. App name: `CEO OS`
+3. App name: `WakeApp`
 4. App or game: `App`
 5. Free or paid: choose your real business model now
 6. Add the support email you will actively monitor
@@ -220,7 +220,7 @@ On a physical Android phone, validate:
 - login
 - Google Sign-In if exposed
 - Focus Mode
-- CEO Mode
+- Blackout Mode
 - app blocking
 - website blocking in supported browsers
 - daily limits

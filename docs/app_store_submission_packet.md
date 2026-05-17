@@ -18,10 +18,9 @@ It should be used together with:
 
 Paste the text below into the **App Review Notes** field in App Store Connect.
 
-WakeApp is a personal focus and self-control app. On iPhone, it uses Apple’s official Screen Time APIs through Family Controls, Managed Settings, and Device Activity to let the user select apps and websites, start protected focus sessions, schedule restriction windows, and apply time-based limits.
+CEO OS is a personal focus and self-control app. On iPhone, it uses Apple's official Screen Time APIs through Family Controls, Managed Settings, and Device Activity to let the user select apps and websites, start protected focus sessions, schedule restriction windows, and apply time-based limits.
 
-The app does not use private APIs, remote device management, or hidden enforcement. Restrictions are user-initiated and rely on Apple’s intended Screen Time framework behavior.
-Family Controls / Device Activity data is kept on-device for the individual use case. WakeApp does not sync, export, compare, or server-log Screen Time usage or blocking-attempt data beyond the individual user.
+The app does not use private APIs, remote device management, or hidden enforcement. Restrictions are user-initiated and rely on Apple's intended Screen Time framework behavior.
 
 Primary review flows:
 1. Focus Mode: start a timed focus session and verify selected distracting apps and websites are restricted during the session.
@@ -38,7 +37,7 @@ How to test on iPhone:
 
 Important context:
 - WakeApp is a self-control and digital wellbeing product, not a surveillance or device administration app.
-- The app uses Apple’s official APIs and does not claim stronger guarantees than the system actually provides.
+- The app uses Apple's official APIs and does not claim stronger guarantees than the system actually provides.
 - Account deletion is available directly in the app and permanently removes the account when the backend function is deployed in production.
 
 If a review account is needed, provide the test credentials below this note. Keep the backend environment live for the full review window.
@@ -99,8 +98,8 @@ These points should match App Store Connect answers and the in-app legal text.
 - Account data: email, profile name, settings, and synced productivity records may be linked to the user account.
 - Purchases: Apple and RevenueCat may process subscription and purchase state.
 - Sign-in: Google Sign-In is used only if the user explicitly chooses it.
-- Screen Time / Family Controls configuration on iPhone: selected apps, websites, schedules, and related limits stay on-device and are not synced beyond the individual user’s device.
-- Device activity / Screen Time usage data: stays on-device on iPhone and is not synced, exported, compared, or server-logged.
+- Screen Time / blocking configuration: selected apps, websites, schedules, and related settings may be stored to sync the user's setup across their account.
+- Usage-related product data: daily-limit and focus-related stats may be processed to provide history and insights.
 - Data is not described as being used for advertising or sold to data brokers.
 
 Before submission, confirm the App Privacy form matches the real production behavior exactly.
@@ -120,7 +119,7 @@ Keep these statements true in the binary and in metadata.
 ### Claims to avoid
 - Impossible to bypass
 - Permanent device lockout
-- Stronger control than Apple’s Screen Time system actually provides
+- Stronger control than Apple's Screen Time system actually provides
 - Unbounded monitoring or administrative control over the device
 
 ---
@@ -142,7 +141,7 @@ Keep these statements true in the binary and in metadata.
 ## 8. Recommendation
 
 For Family Controls approval, clarity matters as much as implementation.
-This packet keeps the product story narrow, privacy-respectful, and consistent with Apple’s intended Screen Time model:
+This packet keeps the product story narrow, privacy-respectful, and consistent with Apple's intended Screen Time model:
 - self-control
 - user-initiated restrictions
 - minimum necessary capability

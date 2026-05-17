@@ -77,7 +77,7 @@ class BlackoutPreparationIntroView extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  language.t('blackout_prep_intro_goal'),
+                  "Objectif: créer un écran d'accueil plus calme en moins de 20 secondes.",
                   style: AppTypography.callout.copyWith(
                     fontSize: 14,
                     color: AppColors.secondaryLabel.withValues(alpha: 0.92),

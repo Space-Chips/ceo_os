@@ -11,15 +11,74 @@ import 'widget_design_tokens.dart';
 class WidgetRoot extends StatelessWidget {
   final EdgeInsets padding;
   final Widget child;
+  final BoxDecoration? decorationOverride;
 
-  const WidgetRoot({super.key, required this.padding, required this.child});
+  const WidgetRoot({
+    super.key,
+    required this.padding,
+    required this.child,
+    this.decorationOverride,
+  });
 
   @override
   Widget build(BuildContext context) {
     return SizedBox.expand(
       child: Container(
         decoration: WidgetDesignTokens.outerDecoration(),
-        child: Padding(padding: padding, child: child),
+        child: Padding(
+          padding: padding,
+          child: child,
+        ),
+      ),
+    );
+  }
+}
+
+class FocusWidgetSquareView extends StatelessWidget {
+  final LanguageProvider language;
+  final int durationMinutes;
+
+  const FocusWidgetSquareView({
+    super.key,
+    required this.language,
+    required this.durationMinutes,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return WidgetRoot(
+      padding: WidgetDesignTokens.padSquare,
+      child: Center(
+        child: Text(
+          "${language.t('focus")} · ${durationMinutes}m',
+          textAlign: TextAlign.center,
+          style: WidgetDesignTokens.title,
+        ),
+      ),
+    );
+  }
+}
+
+class BlackoutWidgetSquareView extends StatelessWidget {
+  final LanguageProvider language;
+  final int durationMinutes;
+
+  const BlackoutWidgetSquareView({
+    super.key,
+    required this.language,
+    required this.durationMinutes,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return WidgetRoot(
+      padding: WidgetDesignTokens.padSquare,
+      child: Center(
+        child: Text(
+          "${language.t('ceo_mode")} · ${durationMinutes}m',
+          textAlign: TextAlign.center,
+          style: WidgetDesignTokens.title,
+        ),
       ),
     );
   }
@@ -47,7 +106,7 @@ class TodoWidgetSquareView extends StatelessWidget {
           Text('To‑Do', style: WidgetDesignTokens.title),
           const SizedBox(height: 4),
           Text(
-            '${language.t('today')} · $remaining ${language.t('widget_remaining')}',
+            "${language.t('today")} · $remaining ${language.t('widget_remaining')}',
             style: WidgetDesignTokens.subtitle,
           ),
           const SizedBox(height: 12),
@@ -68,13 +127,16 @@ class TodoWidgetSquareView extends StatelessWidget {
             )
           else ...[
             for (var i = 0; i < items.length; i++) ...[
-              _TodoRow(index: i + 1, task: items[i]),
+              _TodoRow(
+                index: i + 1,
+                task: items[i],
+              ),
               if (i != items.length - 1) const SizedBox(height: 8),
             ],
             if (remaining > 3) ...[
               const SizedBox(height: 8),
               Text(
-                '+${remaining - 3} ${language.t('widget_more')}',
+                "+${remaining - 3} ${language.t('widget_more")}',
                 style: WidgetDesignTokens.subtitle,
               ),
             ],
@@ -118,9 +180,7 @@ class _TodoRow extends StatelessWidget {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: AppColors.cardBackgroundAlt,
-              border: Border.all(
-                color: AppColors.border.withValues(alpha: 0.7),
-              ),
+              border: Border.all(color: AppColors.border.withValues(alpha: 0.7)),
             ),
             alignment: Alignment.center,
             child: Text(
@@ -179,9 +239,7 @@ class _TodoRow extends StatelessWidget {
                         style: AppTypography.caption1.copyWith(
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
-                          color: AppColors.secondaryLabel.withValues(
-                            alpha: 0.7,
-                          ),
+                          color: AppColors.secondaryLabel.withValues(alpha: 0.7),
                         ),
                       ),
                     ],
@@ -454,9 +512,7 @@ class DashboardWidgetRectangularView extends StatelessWidget {
                   style: AppTypography.callout.copyWith(
                     fontSize: 15,
                     fontWeight: FontWeight.w800,
-                    color: WidgetDesignTokens.primaryText.withValues(
-                      alpha: 0.95,
-                    ),
+                    color: WidgetDesignTokens.primaryText.withValues(alpha: 0.95),
                     height: 1.15,
                   ),
                 ),
@@ -531,15 +587,13 @@ class HabitsTodayWidgetSquareView extends StatelessWidget {
   final List<Habit> habits;
   final int completed;
   final int total;
-  final Set<String> completedHabitIds;
 
   const HabitsTodayWidgetSquareView({
     super.key,
     required this.language,
     required this.habits,
-    this.completed = 0,
-    this.total = 0,
-    this.completedHabitIds = const {},
+    required this.completed,
+    required this.total,
   });
 
   @override
@@ -577,7 +631,7 @@ class HabitsTodayWidgetSquareView extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            '${language.t('today')} · $completed/$total ${language.t('widget_completed')}',
+            "${language.t('today")} · $completed/$total ${language.t('widget_completed')}',
             style: WidgetDesignTokens.subtitle,
           ),
           const SizedBox(height: 12),
@@ -587,9 +641,7 @@ class HabitsTodayWidgetSquareView extends StatelessWidget {
                 tint: const Color(0xFF191B20),
               ),
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(
-                  WidgetDesignTokens.radiusInner,
-                ),
+                borderRadius: BorderRadius.circular(WidgetDesignTokens.radiusInner),
                 child: Column(
                   children: [
                     for (var i = 0; i < items.length; i++) ...[
@@ -615,12 +667,10 @@ class HabitsTodayWidgetSquareView extends StatelessWidget {
                         child: Align(
                           alignment: Alignment.centerLeft,
                           child: Text(
-                            '+$more ${language.t('widget_more')}',
+                            "+$more ${language.t('widget_more")}',
                             style: WidgetDesignTokens.subtitle.copyWith(
                               fontSize: 11,
-                              color: AppColors.secondaryLabel.withValues(
-                                alpha: 0.7,
-                              ),
+                              color: AppColors.secondaryLabel.withValues(alpha: 0.7),
                             ),
                           ),
                         ),
@@ -647,7 +697,7 @@ class _HabitsTodayRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+      padding: const EdgeInsets.fromLTRB(12, 4, 12, 4),
       child: Row(
         children: [
           Expanded(
@@ -656,31 +706,31 @@ class _HabitsTodayRow extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: AppTypography.title3.copyWith(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: AppColors.label.withValues(alpha: 0.95),
-                height: 1,
+                fontSize: 16,
+                fontWeight: FontWeight.w800,
+                color: WidgetDesignTokens.primaryText,
+                height: 1.05,
               ),
             ),
           ),
           const SizedBox(width: 12),
           Container(
-            width: 38,
-            height: 38,
+            width: 24,
+            height: 24,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: AppColors.cardBackgroundAlt,
               border: Border.all(
-                color: AppColors.border.withValues(alpha: 0.7),
+                color: AppColors.border.withValues(alpha: 0.65),
               ),
             ),
             alignment: Alignment.center,
             child: Text(
               '$index',
               style: AppTypography.callout.copyWith(
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                color: AppColors.secondaryLabel.withValues(alpha: 0.85),
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+                color: WidgetDesignTokens.secondaryText,
                 height: 1,
               ),
             ),
@@ -695,14 +745,16 @@ class HabitsTableWidgetRectangularView extends StatelessWidget {
   final LanguageProvider language;
   final List<Habit> habits;
   final List<DateTime> days;
-  final Map<String, Set<String>> completions;
+  final Map<String, Set<String>> completionsDone;
+  final Map<String, Set<String>> completionsFailed;
 
   const HabitsTableWidgetRectangularView({
     super.key,
     required this.language,
     required this.habits,
     required this.days,
-    required this.completions,
+    required this.completionsDone,
+    required this.completionsFailed,
   });
 
   @override
@@ -727,10 +779,7 @@ class HabitsTableWidgetRectangularView extends StatelessWidget {
             children: [
               Text('Habits Table', style: WidgetDesignTokens.title),
               const SizedBox(height: 2),
-              Text(
-                language.t('widget_last_7_days'),
-                style: WidgetDesignTokens.subtitle,
-              ),
+              Text(language.t('widget_last_7_days'), style: WidgetDesignTokens.subtitle),
               const SizedBox(height: 10),
               Row(
                 children: [
@@ -748,9 +797,7 @@ class HabitsTableWidgetRectangularView extends StatelessWidget {
                           label,
                           style: WidgetDesignTokens.subtitle.copyWith(
                             fontSize: 11,
-                            color: AppColors.secondaryLabel.withValues(
-                              alpha: 0.6,
-                            ),
+                            color: AppColors.secondaryLabel.withValues(alpha: 0.6),
                           ),
                         ),
                       ),
@@ -774,56 +821,6 @@ class HabitsTableWidgetRectangularView extends StatelessWidget {
   }
 }
 
-class FocusWidgetSquareView extends StatelessWidget {
-  final LanguageProvider language;
-  final int durationMinutes;
-
-  const FocusWidgetSquareView({
-    super.key,
-    required this.language,
-    required this.durationMinutes,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return WidgetRoot(
-      padding: WidgetDesignTokens.padSquare,
-      child: Center(
-        child: Text(
-          '${language.t('focus')} · ${durationMinutes}m',
-          textAlign: TextAlign.center,
-          style: WidgetDesignTokens.title,
-        ),
-      ),
-    );
-  }
-}
-
-class BlackoutWidgetSquareView extends StatelessWidget {
-  final LanguageProvider language;
-  final int durationMinutes;
-
-  const BlackoutWidgetSquareView({
-    super.key,
-    required this.language,
-    required this.durationMinutes,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return WidgetRoot(
-      padding: WidgetDesignTokens.padSquare,
-      child: Center(
-        child: Text(
-          '${language.t('ceo_mode')} · ${durationMinutes}m',
-          textAlign: TextAlign.center,
-          style: WidgetDesignTokens.title,
-        ),
-      ),
-    );
-  }
-}
-
 class _HabitsTableRow extends StatelessWidget {
   final Habit habit;
   final List<DateTime> days;
@@ -840,7 +837,7 @@ class _HabitsTableRow extends StatelessWidget {
     final doneDates = completions[habit.id] ?? const <String>{};
     final today = DateTime.now();
     final todayKey =
-        '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
+        "${today.year}-${today.month.toString().padLeft(2, '0")}-${today.day.toString().padLeft(2, '0')}';
 
     return Row(
       children: [
@@ -878,7 +875,7 @@ class _HabitsTableRow extends StatelessWidget {
     required String todayKey,
   }) {
     final key =
-        '${day.year}-${day.month.toString().padLeft(2, '0')}-${day.day.toString().padLeft(2, '0')}';
+        "${day.year}-${day.month.toString().padLeft(2, '0")}-${day.day.toString().padLeft(2, '0')}';
     final isDone = doneDates.contains(key);
     if (isDone) {
       return Text(
@@ -915,6 +912,356 @@ class _HabitsTableRow extends StatelessWidget {
   }
 }
 
+enum WidgetActionVariant { focus, blackout }
+
+class WidgetActionButton extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final WidgetActionVariant variant;
+  final String? prominentValue;
+
+  const WidgetActionButton({
+    super.key,
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.variant,
+    this.prominentValue,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final accent = variant == WidgetActionVariant.focus
+        ? AppColors.accent
+        : AppColors.error;
+    return Container(
+      height: double.infinity,
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(22),
+        color: Color.alphaBlend(
+          accent.withValues(alpha: 0.14),
+          const Color(0xFF12141A),
+        ),
+        border: Border.all(color: accent.withValues(alpha: 0.28)),
+        boxShadow: [
+          BoxShadow(
+            color: accent.withValues(alpha: 0.14),
+            blurRadius: 18,
+            offset: const Offset(0, 10),
+            spreadRadius: -8,
+          ),
+        ],
+      ),
+      child: prominentValue == null
+          ? Row(
+              children: [
+                Container(
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    color: accent.withValues(alpha: 0.18),
+                    border: Border.all(color: accent.withValues(alpha: 0.28)),
+                  ),
+                  alignment: Alignment.center,
+                  child: Icon(
+                    icon,
+                    size: 18,
+                    color: accent.withValues(alpha: 0.95),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTypography.title3.copyWith(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                          color: WidgetDesignTokens.primaryText,
+                          height: 1.05,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        subtitle,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTypography.caption1.copyWith(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: WidgetDesignTokens.secondaryText,
+                          height: 1,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            )
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 42,
+                      height: 42,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        color: accent.withValues(alpha: 0.18),
+                        border: Border.all(color: accent.withValues(alpha: 0.28)),
+                      ),
+                      alignment: Alignment.center,
+                      child: Icon(
+                        icon,
+                        size: 18,
+                        color: accent.withValues(alpha: 0.95),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTypography.title3.copyWith(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                          color: WidgetDesignTokens.primaryText,
+                          height: 1.0,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const Spacer(),
+                Text(
+                  prominentValue!,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTypography.largeTitle.copyWith(
+                    fontSize: 34,
+                    fontWeight: FontWeight.w800,
+                    color: WidgetDesignTokens.primaryText.withValues(alpha: 0.98),
+                    height: 1.0,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  subtitle,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTypography.callout.copyWith(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: WidgetDesignTokens.secondaryText,
+                    height: 1,
+                  ),
+                ),
+              ],
+            ),
+    );
+  }
+}
+
+class FocusWidgetSquareView extends StatelessWidget {
+  final LanguageProvider language;
+  final int durationMinutes;
+
+  const FocusWidgetSquareView({
+    super.key,
+    required this.language,
+    required this.durationMinutes,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return WidgetRoot(
+      padding: WidgetDesignTokens.padSquare,
+      decorationOverride: BoxDecoration(
+        borderRadius: BorderRadius.circular(WidgetDesignTokens.radiusOuter),
+        gradient: WidgetDesignTokens.focusGradient,
+        border: Border.all(
+          color: AppColors.borderStrong.withValues(alpha: 0.85),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Focus',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: WidgetDesignTokens.title.copyWith(fontSize: 22),
+          ),
+          const Spacer(),
+          Center(
+            child: FractionallySizedBox(
+              widthFactor: 0.78,
+              child: _ActionPill(
+                icon: CupertinoIcons.play_fill,
+                title: 'Start',
+                subtitle: '$durationMinutes min',
+                variant: WidgetActionVariant.focus,
+              ),
+            ),
+          ),
+          const Spacer(),
+        ],
+      ),
+    );
+  }
+}
+
+class BlackoutWidgetSquareView extends StatelessWidget {
+  final LanguageProvider language;
+  final int durationMinutes;
+
+  const BlackoutWidgetSquareView({
+    super.key,
+    required this.language,
+    required this.durationMinutes,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final hours = durationMinutes ~/ 60;
+    final label = hours >= 1 ? '$hours h' : '$durationMinutes min';
+    return WidgetRoot(
+      padding: WidgetDesignTokens.padSquare,
+      decorationOverride: BoxDecoration(
+        borderRadius: BorderRadius.circular(WidgetDesignTokens.radiusOuter),
+        gradient: WidgetDesignTokens.blackoutGradient,
+        border: Border.all(
+          color: AppColors.borderStrong.withValues(alpha: 0.85),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Blackout',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: WidgetDesignTokens.title.copyWith(fontSize: 22),
+          ),
+          const Spacer(),
+          Center(
+            child: FractionallySizedBox(
+              widthFactor: 0.78,
+              child: _ActionPill(
+                icon: CupertinoIcons.lock_fill,
+                title: 'Start',
+                subtitle: label,
+                variant: WidgetActionVariant.blackout,
+              ),
+            ),
+          ),
+          const Spacer(),
+        ],
+      ),
+    );
+  }
+}
+
+class _ActionPill extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final WidgetActionVariant variant;
+
+  const _ActionPill({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.variant,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final accent = variant == WidgetActionVariant.focus
+        ? AppColors.accent
+        : AppColors.error;
+    return Container(
+      height: 66,
+      padding: const EdgeInsets.symmetric(horizontal: 14),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(22),
+        color: Color.alphaBlend(
+          accent.withValues(alpha: 0.14),
+          const Color(0xFF12141A),
+        ),
+        border: Border.all(color: accent.withValues(alpha: 0.28)),
+        boxShadow: [
+          BoxShadow(
+            color: accent.withValues(alpha: 0.14),
+            blurRadius: 18,
+            offset: const Offset(0, 10),
+            spreadRadius: -10,
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(14),
+              color: accent.withValues(alpha: 0.18),
+              border: Border.all(color: accent.withValues(alpha: 0.28)),
+            ),
+            alignment: Alignment.center,
+            child: Icon(icon, size: 18, color: accent.withValues(alpha: 0.95)),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTypography.callout.copyWith(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    color: WidgetDesignTokens.primaryText,
+                    height: 1,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  subtitle,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTypography.caption1.copyWith(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: WidgetDesignTokens.secondaryText,
+                    height: 1,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _ProgressBar extends StatelessWidget {
   final int percent;
 
@@ -932,7 +1279,9 @@ class _ProgressBar extends StatelessWidget {
           alignment: Alignment.centerLeft,
           child: FractionallySizedBox(
             widthFactor: p,
-            child: Container(color: AppColors.accent.withValues(alpha: 0.85)),
+            child: Container(
+              color: AppColors.accent.withValues(alpha: 0.85),
+            ),
           ),
         ),
       ),

@@ -654,18 +654,6 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'Goal',
-                          style: AppTypography.overline.copyWith(
-                            fontSize: 12,
-                            letterSpacing: 2,
-                            color: AppColors.secondaryLabel.withValues(
-                              alpha: 0.6,
-                            ),
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(height: 10),
                         if (_goals.isEmpty)
                           Container(
                             padding: const EdgeInsets.all(14),
@@ -837,8 +825,8 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
                                     child: Opacity(
                                       opacity: disabled ? 0.45 : 1,
                                       child: Container(
-                                        width: 36,
-                                        height: 36,
+                                        width: 34,
+                                        height: 34,
                                         alignment: Alignment.center,
                                         decoration: BoxDecoration(
                                           shape: BoxShape.circle,
@@ -1165,7 +1153,7 @@ Widget _sheetTextField({
         fontSize: 16,
         color: AppColors.secondaryLabel.withValues(alpha: 0.72),
       ),
-      decoration: BoxDecoration(),
+      decoration: const BoxDecoration(),
     ),
   );
 }

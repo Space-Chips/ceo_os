@@ -1,12 +1,13 @@
 import 'dart:ui';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../components/components.dart';
-import '../../core/models/task_models.dart';
+import '../../core/providers/language_provider.dart';
 import '../../core/providers/task_provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
+import 'task_importance_theme.dart';
 
 class AddTaskSheet extends StatefulWidget {
   const AddTaskSheet({super.key});
@@ -17,11 +18,8 @@ class AddTaskSheet extends StatefulWidget {
 
 class _AddTaskSheetState extends State<AddTaskSheet> {
   final _titleCtrl = TextEditingController();
-  final _descCtrl = TextEditingController();
-  final _groupCtrl = TextEditingController();
   String _importance = 'crucial';
   String _duration = '1_hour';
-  TaskGroup? _selectedGroup;
   DateTime? _deadline;
   bool _syncToCalendar = true;
 
@@ -35,53 +33,45 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
     'several_days',
   ];
 
-  String _labelForImportance(String value) {
+  String _labelForImportance(String value, LanguageProvider language) {
     switch (value) {
       case 'crucial':
-        return 'Crucial';
+        return language.t('tasks_importance_crucial');
       case 'essential':
-        return 'Essential';
+        return language.t('tasks_importance_essential');
       case 'average':
-        return 'Average';
+        return language.t('tasks_importance_average');
       case 'low':
-        return 'Low';
+        return language.t('tasks_importance_low');
       default:
         return value;
     }
   }
 
-  String _labelForDuration(String value) {
+  Color _importanceColor(String value) => TaskImportanceTheme.accent(value);
+
+  String _labelForDuration(String value, LanguageProvider language) {
     switch (value) {
       case 'less_than_30min':
-        return '< 30 min';
+        return language.t('tasks_duration_under_30min');
       case '1_hour':
-        return '1 hour';
+        return language.t('tasks_duration_1_hour');
       case '2_hours':
-        return '2 hours';
+        return language.t('tasks_duration_2_hours');
       case 'half_day':
-        return 'Half day';
+        return language.t('tasks_duration_half_day');
       case '1_day':
-        return '1 day';
+        return language.t('tasks_duration_1_day');
       case 'several_days':
-        return 'Several days';
+        return language.t('tasks_duration_several_days');
       default:
         return value;
     }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<TaskProvider>().loadGroups();
-    });
   }
 
   @override
   void dispose() {
     _titleCtrl.dispose();
-    _descCtrl.dispose();
-    _groupCtrl.dispose();
     super.dispose();
   }
 
@@ -92,9 +82,9 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
       _titleCtrl.text.trim(),
       importance: _importance,
       duration: _duration,
-      groupId: _selectedGroup?.id,
+      groupId: null,
       deadline: _deadline,
-      description: _descCtrl.text.trim().isEmpty ? null : _descCtrl.text.trim(),
+      description: null,
       syncToCalendar: _deadline != null && _syncToCalendar,
     );
 
@@ -107,6 +97,7 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
   }
 
   void _showDeadlinePicker() {
+    final language = context.read<LanguageProvider>();
     final initial = _deadline ?? DateTime.now().add(const Duration(days: 1));
     showCupertinoModalPopup(
       context: context,
@@ -126,7 +117,7 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
                   CupertinoButton(
                     padding: EdgeInsets.zero,
                     child: Text(
-                      'CLEAR',
+                      language.t('tasks_picker_clear'),
                       style: AppTypography.mono.copyWith(
                         fontSize: 12,
                         color: AppColors.error,
@@ -140,7 +131,7 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
                   CupertinoButton(
                     padding: EdgeInsets.zero,
                     child: Text(
-                      'DONE',
+                      language.t('tasks_picker_done'),
                       style: AppTypography.mono.copyWith(
                         fontSize: 12,
                         color: AppColors.primaryOrange,
@@ -192,7 +183,7 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
           ),
           actions: [
             CupertinoDialogAction(
-              child: Text(
+              child: const Text(
                 'CANCEL',
                 style: TextStyle(color: AppColors.secondaryLabel),
               ),
@@ -200,7 +191,7 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
             ),
             CupertinoDialogAction(
               isDefaultAction: true,
-              child: Text(
+              child: const Text(
                 'CREATE',
                 style: TextStyle(color: AppColors.primaryOrange),
               ),
@@ -220,26 +211,14 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
     );
   }
 
-  String _formatDeadline(DateTime d) {
-    const months = [
-      'JAN',
-      'FEB',
-      'MAR',
-      'APR',
-      'MAY',
-      'JUN',
-      'JUL',
-      'AUG',
-      'SEP',
-      'OCT',
-      'NOV',
-      'DEC',
-    ];
-    return '${months[d.month - 1]} ${d.day}, ${d.year}';
+  String _formatDeadline(DateTime d, LanguageProvider language) {
+    final locale = language.languageCode.toLowerCase();
+    return DateFormat('MMM d, y', locale).format(d);
   }
 
   @override
   Widget build(BuildContext context) {
+    final language = context.watch<LanguageProvider>();
     return BackdropFilter(
       filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
       child: Container(
@@ -249,7 +228,7 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
         decoration: BoxDecoration(
           color: AppColors.background.withValues(alpha: 0.8),
           borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-          border: Border(
+          border: const Border(
             top: BorderSide(color: AppColors.glassBorder, width: 0.5),
           ),
         ),
@@ -272,99 +251,76 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
                 ),
                 const SizedBox(height: 24),
 
-                NeoMonoText(
-                  'NEW_TASK_INPUT',
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+                Text(
+                  language.t('tasks_new_task'),
+                  style: AppTypography.title1.copyWith(
+                    fontSize: 30,
+                    color: AppColors.label,
+                  ),
                 ),
                 const SizedBox(height: 24),
 
                 GlassInputField(
-                  placeholder: 'TASK_TITLE...',
+                  placeholder: language.t('tasks_task_title_placeholder'),
                   controller: _titleCtrl,
                   autofocus: true,
-                ),
-                const SizedBox(height: 16),
-
-                // Description
-                _sectionLabel('DESCRIPTION'),
-                const SizedBox(height: 8),
-                Container(
-                  decoration: BoxDecoration(
-                    color: AppColors.backgroundLight.withValues(alpha: 0.5),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: AppColors.glassBorder,
-                      width: 0.5,
-                    ),
-                  ),
-                  child: CupertinoTextField(
-                    controller: _descCtrl,
-                    placeholder: 'OPTIONAL_DETAILS...',
-                    maxLines: 3,
-                    minLines: 2,
-                    style: AppTypography.mono.copyWith(
-                      fontSize: 13,
-                      color: AppColors.label,
-                    ),
-                    placeholderStyle: AppTypography.mono.copyWith(
-                      fontSize: 13,
-                      color: AppColors.tertiaryLabel,
-                    ),
-                    padding: const EdgeInsets.all(16),
-                    decoration: null,
-                  ),
+                  textCapitalization: TextCapitalization.sentences,
                 ),
                 const SizedBox(height: 20),
 
-                // Deadline
-                _sectionLabel('DEADLINE'),
-                const SizedBox(height: 8),
                 GestureDetector(
                   onTap: _showDeadlinePicker,
                   child: Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,
-                      vertical: 12,
+                      vertical: 13,
                     ),
                     decoration: BoxDecoration(
                       color: _deadline != null
-                          ? AppColors.primaryOrange.withValues(alpha: 0.1)
-                          : AppColors.backgroundLight.withValues(alpha: 0.5),
+                          ? AppColors.accent.withValues(alpha: 0.14)
+                          : AppColors.inputBackground.withValues(alpha: 0.72),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         color: _deadline != null
-                            ? AppColors.primaryOrange.withValues(alpha: 0.4)
-                            : AppColors.glassBorder,
-                        width: 0.5,
+                            ? AppColors.activeBorder
+                            : AppColors.inputBorder,
+                        width: 0.8,
                       ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.black.withValues(alpha: 0.14),
+                          blurRadius: 18,
+                          offset: const Offset(0, 8),
+                          spreadRadius: -12,
+                        ),
+                      ],
                     ),
                     child: Row(
                       children: [
                         Icon(
                           CupertinoIcons.calendar,
-                          size: 16,
+                          size: 17,
                           color: _deadline != null
-                              ? AppColors.primaryOrange
+                              ? AppColors.accent
                               : AppColors.tertiaryLabel,
                         ),
                         const SizedBox(width: 10),
                         Text(
                           _deadline != null
-                              ? _formatDeadline(_deadline!)
-                              : 'SET_DEADLINE',
-                          style: AppTypography.mono.copyWith(
-                            fontSize: 12,
+                              ? _formatDeadline(_deadline!, language)
+                              : language.t('tasks_set_deadline'),
+                          style: AppTypography.callout.copyWith(
+                            fontSize: 14,
                             color: _deadline != null
-                                ? AppColors.primaryOrange
-                                : AppColors.tertiaryLabel,
+                                ? AppColors.accentText
+                                : AppColors.secondaryLabel,
                           ),
                         ),
                         const Spacer(),
                         if (_deadline != null)
                           GestureDetector(
                             onTap: () => setState(() => _deadline = null),
-                            child: Icon(
+                            child: const Icon(
                               CupertinoIcons.xmark_circle_fill,
                               size: 16,
                               color: AppColors.secondaryLabel,
@@ -426,7 +382,7 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
                                 color: AppColors.primaryOrange.withOpacity(0.5),
                               ),
                             ),
-                            child: Icon(
+                            child: const Icon(
                               CupertinoIcons.plus,
                               size: 14,
                               color: AppColors.primaryOrange,
@@ -445,12 +401,23 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _sectionLabel('PRIORITY_LEVEL'),
+                          _sectionLabel(language.t('tasks_priority')),
                           const SizedBox(height: 12),
-                          SizedBox(
-                            height: 100,
+                          Container(
+                            height: 110,
+                            decoration: BoxDecoration(
+                              color: AppColors.inputBackground.withValues(
+                                alpha: 0.72,
+                              ),
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(
+                                color: AppColors.inputBorder,
+                                width: 0.8,
+                              ),
+                            ),
                             child: CupertinoPicker(
                               itemExtent: 32,
+                              selectionOverlay: _pickerSelectionOverlay(),
                               onSelectedItemChanged: (i) {
                                 setState(() => _importance = _importances[i]);
                               },
@@ -458,10 +425,10 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
                                   .map(
                                     (e) => Center(
                                       child: Text(
-                                        _labelForImportance(e).toUpperCase(),
-                                        style: AppTypography.mono.copyWith(
-                                          fontSize: 12,
-                                          color: AppColors.label,
+                                        _labelForImportance(e, language),
+                                        style: AppTypography.callout.copyWith(
+                                          fontSize: 13,
+                                          color: _importanceColor(e),
                                         ),
                                       ),
                                     ),
@@ -477,12 +444,23 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _sectionLabel('EST_DURATION'),
+                          _sectionLabel(language.t('tasks_est_duration')),
                           const SizedBox(height: 12),
-                          SizedBox(
-                            height: 100,
+                          Container(
+                            height: 110,
+                            decoration: BoxDecoration(
+                              color: AppColors.inputBackground.withValues(
+                                alpha: 0.72,
+                              ),
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(
+                                color: AppColors.inputBorder,
+                                width: 0.8,
+                              ),
+                            ),
                             child: CupertinoPicker(
                               itemExtent: 32,
+                              selectionOverlay: _pickerSelectionOverlay(),
                               scrollController: FixedExtentScrollController(
                                 initialItem: 1,
                               ),
@@ -493,9 +471,9 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
                                   .map(
                                     (e) => Center(
                                       child: Text(
-                                        _labelForDuration(e).toUpperCase(),
-                                        style: AppTypography.mono.copyWith(
-                                          fontSize: 12,
+                                        _labelForDuration(e, language),
+                                        style: AppTypography.callout.copyWith(
+                                          fontSize: 13,
                                           color: AppColors.label,
                                         ),
                                       ),
@@ -512,7 +490,7 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
 
                 const SizedBox(height: 32),
                 LiquidButton(
-                  label: 'INITIALIZE_TASK',
+                  label: language.t('tasks_initialize_task'),
                   fullWidth: true,
                   onPressed: _addTask,
                 ),
@@ -525,12 +503,21 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
     );
   }
 
+  Widget _pickerSelectionOverlay() => Container(
+    margin: const EdgeInsets.symmetric(horizontal: 8),
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(10),
+      border: Border.all(color: AppColors.glassBorder.withValues(alpha: 0.85)),
+      color: AppColors.white.withValues(alpha: 0.04),
+    ),
+  );
+
   Widget _sectionLabel(String label) => Text(
     label,
-    style: AppTypography.mono.copyWith(
-      fontSize: 10,
+    style: AppTypography.overline.copyWith(
+      fontSize: 11,
       color: AppColors.tertiaryLabel,
-      letterSpacing: 1.5,
+      letterSpacing: 0.6,
     ),
   );
 }

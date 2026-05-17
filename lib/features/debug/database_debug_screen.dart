@@ -107,7 +107,7 @@ class _DatabaseDebugScreenState extends State<DatabaseDebugScreen> {
       backgroundColor: AppColors.systemBackground,
       navigationBar: CupertinoNavigationBar(
         backgroundColor: AppColors.systemBackground.withValues(alpha: 0.9),
-        border: Border(),
+        border: const Border(),
         middle: Text('Database Debug', style: AppTypography.title3),
       ),
       child: SafeArea(
@@ -150,7 +150,7 @@ class _DatabaseDebugScreenState extends State<DatabaseDebugScreen> {
                   if (_startedAt != null) ...[
                     const SizedBox(height: 14),
                     Text(
-                      'Last run: ${_finishedAt?.toLocal().toString().substring(0, 19) ?? 'in progress'}',
+                      "Last run: ${_finishedAt?.toLocal().toString().substring(0, 19) ?? 'in progress"}',
                       style: AppTypography.footnote.copyWith(
                         color: AppColors.tertiaryLabel,
                       ),

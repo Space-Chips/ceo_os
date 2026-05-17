@@ -4,8 +4,10 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../components/components.dart';
 import '../../core/providers/auth_provider.dart';
+import '../../core/providers/language_provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
+import 'auth_support.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -17,6 +19,57 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
   bool _loading = false;
+  bool _showPassword = false;
+
+  String _t(String key) => context.read<LanguageProvider>().t(key);
+  static const List<(String code, String nativeLabel)> _languages = [
+    ('en', 'English'),
+    ('fr', 'Français'),
+    ('zh', '中文'),
+    ('hi', 'हिन्दी'),
+    ('es', 'Español'),
+    ('ar', 'العربية'),
+    ('id', 'Bahasa Indonesia'),
+    ('ru', 'Русский'),
+    ('pt', 'Português'),
+  ];
+
+  String _languageDisplayLabel(String code) {
+    final normalized = code.toLowerCase();
+    for (final option in _languages) {
+      if (option.$1 == normalized) return option.$2;
+    }
+    return 'English';
+  }
+
+  Future<void> _showLanguagePicker() async {
+    final languageProvider = context.read<LanguageProvider>();
+    final current = languageProvider.languageCode.toLowerCase();
+    final selected = await showCupertinoModalPopup<String>(
+      context: context,
+      builder: (popupContext) {
+        return CupertinoActionSheet(
+          title: Text(_t('language')),
+          message: Text(_t('language_picker_subtitle')),
+          actions: [
+            for (final option in _languages)
+              CupertinoActionSheetAction(
+                isDefaultAction: option.$1 == current,
+                onPressed: () => Navigator.of(popupContext).pop(option.$1),
+                child: Text(option.$2),
+              ),
+          ],
+          cancelButton: CupertinoActionSheetAction(
+            onPressed: () => Navigator.of(popupContext).pop(),
+            child: Text(_t('cancel')),
+          ),
+        );
+      },
+    );
+
+    if (selected == null || selected == current) return;
+    await languageProvider.setLanguage(selected, persistToCloud: true);
+  }
 
   @override
   void dispose() {
@@ -62,6 +115,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final language = context.watch<LanguageProvider>();
     return CupertinoPageScaffold(
       backgroundColor: AppColors.background,
       child: Stack(
@@ -96,7 +150,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     Column(
                       children: [
                         NeoMonoText(
-                          'CEO OS',
+                          'WakeApp',
                           fontSize: 42,
                           fontWeight: FontWeight.w800,
                           color: AppColors.label,
@@ -149,11 +203,29 @@ class _LoginScreenState extends State<LoginScreen> {
                             isLoading: _loading,
                             onPressed: _login,
                           ),
+                          const SizedBox(height: 14),
+                          Center(
+                            child: CupertinoButton(
+                              padding: EdgeInsets.zero,
+                              minimumSize: Size.zero,
+                              onPressed: _loading ? null : _resetPassword,
+                              child: Text(
+                                'FORGOT_PASSWORD',
+                                style: AppTypography.mono.copyWith(
+                                  fontSize: 11,
+                                  color: AppColors.primaryOrange,
+                                  letterSpacing: 1.2,
+                                ),
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                     ),
 
                     const SizedBox(height: 32),
+                    const AuthTrustFooter(),
+                    const SizedBox(height: 20),
 
                     // Footer
                     Row(

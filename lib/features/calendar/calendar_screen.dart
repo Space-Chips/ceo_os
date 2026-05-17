@@ -1,6 +1,5 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart'
-    show Colors, FontWeight, IconData, TimeOfDay;
+import 'package:flutter/material.dart' show Colors, FontWeight, IconData, TimeOfDay;
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -8,6 +7,7 @@ import 'package:provider/provider.dart';
 import '../../components/components.dart';
 import '../../core/models/habit_models.dart';
 import '../../core/models/task_models.dart';
+import '../../core/providers/language_provider.dart';
 import '../../core/providers/task_provider.dart';
 import '../../core/repositories/feature_repository.dart';
 import '../../core/repositories/habit_repository.dart';
@@ -40,7 +40,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
   bool _loadingHabits = true;
   bool _loadingEventTypes = true;
   List<Habit> _habits = const [];
-  List<EventType> _eventTypes = const [];
 
   static const List<String> _importantKeywords = <String>[
     'meeting',
@@ -60,15 +59,126 @@ class _CalendarScreenState extends State<CalendarScreen> {
     'lunch',
   ];
 
+  String _t(String key) {
+    try {
+      return context.read<LanguageProvider>().t(key);
+    } catch (_) {
+      return key;
+    }
+  }
+
+  String _localeCode() {
+    try {
+      return context.read<LanguageProvider>().languageCode;
+    } catch (_) {
+      return 'en';
+    }
+  }
+
+  String _safeDateFormat(
+    String pattern,
+    DateTime date, {
+    String? fallbackPattern,
+  }) {
+    String formatWithLocale(String locale, String activePattern) {
+      final formatted = DateFormat(activePattern, locale).format(date);
+      return formatted.trim();
+    }
+
+    try {
+      final formatted = formatWithLocale(_localeCode(), pattern);
+      if (formatted.isNotEmpty) return formatted;
+    } catch (_) {
+    }
+
+    final candidate = fallbackPattern ?? pattern;
+    try {
+      final formatted = formatWithLocale('en', candidate);
+      if (formatted.isNotEmpty) return formatted;
+    } catch (_) {}
+
+    return DateFormat('yMMMd', 'en').format(date);
+  }
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) => _loadAll());
   }
 
+  int _completedTasksForMonth(DateTime monthDate, List<ParetoTask> tasks) {
+    return tasks.where((task) {
+      if (!task.completed) return false;
+      final completedAt = task.completedDate;
+      if (completedAt == null) return false;
+      return completedAt.year == monthDate.year &&
+          completedAt.month == monthDate.month;
+    }).length;
+  }
+
+  int _completedHabitsForMonth(DateTime monthDate) {
+    return _habitCompletions.where((completion) {
+      if (!completion.completed) return false;
+      final date = DateTime.tryParse(completion.date);
+      if (date == null) return false;
+      return date.year == monthDate.year && date.month == monthDate.month;
+    }).length;
+  }
+
+  double _monthlyProductivityRawScore(
+    DateTime monthDate,
+    List<CalendarEvent> events,
+    List<ParetoTask> tasks,
+  ) {
+    final eventScore = _eventCountForMonth(monthDate, events) * 0.4;
+    final taskScore = _completedTasksForMonth(monthDate, tasks) * 2.2;
+    final habitScore = _completedHabitsForMonth(monthDate) * 0.85;
+    return eventScore + taskScore + habitScore;
+  }
+
+  int _monthlyProductivityLevel(
+    DateTime monthDate,
+    List<CalendarEvent> events,
+    List<ParetoTask> tasks,
+  ) {
+    final values = List<double>.generate(
+      12,
+      (index) => _monthlyProductivityRawScore(
+        DateTime(_currentDate.year, index + 1, 1),
+        events,
+        tasks,
+      ),
+    );
+    final current = _monthlyProductivityRawScore(monthDate, events, tasks);
+    final maxValue = values.fold<double>(0, (best, value) => value > best ? value : best);
+    if (current <= 0 || maxValue <= 0) return 0;
+    final normalized = current / maxValue;
+    if (normalized < 0.25) return 1;
+    if (normalized < 0.5) return 2;
+    if (normalized < 0.75) return 3;
+    return 4;
+  }
+
+  Color _monthHeatColor(int level) {
+    switch (level) {
+      case 1:
+        return const Color(0x104C7DFF);
+      case 2:
+        return const Color(0x1A4C7DFF);
+      case 3:
+        return const Color(0x294C7DFF);
+      case 4:
+        return const Color(0x384C7DFF);
+      case 0:
+      default:
+        return AppColors.white.withValues(alpha: 0.02);
+    }
+  }
+
   Future<void> _loadAll() async {
     await Future.wait([
       context.read<TaskProvider>().loadEvents(),
+      context.read<TaskProvider>().loadTasksWithCompleted(includeCompleted: true),
       _loadHabits(),
       _loadEventTypes(),
     ]);
@@ -95,16 +205,14 @@ class _CalendarScreenState extends State<CalendarScreen> {
   Future<void> _loadEventTypes() async {
     setState(() => _loadingEventTypes = true);
     try {
-      final types = await _featureRepository.getEventTypes();
+      await _featureRepository.getEventTypes();
       if (!mounted) return;
       setState(() {
-        _eventTypes = types;
         _loadingEventTypes = false;
       });
     } catch (_) {
       if (!mounted) return;
       setState(() {
-        _eventTypes = const [];
         _loadingEventTypes = false;
       });
     }
@@ -113,8 +221,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
   void _showAddEvent({TimeOfDay? initialTime}) {
     showCupertinoModalPopup(
       context: context,
-      builder: (_) =>
-          AddEventSheet(selectedDate: _currentDate, initialTime: initialTime),
+      builder: (_) => AddEventSheet(
+        selectedDate: _currentDate,
+        initialTime: initialTime,
+      ),
     );
   }
 
@@ -136,9 +246,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
     }
   }
 
-  void _navigatePrevious() {
+  Future<void> _navigatePrevious() async {
+    final wasYearly = _displayMode == _CalendarDisplayMode.yearly;
     setState(() {
-      if (_displayMode == _CalendarDisplayMode.yearly) {
+      if (wasYearly) {
         _currentDate = DateTime(_currentDate.year - 1, 1, 1);
       } else if (_displayMode == _CalendarDisplayMode.monthly) {
         _currentDate = DateTime(_currentDate.year, _currentDate.month - 1, 1);
@@ -146,11 +257,14 @@ class _CalendarScreenState extends State<CalendarScreen> {
         _currentDate = _currentDate.subtract(const Duration(days: 1));
       }
     });
+    if (wasYearly) {
+    }
   }
 
-  void _navigateNext() {
+  Future<void> _navigateNext() async {
+    final wasYearly = _displayMode == _CalendarDisplayMode.yearly;
     setState(() {
-      if (_displayMode == _CalendarDisplayMode.yearly) {
+      if (wasYearly) {
         _currentDate = DateTime(_currentDate.year + 1, 1, 1);
       } else if (_displayMode == _CalendarDisplayMode.monthly) {
         _currentDate = DateTime(_currentDate.year, _currentDate.month + 1, 1);
@@ -158,6 +272,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
         _currentDate = _currentDate.add(const Duration(days: 1));
       }
     });
+    if (wasYearly) {
+    }
   }
 
   void _stepBackView() {
@@ -175,9 +291,13 @@ class _CalendarScreenState extends State<CalendarScreen> {
       return '${_currentDate.year}';
     }
     if (_displayMode == _CalendarDisplayMode.monthly) {
-      return DateFormat('MMMM yyyy').format(_currentDate);
+      return _safeDateFormat('MMMM yyyy', _currentDate);
     }
-    return DateFormat('MMMM d, yyyy').format(_currentDate);
+    return _safeDateFormat(
+      'MMMM d, yyyy',
+      _currentDate,
+      fallbackPattern: 'MMM d, yyyy',
+    );
   }
 
   DateTime _startOfWeekMonday(DateTime day) {
@@ -274,10 +394,12 @@ class _CalendarScreenState extends State<CalendarScreen> {
     return a.year == b.year && a.month == b.month && a.day == b.day;
   }
 
-  List<CalendarEvent> _eventsForDay(
-    DateTime day,
-    List<CalendarEvent> allEvents,
-  ) {
+  bool _isCurrentHour(DateTime day, int hour) {
+    final now = DateTime.now();
+    return _isSameDate(day, now) && now.hour == hour;
+  }
+
+  List<CalendarEvent> _eventsForDay(DateTime day, List<CalendarEvent> allEvents) {
     final dateStr = DateFormat('yyyy-MM-dd').format(day);
     return _prioritizeEvents(
       allEvents.where((event) => event.eventDate == dateStr).toList(),
@@ -290,9 +412,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
     List<CalendarEvent> allEvents,
   ) {
     final dayEvents = _eventsForDay(day, allEvents);
-    return dayEvents
-        .where((event) => _parseHour(event.eventTime) == hour)
-        .toList();
+    return dayEvents.where((event) => _parseHour(event.eventTime) == hour).toList();
   }
 
   int _eventCountForMonth(DateTime monthDate, List<CalendarEvent> allEvents) {
@@ -303,56 +423,13 @@ class _CalendarScreenState extends State<CalendarScreen> {
     }).length;
   }
 
-  Color _fallbackColorByPriority(_EventPriority priority) {
-    switch (priority) {
-      case _EventPriority.important:
-        return const Color(0xFFEF4444);
-      case _EventPriority.normal:
-        return const Color(0xFF60A5FA);
-      case _EventPriority.secondary:
-        return const Color(0xFFF59E0B);
-    }
-  }
-
-  Color _colorByNamedType(String? colorName) {
-    switch ((colorName ?? '').toLowerCase().trim()) {
-      case 'blue':
-        return const Color(0xFF60A5FA);
-      case 'green':
-        return const Color(0xFF34D399);
-      case 'purple':
-        return const Color(0xFFA78BFA);
-      case 'pink':
-        return const Color(0xFFF472B6);
-      case 'orange':
-        return const Color(0xFFFB923C);
-      case 'red':
-        return const Color(0xFFEF4444);
-      case 'yellow':
-        return const Color(0xFFFACC15);
-      case 'teal':
-        return const Color(0xFF2DD4BF);
-      default:
-        return AppColors.primaryOrange;
-    }
-  }
-
-  Color _colorFromHex(String? raw, {Color fallback = const Color(0xFF60A5FA)}) {
-    if (raw == null || raw.isEmpty) return fallback;
-    var value = raw.trim().replaceAll('#', '');
-    if (value.length == 3) {
-      value = value.split('').map((c) => '$c$c').join();
-    }
-    if (value.length == 6) {
-      value = 'FF$value';
-    }
-    if (value.length != 8) return fallback;
-    final parsed = int.tryParse(value, radix: 16);
-    if (parsed == null) return fallback;
-    return Color(parsed);
-  }
-
   Color _eventColor(CalendarEvent event) {
+    if (_isBirthdayEvent(event)) {
+      return const Color(0xFFF472B6);
+    }
+    if (_isFocusPlanEvent(event)) {
+      return const Color(0xFF8B5CF6);
+    }
     final typeId = event.eventTypeId;
     if (typeId != null && typeId.isNotEmpty) {
       final type = _eventTypes.cast<EventType?>().firstWhere(
@@ -361,14 +438,39 @@ class _CalendarScreenState extends State<CalendarScreen> {
       );
       if (type?.color != null && type!.color!.isNotEmpty) {
         final value = type.color!;
-        if (value.startsWith('#') ||
-            RegExp(r'^[0-9a-fA-F]{3,8}$').hasMatch(value)) {
+        if (value.startsWith('#') || RegExp(r'^[0-9a-fA-F]{3,8}$').hasMatch(value)) {
           return _colorFromHex(value, fallback: _colorByNamedType('blue'));
         }
         return _colorByNamedType(value);
       }
     }
     return _fallbackColorByPriority(_priority(event));
+  }
+
+  bool _isBirthdayEvent(CalendarEvent event) {
+    final source = (event.sourceType ?? '').trim().toLowerCase();
+    final recurrence = (event.recurrenceRule ?? '').trim().toLowerCase();
+    return source == 'birthday' || recurrence.contains('year');
+  }
+
+  bool _isFocusPlanEvent(CalendarEvent event) {
+    final source = (event.sourceType ?? '').trim().toLowerCase();
+    return source == 'focus_plan';
+  }
+
+  String _eventMetaLabel(CalendarEvent event) {
+    if (event.eventTime == null) {
+      return _isBirthdayEvent(event)
+          ? _t('calendar_event_birthday_repeats_yearly')
+          : _t('calendar_event_all_day');
+    }
+    final base =
+        "${event.eventTime} • ${_duration(event)}${_t('calendar_event_minutes_short")}';
+    if (_isFocusPlanEvent(event) &&
+        (event.recurrenceRule ?? '').toLowerCase().contains('week')) {
+      return "$base • ${_t('calendar_event_weekly_short")}';
+    }
+    return base;
   }
 
   _DayOverloadInfo _detectOverload(List<CalendarEvent> dayEvents) {
@@ -511,10 +613,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
     );
   }
 
-  _WeekAnalysis _analyzeWeek(
-    List<CalendarEvent> allEvents,
-    DateTime reference,
-  ) {
+  _WeekAnalysis _analyzeWeek(List<CalendarEvent> allEvents, DateTime reference) {
     final weekStart = _startOfWeekMonday(reference);
     final weekEnd = weekStart.add(const Duration(days: 6));
 
@@ -550,6 +649,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Rebuild when language changes so localized date labels refresh.
+    context.watch<LanguageProvider>().languageCode;
     return CupertinoPageScaffold(
       backgroundColor: AppColors.background,
       child: AmbientBackdrop(
@@ -561,10 +662,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
               final overloadInfo = _detectOverload(selectedDayEvents);
               final focusSuggestion = _suggestFocus(selectedDayEvents);
               final freeTime = _freeTime(selectedDayEvents);
-              final habitConflict = _habitConflict(
-                _currentDate,
-                selectedDayEvents,
-              );
+              final habitConflict = _habitConflict(_currentDate, selectedDayEvents);
               final weekAnalysis = _analyzeWeek(allEvents, _currentDate);
 
               return GestureDetector(
@@ -592,10 +690,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                             ).animate(animation);
                             return FadeTransition(
                               opacity: animation,
-                              child: SlideTransition(
-                                position: slide,
-                                child: child,
-                              ),
+                              child: SlideTransition(position: slide, child: child),
                             );
                           },
                           child: _activePanel == _CalendarPanel.calendar
@@ -612,8 +707,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
                       const SizedBox(height: 8),
                       Text(
                         _activePanel == _CalendarPanel.calendar
-                            ? 'Swipe right for stats & insights →'
-                            : '← Swipe left for calendar view',
+                            ? _t('calendar_swipe_stats_hint')
+                            : _t('calendar_swipe_calendar_hint'),
                         style: AppTypography.mono.copyWith(
                           fontSize: 10,
                           color: AppColors.tertiaryLabel,
@@ -644,15 +739,11 @@ class _CalendarScreenState extends State<CalendarScreen> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    CupertinoIcons.arrow_left,
-                    color: AppColors.secondaryLabel,
-                    size: 18,
-                  ),
+                  Icon(CupertinoIcons.arrow_left, color: AppColors.secondaryLabel, size: 18),
                   const SizedBox(width: 6),
                   Text(
-                    'Home',
-                    style: AppTypography.mono.copyWith(
+                    _t('home'),
+                    style: AppTypography.callout.copyWith(
                       fontSize: 15,
                       color: AppColors.secondaryLabel,
                       fontWeight: FontWeight.w600,
@@ -665,11 +756,12 @@ class _CalendarScreenState extends State<CalendarScreen> {
           Align(
             alignment: Alignment.center,
             child: Text(
-              'Schedule',
-              style: AppTypography.mono.copyWith(
-                fontSize: 20,
-                fontWeight: FontWeight.w900,
-                color: AppColors.label,
+              _t('calendar_schedule_title'),
+              style: AppTypography.callout.copyWith(
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: AppColors.secondaryLabel.withValues(alpha: 0.72),
+                letterSpacing: 1,
               ),
             ),
           ),
@@ -684,10 +776,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 await taskProvider.loadEvents();
               },
               child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 10,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(18),
                   color: AppColors.backgroundLight.withValues(alpha: 0.72),
@@ -710,6 +799,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
   }
 
   Widget _buildControlsRow() {
+    final isYearly = _displayMode == _CalendarDisplayMode.yearly;
+    final isMonthly = _displayMode == _CalendarDisplayMode.monthly;
     return Row(
       children: [
         if (_displayMode != _CalendarDisplayMode.yearly) ...[
@@ -721,31 +812,47 @@ class _CalendarScreenState extends State<CalendarScreen> {
         ],
         _squareControlButton(
           icon: CupertinoIcons.chevron_left,
-          onTap: _navigatePrevious,
+          onTap: () {
+            _navigatePrevious();
+          },
+          size: isYearly ? 40 : 50,
         ),
-        const SizedBox(width: 10),
+        SizedBox(width: isYearly ? 16 : 10),
         Expanded(
           child: Text(
             _headerLabel(),
             textAlign: TextAlign.center,
-            style: AppTypography.mono.copyWith(
-              fontSize: 18,
-              fontWeight: FontWeight.w900,
+            style: (isYearly
+                    ? AppTypography.largeTitle
+                    : isMonthly
+                    ? AppTypography.title1
+                    : AppTypography.title3)
+                .copyWith(
+              fontSize: isYearly
+                  ? 26
+                  : isMonthly
+                  ? 28
+                  : 18,
+              fontWeight: FontWeight.w700,
+              letterSpacing: isYearly || isMonthly ? 0.2 : -0.1,
               color: AppColors.label,
             ),
           ),
         ),
-        const SizedBox(width: 10),
+        SizedBox(width: isYearly ? 16 : 10),
         _squareControlButton(
           icon: CupertinoIcons.chevron_right,
-          onTap: _navigateNext,
+          onTap: () {
+            _navigateNext();
+          },
+          size: isYearly ? 40 : 50,
         ),
         const SizedBox(width: 10),
         _squareControlButton(
           icon: CupertinoIcons.add,
           onTap: _showAddEvent,
-          filled: true,
-          size: 56,
+          filled: false,
+          size: isYearly ? 40 : 56,
         ),
       ],
     );
@@ -757,34 +864,39 @@ class _CalendarScreenState extends State<CalendarScreen> {
     bool filled = false,
     double size = 50,
   }) {
-    return GestureDetector(
+    return _CalendarPressScale(
       onTap: onTap,
+      scaleWhenPressed: 1.03,
       child: Container(
         width: size,
         height: size,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
           color: filled
-              ? Colors.white.withValues(alpha: 0.95)
-              : AppColors.backgroundLight.withValues(alpha: 0.72),
+              ? AppColors.pillBackground
+              : AppColors.topBarControlBackground,
+          borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: filled ? Colors.white : AppColors.glassBorder,
-            width: 0.8,
+            color: filled
+                ? AppColors.pillBorder
+                : AppColors.topBarControlBorder,
+            width: 1,
           ),
-          boxShadow: filled
-              ? [
-                  BoxShadow(
-                    color: Colors.white.withValues(alpha: 0.24),
-                    blurRadius: 20,
-                    spreadRadius: -6,
-                  ),
-                ]
-              : null,
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.glassShadowSoft.withValues(
+                alpha: AppColors.isDark ? 0.12 : 0.08,
+              ),
+              blurRadius: AppColors.isDark ? 12 : 10,
+              offset: Offset(0, AppColors.isDark ? 5 : 4),
+              spreadRadius: -8,
+            ),
+          ],
         ),
+        alignment: Alignment.center,
         child: Icon(
           icon,
-          color: filled ? Colors.black : AppColors.label,
-          size: 24,
+          color: AppColors.label.withValues(alpha: 0.8),
+          size: size <= 40 ? 20 : 24,
         ),
       ),
     );
@@ -824,12 +936,14 @@ class _CalendarScreenState extends State<CalendarScreen> {
           child: GlassCard(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
             borderRadius: 18,
+            level: GlassCardLevel.standard,
+            showEdgeGlow: count > 0,
             border: Border.all(color: AppColors.glassBorder, width: 0.65),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  DateFormat('MMM').format(monthDate),
+                  DateFormat('MMM', _localeCode()).format(monthDate),
                   style: AppTypography.mono.copyWith(
                     fontSize: 18,
                     fontWeight: FontWeight.w900,
@@ -839,10 +953,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 const SizedBox(height: 6),
                 if (count > 0)
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 3,
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(9),
                       color: const Color(0xFF2563EB).withValues(alpha: 0.22),
@@ -871,7 +982,15 @@ class _CalendarScreenState extends State<CalendarScreen> {
   Widget _buildMonthlyView(List<CalendarEvent> events) {
     final monthStart = DateTime(_currentDate.year, _currentDate.month, 1);
     final days = _monthGridDays(monthStart);
-    final weekdayLabels = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
+    final weekdayLabels = [
+      _t('calendar_weekday_mon'),
+      _t('calendar_weekday_tue'),
+      _t('calendar_weekday_wed'),
+      _t('calendar_weekday_thu'),
+      _t('calendar_weekday_fri'),
+      _t('calendar_weekday_sat'),
+      _t('calendar_weekday_sun'),
+    ];
 
     return Column(
       key: const ValueKey('monthly'),
@@ -920,10 +1039,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   });
                 },
                 child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 5,
-                    vertical: 6,
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 6),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(2),
                     color: inMonth
@@ -932,9 +1048,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     border: Border.all(
                       color: isToday
                           ? const Color(0xFF2563EB).withValues(alpha: 0.75)
-                          : AppColors.glassBorder.withValues(
-                              alpha: inMonth ? 0.65 : 0.25,
-                            ),
+                          : AppColors.glassBorder.withValues(alpha: inMonth ? 0.65 : 0.25),
                       width: isToday ? 1.2 : 0.5,
                     ),
                   ),
@@ -948,27 +1062,23 @@ class _CalendarScreenState extends State<CalendarScreen> {
                           fontWeight: FontWeight.w800,
                           color: !inMonth
                               ? AppColors.tertiaryLabel.withValues(alpha: 0.35)
-                              : (isToday
-                                    ? const Color(0xFF93C5FD)
-                                    : AppColors.label),
+                              : (isToday ? const Color(0xFF93C5FD) : AppColors.label),
                         ),
                       ),
                       const Spacer(),
                       if (dayEvents.isNotEmpty)
-                        ...dayEvents
-                            .take(2)
-                            .map(
-                              (event) => Padding(
-                                padding: const EdgeInsets.only(bottom: 3),
-                                child: Container(
-                                  height: 4.5,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(99),
-                                    color: _eventColor(event),
-                                  ),
-                                ),
+                        ...dayEvents.take(2).map(
+                          (event) => Padding(
+                            padding: const EdgeInsets.only(bottom: 3),
+                            child: Container(
+                              height: 4.5,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(99),
+                                color: _eventColor(event),
                               ),
                             ),
+                          ),
+                        ),
                       if (dayEvents.length > 2)
                         Text(
                           '+${dayEvents.length - 2}',
@@ -990,12 +1100,17 @@ class _CalendarScreenState extends State<CalendarScreen> {
   }
 
   Widget _buildDailyView(List<CalendarEvent> events) {
-    final dayLabel = DateFormat('EEEE, MMM d').format(_currentDate);
+    final dayLabel = DateFormat('EEEE, MMM d', _localeCode()).format(
+      _currentDate,
+    );
+    final now = DateTime.now();
 
     return GlassCard(
       key: const ValueKey('daily'),
       padding: EdgeInsets.zero,
       borderRadius: 22,
+      level: GlassCardLevel.standard,
+      showEdgeGlow: true,
       border: Border.all(color: AppColors.glassBorder, width: 0.7),
       child: Column(
         children: [
@@ -1010,10 +1125,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
               ),
             ),
           ),
-          Container(
-            height: 0.6,
-            color: AppColors.glassBorder.withValues(alpha: 0.5),
-          ),
+          Container(height: 0.6, color: AppColors.glassBorder.withValues(alpha: 0.5)),
           Expanded(
             child: ListView.builder(
               padding: EdgeInsets.zero,
@@ -1022,9 +1134,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 final hourEvents = _eventsForHour(_currentDate, hour, events);
                 final hasEvents = hourEvents.isNotEmpty;
                 return GestureDetector(
-                  onTap: () => _showAddEvent(
-                    initialTime: TimeOfDay(hour: hour, minute: 0),
-                  ),
+                  onTap: () => _showAddEvent(initialTime: TimeOfDay(hour: hour, minute: 0)),
                   child: Container(
                     constraints: const BoxConstraints(minHeight: 74),
                     decoration: BoxDecoration(
@@ -1046,7 +1156,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                           child: Padding(
                             padding: const EdgeInsets.only(top: 12, right: 10),
                             child: Text(
-                              '${hour.toString().padLeft(2, '0')}:00',
+                              "${hour.toString().padLeft(2, '0")}:00',
                               textAlign: TextAlign.right,
                               style: AppTypography.mono.copyWith(
                                 fontSize: 10,
@@ -1074,41 +1184,31 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                           vertical: 8,
                                         ),
                                         decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(
-                                            10,
-                                          ),
-                                          color: _eventColor(
-                                            event,
-                                          ).withValues(alpha: 0.16),
+                                          borderRadius: BorderRadius.circular(10),
+                                          color: _eventColor(event).withValues(alpha: 0.16),
                                           border: Border.all(
-                                            color: _eventColor(
-                                              event,
-                                            ).withValues(alpha: 0.65),
+                                            color: _eventColor(event).withValues(alpha: 0.65),
                                             width: 0.7,
                                           ),
                                         ),
                                         child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
+                                          crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
                                             Text(
                                               event.title,
-                                              style: AppTypography.mono
-                                                  .copyWith(
-                                                    fontSize: 11,
-                                                    fontWeight: FontWeight.w800,
-                                                    color: AppColors.label,
-                                                  ),
+                                              style: AppTypography.mono.copyWith(
+                                                fontSize: 11,
+                                                fontWeight: FontWeight.w800,
+                                                color: AppColors.label,
+                                              ),
                                             ),
                                             const SizedBox(height: 2),
                                             Text(
-                                              '${event.eventTime ?? '${hour.toString().padLeft(2, '0')}:00'} • ${_duration(event)}min',
-                                              style: AppTypography.mono
-                                                  .copyWith(
-                                                    fontSize: 10,
-                                                    color: AppColors
-                                                        .secondaryLabel,
-                                                  ),
+                                              "${event.eventTime ?? '${hour.toString().padLeft(2, '0")}:00'} • ${_duration(event)}min',
+                                              style: AppTypography.mono.copyWith(
+                                                fontSize: 10,
+                                                color: AppColors.secondaryLabel,
+                                              ),
                                             ),
                                           ],
                                         ),
@@ -1145,21 +1245,31 @@ class _CalendarScreenState extends State<CalendarScreen> {
         if (overloadInfo.overloaded)
           _warningTile(
             icon: CupertinoIcons.exclamationmark_triangle_fill,
-            title: 'Overloaded Day',
+            title: _t('calendar_stats_overloaded_day'),
             message: overloadInfo.reason == 'too_many_hours'
-                ? '${(overloadInfo.totalMinutes / 60).round()}h scheduled - reduce load.'
+                ? _t('calendar_stats_overload_too_many_hours').replaceAll(
+                    '{hours}',
+                    '${(overloadInfo.totalMinutes / 60).round()}',
+                  )
                 : overloadInfo.reason == 'no_breaks'
-                ? 'Back-to-back events without a clear break.'
-                : '${overloadInfo.eventCount} events planned - high intensity.',
-            color: const Color(0xFFF59E0B),
+                ? _t('calendar_stats_overload_no_breaks')
+                : _t('calendar_stats_overload_too_many_events').replaceAll(
+                    '{count}',
+                    '${overloadInfo.eventCount}',
+                  ),
+            color: AppColors.warning,
           ),
         if (!_loadingHabits && habitConflict.conflict)
           _warningTile(
             icon: CupertinoIcons.check_mark_circled_solid,
-            title: 'Habit Conflict',
-            message:
-                '${habitConflict.habitCount} habit(s) + ${(habitConflict.eventMinutes / 60).round()}h events.',
-            color: const Color(0xFF10B981),
+            title: _t('calendar_stats_habit_conflict'),
+            message: _t(
+              'calendar_stats_habit_conflict_message',
+            ).replaceAll('{habits}', '${habitConflict.habitCount}').replaceAll(
+              '{hours}',
+              '${(habitConflict.eventMinutes / 60).round()}',
+            ),
+            color: AppColors.success,
           ),
         _focusOpportunityCard(focusSuggestion),
         const SizedBox(height: 12),
@@ -1181,6 +1291,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
       child: GlassCard(
         padding: const EdgeInsets.all(14),
         borderRadius: 18,
+        level: GlassCardLevel.standard,
+        showEdgeGlow: true,
         border: Border.all(color: color.withValues(alpha: 0.5), width: 0.8),
         gradientColors: [
           color.withValues(alpha: 0.17),
@@ -1197,7 +1309,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 children: [
                   Text(
                     title,
-                    style: AppTypography.mono.copyWith(
+                    style: AppTypography.headline.copyWith(
                       fontSize: 13,
                       fontWeight: FontWeight.w800,
                       color: AppColors.label,
@@ -1206,7 +1318,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   const SizedBox(height: 4),
                   Text(
                     message,
-                    style: AppTypography.mono.copyWith(
+                    style: AppTypography.callout.copyWith(
                       fontSize: 11,
                       color: AppColors.secondaryLabel,
                     ),
@@ -1223,21 +1335,41 @@ class _CalendarScreenState extends State<CalendarScreen> {
   Widget _focusOpportunityCard(_FocusSuggestion focusSuggestion) {
     final canStart = focusSuggestion.suggest;
     final subtitle = focusSuggestion.reason == 'no_events'
-        ? 'Day is free - perfect for deep work'
+        ? _t('calendar_focus_reason_no_events')
         : focusSuggestion.reason == 'light_schedule'
-        ? 'Light schedule - ideal for a focus block'
-        : 'Dense day - keep one short focus sprint';
+        ? _t('calendar_focus_reason_light_schedule')
+        : _t('calendar_focus_reason_busy_schedule');
 
     return GlassCard(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       borderRadius: 22,
-      border: Border.all(color: AppColors.glassBorder, width: 0.75),
+      level: GlassCardLevel.elevated,
+      showEdgeGlow: canStart,
+      border: Border.all(
+        color: canStart ? AppColors.borderStrong : AppColors.border,
+        width: 0.9,
+      ),
       child: Row(
         children: [
-          Icon(
-            CupertinoIcons.bolt_fill,
-            color: AppColors.secondaryLabel,
-            size: 26,
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(14),
+              color: AppColors.moduleIconBackground,
+              border: Border.all(
+                color: canStart
+                    ? AppColors.activeBorder.withValues(alpha: 0.48)
+                    : AppColors.border,
+                width: 0.9,
+              ),
+            ),
+            alignment: Alignment.center,
+            child: Icon(
+              CupertinoIcons.bolt_fill,
+              color: canStart ? AppColors.accentIcon : AppColors.secondaryLabel,
+              size: 24,
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -1245,17 +1377,17 @@ class _CalendarScreenState extends State<CalendarScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Focus Opportunity',
-                  style: AppTypography.mono.copyWith(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w900,
+                  _t('calendar_focus_opportunity'),
+                  style: AppTypography.title3.copyWith(
+                    fontSize: 21,
+                    fontWeight: FontWeight.w700,
                     color: AppColors.label,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   subtitle,
-                  style: AppTypography.mono.copyWith(
+                  style: AppTypography.callout.copyWith(
                     fontSize: 12,
                     color: AppColors.secondaryLabel,
                   ),
@@ -1269,10 +1401,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
             child: Opacity(
               opacity: canStart ? 1 : 0.55,
               child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(14),
                   color: AppColors.backgroundLight.withValues(alpha: 0.72),
@@ -1296,10 +1425,12 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   Widget _freeTimeCard(_FreeTimeInfo freeTime) {
     final timeLabel =
-        '${freeTime.freeTimeHours}h${freeTime.freeTimeRemainingMinutes > 0 ? '${freeTime.freeTimeRemainingMinutes}m' : ''}';
+        "${freeTime.freeTimeHours}h${freeTime.freeTimeRemainingMinutes > 0 ? '${freeTime.freeTimeRemainingMinutes}m" : ''}';
     return GlassCard(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
       borderRadius: 22,
+      level: GlassCardLevel.standard,
+      showEdgeGlow: true,
       border: Border.all(color: AppColors.glassBorder, width: 0.75),
       child: Row(
         children: [
@@ -1319,8 +1450,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'After events & sleep',
-                  style: AppTypography.mono.copyWith(
+                  _t('calendar_real_free_time_subtitle'),
+                  style: AppTypography.footnote.copyWith(
                     fontSize: 12,
                     color: AppColors.secondaryLabel,
                   ),
@@ -1330,9 +1461,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
           ),
           Text(
             timeLabel,
-            style: AppTypography.mono.copyWith(
-              fontSize: 44,
-              fontWeight: FontWeight.w900,
+            style: AppTypography.largeTitle.copyWith(
+              fontSize: 48,
+              fontWeight: FontWeight.w700,
               color: AppColors.label,
               height: 1.0,
             ),
@@ -1346,24 +1477,22 @@ class _CalendarScreenState extends State<CalendarScreen> {
     return GlassCard(
       padding: const EdgeInsets.all(16),
       borderRadius: 24,
+      level: GlassCardLevel.elevated,
+      showEdgeGlow: true,
       border: Border.all(color: AppColors.glassBorder, width: 0.7),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(
-                CupertinoIcons.chart_bar_alt_fill,
-                color: const Color(0xFF818CF8),
-                size: 22,
-              ),
+              Icon(CupertinoIcons.chart_bar_alt_fill, color: const Color(0xFF818CF8), size: 22),
               const SizedBox(width: 10),
               Text(
-                'Week Overview',
-                style: AppTypography.mono.copyWith(
+                _t('calendar_week_overview'),
+                style: AppTypography.title3.copyWith(
                   fontSize: 20,
-                  fontWeight: FontWeight.w900,
-                  color: const Color(0xFFA5B4FC),
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.accentText,
                 ),
               ),
             ],
@@ -1374,17 +1503,24 @@ class _CalendarScreenState extends State<CalendarScreen> {
               _weekTile(
                 icon: CupertinoIcons.calendar,
                 value: '${weekAnalysis.totalEventHours}h',
-                label: 'Scheduled',
-                color: const Color(0xFF60A5FA),
-                gradient: const [Color(0x332563EB), Color(0x220EA5E9)],
+                label: _t('calendar_week_scheduled'),
+                color: AppColors.accent,
+                gradient: [
+                  AppColors.accent.withValues(alpha: 0.2),
+                  AppColors.accentLight.withValues(alpha: 0.12),
+                ],
               ),
               const SizedBox(width: 10),
               _weekTile(
                 icon: CupertinoIcons.scope,
                 value: '${weekAnalysis.importantEventHours}h',
-                label: 'Important',
-                color: const Color(0xFFFACC15),
-                gradient: const [Color(0x33B45309), Color(0x22F59E0B)],
+                label: _t('calendar_week_important'),
+                color: AppColors.warning,
+                emphasizeBorder: true,
+                gradient: [
+                  AppColors.warning.withValues(alpha: 0.2),
+                  AppColors.warning.withValues(alpha: 0.1),
+                ],
               ),
             ],
           ),
@@ -1394,28 +1530,46 @@ class _CalendarScreenState extends State<CalendarScreen> {
               _weekTile(
                 icon: CupertinoIcons.clock,
                 value: '${weekAnalysis.freeTimeHours}h',
-                label: 'Free Time',
-                color: const Color(0xFF34D399),
-                gradient: const [Color(0x33166534), Color(0x2210B981)],
+                label: _t('calendar_week_free_time'),
+                color: AppColors.success,
+                emphasizeBorder: true,
+                gradient: [
+                  AppColors.success.withValues(alpha: 0.18),
+                  AppColors.success.withValues(alpha: 0.1),
+                ],
               ),
               const SizedBox(width: 10),
               _weekTile(
                 icon: CupertinoIcons.arrow_up_right,
                 value: '${weekAnalysis.percentageImportant}%',
-                label: 'Priority',
-                color: const Color(0xFFC084FC),
-                gradient: const [Color(0x334C1D95), Color(0x227E22CE)],
+                label: _t('calendar_week_priority'),
+                color: AppColors.rankAccent,
+                gradient: [
+                  AppColors.rankAccent.withValues(alpha: 0.18),
+                  AppColors.rankAccent.withValues(alpha: 0.1),
+                ],
               ),
             ],
           ),
           const SizedBox(height: 12),
-          Center(
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(14),
+              color: AppColors.pillBackground,
+              border: Border.all(color: AppColors.pillBorder, width: 0.8),
+            ),
             child: Text(
-              '${weekAnalysis.percentageFree}% of waking hours remain free',
-              style: AppTypography.mono.copyWith(
+              _t(
+                'calendar_week_free_hours',
+              ).replaceAll('{percent}', '${weekAnalysis.percentageFree}'),
+              textAlign: TextAlign.center,
+              style: AppTypography.footnote.copyWith(
                 fontSize: 11,
-                color: const Color(0xFF818CF8),
-                fontWeight: FontWeight.w600,
+                color: AppColors.secondaryLabel.withValues(alpha: 0.86),
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.6,
               ),
             ),
           ),
@@ -1430,37 +1584,53 @@ class _CalendarScreenState extends State<CalendarScreen> {
     required String label,
     required Color color,
     required List<Color> gradient,
+    bool emphasizeBorder = false,
   }) {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: color.withValues(alpha: 0.5), width: 0.8),
+          border: Border.all(
+            color: emphasizeBorder
+                ? color.withValues(alpha: 0.34)
+                : AppColors.borderStrong.withValues(alpha: 0.72),
+            width: 0.85,
+          ),
           gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
             colors: gradient,
           ),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.glassShadowSoft.withValues(
+                alpha: AppColors.isDark ? 0.14 : 0.08,
+              ),
+              blurRadius: AppColors.isDark ? 12 : 10,
+              offset: Offset(0, AppColors.isDark ? 5 : 4),
+              spreadRadius: -8,
+            ),
+          ],
         ),
         child: Column(
           children: [
-            Icon(icon, color: color, size: 24),
+            Icon(icon, color: color, size: 22),
             const SizedBox(height: 8),
             Text(
               value,
-              style: AppTypography.mono.copyWith(
-                fontSize: 28,
-                fontWeight: FontWeight.w900,
-                color: color,
+              style: AppTypography.title1.copyWith(
+                fontSize: 31,
+                fontWeight: FontWeight.w700,
+                color: AppColors.label,
               ),
             ),
             const SizedBox(height: 6),
             Text(
               label.toUpperCase(),
-              style: AppTypography.mono.copyWith(
+              style: AppTypography.overline.copyWith(
                 fontSize: 9,
-                color: color.withValues(alpha: 0.88),
+                color: color.withValues(alpha: 0.84),
                 fontWeight: FontWeight.w800,
                 letterSpacing: 1.3,
               ),
@@ -1556,7 +1726,7 @@ class _CalendarPressScale extends StatefulWidget {
   const _CalendarPressScale({
     required this.child,
     required this.onTap,
-    this.scaleWhenPressed = 0.96,
+    this.scaleWhenPressed = 1.03,
   });
 
   @override

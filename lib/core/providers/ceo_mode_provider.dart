@@ -45,6 +45,7 @@ class CeoModeProvider extends ChangeNotifier with WidgetsBindingObserver {
   static const String _prefsStartAtMs = 'ceo_mode_start_at_ms';
   static const String _prefsEndAtMs = 'ceo_mode_end_at_ms';
   static const String _prefsExitReadyAtMs = 'ceo_mode_exit_ready_at_ms';
+  static const String _prefsPreparationStatus = 'ceo_mode_preparation_status';
 
   Timer? _ticker;
   bool _initialized = false;
@@ -61,6 +62,8 @@ class CeoModeProvider extends ChangeNotifier with WidgetsBindingObserver {
   String? _sessionId;
   PremiumCheckResult? _lastPremiumCheck;
   String? _lastStartIssue;
+  BlackoutPreparationStatus _preparationStatus =
+      BlackoutPreparationStatus.notSeen;
 
   CeoModeState get state => _state;
   bool get isBusy => _busy;
@@ -72,6 +75,9 @@ class CeoModeProvider extends ChangeNotifier with WidgetsBindingObserver {
   int get selectedDurationMinutes => _selectedDurationMinutes;
   PremiumCheckResult? get lastPremiumCheck => _lastPremiumCheck;
   String? get lastStartIssue => _lastStartIssue;
+  BlackoutPreparationStatus get preparationStatus => _preparationStatus;
+  bool get shouldShowPreparationFlowBeforeBlackout =>
+      _preparationStatus == BlackoutPreparationStatus.notSeen;
 
   int get sessionRemainingSeconds {
     if (_sessionEndAt == null) return 0;
@@ -130,6 +136,19 @@ class CeoModeProvider extends ChangeNotifier with WidgetsBindingObserver {
     notifyListeners();
   }
 
+  Future<void> persistPreparationOutcome(
+    BlackoutPreparationFlowOutcome outcome,
+  ) async {
+    final next = outcome == BlackoutPreparationFlowOutcome.completed
+        ? BlackoutPreparationStatus.completed
+        : BlackoutPreparationStatus.skipped;
+    if (_preparationStatus == next) return;
+    _preparationStatus = next;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_prefsPreparationStatus, next.storageValue);
+    notifyListeners();
+  }
+
   Future<AndroidProtectionStep> getNextAndroidProtectionStep() {
     return _focusService.getNextAndroidProtectionStep();
   }
@@ -175,7 +194,7 @@ class CeoModeProvider extends ChangeNotifier with WidgetsBindingObserver {
 
       final shieldingApplied = await _activateShielding();
       if (!shieldingApplied) {
-        _lastStartIssue = 'block_list';
+        _lastStartIssue = 'activation_failed';
         _state = CeoModeState.idle;
         _sessionStartAt = null;
         _sessionEndAt = null;
@@ -221,29 +240,7 @@ class CeoModeProvider extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   Future<bool> _activateShielding() async {
-    final strictApplied = await _focusService.startCeoShield();
-    if (strictApplied) return true;
-
-    final fallbackList = await _resolveFallbackBlockList();
-    if (fallbackList == null ||
-        (fallbackList.blockedPackageNames.isEmpty &&
-            fallbackList.blockedCategories.isEmpty)) {
-      return false;
-    }
-
-    await _focusService.startShield(
-      fallbackList.blockedPackageNames,
-      fallbackList.blockedCategories,
-    );
-    return true;
-  }
-
-  Future<BlockList?> _resolveFallbackBlockList() async {
-    final lists = await _focusRepository.getBlockLists();
-    if (lists.isEmpty) return null;
-    final active = lists.where((l) => l.isActive).toList();
-    if (active.isNotEmpty) return active.first;
-    return lists.first;
+    return _focusService.startCeoShield();
   }
 
   void _ensureTicker() {
@@ -298,6 +295,9 @@ class CeoModeProvider extends ChangeNotifier with WidgetsBindingObserver {
     final prefs = await SharedPreferences.getInstance();
     _selectedDurationMinutes =
         prefs.getInt(_prefsSelectedDuration) ?? _defaultDurationMinutes;
+    _preparationStatus = BlackoutPreparationStatus.fromStorage(
+      prefs.getString(_prefsPreparationStatus),
+    );
 
     final rawState = prefs.getString(_prefsState);
     final startAtMs = prefs.getInt(_prefsStartAtMs);
@@ -395,9 +395,9 @@ class CeoModeProvider extends ChangeNotifier with WidgetsBindingObserver {
     final s = secs % 60;
 
     if (h > 0) {
-      return '${h.toString().padLeft(2, '0')}:${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
+      return "${h.toString().padLeft(2, '0")}:${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
     }
-    return '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
+    return "${m.toString().padLeft(2, '0")}:${s.toString().padLeft(2, '0')}';
   }
 
   @override

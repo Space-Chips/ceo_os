@@ -1,0 +1,11 @@
+lib/features/dashboard/dashboard_screen.dart
+lib/features/calendar/calendar_screen.dart
+lib/features/habits/habits_screen.dart
+lib/features/habits/habit_completion_page.dart
+lib/features/habits/habit_stats_page.dart
+lib/features/focus/focus_screen.dart
+lib/features/screen_time_manager/screen_time_manager_screen.dart
+lib/features/legacy/screen_time_screen.dart
+lib/features/tasks/tasks_screen.dart
+lib/features/profile/profile_screen.dart
+lib/features/rank/rank_screen.dart

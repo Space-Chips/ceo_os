@@ -103,10 +103,9 @@ class UpgradeScreen extends StatelessWidget {
                             final info = debugSnap.data;
                             if (info == null) return const SizedBox.shrink();
                             final lines = <String>[
-                              'Channel: ${info['build_channel']}',
-                              'TestFlight premium enabled: ${info['testflight_enabled']}',
-                              'Beta key present: ${info['beta_key_present']}',
-                              'Server override last sync: ${info['server_override_last_sync']}',
+                              "Channel: ${info['build_channel"]}',
+                              "Beta grant mode: ${info['beta_grant_mode"]}',
+                              "Server override last sync: ${info['server_override_last_sync"]}',
                               'Status: ${runtime.subscriptionStatus}',
                               'Resolved premium: ${runtime.resolved.isPremiumUser}',
                               'Grace active: ${runtime.resolved.clientGraceActive}',

@@ -1,12 +1,6 @@
 import SwiftUI
 import Foundation
 import UIKit
-import Foundation
-import UIKit
-import Foundation
-import UIKit
-import Foundation
-import UIKit
 
 struct ScreenTimeMetricConfiguration {
     let title: String

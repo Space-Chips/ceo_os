@@ -1,10 +1,12 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart' show Colors, FontWeight;
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
 import '../../components/components.dart';
 import '../../core/models/premium_models.dart';
 import '../../core/models/task_models.dart';
+import '../../core/providers/language_provider.dart';
 import '../../core/repositories/feature_repository.dart';
 import '../../core/repositories/premium_repository.dart';
 import '../../core/theme/app_colors.dart';
@@ -29,6 +31,8 @@ class _EventTypesScreenState extends State<EventTypesScreen> {
   final PremiumRepository _premiumRepository = PremiumRepository();
   final TextEditingController _nameController = TextEditingController();
 
+  String _t(String key) => context.watch<LanguageProvider>().t(key);
+
   static const List<_TypeColorOption> _colorOptions = [
     _TypeColorOption('blue', Color(0xFF93C5FD)),
     _TypeColorOption('green', Color(0xFF86EFAC)),
@@ -43,7 +47,6 @@ class _EventTypesScreenState extends State<EventTypesScreen> {
   List<EventType> _types = const [];
   bool _loading = true;
   bool _creating = false;
-  bool _showForm = false;
   PremiumCheckResult? _premiumBlock;
   String _selectedColor = 'blue';
 
@@ -90,8 +93,10 @@ class _EventTypesScreenState extends State<EventTypesScreen> {
       );
       _nameController.clear();
       if (!mounted) return;
-      setState(() => _showForm = false);
       await _load();
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
     } finally {
       if (mounted) {
         setState(() => _creating = false);
@@ -122,6 +127,187 @@ class _EventTypesScreenState extends State<EventTypesScreen> {
     return Color(parsed);
   }
 
+  void _openCreateTypeModal() {
+    _nameController.clear();
+    setState(() {
+      _selectedColor = 'blue';
+    });
+
+    showCupertinoModalPopup<void>(
+      context: context,
+      builder: (sheetContext) => StatefulBuilder(
+        builder: (context, setModalState) {
+          return Container(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(sheetContext).viewInsets.bottom,
+            ),
+            decoration: BoxDecoration(
+              color: AppColors.background.withValues(alpha: 0.96),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(28),
+              ),
+              border: Border(
+                top: BorderSide(
+                  color: AppColors.white.withValues(alpha: 0.08),
+                  width: 1,
+                ),
+              ),
+            ),
+            child: SafeArea(
+              top: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 18),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: AppColors.white.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(99),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      _t('event_types_create_title'),
+                      style: AppTypography.body.copyWith(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.label,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Text(
+                      _t('event_types_type_name'),
+                      style: AppTypography.body.copyWith(
+                        fontSize: 12,
+                        letterSpacing: 2,
+                        color: AppColors.secondaryLabel.withValues(alpha: 0.7),
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Container(
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: AppColors.white.withValues(alpha: 0.05),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: AppColors.white.withValues(alpha: 0.08),
+                          width: 1,
+                        ),
+                      ),
+                      child: CupertinoTextField(
+                        controller: _nameController,
+                        autofocus: true,
+                        decoration: null,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 14,
+                        ),
+                        placeholder: _t('event_types_name_placeholder'),
+                        placeholderStyle: AppTypography.body.copyWith(
+                          fontSize: 14,
+                          color: AppColors.secondaryLabel.withValues(
+                            alpha: 0.6,
+                          ),
+                        ),
+                        style: AppTypography.body.copyWith(
+                          fontSize: 14,
+                          color: AppColors.label,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Text(
+                      _t('event_types_color'),
+                      style: AppTypography.body.copyWith(
+                        fontSize: 12,
+                        letterSpacing: 2,
+                        color: AppColors.secondaryLabel.withValues(alpha: 0.7),
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Wrap(
+                      spacing: 16,
+                      runSpacing: 16,
+                      children: _colorOptions.map((option) {
+                        final selected = _selectedColor == option.value;
+                        return GestureDetector(
+                          onTap: () {
+                            setState(() => _selectedColor = option.value);
+                            setModalState(() {});
+                          },
+                          child: Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: option.color.withValues(alpha: 0.82),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                color: selected
+                                    ? Colors.white
+                                    : Colors.transparent,
+                                width: 2,
+                              ),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 24),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: CupertinoButton(
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            color: AppColors.white.withValues(alpha: 0.05),
+                            borderRadius: BorderRadius.circular(14),
+                            onPressed: () => Navigator.of(sheetContext).pop(),
+                            child: Text(
+                              _t('cancel'),
+                              style: AppTypography.body.copyWith(
+                                fontSize: 14,
+                                color: AppColors.label,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: CupertinoButton(
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(14),
+                            onPressed: _creating ? null : _createType,
+                            child: Text(
+                              _creating ? _t('creating') : _t('create'),
+                              style: AppTypography.body.copyWith(
+                                fontSize: 14,
+                                color: Colors.black,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
@@ -142,12 +328,6 @@ class _EventTypesScreenState extends State<EventTypesScreen> {
                   children: [
                     _buildHeader(),
                     const SizedBox(height: 20),
-                    _buildAddButton(),
-                    const SizedBox(height: 14),
-                    if (_showForm) ...[
-                      _buildFormCard(),
-                      const SizedBox(height: 14),
-                    ],
                     _buildTypesList(),
                   ],
                 ),
@@ -173,7 +353,7 @@ class _EventTypesScreenState extends State<EventTypesScreen> {
                   Icon(CupertinoIcons.arrow_left, color: AppColors.secondaryLabel, size: 18),
                   const SizedBox(width: 6),
                   Text(
-                    'Back',
+                    _t('back'),
                     style: AppTypography.mono.copyWith(
                       fontSize: 15,
                       color: AppColors.secondaryLabel,
@@ -370,44 +550,36 @@ class _EventTypesScreenState extends State<EventTypesScreen> {
       children: _types.map((type) {
         final color = _colorForType(type);
         return Padding(
-          padding: const EdgeInsets.only(bottom: 10),
-          child: GlassCard(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-            borderRadius: 16,
-            border: Border.all(color: AppColors.glassBorder, width: 0.65),
+            decoration: BoxDecoration(
+              color: AppColors.white.withValues(alpha: 0.03),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: AppColors.white.withValues(alpha: 0.06),
+                width: 1,
+              ),
+            ),
             child: Row(
               children: [
                 Container(
-                  width: 14,
-                  height: 14,
+                  width: 10,
+                  height: 10,
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(7),
+                    borderRadius: BorderRadius.circular(99),
                     color: color,
                   ),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        (type.name ?? 'UNTITLED'),
-                        style: AppTypography.mono.copyWith(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.label,
-                        ),
-                      ),
-                      const SizedBox(height: 3),
-                      Text(
-                        (type.color ?? 'blue').toUpperCase(),
-                        style: AppTypography.mono.copyWith(
-                          fontSize: 10,
-                          color: AppColors.tertiaryLabel,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ],
+                  child: Text(
+                    (type.name ?? _t('untitled')),
+                    style: AppTypography.body.copyWith(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.label,
+                    ),
                   ),
                 ),
                 CupertinoButton(
@@ -417,7 +589,7 @@ class _EventTypesScreenState extends State<EventTypesScreen> {
                   child: Icon(
                     CupertinoIcons.delete,
                     color: const Color(0xFFEF4444),
-                    size: 18,
+                    size: 17,
                   ),
                 ),
               ],

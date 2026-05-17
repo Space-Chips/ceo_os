@@ -1,8 +1,10 @@
-import 'dart:math' as math;
 import 'dart:ui';
+
 import 'package:flutter/material.dart';
+
 import '../core/theme/app_colors.dart';
 
+/// Premium low-noise surface card.
 enum GlassCardLevel { subtle, standard, elevated }
 
 class GlassCard extends StatelessWidget {
@@ -19,35 +21,54 @@ class GlassCard extends StatelessWidget {
   final bool showEdgeGlow;
   final bool showTopHighlight;
   final Color? glowColor;
+  final bool showTopHighlight;
 
   const GlassCard({
     super.key,
     required this.child,
     this.padding,
-    this.borderRadius = 28,
-    this.blur = 30,
+    this.borderRadius = 20,
+    this.blur = 18,
     this.gradientColors,
     this.border,
     this.width,
     this.height,
-    this.textured = true,
+    this.textured = false,
     this.level = GlassCardLevel.standard,
     this.showEdgeGlow = false,
-    this.showTopHighlight = true,
     this.glowColor,
+    this.showTopHighlight = true,
   });
 
   @override
   Widget build(BuildContext context) {
-    final shadowStrength = switch (level) {
-      GlassCardLevel.subtle => 0.6,
-      GlassCardLevel.standard => 1.0,
-      GlassCardLevel.elevated => 1.35,
+    final baseGradient = gradientColors ?? [
+      AppColors.cardBackgroundAlt,
+      AppColors.cardBase,
+    ];
+    final shadowSpec = switch (level) {
+      GlassCardLevel.subtle => (
+          alpha: AppColors.isDark ? 0.12 : 0.08,
+          blur: 12.0,
+          offsetY: 6.0,
+          spread: -8.0,
+        ),
+      GlassCardLevel.standard => (
+          alpha: AppColors.isDark ? 0.16 : 0.095,
+          blur: 14.0,
+          offsetY: 7.0,
+          spread: -10.0,
+        ),
+      GlassCardLevel.elevated => (
+          alpha: AppColors.isDark ? 0.22 : 0.12,
+          blur: 18.0,
+          offsetY: 9.0,
+          spread: -12.0,
+        ),
     };
-    final effectiveGlow = (glowColor ?? AppColors.edgeGlow).withValues(
-      alpha: showEdgeGlow
-          ? (AppColors.isDark ? 0.26 : 0.16)
-          : (AppColors.isDark ? 0.07 : 0.045),
+
+    final edgeColor = (glowColor ?? AppColors.themeGlow).withValues(
+      alpha: showEdgeGlow ? (AppColors.isDark ? 0.16 : 0.1) : 0,
     );
 
     return Container(
@@ -57,112 +78,71 @@ class GlassCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(borderRadius),
         boxShadow: [
           BoxShadow(
-            color: AppColors.glassShadow.withValues(
-              alpha: 0.46 * shadowStrength,
+            color: AppColors.glassShadow.withValues(alpha: shadowSpec.alpha),
+            blurRadius: shadowSpec.blur,
+            offset: Offset(0, shadowSpec.offsetY),
+            spreadRadius: shadowSpec.spread,
+          ),
+          if (showEdgeGlow)
+            BoxShadow(
+              color: edgeColor,
+              blurRadius: 24,
+              offset: const Offset(0, 8),
+              spreadRadius: -14,
             ),
-            blurRadius: 36 * shadowStrength,
-            offset: Offset(0, 16 * shadowStrength),
-            spreadRadius: -12,
-          ),
-          BoxShadow(
-            color: effectiveGlow,
-            blurRadius: 48 * shadowStrength,
-            offset: const Offset(0, 8),
-            spreadRadius: -18,
-          ),
         ],
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(borderRadius),
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
-          child: Stack(
-            children: [
-              Container(
-                padding: padding ?? const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(borderRadius),
-                  border:
-                      border ??
-                      Border.all(color: AppColors.glassBorder, width: 0.7),
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors:
-                        gradientColors ??
-                        [
-                          AppColors.floatingGlassGradient.first,
-                          AppColors.floatingGlassGradient.last,
-                        ],
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(borderRadius),
+              border: border ?? Border.all(color: AppColors.border, width: 0.9),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color.alphaBlend(
+                    AppColors.white.withValues(alpha: AppColors.isDark ? 0.03 : 0.5),
+                    baseGradient.first,
                   ),
-                ),
-                child: child,
+                  baseGradient.last,
+                ],
               ),
-              Positioned.fill(
-                child: IgnorePointer(
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(borderRadius),
-                      gradient: RadialGradient(
-                        center: const Alignment(-0.65, -0.95),
-                        radius: 1.08,
-                        colors: [
-                          AppColors.glassHighlight.withValues(alpha: 0.24),
-                          Colors.transparent,
-                        ],
+            ),
+            child: Stack(
+              children: [
+                if (showTopHighlight)
+                  Positioned(
+                    top: 0,
+                    left: 12,
+                    right: 12,
+                    child: IgnorePointer(
+                      child: Container(
+                        height: 1,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(999),
+                          color: AppColors.glassHighlight.withValues(
+                            alpha: 0.34,
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ),
-              Positioned.fill(
-                child: IgnorePointer(
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(borderRadius),
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          AppColors.glassHighlightSoft.withValues(alpha: 0.17),
-                          Colors.transparent,
-                          AppColors.glassShadowSoft.withValues(alpha: 0.2),
-                        ],
-                        stops: const [0, 0.35, 1],
-                      ),
+                if (textured)
+                  const Positioned.fill(
+                    child: IgnorePointer(
+                      child: _SubtleGrain(),
                     ),
                   ),
+                Padding(
+                  padding: padding ?? const EdgeInsets.all(14),
+                  child: child,
                 ),
-              ),
-              if (textured)
-                Positioned.fill(
-                  child: IgnorePointer(
-                    child: CustomPaint(
-                      painter: _NoiseTexturePainter(strength: 0.028),
-                    ),
-                  ),
-                ),
-              Positioned(
-                left: 2,
-                right: 2,
-                top: 2,
-                child: IgnorePointer(
-                  child: Container(
-                    height: 1,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(999),
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.transparent,
-                          AppColors.glassHighlight.withValues(alpha: 0.32),
-                          Colors.transparent,
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -170,53 +150,28 @@ class GlassCard extends StatelessWidget {
   }
 }
 
-class _NoiseTexturePainter extends CustomPainter {
-  final double strength;
-
-  const _NoiseTexturePainter({required this.strength});
+class _SubtleGrain extends StatelessWidget {
+  const _SubtleGrain();
 
   @override
-  void paint(Canvas canvas, Size size) {
-    final whitePaint = Paint()..style = PaintingStyle.fill;
-    final darkPaint = Paint()..style = PaintingStyle.fill;
-
-    var seed =
-        (size.width.floor() * 73856093) ^
-        (size.height.floor() * 19349663) ^
-        0x9E3779B9;
-
-    double next() {
-      seed = (1664525 * seed + 1013904223) & 0x7fffffff;
-      return seed / 0x7fffffff;
-    }
-
-    final points = math.max(40, (size.width * size.height / 1200).round());
-    for (var i = 0; i < points; i++) {
-      final x = next() * size.width;
-      final y = next() * size.height;
-      final w = 0.7 + (next() * 1.1);
-      final h = 0.7 + (next() * 1.1);
-      whitePaint.color = AppColors.glassHighlightSoft.withValues(
-        alpha: 0.003 + (next() * strength),
-      );
-      canvas.drawRect(Rect.fromLTWH(x, y, w, h), whitePaint);
-    }
-
-    final darkPoints = math.max(20, points ~/ 2);
-    for (var i = 0; i < darkPoints; i++) {
-      final x = next() * size.width;
-      final y = next() * size.height;
-      final w = 0.6 + (next() * 0.8);
-      final h = 0.6 + (next() * 0.8);
-      darkPaint.color = AppColors.glassShadowSoft.withValues(
-        alpha: 0.003 + (next() * strength * 0.7),
-      );
-      canvas.drawRect(Rect.fromLTWH(x, y, w, h), darkPaint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _NoiseTexturePainter oldDelegate) {
-    return oldDelegate.strength != strength;
+  Widget build(BuildContext context) {
+    return ShaderMask(
+      blendMode: BlendMode.softLight,
+      shaderCallback: (bounds) {
+        return LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppColors.label.withValues(alpha: AppColors.isDark ? 0.07 : 0.04),
+            AppColors.label.withValues(alpha: 0),
+            AppColors.overlayScrim.withValues(
+              alpha: AppColors.isDark ? 0.08 : 0.04,
+            ),
+          ],
+          stops: [0, 0.5, 1],
+        ).createShader(bounds);
+      },
+      child: Container(color: Colors.white),
+    );
   }
 }

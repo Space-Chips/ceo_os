@@ -44,10 +44,7 @@ class BlackoutPreparationDemoView extends StatelessWidget {
         const SizedBox(height: 16),
         const Expanded(child: BlackoutPreparationAnimationView()),
         const SizedBox(height: 18),
-        _PrimaryButton(
-          label: language.t('blackout_prep_demo_primary'),
-          onTap: onPrimary,
-        ),
+        _PrimaryButton(label: "J'optimise mon écran", onTap: onPrimary),
         const SizedBox(height: 10),
         Center(
           child: CupertinoButton(

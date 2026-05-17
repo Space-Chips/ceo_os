@@ -14,9 +14,17 @@ class FeatureRepository {
   final SupabaseService _supabaseService;
   final FamilyControlsLocalStore _familyControlsLocalStore =
       FamilyControlsLocalStore();
+  final FamilyControlsLocalStore _familyControlsLocalStore;
+  late final FocusRepository _focusRepository = FocusRepository(
+    supabaseService: _supabaseService,
+  );
 
-  FeatureRepository({SupabaseService? supabaseService})
-    : _supabaseService = supabaseService ?? SupabaseService();
+  FeatureRepository({
+    SupabaseService? supabaseService,
+    FamilyControlsLocalStore? familyControlsLocalStore,
+  }) : _supabaseService = supabaseService ?? SupabaseService(),
+       _familyControlsLocalStore =
+           familyControlsLocalStore ?? FamilyControlsLocalStore();
 
   SupabaseClient get _client => _supabaseService.client;
   String get _currentUserId => _client.auth.currentUser!.id;
@@ -36,6 +44,8 @@ class FeatureRepository {
         .split('/')
         .first;
   }
+  bool get _useLocalFamilyControlsStorage =>
+      AppleReviewCompliance.exposesLocalOnlyFamilyControls;
 
   Future<AppSettings?> getAppSettings() async {
     final response = await _client
@@ -64,40 +74,6 @@ class FeatureRepository {
         .eq('created_by', _currentUserId);
   }
 
-  Future<void> setAdultContentShieldEnabled(bool enabled) async {
-    if (enabled) {
-      final existing = await _client
-          .from('blocked_websites')
-          .select('id')
-          .eq('created_by', _currentUserId)
-          .eq('url_domain', adultContentShieldMarker)
-          .maybeSingle();
-      if (existing == null) {
-        await _client.from('blocked_websites').insert({
-          'created_by': _currentUserId,
-          'url_domain': adultContentShieldMarker,
-          'time_limit_minutes': 0,
-        });
-      }
-    } else {
-      await _client
-          .from('blocked_websites')
-          .delete()
-          .eq('created_by', _currentUserId)
-          .eq('url_domain', adultContentShieldMarker);
-    }
-
-    // Keep the native focus blocker in sync so this toggle has direct effect.
-    try {
-      await _client
-          .from('block_lists')
-          .update({'adult_blocking': enabled})
-          .eq('created_by', _currentUserId);
-    } catch (_) {
-      // Ignore if block_lists is not available in this environment.
-    }
-  }
-
   Future<String> saveActiveAppsFast(
     List<String> apps, {
     String? settingsId,
@@ -113,10 +89,10 @@ class FeatureRepository {
 
     final created = await _client
         .from('app_settings')
-        .upsert({
-          'created_by': _currentUserId,
-          'active_apps': apps,
-        }, onConflict: 'created_by')
+        .upsert(
+          {'created_by': _currentUserId, 'active_apps': apps},
+          onConflict: 'created_by',
+        )
         .select('id')
         .single();
     return created['id'] as String;
@@ -200,6 +176,10 @@ class FeatureRepository {
   }
 
   Future<void> deleteRestPeriod(String id) async {
+    if (_useLocalFamilyControlsStorage) {
+      await _familyControlsLocalStore.deleteRestPeriod(id);
+      return;
+    }
     await _client
         .from('rest_periods')
         .delete()
@@ -276,16 +256,13 @@ class FeatureRepository {
   }
 
   Future<WinStreak?> getWinStreak() async {
-    final response = await _client
-        .from('win_streaks')
-        .select()
-        .eq('created_by', _currentUserId)
-        .maybeSingle();
-    if (response == null) return null;
-    return WinStreak.fromJson(response);
+    return _focusRepository.getOrRepairWinStreak();
   }
 
   Future<List<BlockedApp>> getBlockedApps() async {
+    if (_useLocalFamilyControlsStorage) {
+      return _familyControlsLocalStore.getBlockedApps();
+    }
     final response = await _client
         .from('blocked_apps')
         .select()
@@ -297,6 +274,12 @@ class FeatureRepository {
   Future<BlockedApp?> createBlockedAppRecord(String appName) async {
     final trimmedName = appName.trim();
     if (trimmedName.isEmpty) return null;
+    if (_useLocalFamilyControlsStorage) {
+      return _familyControlsLocalStore.createBlockedAppRecord(
+        createdBy: _currentUserId,
+        appName: trimmedName,
+      );
+    }
     final response = await _client
         .from('blocked_apps')
         .insert({
@@ -314,6 +297,10 @@ class FeatureRepository {
   }
 
   Future<void> deleteBlockedApp(String id) async {
+    if (_useLocalFamilyControlsStorage) {
+      await _familyControlsLocalStore.deleteBlockedApp(id);
+      return;
+    }
     await _client
         .from('blocked_apps')
         .delete()
@@ -321,7 +308,53 @@ class FeatureRepository {
         .eq('created_by', _currentUserId);
   }
 
+  Future<void> setAdultContentShieldEnabled(bool enabled) async {
+    if (_useLocalFamilyControlsStorage) {
+      await _familyControlsLocalStore.setAdultContentShieldEnabled(
+        enabled: enabled,
+        createdBy: _currentUserId,
+        marker: adultContentShieldMarker,
+      );
+      return;
+    }
+    if (enabled) {
+      final existing = await _client
+          .from('blocked_websites')
+          .select('id')
+          .eq('created_by', _currentUserId)
+          .eq('url_domain', adultContentShieldMarker)
+          .maybeSingle();
+      if (existing == null) {
+        await _client.from('blocked_websites').insert({
+          'created_by': _currentUserId,
+          'url_domain': adultContentShieldMarker,
+          'time_limit_minutes': 0,
+        });
+      }
+    } else {
+      await _client
+          .from('blocked_websites')
+          .delete()
+          .eq('created_by', _currentUserId)
+          .eq('url_domain', adultContentShieldMarker);
+    }
+
+    // Keep the native focus blocker in sync so this toggle has direct effect.
+    try {
+      await _client
+          .from('block_lists')
+          .update({'adult_blocking': enabled})
+          .eq('created_by', _currentUserId);
+    } catch (_) {
+      // Ignore if block_lists is not available in this environment.
+    }
+  }
+
   Future<void> addBlockedAppTime(String id, int minutes) async {
+    if (_useLocalFamilyControlsStorage) {
+      await _familyControlsLocalStore.addBlockedAppTime(id, minutes);
+      return;
+    }
     final row = await _client
         .from('blocked_apps')
         .select('time_limit_minutes')
@@ -339,6 +372,10 @@ class FeatureRepository {
 
   Future<void> setBlockedWebsiteTime(String id, int minutes) async {
     final safe = minutes < 0 ? 0 : minutes;
+    if (_useLocalFamilyControlsStorage) {
+      await _familyControlsLocalStore.setBlockedWebsiteTime(id, safe);
+      return;
+    }
     await _client
         .from('blocked_websites')
         .update({'time_limit_minutes': safe})
@@ -348,6 +385,10 @@ class FeatureRepository {
 
   Future<void> setBlockedAppTime(String id, int minutes) async {
     final safe = minutes < 0 ? 0 : minutes;
+    if (_useLocalFamilyControlsStorage) {
+      await _familyControlsLocalStore.setBlockedAppTime(id, safe);
+      return;
+    }
     await _client
         .from('blocked_apps')
         .update({'time_limit_minutes': safe})
@@ -356,6 +397,9 @@ class FeatureRepository {
   }
 
   Future<List<BlockedWebsite>> getBlockedWebsites() async {
+    if (_useLocalFamilyControlsStorage) {
+      return _familyControlsLocalStore.getBlockedWebsites();
+    }
     final response = await _client
         .from('blocked_websites')
         .select()
@@ -384,6 +428,10 @@ class FeatureRepository {
   }
 
   Future<void> deleteBlockedWebsite(String id) async {
+    if (_useLocalFamilyControlsStorage) {
+      await _familyControlsLocalStore.deleteBlockedWebsite(id);
+      return;
+    }
     await _client
         .from('blocked_websites')
         .delete()
@@ -392,6 +440,10 @@ class FeatureRepository {
   }
 
   Future<void> addBlockedWebsiteTime(String id, int minutes) async {
+    if (_useLocalFamilyControlsStorage) {
+      await _familyControlsLocalStore.addBlockedWebsiteTime(id, minutes);
+      return;
+    }
     final row = await _client
         .from('blocked_websites')
         .select('time_limit_minutes')
@@ -408,6 +460,9 @@ class FeatureRepository {
   }
 
   Future<List<RestPeriod>> getRestPeriods() async {
+    if (_useLocalFamilyControlsStorage) {
+      return _familyControlsLocalStore.getRestPeriods();
+    }
     final response = await _client
         .from('rest_periods')
         .select()
@@ -421,6 +476,15 @@ class FeatureRepository {
     required DateTime endTime,
     bool active = true,
   }) async {
+    if (_useLocalFamilyControlsStorage) {
+      await _familyControlsLocalStore.createRestPeriod(
+        createdBy: _currentUserId,
+        startTime: startTime,
+        endTime: endTime,
+        active: active,
+      );
+      return;
+    }
     await _client.from('rest_periods').insert({
       'created_by': _currentUserId,
       'start_time': startTime.toIso8601String(),
@@ -430,6 +494,10 @@ class FeatureRepository {
   }
 
   Future<void> updateRestPeriodActive(String id, bool active) async {
+    if (_useLocalFamilyControlsStorage) {
+      await _familyControlsLocalStore.updateRestPeriodActive(id, active);
+      return;
+    }
     await _client
         .from('rest_periods')
         .update({'active': active})
@@ -443,6 +511,15 @@ class FeatureRepository {
     DateTime? endTime,
     bool? active,
   }) async {
+    if (_useLocalFamilyControlsStorage) {
+      await _familyControlsLocalStore.updateRestPeriod(
+        id: id,
+        startTime: startTime,
+        endTime: endTime,
+        active: active,
+      );
+      return;
+    }
     final payload = <String, dynamic>{};
     if (startTime != null) payload['start_time'] = startTime.toIso8601String();
     if (endTime != null) payload['end_time'] = endTime.toIso8601String();

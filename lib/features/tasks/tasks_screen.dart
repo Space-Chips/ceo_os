@@ -6,11 +6,13 @@ import 'package:provider/provider.dart';
 
 import '../../components/components.dart';
 import '../../core/models/task_models.dart';
+import '../../core/providers/language_provider.dart';
 import '../../core/providers/task_provider.dart';
 import '../../core/repositories/premium_repository.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import 'add_task_sheet.dart';
+import 'task_importance_theme.dart';
 
 enum _TaskTab { list, matrix, history }
 
@@ -23,8 +25,8 @@ class TasksScreen extends StatefulWidget {
 
 class _TasksScreenState extends State<TasksScreen> {
   final PremiumRepository _premiumRepository = PremiumRepository();
+  final PageController _pageController = PageController();
   _TaskTab _activeTab = _TaskTab.list;
-  int _tabDirection = -1;
 
   @override
   void initState() {
@@ -34,6 +36,38 @@ class _TasksScreenState extends State<TasksScreen> {
         includeCompleted: true,
       );
     });
+  }
+
+  double _taskCardBorderWidth(String? importanceRaw) {
+    switch ((importanceRaw ?? '').toLowerCase()) {
+      case 'essential':
+      case 'high':
+        return AppColors.isDark ? 0.42 : 0.5;
+      case 'average':
+      case 'medium':
+        return AppColors.isDark ? 0.4 : 0.48;
+      default:
+        return AppColors.isDark ? 1 : 1.1;
+    }
+  }
+
+  double _importanceBadgeBorderWidth(String? importanceRaw) {
+    switch ((importanceRaw ?? '').toLowerCase()) {
+      case 'essential':
+      case 'high':
+        return AppColors.isDark ? 0.82 : 0.88;
+      case 'average':
+      case 'medium':
+        return AppColors.isDark ? 0.8 : 0.86;
+      default:
+        return AppColors.isDark ? 1 : 1.05;
+    }
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
   }
 
   Future<void> _showAddTask() async {
@@ -118,69 +152,35 @@ class _TasksScreenState extends State<TasksScreen> {
   }
 
   _TaskPalette _paletteForImportance(String? importanceRaw) {
-    switch ((importanceRaw ?? '').toLowerCase()) {
-      case 'crucial':
-      case 'critical':
-        return const _TaskPalette(
-          border: Color(0x66FF5050),
-          start: Color(0x1FFF5050),
-          end: Color(0x0DFF5050),
-          badgeBg: Color(0x1FFF3C3C),
-          badgeBorder: Color(0x59FF3C3C),
-          badgeText: Color(0xFFFF6B6B),
-        );
-      case 'essential':
-      case 'high':
-        return const _TaskPalette(
-          border: Color(0x66D97706),
-          start: Color(0x1FD97706),
-          end: Color(0x0DD97706),
-          badgeBg: Color(0x1FD97706),
-          badgeBorder: Color(0x59D97706),
-          badgeText: Color(0xFFFFC46B),
-        );
-      case 'average':
-      case 'medium':
-        return const _TaskPalette(
-          border: Color(0x66508CFF),
-          start: Color(0x1F508CFF),
-          end: Color(0x0D508CFF),
-          badgeBg: Color(0x1F508CFF),
-          badgeBorder: Color(0x59508CFF),
-          badgeText: Color(0xFF6FA3FF),
-        );
-      case 'low':
-      default:
-        return const _TaskPalette(
-          border: Color(0x4D787878),
-          start: Color(0xFF1A1A1A),
-          end: Color(0xFF111111),
-          badgeBg: Color(0x1A787878),
-          badgeBorder: Color(0x4D787878),
-          badgeText: Color(0xFFA0A0A0),
-        );
-    }
+    final style = TaskImportanceTheme.card(importanceRaw);
+    return _TaskPalette(
+      border: style.border,
+      start: style.start,
+      end: style.end,
+      badgeBg: style.badge.background,
+      badgeBorder: style.badge.border,
+      badgeText: style.badge.text,
+    );
   }
 
-  String _importanceLabel(String? raw) {
+  String _importanceLabel(String? raw, LanguageProvider language) {
     switch ((raw ?? '').toLowerCase()) {
       case 'crucial':
       case 'critical':
-        return 'CRUCIAL';
+        return language.t('tasks_importance_crucial');
       case 'essential':
       case 'high':
-        return 'ESSENTIAL';
+        return language.t('tasks_importance_essential');
       case 'average':
       case 'medium':
-        return 'AVERAGE';
+        return language.t('tasks_importance_average');
       case 'low':
-        return 'LOW';
       default:
-        return 'LOW';
+        return language.t('tasks_importance_low');
     }
   }
 
-  String _durationLabel(String? raw) {
+  String _durationLabel(String? raw, LanguageProvider language) {
     switch ((raw ?? '').toLowerCase()) {
       case 'less_than_30min':
       case '15m':
@@ -188,95 +188,58 @@ class _TasksScreenState extends State<TasksScreen> {
         return '30m';
       case '1_hour':
       case '1h':
-        return '1 hour';
+        return language.t('tasks_duration_1_hour');
       case '2_hours':
       case '2h':
-        return '2 hours';
+        return language.t('tasks_duration_2_hours');
       case 'half_day':
-        return 'half day';
+        return language.t('tasks_duration_half_day');
       case '1_day':
-        return '1 day';
+        return language.t('tasks_duration_1_day');
       case 'several_days':
       case '4h+':
-        return 'several days';
+        return language.t('tasks_duration_several_days');
       default:
-        return '1 hour';
+        return language.t('tasks_duration_1_hour');
     }
   }
 
-  void _goNextTab() {
-    if (_activeTab == _TaskTab.list) {
-      _setActiveTab(_TaskTab.matrix);
-      return;
-    }
-    if (_activeTab == _TaskTab.matrix) {
-      _setActiveTab(_TaskTab.history);
-    }
-  }
-
-  void _goPreviousTab() {
-    if (_activeTab == _TaskTab.history) {
-      _setActiveTab(_TaskTab.matrix);
-      return;
-    }
-    if (_activeTab == _TaskTab.matrix) {
-      _setActiveTab(_TaskTab.list);
-    }
-  }
-
-  void _setActiveTab(_TaskTab tab) {
-    if (tab == _activeTab) return;
-    final direction = tab.index > _activeTab.index ? -1 : 1;
-    setState(() {
-      _tabDirection = direction;
-      _activeTab = tab;
-    });
-  }
-
-  void _handleTabSwipe(DragEndDetails details) {
-    final velocity = details.primaryVelocity ?? 0;
-    if (velocity > 300) {
-      _goNextTab();
-    } else if (velocity < -300) {
-      _goPreviousTab();
-    }
-  }
-
-  String _swipeHint() {
+  String _swipeHint(LanguageProvider language) {
     switch (_activeTab) {
       case _TaskTab.list:
-        return 'Swipe right for Matrix view →';
+        return language.t('tasks_swipe_hint_list');
       case _TaskTab.matrix:
-        return '← Swipe left for list    Swipe right for history →';
+        return language.t('tasks_swipe_hint_matrix');
       case _TaskTab.history:
-        return '← Swipe left to return to matrix';
+        return language.t('tasks_swipe_hint_history');
     }
   }
 
-  String _titleByTab() {
+  String _titleByTab(LanguageProvider language) {
     switch (_activeTab) {
       case _TaskTab.list:
-        return 'To-Do';
+        return language.t('tasks_tab_title_todo');
       case _TaskTab.matrix:
-        return 'Pareto Matrix';
+        return language.t('tasks_tab_title_matrix');
       case _TaskTab.history:
-        return 'All Tasks';
+        return language.t('tasks_tab_title_history');
     }
   }
 
-  String _subtitleByTab() {
+  String _subtitleByTab(LanguageProvider language) {
     switch (_activeTab) {
       case _TaskTab.list:
-        return '20% THAT DRIVES 80%';
+        return language.t('tasks_tab_subtitle_todo');
       case _TaskTab.matrix:
-        return 'IMPACT VS TIME INVESTMENT';
+        return language.t('tasks_tab_subtitle_matrix');
       case _TaskTab.history:
-        return 'COMPLETE HISTORY • LAST 7 DAYS';
+        return language.t('tasks_tab_subtitle_history');
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final language = context.watch<LanguageProvider>();
     return CupertinoPageScaffold(
       backgroundColor: AppColors.background,
       child: AmbientBackdrop(
@@ -311,9 +274,9 @@ class _TasksScreenState extends State<TasksScreen> {
                   padding: const EdgeInsets.fromLTRB(14, 8, 14, 10),
                   child: Column(
                     children: [
-                      _topRow(),
+                      _topRow(language),
                       const SizedBox(height: 8),
-                      _titleBlock(),
+                      _titleBlock(language),
                       const SizedBox(height: 10),
                       Expanded(
                         child: AnimatedSwitcher(
@@ -330,10 +293,7 @@ class _TasksScreenState extends State<TasksScreen> {
                             ).animate(animation);
                             return FadeTransition(
                               opacity: animation,
-                              child: SlideTransition(
-                                position: slide,
-                                child: child,
-                              ),
+                              child: SlideTransition(position: slide, child: child),
                             );
                           },
                           child: _activeTab == _TaskTab.list
@@ -342,8 +302,7 @@ class _TasksScreenState extends State<TasksScreen> {
                                   topFive: topFive,
                                   others: others,
                                   onAdd: _showAddTask,
-                                  onComplete: (task) =>
-                                      prov.completeTask(task.id),
+                                  onComplete: (task) => prov.completeTask(task.id),
                                 )
                               : _activeTab == _TaskTab.matrix
                               ? _buildMatrixTab(
@@ -352,8 +311,7 @@ class _TasksScreenState extends State<TasksScreen> {
                                   slowImportant: slowImportant.toList(),
                                   quickNotImportant: quickNotImportant.toList(),
                                   slowNotImportant: slowNotImportant.toList(),
-                                  onComplete: (task) =>
-                                      prov.completeTask(task.id),
+                                  onComplete: (task) => prov.completeTask(task.id),
                                 )
                               : _buildHistoryTab(
                                   key: const ValueKey('history'),
@@ -370,7 +328,7 @@ class _TasksScreenState extends State<TasksScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        _swipeHint(),
+                        _swipeHint(language),
                         style: AppTypography.caption1.copyWith(
                           fontSize: 12,
                           color: AppColors.tertiaryLabel.withValues(alpha: 0.5),
@@ -387,7 +345,7 @@ class _TasksScreenState extends State<TasksScreen> {
     );
   }
 
-  Widget _topRow() {
+  Widget _topRow(LanguageProvider language) {
     return SizedBox(
       height: 42,
       child: Row(
@@ -398,14 +356,10 @@ class _TasksScreenState extends State<TasksScreen> {
             onPressed: () => context.go('/home'),
             child: Row(
               children: [
-                Icon(
-                  CupertinoIcons.arrow_left,
-                  size: 20,
-                  color: AppColors.secondaryLabel,
-                ),
+                Icon(CupertinoIcons.arrow_left, size: 20, color: AppColors.secondaryLabel),
                 const SizedBox(width: 6),
                 Text(
-                  'Home',
+                  language.t('home'),
                   style: AppTypography.subhead.copyWith(
                     fontSize: 14,
                     color: AppColors.secondaryLabel.withValues(alpha: 0.72),
@@ -420,7 +374,7 @@ class _TasksScreenState extends State<TasksScreen> {
     );
   }
 
-  Widget _titleBlock() {
+  Widget _titleBlock(LanguageProvider language) {
     final isMatrix = _activeTab == _TaskTab.matrix;
     final titleSize = isMatrix ? 40.0 : 44.0;
     return Column(
@@ -429,7 +383,7 @@ class _TasksScreenState extends State<TasksScreen> {
         SizedBox(
           width: double.infinity,
           child: Text(
-            _titleByTab(),
+            _titleByTab(language),
             style: AppTypography.largeTitle.copyWith(
               fontSize: titleSize,
               color: AppColors.label,
@@ -441,7 +395,7 @@ class _TasksScreenState extends State<TasksScreen> {
         ),
         const SizedBox(height: 6),
         Text(
-          _subtitleByTab(),
+          _subtitleByTab(language),
           style: AppTypography.overline.copyWith(
             fontSize: 12,
             color: AppColors.tertiaryLabel.withValues(alpha: 0.6),
@@ -455,6 +409,7 @@ class _TasksScreenState extends State<TasksScreen> {
 
   Widget _buildListTab({
     required Key key,
+    required LanguageProvider language,
     required List<ParetoTask> topFive,
     required List<ParetoTask> others,
     required Future<void> Function() onAdd,
@@ -466,38 +421,23 @@ class _TasksScreenState extends State<TasksScreen> {
       children: [
         Row(
           children: [
-            Container(width: 2, height: 28, color: Colors.white),
+            Container(
+              width: 2,
+              height: 28,
+              color: AppColors.glassHighlight.withValues(alpha: 0.7),
+            ),
             const SizedBox(width: 10),
             Expanded(
               child: Text(
-                'YOUR PRIORITIES',
-                style: AppTypography.mono.copyWith(
+                language.t('tasks_your_priorities'),
+                style: AppTypography.title2.copyWith(
                   fontSize: 24,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w700,
                   color: AppColors.label,
                 ),
               ),
             ),
-            CupertinoButton(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              color: Colors.white.withValues(alpha: 0.95),
-              borderRadius: BorderRadius.circular(16),
-              onPressed: onAdd,
-              child: Row(
-                children: [
-                  Icon(CupertinoIcons.add, color: Colors.black, size: 20),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Add',
-                    style: AppTypography.mono.copyWith(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w900,
-                      color: Colors.black,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            _DarkGlassAddButton(onTap: onAdd),
           ],
         ),
         const SizedBox(height: 12),
@@ -505,11 +445,13 @@ class _TasksScreenState extends State<TasksScreen> {
           GlassCard(
             padding: const EdgeInsets.all(20),
             borderRadius: 18,
+            level: GlassCardLevel.standard,
+            showEdgeGlow: true,
             border: Border.all(color: AppColors.glassBorder, width: 0.65),
             child: Column(
               children: [
                 Text(
-                  'No priorities yet',
+                  language.t('tasks_no_priorities'),
                   style: AppTypography.mono.copyWith(
                     fontSize: 16,
                     fontWeight: FontWeight.w800,
@@ -518,7 +460,7 @@ class _TasksScreenState extends State<TasksScreen> {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Add a task to start your execution list.',
+                  language.t('tasks_no_priorities_subtitle'),
                   textAlign: TextAlign.center,
                   style: AppTypography.mono.copyWith(
                     fontSize: 12,
@@ -532,13 +474,12 @@ class _TasksScreenState extends State<TasksScreen> {
           ...topFive.asMap().entries.map((entry) {
             final index = entry.key;
             final task = entry.value;
-            final widthFactor = (1 - (index * 0.03))
-                .clamp(0.88, 1.0)
-                .toDouble();
+            final widthFactor = (1 - (index * 0.03)).clamp(0.88, 1.0).toDouble();
             return Padding(
-              padding: const EdgeInsets.only(bottom: 10),
+              padding: const EdgeInsets.only(bottom: 12),
               child: _priorityCard(
                 rank: index + 1,
+                language: language,
                 task: task,
                 widthFactor: widthFactor,
                 onTap: () => onComplete(task),
@@ -552,12 +493,12 @@ class _TasksScreenState extends State<TasksScreen> {
               Container(width: 2, height: 24, color: AppColors.tertiaryLabel),
               const SizedBox(width: 10),
               Text(
-                'OTHER TASKS',
-                style: AppTypography.mono.copyWith(
+                language.t('tasks_other_tasks'),
+                style: AppTypography.overline.copyWith(
                   fontSize: 14,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.tertiaryLabel,
-                  letterSpacing: 1.6,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.tertiaryLabel.withValues(alpha: 0.72),
+                  letterSpacing: 1.2,
                 ),
               ),
             ],
@@ -570,6 +511,7 @@ class _TasksScreenState extends State<TasksScreen> {
               padding: const EdgeInsets.only(bottom: 8),
               child: _otherTaskCard(
                 rank: idx + 6,
+                language: language,
                 task: task,
                 onTap: () => onComplete(task),
               ),
@@ -587,11 +529,7 @@ class _TasksScreenState extends State<TasksScreen> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    CupertinoIcons.add,
-                    size: 20,
-                    color: AppColors.secondaryLabel,
-                  ),
+                  Icon(CupertinoIcons.add, size: 20, color: AppColors.secondaryLabel),
                   const SizedBox(width: 8),
                   Text(
                     'Add Task',
@@ -612,116 +550,148 @@ class _TasksScreenState extends State<TasksScreen> {
 
   Widget _priorityCard({
     required int rank,
+    required LanguageProvider language,
     required ParetoTask task,
+    required double widthFactor,
     required Future<void> Function() onTap,
-    double widthFactor = 1,
   }) {
     final palette = _paletteForImportance(task.importanceLevel);
-    return GestureDetector(
-      onTap: onTap,
-      child: Stack(
-        children: [
-          Positioned.fill(
-            child: IgnorePointer(
-              child: Container(
-                margin: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: palette.glow,
-                      blurRadius: 30,
-                      spreadRadius: 1,
+    return Align(
+      alignment: Alignment.center,
+      child: FractionallySizedBox(
+        widthFactor: widthFactor,
+        child: GestureDetector(
+          onTap: onTap,
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: IgnorePointer(
+                  child: Container(
+                    margin: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: palette.glow.withValues(alpha: 0.84),
+                          blurRadius: 36,
+                          spreadRadius: 2,
+                        ),
+                        BoxShadow(
+                          color: palette.border.withValues(alpha: 0.36),
+                          blurRadius: 24,
+                          spreadRadius: -2,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              GlassCard(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                borderRadius: 20,
+                level: GlassCardLevel.elevated,
+                showEdgeGlow: true,
+                border: Border.all(color: palette.border, width: 0.95),
+                gradientColors: [palette.start, palette.end],
+                child: Row(
+                  children: [
+                    Container(
+                      width: 54,
+                      height: 54,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        color: Colors.white.withValues(alpha: 0.08),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.16),
+                          width: 0.8,
+                        ),
+                      ),
+                      child: Center(
+                        child: Text(
+                          '$rank',
+                          style: AppTypography.mono.copyWith(
+                            fontSize: 42,
+                            fontWeight: FontWeight.w900,
+                            color: Colors.white.withValues(alpha: 0.9),
+                            height: 0.88,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            task.title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppTypography.mono.copyWith(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w900,
+                              color: AppColors.label,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Row(
+                            children: [
+                              _importanceBadge(task, palette, language: language),
+                              const SizedBox(width: 8),
+                              Text(
+                                _durationLabel(task.timeDuration, language),
+                                style: AppTypography.mono.copyWith(
+                                  fontSize: 13,
+                                  color: AppColors.secondaryLabel,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
               ),
-            ),
+            ],
           ),
-          GlassCard(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-            borderRadius: 20,
-            border: Border.all(color: palette.border, width: 0.95),
-            gradientColors: [palette.start, palette.end],
-            child: Row(
-              children: [
-                Container(
-                  width: 54,
-                  height: 54,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                    color: Colors.white.withValues(alpha: 0.08),
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.16),
-                      width: 0.8,
-                    ),
-                  ),
-                  child: Center(
-                    child: Text(
-                      '$rank',
-                      style: AppTypography.mono.copyWith(
-                        fontSize: 42,
-                        fontWeight: FontWeight.w900,
-                        color: Colors.white.withValues(alpha: 0.9),
-                        height: 0.88,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        task.title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTypography.mono.copyWith(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w900,
-                          color: AppColors.label,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Row(
-                        children: [
-                          _importanceBadge(task, palette),
-                          const SizedBox(width: 8),
-                          Text(
-                            _durationLabel(task.timeDuration),
-                            style: AppTypography.mono.copyWith(
-                              fontSize: 13,
-                              color: AppColors.secondaryLabel,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
 
   Widget _otherTaskCard({
     required int rank,
+    required LanguageProvider language,
     required ParetoTask task,
     required Future<void> Function() onTap,
   }) {
-    return GestureDetector(
+    final palette = _paletteForImportance(task.importanceLevel);
+    return _PressScale(
       onTap: onTap,
-      child: GlassCard(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        borderRadius: 14,
-        border: Border.all(
-          color: AppColors.glassBorder.withValues(alpha: 0.55),
-          width: 0.6,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(18),
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [AppColors.cardBackgroundAlt, AppColors.cardBase],
+          ),
+          border: Border.all(
+            color: AppColors.border,
+            width: _taskCardBorderWidth(task.importanceLevel),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.glassShadow.withValues(
+                alpha: AppColors.isDark ? 0.16 : 0.09,
+              ),
+              blurRadius: 12,
+              offset: const Offset(0, 6),
+            ),
+          ],
         ),
         child: Row(
           children: [
@@ -729,21 +699,25 @@ class _TasksScreenState extends State<TasksScreen> {
               width: 36,
               height: 36,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-                color: AppColors.backgroundLight.withValues(alpha: 0.6),
+                shape: BoxShape.circle,
+                color: AppColors.topBarControlBackground,
+                border: Border.all(
+                  color: AppColors.topBarControlBorder,
+                  width: 1,
+                ),
               ),
               child: Center(
                 child: Text(
                   '$rank',
-                  style: AppTypography.mono.copyWith(
+                  style: AppTypography.footnote.copyWith(
                     fontSize: 16,
                     color: AppColors.tertiaryLabel,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -752,9 +726,9 @@ class _TasksScreenState extends State<TasksScreen> {
                     task.title,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: AppTypography.mono.copyWith(
+                    style: AppTypography.headline.copyWith(
                       fontSize: 14,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w600,
                       color: AppColors.secondaryLabel,
                     ),
                   ),
@@ -763,15 +737,16 @@ class _TasksScreenState extends State<TasksScreen> {
                     children: [
                       _importanceBadge(
                         task,
-                        _paletteForImportance(task.importanceLevel),
+                        palette,
                         compact: true,
+                        language: language,
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        _durationLabel(task.timeDuration),
-                        style: AppTypography.mono.copyWith(
+                        _durationLabel(task.timeDuration, language),
+                        style: AppTypography.caption1.copyWith(
                           fontSize: 11,
-                          color: AppColors.tertiaryLabel,
+                          color: AppColors.tertiaryLabel.withValues(alpha: 0.72),
                         ),
                       ),
                     ],
@@ -788,6 +763,7 @@ class _TasksScreenState extends State<TasksScreen> {
   Widget _importanceBadge(
     ParetoTask task,
     _TaskPalette palette, {
+    required LanguageProvider language,
     bool compact = false,
   }) {
     return Container(
@@ -796,17 +772,20 @@ class _TasksScreenState extends State<TasksScreen> {
         vertical: compact ? 3 : 4,
       ),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(8),
         color: palette.badgeBg,
-        border: Border.all(color: palette.badgeBorder, width: 0.8),
+        border: Border.all(
+          color: palette.badgeBorder,
+          width: _importanceBadgeBorderWidth(task.importanceLevel),
+        ),
       ),
       child: Text(
-        _importanceLabel(task.importanceLevel),
-        style: AppTypography.mono.copyWith(
+        _importanceLabel(task.importanceLevel, language),
+        style: AppTypography.overline.copyWith(
           fontSize: compact ? 10 : 12,
           color: palette.badgeText,
-          fontWeight: FontWeight.w900,
-          letterSpacing: 1.0,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 0.4,
         ),
       ),
     );
@@ -814,6 +793,7 @@ class _TasksScreenState extends State<TasksScreen> {
 
   Widget _buildMatrixTab({
     required Key key,
+    required LanguageProvider language,
     required List<ParetoTask> quickImportant,
     required List<ParetoTask> slowImportant,
     required List<ParetoTask> quickNotImportant,
@@ -824,149 +804,209 @@ class _TasksScreenState extends State<TasksScreen> {
       key: key,
       padding: EdgeInsets.zero,
       children: [
+        Align(
+          alignment: Alignment.centerLeft,
+          child: Padding(
+            padding: const EdgeInsets.only(left: 4, bottom: 8),
+            child: Text(
+              language.t('tasks_matrix_impact_axis'),
+              style: AppTypography.overline.copyWith(
+                fontSize: 11,
+                letterSpacing: 2,
+                color: AppColors.tertiaryLabel.withValues(alpha: 0.5),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ),
         Row(
           children: [
             Expanded(
               child: _matrixQuadrant(
-                title: 'DO NOW',
-                subtitle: 'Quick • High Impact',
-                accent: const Color(0xFFDC2626),
+                language: language,
+                title: language.t('tasks_matrix_do_now'),
+                subtitle: language.t('tasks_matrix_do_now_subtitle'),
+                accent: AppColors.error.withValues(alpha: 0.35),
+                overlay: AppColors.error.withValues(alpha: 0.08),
                 tasks: quickImportant,
                 onTapTask: onComplete,
               ),
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: 14),
             Expanded(
               child: _matrixQuadrant(
-                title: 'PLAN',
-                subtitle: 'Takes Time • High Impact',
-                accent: const Color(0xFF2563EB),
+                language: language,
+                title: language.t('tasks_matrix_plan'),
+                subtitle: language.t('tasks_matrix_plan_subtitle'),
+                accent: AppColors.activeBorder,
+                overlay: AppColors.accentSurfaceSoft.withValues(alpha: 0.5),
                 tasks: slowImportant,
                 onTapTask: onComplete,
               ),
             ),
           ],
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 14),
         Row(
           children: [
             Expanded(
               child: _matrixQuadrant(
-                title: 'IF TIME',
-                subtitle: 'Quick • Low Impact',
-                accent: const Color(0xFFD97706),
+                language: language,
+                title: language.t('tasks_matrix_if_time'),
+                subtitle: language.t('tasks_matrix_if_time_subtitle'),
+                accent: AppColors.warning.withValues(alpha: 0.35),
+                overlay: AppColors.warning.withValues(alpha: 0.08),
                 tasks: quickNotImportant,
                 onTapTask: onComplete,
               ),
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: 14),
             Expanded(
               child: _matrixQuadrant(
-                title: 'ELIMINATE',
-                subtitle: 'Takes Time • Low Impact',
-                accent: const Color(0xFF6B7280),
+                language: language,
+                title: language.t('tasks_matrix_eliminate'),
+                subtitle: language.t('tasks_matrix_eliminate_subtitle'),
+                accent: AppColors.borderStrong,
+                overlay: AppColors.label.withValues(alpha: 0.04),
                 tasks: slowNotImportant,
                 onTapTask: onComplete,
               ),
             ),
           ],
         ),
+        const SizedBox(height: 10),
+        Align(
+          alignment: Alignment.centerRight,
+          child: Padding(
+            padding: const EdgeInsets.only(right: 4),
+            child: Text(
+              language.t('tasks_matrix_time_axis'),
+              style: AppTypography.overline.copyWith(
+                fontSize: 11,
+                letterSpacing: 2,
+                color: AppColors.tertiaryLabel.withValues(alpha: 0.5),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ),
       ],
     );
   }
 
   Widget _matrixQuadrant({
+    required LanguageProvider language,
     required String title,
     required String subtitle,
     required Color accent,
+    required Color overlay,
     required List<ParetoTask> tasks,
     required Future<void> Function(ParetoTask task) onTapTask,
   }) {
-    return Container(
+    return ConstrainedBox(
       constraints: const BoxConstraints(minHeight: 268),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: accent.withValues(alpha: 0.72), width: 0.9),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            accent.withValues(alpha: 0.18),
-            AppColors.backgroundLight.withValues(alpha: 0.78),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(22),
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [AppColors.cardBackgroundAlt, AppColors.cardBase],
+          ),
+          border: Border.all(color: accent, width: 1),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.glassShadow.withValues(
+                alpha: AppColors.isDark ? 0.18 : 0.1,
+              ),
+              blurRadius: AppColors.isDark ? 18 : 14,
+              offset: Offset(0, AppColors.isDark ? 8 : 6),
+            ),
           ],
         ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(12, 12, 12, 10),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: AppTypography.mono.copyWith(
-                fontSize: 16,
-                fontWeight: FontWeight.w900,
-                color: accent.withValues(alpha: 0.95),
-                letterSpacing: 1.3,
-              ),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(22),
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [overlay, overlay.withValues(alpha: 0)],
             ),
-            const SizedBox(height: 4),
-            Text(
-              subtitle,
-              style: AppTypography.mono.copyWith(
-                fontSize: 12,
-                color: accent.withValues(alpha: 0.72),
-              ),
-            ),
-            const SizedBox(height: 10),
-            if (tasks.isEmpty)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 32),
-                child: Center(
-                  child: Text(
-                    'Empty',
-                    style: AppTypography.mono.copyWith(
-                      fontSize: 13,
-                      color: AppColors.tertiaryLabel,
-                    ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(18),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: AppTypography.overline.copyWith(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.label,
+                    letterSpacing: 2,
                   ),
                 ),
-              )
-            else
-              ...tasks.map(
-                (task) => Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: GestureDetector(
-                    onTap: () => onTapTask(task),
-                    child: Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 9,
-                      ),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                        color: accent.withValues(alpha: 0.14),
-                        border: Border.all(
-                          color: accent.withValues(alpha: 0.48),
-                          width: 0.7,
-                        ),
-                      ),
+                const SizedBox(height: 4),
+                Text(
+                  subtitle,
+                  style: AppTypography.caption1.copyWith(
+                    fontSize: 12,
+                    color: AppColors.secondaryLabel.withValues(alpha: 0.6),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                if (tasks.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 32),
+                    child: Center(
                       child: Text(
-                        task.title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTypography.mono.copyWith(
-                          fontSize: 16,
-                          color: AppColors.label,
-                          fontWeight: FontWeight.w800,
+                        language.t('tasks_empty'),
+                        textAlign: TextAlign.center,
+                        style: AppTypography.subhead.copyWith(
+                          fontSize: 13,
+                          color: AppColors.tertiaryLabel.withValues(alpha: 0.5),
+                        ),
+                      ),
+                    ),
+                  )
+                else
+                  ...tasks.map(
+                    (task) => Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: _PressScale(
+                        onTap: () => onTapTask(task),
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 10,
+                          ),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(14),
+                            color: AppColors.surfaceMuted,
+                            border: Border.all(
+                              color: AppColors.border,
+                              width: 1,
+                            ),
+                          ),
+                          child: Text(
+                            task.title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppTypography.headline.copyWith(
+                              fontSize: 16,
+                              color: AppColors.label,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-              ),
-          ],
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -974,6 +1014,7 @@ class _TasksScreenState extends State<TasksScreen> {
 
   Widget _buildHistoryTab({
     required Key key,
+    required LanguageProvider language,
     required List<ParetoTask> tasks,
     required Future<void> Function(ParetoTask task) onToggle,
   }) {
@@ -982,24 +1023,47 @@ class _TasksScreenState extends State<TasksScreen> {
       padding: EdgeInsets.zero,
       children: [
         if (tasks.isEmpty)
-          GlassCard(
+          Container(
             padding: const EdgeInsets.all(20),
-            borderRadius: 18,
-            border: Border.all(color: AppColors.glassBorder, width: 0.65),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [AppColors.cardBackgroundAlt, AppColors.cardBase],
+              ),
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(
+                color: AppColors.border,
+                width: 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.glassShadow.withValues(
+                    alpha: AppColors.isDark ? 0.18 : 0.1,
+                  ),
+                  blurRadius: 14,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
             child: Text(
-              'No task history in the last 7 days.',
+              language.t('tasks_history_empty'),
               textAlign: TextAlign.center,
-              style: AppTypography.mono.copyWith(
+              style: AppTypography.subhead.copyWith(
                 fontSize: 13,
-                color: AppColors.secondaryLabel,
+                color: AppColors.secondaryLabel.withValues(alpha: 0.78),
               ),
             ),
           )
         else
           ...tasks.map(
             (task) => Padding(
-              padding: const EdgeInsets.only(bottom: 9),
-              child: _historyCard(task: task, onToggle: () => onToggle(task)),
+              padding: const EdgeInsets.only(bottom: 12),
+              child: _historyCard(
+                language: language,
+                task: task,
+                onToggle: () => onToggle(task),
+              ),
             ),
           ),
       ],
@@ -1007,85 +1071,177 @@ class _TasksScreenState extends State<TasksScreen> {
   }
 
   Widget _historyCard({
+    required LanguageProvider language,
     required ParetoTask task,
     required Future<void> Function() onToggle,
   }) {
-    final palette = _paletteForImportance(task.importanceLevel);
+    final badgeStyle = _historyBadgeStyle(task.importanceLevel);
     final completedDate = task.completedDate;
-    return GlassCard(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      borderRadius: 18,
-      border: Border.all(
-        color: task.completed
-            ? AppColors.glassBorder.withValues(alpha: 0.4)
-            : AppColors.glassBorder.withValues(alpha: 0.75),
-        width: 0.65,
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  task.title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTypography.mono.copyWith(
-                    fontSize: 16,
-                    color: task.completed
-                        ? AppColors.tertiaryLabel
-                        : AppColors.label,
-                    fontWeight: FontWeight.w800,
-                    decoration: task.completed
-                        ? TextDecoration.lineThrough
-                        : TextDecoration.none,
-                  ),
+    return Opacity(
+      opacity: task.completed ? 0.9 : 1,
+      child: _PressScale(
+        onTap: onToggle,
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [AppColors.cardBackgroundAlt, AppColors.cardBase],
+            ),
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(
+              color: AppColors.border,
+              width: 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.glassShadow.withValues(
+                  alpha: AppColors.isDark ? 0.16 : 0.09,
                 ),
-                const SizedBox(height: 6),
-                Row(
+                blurRadius: AppColors.isDark ? 14 : 12,
+                offset: Offset(0, AppColors.isDark ? 7 : 6),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _importanceBadge(task, palette, compact: true),
-                    const SizedBox(width: 8),
                     Text(
-                      _durationLabel(task.timeDuration),
-                      style: AppTypography.mono.copyWith(
-                        fontSize: 11,
-                        color: AppColors.tertiaryLabel,
+                      task.title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTypography.headline.copyWith(
+                        fontSize: 16,
+                        color: task.completed
+                            ? AppColors.label.withValues(alpha: 0.7)
+                            : AppColors.label,
+                        fontWeight: FontWeight.w600,
+                        decoration: task.completed
+                            ? TextDecoration.lineThrough
+                            : TextDecoration.none,
                       ),
                     ),
-                    if (task.completed && completedDate != null) ...[
-                      const SizedBox(width: 8),
-                      Text(
-                        '✓ ${DateFormat('MMM d').format(completedDate)}',
-                        style: AppTypography.mono.copyWith(
-                          fontSize: 11,
-                          color: const Color(0xFF16A34A),
-                          fontWeight: FontWeight.w700,
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        _HistoryBadge(
+                          label: _importanceLabel(task.importanceLevel, language),
+                          style: badgeStyle,
                         ),
-                      ),
-                    ],
+                        const SizedBox(width: 8),
+                        Text(
+                          _durationLabel(task.timeDuration, language),
+                          style: AppTypography.caption1.copyWith(
+                            fontSize: 11,
+                            color: AppColors.tertiaryLabel.withValues(alpha: 0.72),
+                          ),
+                        ),
+                        if (task.completed && completedDate != null) ...[
+                          const SizedBox(width: 8),
+                          Text(
+                            DateFormat('MMM d').format(completedDate),
+                            style: AppTypography.caption1.copyWith(
+                              fontSize: 12,
+                              color: AppColors.secondaryLabel.withValues(
+                                alpha: 0.7,
+                              ),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
                   ],
                 ),
-              ],
-            ),
+              ),
+              const SizedBox(width: 12),
+              CupertinoButton(
+                padding: EdgeInsets.zero,
+                minimumSize: Size.zero,
+                onPressed: onToggle,
+                child: Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: AppColors.label.withValues(alpha: 0),
+                    border: Border.all(
+                      color: task.completed
+                          ? AppColors.success
+                          : AppColors.white.withValues(alpha: 0.12),
+                      width: 2,
+                    ),
+                  ),
+                  child: Center(
+                    child: Icon(
+                      CupertinoIcons.check_mark,
+                      size: 16,
+                      color: task.completed
+                          ? AppColors.success
+                          : AppColors.white.withValues(alpha: 0.16),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-          CupertinoButton(
-            padding: EdgeInsets.zero,
-            minimumSize: Size.zero,
-            onPressed: onToggle,
-            child: Icon(
-              task.completed
-                  ? CupertinoIcons.check_mark_circled_solid
-                  : CupertinoIcons.check_mark_circled,
-              size: 28,
-              color: const Color(0xFF22C55E),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
+}
+
+class _HistoryBadgeStyle {
+  final Color background;
+  final Color border;
+  final Color text;
+
+  const _HistoryBadgeStyle({
+    required this.background,
+    required this.border,
+    required this.text,
+  });
+}
+
+class _HistoryBadge extends StatelessWidget {
+  final String label;
+  final _HistoryBadgeStyle style;
+
+  const _HistoryBadge({required this.label, required this.style});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: style.background,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: style.border, width: 1),
+      ),
+      child: Text(
+        label,
+        style: AppTypography.overline.copyWith(
+          fontSize: 10,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 0.4,
+          color: style.text,
+        ),
+      ),
+    );
+  }
+}
+
+_HistoryBadgeStyle _historyBadgeStyle(String? raw) {
+  final style = TaskImportanceTheme.badge(raw);
+  return _HistoryBadgeStyle(
+    background: style.background,
+    border: style.border,
+    text: style.text,
+  );
 }
 
 class _TaskPalette {
@@ -1120,19 +1276,15 @@ class _DarkGlassAddButton extends StatelessWidget {
         width: 54,
         height: 46,
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.06),
+          color: AppColors.topBarControlBackground,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: Colors.white.withValues(alpha: 0.08),
+            color: AppColors.topBarControlBorder,
             width: 1,
           ),
         ),
-        child: const Center(
-          child: Icon(
-            CupertinoIcons.add,
-            color: CupertinoColors.white,
-            size: 20,
-          ),
+        child: Center(
+          child: Icon(CupertinoIcons.add, color: AppColors.label, size: 20),
         ),
       ),
     );
@@ -1158,18 +1310,20 @@ class _FloatingPrimaryAddTaskButton extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Color(0xFF2A2A2A), Color(0xFF1A1A1A)],
+            colors: [AppColors.sectionBackground, AppColors.cardBackgroundAlt],
           ),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: Colors.white.withValues(alpha: 0.08),
+            color: AppColors.borderStrong,
             width: 1,
           ),
           boxShadow: [
             BoxShadow(
-              color: AppColors.black.withValues(alpha: 0.45),
-              blurRadius: 18,
-              offset: const Offset(0, 8),
+              color: AppColors.glassShadow.withValues(
+                alpha: AppColors.isDark ? 0.18 : 0.1,
+              ),
+              blurRadius: AppColors.isDark ? 16 : 12,
+              offset: Offset(0, AppColors.isDark ? 8 : 6),
             ),
           ],
         ),

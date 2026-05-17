@@ -1,4 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../config/apple_review_compliance.dart';
 import '../models/user_models.dart';
 import 'focus_repository.dart';
 import '../services/supabase_service.dart';
@@ -15,6 +16,8 @@ class UserRepository {
 
   SupabaseClient get _client => _supabaseService.client;
   String get _currentUserId => _client.auth.currentUser!.id;
+  bool get _allowSocialScreenTimeSurfaces =>
+      AppleReviewCompliance.allowSocialScreenTimeSurfaces;
 
   Future<Profile?> getProfile() async {
     try {
@@ -53,6 +56,7 @@ class UserRepository {
   }
 
   Future<List<LeaderboardEntry>> getLeaderboard() async {
+    if (!_allowSocialScreenTimeSurfaces) return [];
     try {
       final response = await _client
           .from('leaderboard_entries')
@@ -70,6 +74,7 @@ class UserRepository {
   }
 
   Future<void> refreshLeaderboardForMe() async {
+    if (!_allowSocialScreenTimeSurfaces) return;
     try {
       await _client.rpc(
         'refresh_user_gamification',
@@ -117,6 +122,7 @@ class UserRepository {
   }
 
   Future<List<FriendConnection>> getFriendConnections() async {
+    if (!_allowSocialScreenTimeSurfaces) return [];
     try {
       final response = await _client
           .from('friend_connections')
@@ -139,6 +145,7 @@ class UserRepository {
     required String friendEmail,
     String? friendName,
   }) async {
+    if (!_allowSocialScreenTimeSurfaces) return;
     final normalizedEmail = friendEmail.trim().toLowerCase();
     if (normalizedEmail.isEmpty) {
       throw ArgumentError('Friend email is required.');
@@ -251,6 +258,7 @@ class UserRepository {
   }
 
   Future<void> deleteFriendConnection(String id) async {
+    if (!_allowSocialScreenTimeSurfaces) return;
     await _client
         .from('friend_connections')
         .delete()
@@ -291,6 +299,7 @@ class UserRepository {
   }
 
   Future<void> syncFriendConnections() async {
+    if (!_allowSocialScreenTimeSurfaces) return;
     try {
       final current = await getFriendConnections();
       for (final friend in current) {

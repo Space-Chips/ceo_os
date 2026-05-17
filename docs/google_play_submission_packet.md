@@ -1,7 +1,7 @@
-# Google Play Submission Packet — CEO OS
+# Google Play Submission Packet — WakeApp
 
 Date: 2026-03-28  
-Project: CEO OS  
+Project: WakeApp  
 Scope: Android publication readiness, Play Console setup, reviewer-facing clarity
 
 ## 1. Executive Verdict
@@ -21,22 +21,6 @@ The Android codebase is now materially cleaner and more publication-ready than b
 
 This is not a code problem anymore.  
 It is a release configuration / Play Console / external services problem.
-
-### Operational verdict
-- **GO now** for:
-  - creating the Play Console app with the final package name
-  - preparing listing assets and listing copy
-  - preparing App Content / Data Safety answers
-  - preparing reviewer-facing disclosures
-- **NO-GO now** for:
-  - uploading a real release for internal or production testing
-  - validating Google Sign-In release
-  - validating Google Play Billing / RevenueCat release
-  - requesting production publication
-
-Why:
-- package identity is now stable in the repo
-- but release signing, real Android build validation, and external service wiring are still incomplete
 
 ### Operational verdict
 - **GO now** for:
@@ -108,7 +92,7 @@ Google Play requires:
 
 Relevant Google sources:
 - [User Data](https://support.google.com/googleplay/android-developer/answer/10144311?hl=en)
-- [Understanding Google Play’s app account deletion requirements](https://support.google.com/googleplay/android-developer/answer/13327111?hl=en)
+- [Understanding Google Play's app account deletion requirements](https://support.google.com/googleplay/android-developer/answer/13327111?hl=en)
 
 ### B6. Real-device Android testing is still required
 You still need to validate on a physical Android phone:
@@ -145,7 +129,7 @@ If your Play developer account is a **personal account created after November 13
 Source: [App testing requirements for new personal developer accounts](https://support.google.com/googleplay/android-developer/answer/14151465?hl=en)
 
 ### Accessibility API
-Because CEO OS uses `AccessibilityService`, Google requires:
+Because WakeApp uses `AccessibilityService`, Google requires:
 - a Play Console accessibility declaration for non-accessibility-tool use cases
 - clear in-app disclosure
 - affirmative user consent
@@ -160,7 +144,7 @@ Source: [Permissions and APIs that Access Sensitive Information](https://support
 ### Step 0. Do not change the package name anymore
 Google says package names are unique and permanent, and cannot be deleted or reused later.
 
-For CEO OS, the package name to keep is:
+For WakeApp, the package name to keep is:
 - `com.wakeapp.ceoos`
 
 Source:
@@ -221,13 +205,13 @@ Recommended order inside Play Console:
 8. Sensitive permission declarations if surfaced during the flow
 
 Practical note:
-- if CEO OS requires login for meaningful review, keep a working reviewer account ready
+- if WakeApp requires login for meaningful review, keep a working reviewer account ready
 - if Premium is part of the review surface, keep the reviewer path clear and consistent with Play products
 
 ### Step 5. Data Safety
 Your answers must match the real app behavior.
 
-For CEO OS, expect at least these data domains to be reviewed carefully:
+For WakeApp, expect at least these data domains to be reviewed carefully:
 - account info
 - email / auth identifiers
 - tasks / habits / notes / focus data
@@ -241,7 +225,7 @@ Important Google rule:
 - Google says all developers with an app published on Google Play must complete the Data Safety form.
 - Apps that are only active on the internal testing track are exempt, but once you move beyond that, the form must be accurate and complete.
 
-Implication for CEO OS:
+Implication for WakeApp:
 - internal testing can start before the final Data Safety section is fully live
 - closed/open/production should not proceed until the Data Safety form is accurate
 
@@ -261,16 +245,7 @@ Because the app allows account creation:
 - Play Console data deletion answers must be accurate
 - the public deletion support page must exist
 
-Source: [Understanding Google Play’s app account deletion requirements](https://support.google.com/googleplay/android-developer/answer/13327111?hl=en)
-
-Important Google rule:
-- if your app enables account creation, Google requires both:
-  - an in-app path to delete the account and associated data
-  - a web resource where users can request account deletion and associated data deletion
-
-Implication for CEO OS:
-- the in-app flow is already materially improved
-- the web deletion page is still a real blocker until it is live and linked in Play Console
+Source: [Understanding Google Play's app account deletion requirements](https://support.google.com/googleplay/android-developer/answer/13327111?hl=en)
 
 ### Step 8. Accessibility / sensitive permissions declarations
 You must keep the story narrow and factual:
@@ -290,7 +265,7 @@ Important Google rule:
 - sensitive permissions and sensitive APIs must be necessary for current core functionality, disclosed clearly, and requested incrementally
 - Google’s updated Accessibility policy language effective **January 28, 2026** specifically reinforces that autonomous initiation/planning/execution of actions is prohibited
 
-Implication for CEO OS:
+Implication for WakeApp:
 - the app should be described as user-initiated self-control tooling
 - do not describe it like a hidden automation layer or remote enforcement system
 - do not claim `isAccessibilityTool=true` unless the app truly qualifies as an accessibility tool for disability support
@@ -314,7 +289,7 @@ If your account is under the new personal-account rule:
 Important Google rule:
 - for personal developer accounts created after **November 13, 2023**, Google requires a closed test with at least 12 opted-in testers for at least 14 continuous days before production access
 
-Implication for CEO OS:
+Implication for WakeApp:
 - if your account is in scope, do not plan for a same-day jump from internal testing to production
 
 ### Step 11. Pre-launch and real-device validation
@@ -326,7 +301,7 @@ Before production:
 
 ---
 
-## 5. CEO OS Android Listing Rules
+## 5. WakeApp Android Listing Rules
 
 ### Safe claims
 - Block distracting apps during focus sessions
@@ -348,13 +323,13 @@ Before production:
 Use this only if Google Play review asks for clarification:
 
 ```text
-CEO OS is a personal focus and self-control app.
+WakeApp is a personal focus and self-control app.
 
 On Android, the app uses Accessibility to detect when a selected distracting app or supported website is opened, Usage Access to evaluate time spent on selected apps and supported websites for daily-limit enforcement, and display-over-other-apps permission to present the blocking shield.
 
-These Android permissions are used only for the app’s core on-device blocking and self-control features. They are not used for ads, hidden UI manipulation, or unrelated analytics.
+These Android permissions are used only for the app's core on-device blocking and self-control features. They are not used for ads, hidden UI manipulation, or unrelated analytics.
 
-Android website blocking depends on what supported browsers expose through the accessibility tree, so CEO OS does not claim universal website blocking across all Android browsers or web views.
+Android website blocking depends on what supported browsers expose through the accessibility tree, so WakeApp does not claim universal website blocking across all Android browsers or web views.
 ```
 
 ---
@@ -386,7 +361,7 @@ You are in this state when:
 - [x] store-facing product naming is stable enough
 - [x] Android sensitive-permission story is coherent
 
-CEO OS status today:
+WakeApp status today:
 - **YES**
 
 #### State B — Ready for internal testing upload
@@ -397,7 +372,7 @@ You are in this state when:
 - [ ] Google Sign-In release cert setup is done if sign-in is visible
 - [ ] Premium release dependencies are set if Premium is visible
 
-CEO OS status today:
+WakeApp status today:
 - **NO**
 
 #### State C — Ready for production submission
@@ -410,49 +385,14 @@ You are in this state when:
 - [ ] required Play declarations are complete
 - [ ] closed testing requirement is satisfied if your account is in scope
 
-CEO OS status today:
-- **NO**
-
-### Practical release states
-
-#### State A — Ready to create the Play app
-You are in this state when:
-- [x] package name is final
-- [x] store-facing product naming is stable enough
-- [x] Android sensitive-permission story is coherent
-
-CEO OS status today:
-- **YES**
-
-#### State B — Ready for internal testing upload
-You are in this state when:
-- [ ] release keystore exists
-- [ ] `android/key.properties` exists locally
-- [ ] a signed Android App Bundle builds successfully
-- [ ] Google Sign-In release cert setup is done if sign-in is visible
-- [ ] Premium release dependencies are set if Premium is visible
-
-CEO OS status today:
-- **NO**
-
-#### State C — Ready for production submission
-You are in this state when:
-- [ ] internal testing passed
-- [ ] real-device validation passed
-- [ ] privacy policy URL is live
-- [ ] account deletion URL is live
-- [ ] Data Safety is accurate
-- [ ] required Play declarations are complete
-- [ ] closed testing requirement is satisfied if your account is in scope
-
-CEO OS status today:
+WakeApp status today:
 - **NO**
 
 ---
 
 ## 8. My Current Verdict
 
-### Today’s verdict
+### Today's verdict
 **Android publication is not yet ready for submission to Google Play production.**
 
 ### Why
@@ -469,19 +409,6 @@ Not because of the code quality anymore, but because of the remaining external b
 3. Run internal testing  
 4. Re-check against this packet  
 5. Then submit
-
-### The clearest possible answer
-- You can start **Play Console setup now**
-- You cannot responsibly start **production submission now**
-- You should aim for this order:
-  1. create the Play app
-  2. configure signing
-  3. wire Google Sign-In release and RevenueCat Android
-  4. publish privacy policy + deletion page
-  5. upload internal test build
-  6. validate on a real Android phone
-  7. complete App Content / Data Safety / declarations
-  8. only then move toward production
 
 ### The clearest possible answer
 - You can start **Play Console setup now**

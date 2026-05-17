@@ -4,6 +4,8 @@ import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../components/components.dart';
+import '../../core/models/premium_models.dart';
+import '../../core/repositories/premium_repository.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 
@@ -15,11 +17,13 @@ class BiannualReportScreen extends StatefulWidget {
 }
 
 class _BiannualReportScreenState extends State<BiannualReportScreen> {
+  final PremiumRepository _premiumRepository = PremiumRepository();
   bool _loading = true;
   int _completedTasks = 0;
   int _focusMinutes = 0;
   int _habitCompletions = 0;
   String _dominant = 'Gathering data...';
+  PremiumCheckResult? _premiumBlock;
 
   @override
   void initState() {
@@ -28,6 +32,20 @@ class _BiannualReportScreenState extends State<BiannualReportScreen> {
   }
 
   Future<void> _load() async {
+    if (mounted) {
+      setState(() => _loading = true);
+    }
+
+    final premiumCheck = await _premiumRepository.canAccessReports();
+    if (!premiumCheck.allowed) {
+      if (!mounted) return;
+      setState(() {
+        _premiumBlock = premiumCheck;
+        _loading = false;
+      });
+      return;
+    }
+
     final client = Supabase.instance.client;
     final uid = client.auth.currentUser?.id;
     if (uid == null) return;
@@ -75,6 +93,7 @@ class _BiannualReportScreenState extends State<BiannualReportScreen> {
 
     if (!mounted) return;
     setState(() {
+      _premiumBlock = null;
       _completedTasks = completedTasks;
       _habitCompletions = habitCompletions;
       _focusMinutes = focusMinutes;
@@ -104,12 +123,12 @@ class _BiannualReportScreenState extends State<BiannualReportScreen> {
         leading: CupertinoButton(
           padding: EdgeInsets.zero,
           onPressed: () => context.go('/home'),
-          child: Icon(
+          child: const Icon(
             CupertinoIcons.back,
             color: AppColors.primaryOrange,
           ),
         ),
-        middle: NeoMonoText(
+        middle: const NeoMonoText(
           'BIANNUAL_REPORT',
           fontSize: 18,
           fontWeight: FontWeight.bold,
@@ -127,7 +146,9 @@ class _BiannualReportScreenState extends State<BiannualReportScreen> {
         border: null,
       ),
       child: _loading
-          ? Center(child: CupertinoActivityIndicator(color: AppColors.primaryOrange))
+          ? const Center(
+              child: CupertinoActivityIndicator(color: AppColors.primaryOrange),
+            )
           : SafeArea(
               child: ListView(
                 padding: const EdgeInsets.all(20),
@@ -213,6 +234,51 @@ class _BiannualReportScreenState extends State<BiannualReportScreen> {
     );
   }
 
+  Widget _buildPremiumLockedCard(PremiumCheckResult check) {
+    final message = premiumMessageForReason(check.reason);
+    return GlassCard(
+      padding: const EdgeInsets.all(16),
+      borderRadius: 16,
+      border: Border.all(
+        color: AppColors.primaryOrange.withValues(alpha: 0.28),
+        width: 0.7,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                CupertinoIcons.lock_shield_fill,
+                size: 16,
+                color: AppColors.primaryOrange,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  message.title.toUpperCase(),
+                  style: AppTypography.mono.copyWith(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.label,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            message.description,
+            style: AppTypography.mono.copyWith(
+              fontSize: 11,
+              color: AppColors.secondaryLabel,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _glowSurface({
     required Widget child,
     required Color glowColor,
@@ -237,9 +303,6 @@ class _BiannualReportScreenState extends State<BiannualReportScreen> {
       ],
     );
   }
-
-
-
 
   Widget _metric(String label, String value) {
     return Expanded(

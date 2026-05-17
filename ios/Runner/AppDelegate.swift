@@ -50,9 +50,15 @@ private func decodeFamilyActivitySelectionPayload(_ payload: String) -> FamilyAc
         return decoded
     }
 
-
-
-
+    appEnvChannel.setMethodCallHandler({ (call: FlutterMethodCall, result: @escaping FlutterResult) -> Void in
+        switch call.method {
+        case "isTestFlight":
+            let isTestFlight = AppDelegate.isRunningInTestFlight()
+            result(isTestFlight)
+        default:
+            result(FlutterMethodNotImplemented)
+        }
+    })
 
     var legacyBase64 = trimmed
         .replacingOccurrences(of: "-", with: "+")
@@ -70,6 +76,33 @@ private func decodeFamilyActivitySelectionPayload(_ payload: String) -> FamilyAc
 }
 
 @available(iOS 16.0, *)
+private struct NativeBlockedWebsiteTokenIconView: View {
+    let token: WebDomainToken
+
+    var body: some View {
+        Label(token)
+            .labelStyle(.iconOnly)
+            .imageScale(.large)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+    }
+}
+
+@available(iOS 16.0, *)
+private final class BlockedWebsiteTokenIconPlatformViewFactory: NSObject, FlutterPlatformViewFactory {
+    func createArgsCodec() -> FlutterMessageCodec & NSObjectProtocol {
+        FlutterStandardMessageCodec.sharedInstance()
+    }
+
+    func create(
+        withFrame frame: CGRect,
+        viewIdentifier viewId: Int64,
+        arguments args: Any?
+    ) -> FlutterPlatformView {
+        BlockedWebsiteTokenLabelPlatformView(frame: frame, viewId: viewId, args: args)
+    }
+}
+
+@available(iOS 16.0, *)
 private struct NativeBlockedAppTokenIconView: View {
     let token: ApplicationToken
 
@@ -77,8 +110,8 @@ private struct NativeBlockedAppTokenIconView: View {
         Label(token)
             .labelStyle(.iconOnly)
             .imageScale(.large)
-            .font(.system(size: 32, weight: .semibold))
-            .scaleEffect(1.28)
+            .font(.system(size: 34, weight: .semibold))
+            .scaleEffect(2.25)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
     }
 }
@@ -95,11 +128,14 @@ private final class BlockedAppTokenIconPlatformView: NSObject, FlutterPlatformVi
         let arguments = args as? [String: Any]
         let payload = (arguments?["payload"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
 
+        let isDarkTheme = (arguments?["isDarkTheme"] as? Bool) ?? true
+
         if let token = BlockedAppTokenLabelPlatformView.decodeApplicationToken(from: payload) {
             let host = UIHostingController(
                 rootView: NativeBlockedAppTokenIconView(token: token)
             )
             host.view.backgroundColor = .clear
+            host.overrideUserInterfaceStyle = isDarkTheme ? .dark : .light
             host.view.translatesAutoresizingMaskIntoConstraints = false
             container.addSubview(host.view)
             NSLayoutConstraint.activate([
@@ -128,105 +164,6 @@ private final class BlockedAppTokenIconPlatformViewFactory: NSObject, FlutterPla
         arguments args: Any?
     ) -> FlutterPlatformView {
         BlockedAppTokenIconPlatformView(frame: frame, viewId: viewId, args: args)
-    }
-}
-
-@available(iOS 16.0, *)
-private struct NativeBlockedWebsiteTokenLabelView: View {
-    let token: WebDomainToken
-
-    var body: some View {
-        Label(token)
-            .labelStyle(.titleAndIcon)
-            .font(.system(size: 16, weight: .semibold))
-            .foregroundColor(.primary)
-            .lineLimit(1)
-            .frame(maxWidth: .infinity, alignment: .leading)
-    }
-}
-
-@available(iOS 16.0, *)
-private final class BlockedWebsiteTokenLabelPlatformView: NSObject, FlutterPlatformView {
-    private let container: UIView
-
-    init(frame: CGRect, viewId: Int64, args: Any?) {
-        container = UIView(frame: frame)
-        container.backgroundColor = .clear
-        super.init()
-
-        let arguments = args as? [String: Any]
-        let payload = (arguments?["payload"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-        let fallbackTitle = (arguments?["fallbackTitle"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? "Blocked website"
-
-        if let token = Self.decodeWebsiteToken(from: payload) {
-            let host = UIHostingController(
-                rootView: NativeBlockedWebsiteTokenLabelView(token: token)
-            )
-            host.view.backgroundColor = .clear
-            host.view.translatesAutoresizingMaskIntoConstraints = false
-            container.addSubview(host.view)
-            NSLayoutConstraint.activate([
-                host.view.leadingAnchor.constraint(equalTo: container.leadingAnchor),
-                host.view.trailingAnchor.constraint(equalTo: container.trailingAnchor),
-                host.view.topAnchor.constraint(equalTo: container.topAnchor),
-                host.view.bottomAnchor.constraint(equalTo: container.bottomAnchor),
-            ])
-        } else {
-            let label = UILabel(frame: frame)
-            label.text = fallbackTitle
-            label.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
-            label.textColor = .label
-            label.numberOfLines = 1
-            label.adjustsFontSizeToFitWidth = true
-            label.minimumScaleFactor = 0.7
-            label.translatesAutoresizingMaskIntoConstraints = false
-            container.addSubview(label)
-            NSLayoutConstraint.activate([
-                label.leadingAnchor.constraint(equalTo: container.leadingAnchor),
-                label.trailingAnchor.constraint(equalTo: container.trailingAnchor),
-                label.topAnchor.constraint(equalTo: container.topAnchor),
-                label.bottomAnchor.constraint(equalTo: container.bottomAnchor),
-            ])
-        }
-    }
-
-    func view() -> UIView {
-        container
-    }
-
-    private static func decodeWebsiteToken(from payload: String) -> WebDomainToken? {
-        guard let selection = decodeFamilyActivitySelectionPayload(payload) else { return nil }
-        return selection.webDomainTokens.first
-    }
-}
-
-@available(iOS 16.0, *)
-private final class BlockedWebsiteTokenLabelPlatformViewFactory: NSObject, FlutterPlatformViewFactory {
-    func createArgsCodec() -> FlutterMessageCodec & NSObjectProtocol {
-        FlutterStandardMessageCodec.sharedInstance()
-    }
-
-    func create(
-        withFrame frame: CGRect,
-        viewIdentifier viewId: Int64,
-        arguments args: Any?
-    ) -> FlutterPlatformView {
-        BlockedWebsiteTokenLabelPlatformView(frame: frame, viewId: viewId, args: args)
-    }
-}
-
-@available(iOS 16.0, *)
-private final class BlockedWebsiteTokenIconPlatformViewFactory: NSObject, FlutterPlatformViewFactory {
-    func createArgsCodec() -> FlutterMessageCodec & NSObjectProtocol {
-        FlutterStandardMessageCodec.sharedInstance()
-    }
-
-    func create(
-        withFrame frame: CGRect,
-        viewIdentifier viewId: Int64,
-        arguments args: Any?
-    ) -> FlutterPlatformView {
-        BlockedWebsiteTokenLabelPlatformView(frame: frame, viewId: viewId, args: args)
     }
 }
 
@@ -1326,12 +1263,6 @@ public class FocusEngine: NSObject {
             describeAppSelectionPayload(args: args, result: result)
         case "describeWebsiteSelectionPayload":
             describeWebsiteSelectionPayload(args: args, result: result)
-        case "describeWebsiteSelectionPayload":
-            describeWebsiteSelectionPayload(args: args, result: result)
-        case "describeWebsiteSelectionPayload":
-            describeWebsiteSelectionPayload(args: args, result: result)
-        case "describeWebsiteSelectionPayload":
-            describeWebsiteSelectionPayload(args: args, result: result)
         case "syncClassicDailyLimits":
             syncClassicDailyLimits(args: args, result: result)
         case "startCeoShield":
@@ -1449,6 +1380,149 @@ public class FocusEngine: NSObject {
 }
 
 @available(iOS 16.0, *)
+private struct NativeBlockedWebsiteTokenLabelView: View {
+    let token: WebDomainToken
+
+    var body: some View {
+        Label(token)
+            .labelStyle(.titleAndIcon)
+            .font(.system(size: 16, weight: .semibold))
+            .foregroundColor(.primary)
+            .lineLimit(1)
+            .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+@available(iOS 16.0, *)
+private final class BlockedWebsiteTokenLabelPlatformView: NSObject, FlutterPlatformView {
+    private let container: UIView
+
+    init(frame: CGRect, viewId: Int64, args: Any?) {
+        container = UIView(frame: frame)
+        container.backgroundColor = .clear
+        super.init()
+
+        let arguments = args as? [String: Any]
+        let payload = (arguments?["payload"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let fallbackTitle = (arguments?["fallbackTitle"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? "Blocked website"
+        let textColorHex = (arguments?["textColorHex"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines)
+        let textColor = (textColorHex?.isEmpty == false) ? UIColor(hexString: textColorHex!) : nil
+        let isDarkTheme = (arguments?["isDarkTheme"] as? Bool) ?? true
+
+        if let token = Self.decodeWebsiteToken(from: payload) {
+            let host = UIHostingController(
+                rootView: NativeBlockedWebsiteTokenLabelView(
+                    token: token,
+                    textColor: textColor,
+                    isDarkTheme: isDarkTheme
+                )
+            )
+            host.view.backgroundColor = .clear
+            host.view.overrideUserInterfaceStyle = isDarkTheme ? .dark : .light
+            host.overrideUserInterfaceStyle = isDarkTheme ? .dark : .light
+            host.view.translatesAutoresizingMaskIntoConstraints = false
+            container.addSubview(host.view)
+            NSLayoutConstraint.activate([
+                host.view.leadingAnchor.constraint(equalTo: container.leadingAnchor),
+                host.view.trailingAnchor.constraint(equalTo: container.trailingAnchor),
+                host.view.topAnchor.constraint(equalTo: container.topAnchor),
+                host.view.bottomAnchor.constraint(equalTo: container.bottomAnchor),
+            ])
+        } else {
+            let label = UILabel(frame: frame)
+            label.text = fallbackTitle
+            label.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
+            label.textColor = textColor ?? .label
+            label.numberOfLines = 1
+            label.adjustsFontSizeToFitWidth = true
+            label.minimumScaleFactor = 0.7
+            label.translatesAutoresizingMaskIntoConstraints = false
+            container.addSubview(label)
+            NSLayoutConstraint.activate([
+                label.leadingAnchor.constraint(equalTo: container.leadingAnchor),
+                label.trailingAnchor.constraint(equalTo: container.trailingAnchor),
+                label.topAnchor.constraint(equalTo: container.topAnchor),
+                label.bottomAnchor.constraint(equalTo: container.bottomAnchor),
+            ])
+        }
+    }
+
+    func view() -> UIView {
+        container
+    }
+
+    static func decodeWebsiteToken(from payload: String) -> WebDomainToken? {
+        guard let selection = decodeFamilyActivitySelectionPayload(payload) else { return nil }
+        return selection.webDomainTokens.first
+    }
+}
+
+@available(iOS 16.0, *)
+private final class BlockedWebsiteTokenIconPlatformView: NSObject, FlutterPlatformView {
+    private let container: UIView
+
+    init(frame: CGRect, viewId: Int64, args: Any?) {
+        container = UIView(frame: frame)
+        container.backgroundColor = .clear
+        super.init()
+
+        let arguments = args as? [String: Any]
+        let payload = (arguments?["payload"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let isDarkTheme = (arguments?["isDarkTheme"] as? Bool) ?? true
+
+        if let token = BlockedWebsiteTokenLabelPlatformView.decodeWebsiteToken(from: payload) {
+            let host = UIHostingController(
+                rootView: NativeBlockedWebsiteTokenIconView(token: token)
+            )
+            host.view.backgroundColor = .clear
+            host.overrideUserInterfaceStyle = isDarkTheme ? .dark : .light
+            host.view.translatesAutoresizingMaskIntoConstraints = false
+            container.addSubview(host.view)
+            NSLayoutConstraint.activate([
+                host.view.leadingAnchor.constraint(equalTo: container.leadingAnchor),
+                host.view.trailingAnchor.constraint(equalTo: container.trailingAnchor),
+                host.view.topAnchor.constraint(equalTo: container.topAnchor),
+                host.view.bottomAnchor.constraint(equalTo: container.bottomAnchor),
+            ])
+        }
+    }
+
+    func view() -> UIView {
+        container
+    }
+}
+
+@available(iOS 16.0, *)
+private final class BlockedWebsiteTokenLabelPlatformViewFactory: NSObject, FlutterPlatformViewFactory {
+    func createArgsCodec() -> FlutterMessageCodec & NSObjectProtocol {
+        FlutterStandardMessageCodec.sharedInstance()
+    }
+
+    func create(
+        withFrame frame: CGRect,
+        viewIdentifier viewId: Int64,
+        arguments args: Any?
+    ) -> FlutterPlatformView {
+        BlockedWebsiteTokenLabelPlatformView(frame: frame, viewId: viewId, args: args)
+    }
+}
+
+@available(iOS 16.0, *)
+private final class BlockedWebsiteTokenIconPlatformViewFactory: NSObject, FlutterPlatformViewFactory {
+    func createArgsCodec() -> FlutterMessageCodec & NSObjectProtocol {
+        FlutterStandardMessageCodec.sharedInstance()
+    }
+
+    func create(
+        withFrame frame: CGRect,
+        viewIdentifier viewId: Int64,
+        arguments args: Any?
+    ) -> FlutterPlatformView {
+        BlockedWebsiteTokenIconPlatformView(frame: frame, viewId: viewId, args: args)
+    }
+}
+
+@available(iOS 16.0, *)
 struct PickerWrapperView: View {
     @State var selection: FamilyActivitySelection
     var title: String
@@ -1533,12 +1607,21 @@ private final class BlockedAppTokenLabelPlatformView: NSObject, FlutterPlatformV
         let arguments = args as? [String: Any]
         let payload = (arguments?["payload"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         let fallbackTitle = (arguments?["fallbackTitle"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? "Blocked app"
+        let textColorHex = (arguments?["textColorHex"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines)
+        let textColor = (textColorHex?.isEmpty == false) ? UIColor(hexString: textColorHex!) : nil
+        let isDarkTheme = (arguments?["isDarkTheme"] as? Bool) ?? true
 
         if let token = Self.decodeApplicationToken(from: payload) {
             let host = UIHostingController(
-                rootView: NativeBlockedAppTokenLabelView(token: token)
+                rootView: NativeBlockedAppTokenLabelView(
+                    token: token,
+                    textColor: textColor,
+                    isDarkTheme: isDarkTheme
+                )
             )
             host.view.backgroundColor = .clear
+            host.view.overrideUserInterfaceStyle = isDarkTheme ? .dark : .light
+            host.overrideUserInterfaceStyle = isDarkTheme ? .dark : .light
             host.view.translatesAutoresizingMaskIntoConstraints = false
             container.addSubview(host.view)
             NSLayoutConstraint.activate([
@@ -1551,7 +1634,7 @@ private final class BlockedAppTokenLabelPlatformView: NSObject, FlutterPlatformV
             let label = UILabel(frame: frame)
             label.text = fallbackTitle
             label.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
-            label.textColor = .label
+            label.textColor = textColor ?? .label
             label.numberOfLines = 1
             label.adjustsFontSizeToFitWidth = true
             label.minimumScaleFactor = 0.7
@@ -1735,6 +1818,7 @@ private struct PrivateScreenTimeFallbackCard: View {
 }
 
 private let screenTimeThemeAppGroupId = "group.com.wakeapp.ceoos"
+private let screenTimeThemeKeyPrefix = "screen_time_theme_"
 
 private func screenTimeThemeDefaults() -> UserDefaults? {
     guard FileManager.default.containerURL(

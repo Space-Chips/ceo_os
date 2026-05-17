@@ -5,9 +5,11 @@ import 'package:provider/provider.dart';
 import '../../components/components.dart';
 import '../../core/models/onboarding_models.dart';
 import '../../core/providers/auth_provider.dart';
+import '../../core/providers/language_provider.dart';
 import '../../core/providers/theme_provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
+import 'auth_support.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -19,7 +21,62 @@ class _SignupScreenState extends State<SignupScreen> {
   final _nameCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
+  final _confirmPassCtrl = TextEditingController();
   bool _loading = false;
+  bool _showPassword = false;
+  bool _showConfirmPassword = false;
+  OnboardingSetupData? _setupData;
+  bool _didHydrateSetup = false;
+
+  String _t(String key) => context.read<LanguageProvider>().t(key);
+  static const List<(String code, String nativeLabel)> _languages = [
+    ('en', 'English'),
+    ('fr', 'Français'),
+    ('zh', '中文'),
+    ('hi', 'हिन्दी'),
+    ('es', 'Español'),
+    ('ar', 'العربية'),
+    ('id', 'Bahasa Indonesia'),
+    ('ru', 'Русский'),
+    ('pt', 'Português'),
+  ];
+
+  String _languageDisplayLabel(String code) {
+    final normalized = code.toLowerCase();
+    for (final option in _languages) {
+      if (option.$1 == normalized) return option.$2;
+    }
+    return 'English';
+  }
+
+  Future<void> _showLanguagePicker() async {
+    final languageProvider = context.read<LanguageProvider>();
+    final current = languageProvider.languageCode.toLowerCase();
+    final selected = await showCupertinoModalPopup<String>(
+      context: context,
+      builder: (popupContext) {
+        return CupertinoActionSheet(
+          title: Text(_t('language')),
+          message: Text(_t('language_picker_subtitle')),
+          actions: [
+            for (final option in _languages)
+              CupertinoActionSheetAction(
+                isDefaultAction: option.$1 == current,
+                onPressed: () => Navigator.of(popupContext).pop(option.$1),
+                child: Text(option.$2),
+              ),
+          ],
+          cancelButton: CupertinoActionSheetAction(
+            onPressed: () => Navigator.of(popupContext).pop(),
+            child: Text(_t('cancel')),
+          ),
+        );
+      },
+    );
+
+    if (selected == null || selected == current) return;
+    await languageProvider.setLanguage(selected, persistToCloud: true);
+  }
   OnboardingSetupData? _setupData;
   bool _didHydrateSetup = false;
 
@@ -28,7 +85,21 @@ class _SignupScreenState extends State<SignupScreen> {
     _nameCtrl.dispose();
     _emailCtrl.dispose();
     _passCtrl.dispose();
+    _confirmPassCtrl.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_didHydrateSetup) return;
+    final state = GoRouterState.of(context);
+    final extra = state.extra;
+    if (extra is OnboardingSetupData) {
+      _setupData = extra;
+      context.read<ThemeProvider>().setPendingOnboardingSetup(extra);
+    }
+    _didHydrateSetup = true;
   }
 
   @override
@@ -92,6 +163,7 @@ class _SignupScreenState extends State<SignupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final language = context.watch<LanguageProvider>();
     return CupertinoPageScaffold(
       backgroundColor: AppColors.background,
       child: Stack(
@@ -125,19 +197,42 @@ class _SignupScreenState extends State<SignupScreen> {
                     // Header
                     Column(
                       children: [
-                        NeoMonoText(
-                          'REGISTER',
-                          fontSize: 32,
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.label,
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: CupertinoButton(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            minimumSize: Size.zero,
+                            onPressed: _showLanguagePicker,
+                            child: Text(
+                              _languageDisplayLabel(language.languageCode),
+                              style: AppTypography.footnote.copyWith(
+                                fontSize: 12,
+                                color: AppColors.tertiaryLabel,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ),
+                        Text(
+                          language.t('auth_create_account_title'),
+                          style: AppTypography.largeTitle.copyWith(
+                            fontSize: 31,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.label,
+                            letterSpacing: -0.95,
+                          ),
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'NEW OPERATOR PROTOCOL',
-                          style: AppTypography.mono.copyWith(
-                            color: AppColors.primaryOrange,
-                            fontSize: 10,
-                            letterSpacing: 2,
+                          language.t('auth_create_account_subtitle'),
+                          textAlign: TextAlign.center,
+                          style: AppTypography.body.copyWith(
+                            fontSize: 15,
+                            color: AppColors.secondaryLabel,
+                            height: 1.42,
                           ),
                         ),
                       ],
@@ -178,6 +273,20 @@ class _SignupScreenState extends State<SignupScreen> {
                             obscureText: true,
                             prefix: Icon(CupertinoIcons.lock, size: 16, color: AppColors.secondaryLabel),
                           ),
+                          const SizedBox(height: 16),
+                          GlassInputField(
+                            placeholder: 'CONFIRM_ACCESS_KEY',
+                            controller: _confirmPassCtrl,
+                            obscureText: true,
+                            autocorrect: false,
+                            textInputAction: TextInputAction.done,
+                            autofillHints: const [AutofillHints.newPassword],
+                            prefix: Icon(
+                              CupertinoIcons.lock_shield,
+                              size: 16,
+                              color: AppColors.secondaryLabel,
+                            ),
+                          ),
                           const SizedBox(height: 32),
                           LiquidButton(
                             label: 'CREATE_ACCOUNT',
@@ -190,14 +299,16 @@ class _SignupScreenState extends State<SignupScreen> {
                     ),
 
                     const SizedBox(height: 32),
+                    const AuthTrustFooter(),
+                    const SizedBox(height: 20),
 
                     // Footer
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          "ALREADY_REGISTERED? ",
-                          style: AppTypography.mono.copyWith(
+                          language.t('auth_already_registered'),
+                          style: AppTypography.footnote.copyWith(
                             fontSize: 12,
                             color: AppColors.tertiaryLabel,
                           ),
@@ -205,11 +316,11 @@ class _SignupScreenState extends State<SignupScreen> {
                         GestureDetector(
                           onTap: () => context.go('/login'),
                           child: Text(
-                            'SIGN_IN',
-                            style: AppTypography.mono.copyWith(
+                            language.t('auth_sign_in'),
+                            style: AppTypography.footnote.copyWith(
                               fontSize: 12,
                               color: AppColors.primaryOrange,
-                              fontWeight: FontWeight.bold,
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
                         ),
@@ -221,6 +332,17 @@ class _SignupScreenState extends State<SignupScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _fieldLabel(String label) {
+    return Text(
+      label,
+      style: AppTypography.footnote.copyWith(
+        fontSize: 12,
+        fontWeight: FontWeight.w600,
+        color: AppColors.secondaryLabel,
       ),
     );
   }

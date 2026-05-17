@@ -26,7 +26,6 @@ class ScreenTimeSetupController extends ChangeNotifier {
   bool _setupHasRun = false;
   ScreenTimeSetupStep _currentStep = ScreenTimeSetupStep.intro;
   FocusProtectionStatus _protectionStatus = FocusProtectionStatus.unknown;
-  String? _valueSelection;
 
   ScreenTimeSetupController({FocusService? focusService})
     : _focusService = focusService ?? FocusService();
@@ -36,7 +35,6 @@ class ScreenTimeSetupController extends ChangeNotifier {
   bool get hasRunBefore => _setupHasRun;
   ScreenTimeSetupStep get currentStep => _currentStep;
   FocusProtectionStatus get protectionStatus => _protectionStatus;
-  String? get valueSelection => _valueSelection;
 
   bool get isAuthorized => _protectionStatus.isAuthorized;
   bool get isSupported => _protectionStatus.isSupported;
@@ -88,13 +86,6 @@ class ScreenTimeSetupController extends ChangeNotifier {
     _syncCompletionState();
     notifyListeners();
   }
-
-  void setValueSelection(String selection) {
-    if (_valueSelection == selection) return;
-    _valueSelection = selection;
-    notifyListeners();
-  }
-
 
 
   Future<void> markSetupComplete() async {
@@ -177,6 +168,9 @@ class ScreenTimeSetupController extends ChangeNotifier {
 
   ScreenTimeSetupStep? _stepFromName(String? raw) {
     if (raw == null || raw.isEmpty) return null;
+    if (raw == 'value' || raw == 'overview') {
+      return ScreenTimeSetupStep.intro;
+    }
     for (final step in ScreenTimeSetupStep.values) {
       if (step.name == raw) return step;
     }
@@ -185,8 +179,6 @@ class ScreenTimeSetupController extends ChangeNotifier {
 
   List<ScreenTimeSetupStep> get _orderedSteps => const [
     ScreenTimeSetupStep.intro,
-    ScreenTimeSetupStep.value,
-    ScreenTimeSetupStep.overview,
     ScreenTimeSetupStep.permission,
     ScreenTimeSetupStep.success,
   ];

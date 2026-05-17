@@ -17,12 +17,11 @@ class BlackoutPreparationChecklistView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final language = context.watch<LanguageProvider>();
-    final steps = [
-      language.t('blackout_prep_step_hold_app'),
-      language.t('blackout_prep_step_drag_on_other'),
-      language.t('blackout_prep_step_create_folder'),
-      language.t('blackout_prep_step_add_system_apps'),
+    const steps = [
+      'Maintiens une app',
+      'Fais-la glisser sur une autre',
+      'Crée un dossier "Hors Focus"',
+      'Ajoute les apps système visibles',
     ];
 
     return Column(
@@ -41,7 +40,7 @@ class BlackoutPreparationChecklistView extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         Text(
-          language.t('blackout_prep_checklist_body'),
+          "Quand c'est terminé, reviens ici.",
           style: AppTypography.body.copyWith(
             fontSize: 15,
             height: 1.42,
@@ -105,14 +104,14 @@ class BlackoutPreparationChecklistView extends StatelessWidget {
           ),
         ),
         const Spacer(),
-        _PrimaryButton(label: language.t('blackout_prep_done'), onTap: onDone),
+        _PrimaryButton(label: "C'est fait", onTap: onDone),
         const SizedBox(height: 10),
         Center(
           child: CupertinoButton(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             onPressed: onSkip,
             child: Text(
-              language.t('focus_skip_for_now'),
+              "Passer pour l'instant",
               style: AppTypography.callout.copyWith(
                 fontSize: 15,
                 color: AppColors.secondaryLabel.withValues(alpha: 0.84),

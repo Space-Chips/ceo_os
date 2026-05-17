@@ -109,7 +109,7 @@ class _HabitCompletionPageState extends State<HabitCompletionPage> with SingleTi
           padding: const EdgeInsets.only(top: 16),
           child: Column(
             children: [
-              Text('ENTER_${widget.habit.targetUnit ?? 'AMOUNT'}'.toUpperCase(), style: AppTypography.mono.copyWith(fontSize: 10, color: AppColors.secondaryLabel)),
+              Text("ENTER_${widget.habit.targetUnit ?? 'AMOUNT"}'.toUpperCase(), style: AppTypography.mono.copyWith(fontSize: 10, color: AppColors.secondaryLabel)),
               const SizedBox(height: 12),
               CupertinoTextField(
                 controller: ctrl,

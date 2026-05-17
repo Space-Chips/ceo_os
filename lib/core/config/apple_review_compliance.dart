@@ -11,6 +11,9 @@ class AppleReviewCompliance {
   static bool get exposesLocalOnlyFamilyControls =>
       isIosFamilyControlsReviewBuild;
 
+  static bool get allowCloudStatsAndAnalytics =>
+      !isIosFamilyControlsReviewBuild;
+
   static bool get allowAdvancedStats =>
       !isIosFamilyControlsReviewBuild;
 

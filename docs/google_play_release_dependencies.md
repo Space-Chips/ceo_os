@@ -1,7 +1,7 @@
-# Google Play Release Dependencies — CEO OS
+# Google Play Release Dependencies — WakeApp
 
 Date: 2026-03-28  
-Project: CEO OS  
+Project: WakeApp  
 Scope: Android release dependencies outside the core blocking implementation
 
 ## Purpose

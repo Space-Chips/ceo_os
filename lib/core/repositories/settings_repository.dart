@@ -67,12 +67,6 @@ class SettingsRepository {
     });
   }
 
-
-
-
-
-
-
   Future<void> saveOnboardingSetup(OnboardingSetupData setup) async {
     await _upsertSettingsFields({
       'theme_preset': setup.themePresetId,

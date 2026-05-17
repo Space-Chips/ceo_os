@@ -128,9 +128,7 @@ class FamilyTimeRepository {
     return const [];
   }
 
-  Future<List<FamilyTimeSessionEvent>> getSessionEvents(
-    String sessionId,
-  ) async {
+  Future<List<FamilyTimeSessionEvent>> getSessionEvents(String sessionId) async {
     return const [];
   }
 }

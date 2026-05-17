@@ -4,7 +4,7 @@ Goal: give Premium access to a small set of close testers **without** making the
 
 WakeApp behavior:
 - The app only attempts a beta premium grant **during signup** and **only when the install is detected as TestFlight** (receipt-based).
-- The backend only grants Premium if the user’s email is present in `public.beta_premium_allowlist`.
+- The backend only grants Premium if the user's email is present in `public.beta_premium_allowlist`.
 
 ## 1) Create the allowlist table (SQL)
 

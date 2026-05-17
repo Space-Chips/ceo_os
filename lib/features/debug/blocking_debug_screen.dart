@@ -47,7 +47,7 @@ class _BlockingDebugScreenState extends State<BlockingDebugScreen> {
             width: 140,
             child: Text(
               label,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
               ),
@@ -56,7 +56,7 @@ class _BlockingDebugScreenState extends State<BlockingDebugScreen> {
           Expanded(
             child: Text(
               value,
-              style: TextStyle(fontSize: 14, height: 1.35),
+              style: const TextStyle(fontSize: 14, height: 1.35),
             ),
           ),
         ],
@@ -68,11 +68,11 @@ class _BlockingDebugScreenState extends State<BlockingDebugScreen> {
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
-        middle: Text('Blocking Debug'),
+        middle: const Text('Blocking Debug'),
         trailing: CupertinoButton(
           padding: EdgeInsets.zero,
           onPressed: _refresh,
-          child: Text('Refresh'),
+          child: const Text('Refresh'),
         ),
       ),
       child: SafeArea(

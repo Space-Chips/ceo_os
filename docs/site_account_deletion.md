@@ -1,12 +1,12 @@
-# CEO OS Account Deletion
+# WakeApp Account Deletion
 
 Last updated: March 28, 2026
 
-This page explains how to request deletion of your CEO OS account and associated data.
+This page explains how to request deletion of your WakeApp account and associated data.
 
 ## 1. Delete your account inside the app
 
-If you still have access to CEO OS, the fastest method is to delete your account directly inside the app.
+If you still have access to WakeApp, the fastest method is to delete your account directly inside the app.
 
 Go to:
 - Profile
@@ -23,17 +23,17 @@ If you no longer have access to the app, you can request account deletion by con
 
 Recommended subject line:
 
-`CEO OS account deletion request`
+`WakeApp account deletion request`
 
 To help identify your account, include:
-- the email address used for CEO OS
+- the email address used for WakeApp
 - your display name, if relevant
 - any other information necessary to verify the request safely
 
 ## 3. What happens when your account is deleted
 
 When your deletion request is completed:
-- your CEO OS account is deleted from our systems
+- your WakeApp account is deleted from our systems
 - associated app data is deleted unless we are legally required to retain certain information
 - some data may be retained for security, fraud prevention, accounting, or legal compliance where applicable
 
@@ -41,7 +41,7 @@ If retention is required for those reasons, it will be limited to what is reason
 
 ## 4. Store subscriptions are not canceled automatically
 
-If you purchased a subscription through Apple or Google Play, deleting your CEO OS account does not automatically cancel store billing.
+If you purchased a subscription through Apple or Google Play, deleting your WakeApp account does not automatically cancel store billing.
 
 You must also manage or cancel your subscription through the relevant store:
 - Apple App Store subscription settings

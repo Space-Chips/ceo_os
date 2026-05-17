@@ -5,7 +5,6 @@
 list(APPEND FLUTTER_PLUGIN_LIST
   app_links
   file_selector_windows
-  screen_time
   url_launcher_windows
 )
 

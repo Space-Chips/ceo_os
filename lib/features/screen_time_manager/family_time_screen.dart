@@ -323,6 +323,7 @@ class _FamilyTimeScreenState extends State<FamilyTimeScreen> {
               _actionButton(
                 label: 'Create',
                 onTap: _saving ? null : _createGroup,
+                primaryColor: AppColors.familyCreateAccent,
               ),
             ],
           ),
@@ -1101,7 +1102,7 @@ class _FamilyTimeGroupDetailScreenState
               final startedAt = session.startsAt;
               if (startedAt == null) return const SizedBox.shrink();
               return Text(
-                'Started ${DateFormat('MMM d HH:mm').format(startedAt.toLocal())}',
+                "Started ${DateFormat('MMM d HH:mm").format(startedAt.toLocal())}',
                 style: AppTypography.body.copyWith(
                   fontSize: 12,
                   color: AppColors.tertiaryLabel,
@@ -1362,7 +1363,9 @@ Widget _actionButton({
   required String label,
   required VoidCallback? onTap,
   bool primary = true,
+  Color? primaryColor,
 }) {
+  final resolvedPrimary = primaryColor ?? AppColors.accent;
   return _PressScale(
     onTap: onTap,
     scale: 0.98,
@@ -1372,11 +1375,11 @@ Widget _actionButton({
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
           color: primary
-            ? AppColors.accent
+            ? resolvedPrimary
             : AppColors.pillBackground,
         border: Border.all(
           color: primary
-              ? AppColors.accent.withValues(alpha: 0.35)
+              ? resolvedPrimary.withValues(alpha: 0.35)
               : AppColors.pillBorder,
         ),
       ),

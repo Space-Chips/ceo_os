@@ -1,7 +1,7 @@
-# Google Play Data Safety Worksheet — CEO OS
+# Google Play Data Safety Worksheet — WakeApp
 
 Date: 2026-03-28  
-Project: CEO OS  
+Project: WakeApp  
 Scope: Working draft to help fill the Google Play Data Safety form accurately
 
 ## Important note
@@ -124,7 +124,7 @@ Use this as a working classification draft inside the Play form.
   - if this data remains on-device and is not transmitted off-device, it may not need to be declared as collected
   - if any portion is transmitted or retained server-side, it must be disclosed accurately
 
-Current intended policy-safe story for CEO OS:
+Current intended policy-safe story for WakeApp:
 - on-device enforcement data is used locally for blocking and daily-limit features
 - it is not used for advertising
 - it is not used for unrelated profiling
@@ -150,7 +150,7 @@ If the answer to any of those changes, update the Data Safety answers.
 
 Use this narrative consistently:
 
-- CEO OS collects ordinary account and productivity data required to provide core app functionality such as authentication, syncing, focus records, tasks, habits, notes, and subscription status.
+- WakeApp collects ordinary account and productivity data required to provide core app functionality such as authentication, syncing, focus records, tasks, habits, notes, and subscription status.
 - On Android, Accessibility, Usage Access, and overlay permissions are used for on-device blocking and self-control enforcement.
 - The app does not use those Android protection permissions for ads, hidden UI manipulation, or unrelated analytics.
 

@@ -13,7 +13,7 @@ class HabitProvider extends ChangeNotifier {
   final PremiumRepository _premiumRepository;
 
   List<Habit> _habits = [];
-  final Map<String, List<HabitCompletion>> _completions =
+  Map<String, List<HabitCompletion>> _completions =
       {}; // habitId -> completions
   bool _isLoading = false;
   Map<String, Set<String>> _widgetLast7DaysDoneByHabit = const {};
@@ -108,36 +108,6 @@ class HabitProvider extends ChangeNotifier {
   Map<String, Set<String>> get widgetCompletionMapLast7Days =>
       _widgetLast7DaysDoneByHabit;
 
-
-
-
-
-  /// Precomputed last-7-days window used by the Habits Table widget.
-  /// Days are ordered oldest -> newest (today last).
-
-  /// Precomputed completion map used by the Habits Table widget.
-  /// Map: habitId -> set of yyyy-MM-dd that are completed.
-
-
-
-
-
-  /// Precomputed last-7-days window used by the Habits Table widget.
-  /// Days are ordered oldest -> newest (today last).
-
-  /// Precomputed completion map used by the Habits Table widget.
-  /// Map: habitId -> set of yyyy-MM-dd that are completed.
-
-
-
-
-
-  /// Precomputed last-7-days window used by the Habits Table widget.
-  /// Days are ordered oldest -> newest (today last).
-
-  /// Precomputed completion map used by the Habits Table widget.
-  /// Map: habitId -> set of yyyy-MM-dd that are completed.
-
   /// Precomputed explicit-fail map used by the Habits Table widget.
   /// Map: habitId -> set of yyyy-MM-dd that are explicitly marked as not done.
   Map<String, Set<String>> get widgetFailedMapLast7Days =>
@@ -147,7 +117,7 @@ class HabitProvider extends ChangeNotifier {
   int get completedToday {
     final now = DateTime.now();
     final todayStr =
-        '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+        "${now.year}-${now.month.toString().padLeft(2, '0")}-${now.day.toString().padLeft(2, '0')}';
     int count = 0;
 
     for (var habit in _habits) {
@@ -161,7 +131,7 @@ class HabitProvider extends ChangeNotifier {
   bool isHabitCompletedToday(String habitId) {
     final now = DateTime.now();
     final todayStr =
-        '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+        "${now.year}-${now.month.toString().padLeft(2, '0")}-${now.day.toString().padLeft(2, '0')}';
     final comps = _completions[habitId] ?? [];
     return comps.any((c) => c.date == todayStr && c.completed);
   }
@@ -210,9 +180,6 @@ class HabitProvider extends ChangeNotifier {
     }
   }
 
-
-
-
   Future<List<HabitLog>> getHabitLogs(String habitId) async {
     return await _repository.getHabitLogs(habitId);
   }
@@ -232,12 +199,17 @@ class HabitProvider extends ChangeNotifier {
     }
   }
 
-
-
-
-
-
-
+  Future<void> deleteHabit(String habitId) async {
+    try {
+      await _repository.deleteHabit(habitId);
+      _habits.removeWhere((habit) => habit.id == habitId);
+      _completions.remove(habitId);
+      notifyListeners();
+    } catch (e) {
+      print('Error deleting habit: $e');
+      await loadData();
+    }
+  }
 
   int calculateStreak(String habitId, List<HabitCompletion> history) {
     if (history.isEmpty) return 0;
@@ -367,7 +339,7 @@ class HabitProvider extends ChangeNotifier {
       // Optimistic update
       final now = DateTime.now();
       final todayStr =
-          '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+          "${now.year}-${now.month.toString().padLeft(2, '0")}-${now.day.toString().padLeft(2, '0')}';
 
       final comps = _completions.putIfAbsent(habitId, () => []);
       final index = comps.indexWhere((c) => c.date == todayStr);

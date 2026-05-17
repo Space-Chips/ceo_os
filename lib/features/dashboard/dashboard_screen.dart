@@ -12,10 +12,15 @@ import '../../core/models/task_models.dart';
 import '../../core/providers/habit_provider.dart';
 import '../../core/providers/language_provider.dart';
 import '../../core/providers/task_provider.dart';
+import '../../core/providers/language_provider.dart';
+import '../../core/providers/task_provider.dart';
 import '../../core/repositories/habit_repository.dart';
+import '../../core/repositories/insights_repository.dart';
 import '../../core/repositories/task_repository.dart';
+import '../../core/services/performance_score_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
+import '../tasks/task_importance_theme.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -24,12 +29,55 @@ class DashboardScreen extends StatefulWidget {
   State<DashboardScreen> createState() => _DashboardScreenState();
 }
 
+class _PressScale extends StatefulWidget {
+  final Widget child;
+  final VoidCallback? onTap;
+
+  const _PressScale({required this.child, this.onTap});
+
+  @override
+  State<_PressScale> createState() => _PressScaleState();
+}
+
+class _PressScaleState extends State<_PressScale> {
+  bool _pressed = false;
+
+  void _setPressed(bool value) {
+    if (_pressed == value || !mounted) return;
+    setState(() => _pressed = value);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Listener(
+      onPointerDown: (_) => _setPressed(true),
+      onPointerUp: (_) => _setPressed(false),
+      onPointerCancel: (_) => _setPressed(false),
+      child: AnimatedScale(
+        scale: _pressed ? 1.01 : 1,
+        duration: const Duration(milliseconds: 120),
+        curve: Curves.easeOutCubic,
+        child: GestureDetector(
+          behavior: HitTestBehavior.translucent,
+          onTap: widget.onTap,
+          child: widget.child,
+        ),
+      ),
+    );
+  }
+}
+
 class _DashboardScreenState extends State<DashboardScreen> {
   final TaskRepository _taskRepository = TaskRepository();
   final HabitRepository _habitRepository = HabitRepository();
+  final InsightsRepository _insightsRepository = InsightsRepository();
+  HabitProvider? _habitProvider;
+  TaskProvider? _taskProvider;
+  Timer? _refreshDebounce;
 
   bool _loading = true;
   String? _error;
+  int _wakeScore = 0;
 
   List<ParetoTask> _topTasks = const [];
   List<CalendarEvent> _todayEvents = const [];
@@ -46,6 +94,41 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void initState() {
     super.initState();
     _load();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final habitProvider = context.read<HabitProvider>();
+    final taskProvider = context.read<TaskProvider>();
+
+    if (!identical(_habitProvider, habitProvider)) {
+      _habitProvider?.removeListener(_handleSourceDataChanged);
+      _habitProvider = habitProvider;
+      _habitProvider?.addListener(_handleSourceDataChanged);
+    }
+
+    if (!identical(_taskProvider, taskProvider)) {
+      _taskProvider?.removeListener(_handleSourceDataChanged);
+      _taskProvider = taskProvider;
+      _taskProvider?.addListener(_handleSourceDataChanged);
+    }
+  }
+
+  @override
+  void dispose() {
+    _refreshDebounce?.cancel();
+    _habitProvider?.removeListener(_handleSourceDataChanged);
+    _taskProvider?.removeListener(_handleSourceDataChanged);
+    super.dispose();
+  }
+
+  void _handleSourceDataChanged() {
+    _refreshDebounce?.cancel();
+    _refreshDebounce = Timer(const Duration(milliseconds: 280), () {
+      if (!mounted) return;
+      unawaited(_load());
+    });
   }
 
   DateTime _dateOnly(DateTime value) =>
@@ -113,20 +196,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       _timeWeight(task.timeDuration);
 
   String _importanceLabel(String? raw) {
-    switch ((raw ?? '').toLowerCase()) {
-      case 'crucial':
-      case 'critical':
-        return 'CRITICAL';
-      case 'essential':
-      case 'high':
-        return 'HIGH';
-      case 'average':
-      case 'medium':
-        return 'MEDIUM';
-      case 'low':
-      default:
-        return 'LOW';
-    }
+    return TaskImportanceTheme.dashboardLabel(raw);
   }
 
   String _durationLabel(String? raw) {
@@ -134,39 +204,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
       case 'less_than_30min':
       case '15m':
       case '30m':
-        return '30m';
+        return _t('dashboard_duration_30m');
       case '1_hour':
       case '1h':
-        return '1 hour';
+        return _t('dashboard_duration_1h');
       case '2_hours':
       case '2h':
-        return '2 hours';
+        return _t('dashboard_duration_2h');
       case 'half_day':
-        return 'half day';
+        return _t('dashboard_duration_half_day');
       case '1_day':
-        return '1 day';
+        return _t('dashboard_duration_1_day');
       case 'several_days':
       case '4h+':
-        return 'several days';
+        return _t('dashboard_duration_several_days');
       default:
-        return '1 hour';
-    }
-  }
-
-  Color _importanceColor(String? raw) {
-    switch ((raw ?? '').toLowerCase()) {
-      case 'crucial':
-      case 'critical':
-        return const Color(0xFFEF4444);
-      case 'essential':
-      case 'high':
-        return const Color(0xFFD97706);
-      case 'average':
-      case 'medium':
-        return const Color(0xFF2563EB);
-      case 'low':
-      default:
-        return const Color(0xFF1D4ED8);
+        return _t('dashboard_duration_1h');
     }
   }
 
@@ -235,6 +288,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
       final today = _dateOnly(now);
       final yesterday = today.subtract(const Duration(days: 1));
 
+      int wakeScore = _wakeScore;
+      try {
+        final statsSnapshot = await _statsEngine.buildSnapshot(now: now);
+        final dashboardSnapshot = await _insightsRepository.getDashboardSnapshot();
+        final bundle = PerformanceScoreService.build(
+          dashboard: dashboardSnapshot,
+          daily: statsSnapshot.daily,
+          weekly: statsSnapshot.weekly,
+          lifetime: statsSnapshot.lifetime,
+        );
+        wakeScore = bundle.wake.score;
+      } catch (_) {}
+
       final results = await Future.wait([
         _taskRepository.getTasks(includeCompleted: true),
         _taskRepository.getAllEvents(),
@@ -250,18 +316,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
       final openTasks = allTasks.where((t) => !t.completed).toList()
         ..sort((a, b) => _taskScore(b).compareTo(_taskScore(a)));
 
-      final todayEvents =
-          allEvents.where((event) {
-            final eventDay = _parseEventDate(event.eventDate);
-            if (eventDay == null) return false;
-            return eventDay == today;
-          }).toList()..sort((a, b) {
-            final byTime = _eventTimeSortKey(
-              a.eventTime,
-            ).compareTo(_eventTimeSortKey(b.eventTime));
-            if (byTime != 0) return byTime;
-            return a.title.toLowerCase().compareTo(b.title.toLowerCase());
-          });
+      final todayEvents = allEvents.where((event) {
+        final eventDay = _parseEventDate(event.eventDate);
+        if (eventDay == null) return false;
+        return eventDay == today;
+      }).toList()
+        ..sort((a, b) {
+          final byTime = _eventTimeSortKey(
+            a.eventTime,
+          ).compareTo(_eventTimeSortKey(b.eventTime));
+          if (byTime != 0) return byTime;
+          return a.title.toLowerCase().compareTo(b.title.toLowerCase());
+        });
 
       final yesterdayCompletionMap = {
         for (final item in yesterdayCompletions) item.habitId: item,
@@ -293,12 +359,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
         _yesterdayHabits = unresolvedYesterday;
         _yesterdayStates
           ..clear()
-          ..addEntries(
-            unresolvedYesterday.map((habit) => MapEntry(habit.id, false)),
-          );
+          ..addEntries(unresolvedYesterday.map((habit) => MapEntry(habit.id, false)));
         _todayHabitMarks
           ..clear()
           ..addAll(restoredMarks);
+        _wakeScore = wakeScore;
         _loading = false;
       });
     } catch (e) {
@@ -313,9 +378,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Future<void> _confirmYesterday() async {
     if (_isConfirmingYesterday || _yesterdayHabits.isEmpty) return;
     final provider = context.read<HabitProvider>();
-    final yesterday = _dateOnly(
-      DateTime.now().subtract(const Duration(days: 1)),
-    );
+    final yesterday = _dateOnly(DateTime.now().subtract(const Duration(days: 1)));
     setState(() => _isConfirmingYesterday = true);
 
     try {
@@ -342,31 +405,54 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<LanguageProvider>().languageCode;
     return CupertinoPageScaffold(
       backgroundColor: AppColors.background,
       child: AmbientBackdrop(
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _topBar(),
-                const SizedBox(height: 10),
-                Text(
-                  'Control Center',
-                  style: AppTypography.mono.copyWith(
-                    fontSize: 44,
-                    height: 0.95,
-                    color: AppColors.label,
-                    fontWeight: FontWeight.w900,
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: IgnorePointer(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: RadialGradient(
+                      center: const Alignment(0.92, -0.96),
+                      radius: 0.44,
+                      colors: [
+                        const Color(0xFF5078FF).withValues(alpha: 0.12),
+                        CupertinoColors.transparent,
+                      ],
+                      stops: const [0, 1],
+                    ),
                   ),
                 ),
-                const SizedBox(height: 12),
-                Expanded(child: _buildBody()),
-              ],
+              ),
             ),
-          ),
+            SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _topBar(),
+                    const SizedBox(height: 12),
+                    Text(
+                      _t('dashboard_control_center'),
+                      style: AppTypography.largeTitle.copyWith(
+                        fontSize: 42,
+                        height: 0.95,
+                        letterSpacing: -1.4,
+                        color: AppColors.label,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 28),
+                    Expanded(child: _buildBody()),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -385,32 +471,37 @@ class _DashboardScreenState extends State<DashboardScreen> {
         _todayEvents.isEmpty &&
         _yesterdayHabits.isEmpty) {
       return Center(
-        child: GlassCard(
-          padding: const EdgeInsets.all(16),
-          borderRadius: 16,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'Dashboard unavailable',
-                style: AppTypography.mono.copyWith(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.label,
+        child: _PressScale(
+          child: Container(
+            padding: const EdgeInsets.all(18),
+            decoration: _panelDecoration(),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  _t('dashboard_unavailable'),
+                  style: AppTypography.headline.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.label,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                _error!,
-                textAlign: TextAlign.center,
-                style: AppTypography.mono.copyWith(
-                  fontSize: 10,
-                  color: AppColors.tertiaryLabel,
+                const SizedBox(height: 8),
+                Text(
+                  _error!,
+                  textAlign: TextAlign.center,
+                  style: AppTypography.caption1.copyWith(
+                    fontSize: 11,
+                    color: AppColors.tertiaryLabel,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 10),
-              LiquidButton(label: 'Retry', onPressed: _load, fullWidth: true),
-            ],
+                const SizedBox(height: 12),
+                LiquidButton(
+                  label: _t('retry'),
+                  onPressed: _load,
+                  fullWidth: true,
+                ),
+              ],
+            ),
           ),
         ),
       );
@@ -419,14 +510,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return ListView(
       padding: const EdgeInsets.only(bottom: 120),
       children: [
+        _wakeScoreCard(),
+        const SizedBox(height: 18),
         if (_yesterdayHabits.isNotEmpty) ...[
           _yesterdayValidationCard(),
-          const SizedBox(height: 14),
+          const SizedBox(height: 18),
         ],
         _prioritiesCard(),
-        const SizedBox(height: 14),
+        const SizedBox(height: 18),
         _todayHabitsCard(),
-        const SizedBox(height: 14),
+        const SizedBox(height: 18),
         _todayScheduleCard(),
       ],
     );
@@ -448,11 +541,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
               const SizedBox(width: 6),
               Text(
-                'Home',
-                style: AppTypography.mono.copyWith(
-                  fontSize: 16,
-                  color: AppColors.secondaryLabel,
-                  fontWeight: FontWeight.w600,
+                _t('home'),
+                style: AppTypography.subhead.copyWith(
+                  fontSize: 14,
+                  color: AppColors.secondaryLabel.withValues(alpha: 0.72),
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ],
@@ -473,128 +566,144 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  Widget _attentionScoreCard() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 22),
+      decoration: _panelDecoration(accentColor: AppColors.accent.withValues(alpha: 0.22)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Text(
+            'Attention Score',
+            style: AppTypography.title3.copyWith(
+              color: AppColors.secondaryLabel,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            '$_attentionScore',
+            style: AppTypography.heroNumber.copyWith(
+              fontSize: 64,
+              fontWeight: FontWeight.w700,
+              color: AppColors.label,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _yesterdayValidationCard() {
-    return _glowSurface(
-      glowColor: AppColors.primaryOrange.withValues(alpha: 0.26),
-      borderRadius: 24,
-      child: GlassCard(
-        padding: const EdgeInsets.all(18),
-        borderRadius: 24,
-        level: GlassCardLevel.elevated,
-        showEdgeGlow: true,
-        border: Border.all(
-          color: AppColors.primaryOrange.withValues(alpha: 0.38),
-          width: 0.9,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Habits from yesterday',
-              style: AppTypography.mono.copyWith(
-                fontSize: 26,
-                color: const Color(0xFFFFE0BC),
-                fontWeight: FontWeight.w900,
-              ),
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: _panelDecoration(
+        accentColor: AppColors.primaryOrange.withValues(alpha: 0.18),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Habits from yesterday',
+            style: AppTypography.title2.copyWith(
+              fontSize: 25,
+              color: const Color(0xFFFFE0BC),
+              fontWeight: FontWeight.w700,
             ),
-            const SizedBox(height: 6),
-            Text(
-              'Complete validation to continue',
-              style: AppTypography.mono.copyWith(
-                fontSize: 14,
-                color: AppColors.primaryOrange.withValues(alpha: 0.84),
-                fontWeight: FontWeight.w600,
-              ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            _t('dashboard_complete_validation_to_continue'),
+            style: AppTypography.callout.copyWith(
+              fontSize: 14,
+              color: AppColors.primaryOrange.withValues(alpha: 0.84),
+              fontWeight: FontWeight.w600,
             ),
-            const SizedBox(height: 12),
-            ..._yesterdayHabits.map(
-              (habit) => Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: GestureDetector(
-                  onTap: _isConfirmingYesterday
-                      ? null
-                      : () => setState(() {
-                          _yesterdayStates[habit.id] =
-                              !(_yesterdayStates[habit.id] ?? false);
-                        }),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 12,
+          ),
+          const SizedBox(height: 14),
+          ..._yesterdayHabits.map(
+            (habit) => Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: GestureDetector(
+                onTap: _isConfirmingYesterday
+                    ? null
+                    : () => setState(() {
+                        _yesterdayStates[habit.id] =
+                            !(_yesterdayStates[habit.id] ?? false);
+                      }),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 14,
+                  ),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    color: const Color(0xFF161616),
+                    border: Border.all(
+                      color: AppColors.white.withValues(alpha: 0.07),
+                      width: 1,
                     ),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(14),
-                      color: AppColors.backgroundLight.withValues(alpha: 0.72),
-                      border: Border.all(
-                        color: AppColors.glassBorder.withValues(alpha: 0.82),
-                        width: 0.7,
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        (_yesterdayStates[habit.id] ?? false)
+                            ? CupertinoIcons.check_mark_circled_solid
+                            : CupertinoIcons.circle,
+                        size: 24,
+                        color: (_yesterdayStates[habit.id] ?? false)
+                            ? const Color(0xFF3B82F6)
+                            : AppColors.tertiaryLabel,
                       ),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          (_yesterdayStates[habit.id] ?? false)
-                              ? CupertinoIcons.check_mark_circled_solid
-                              : CupertinoIcons.circle,
-                          size: 26,
-                          color: (_yesterdayStates[habit.id] ?? false)
-                              ? const Color(0xFF3B82F6)
-                              : AppColors.tertiaryLabel,
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                            habit.title,
-                            style: AppTypography.mono.copyWith(
-                              fontSize: 18,
-                              color: AppColors.label,
-                              fontWeight: FontWeight.w700,
-                            ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          habit.title,
+                          style: AppTypography.headline.copyWith(
+                            fontSize: 17,
+                            color: AppColors.label,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               ),
             ),
-            const SizedBox(height: 8),
-            LiquidButton(
-              label: _isConfirmingYesterday ? 'Confirming...' : 'Confirm',
-              fullWidth: true,
-              isLoading: _isConfirmingYesterday,
-              icon: CupertinoIcons.check_mark,
-              gradient: const [Color(0xFF3C82FF), Color(0xFF3262E3)],
-              onPressed: _confirmYesterday,
-            ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 10),
+          LiquidButton(
+            label: _isConfirmingYesterday
+                ? _t('dashboard_confirming')
+                : _t('dashboard_confirm'),
+            fullWidth: true,
+            isLoading: _isConfirmingYesterday,
+            icon: CupertinoIcons.check_mark,
+            gradient: const [Color(0xFF3C82FF), Color(0xFF3262E3)],
+            onPressed: _confirmYesterday,
+          ),
+        ],
       ),
     );
   }
 
   Widget _prioritiesCard() {
-    return GlassCard(
-      padding: const EdgeInsets.all(16),
-      borderRadius: 24,
-      level: GlassCardLevel.standard,
-      showEdgeGlow: true,
-      border: Border.all(
-        color: AppColors.glassBorder.withValues(alpha: 0.8),
-        width: 0.7,
-      ),
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: _panelDecoration(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _sectionHeader(
-            title: 'PRIORITIES',
+            title: _t('tasks_your_priorities'),
             onViewAll: () => context.push('/tasks'),
           ),
           const SizedBox(height: 10),
           if (_topTasks.isEmpty)
             Text(
               'No open tasks.',
-              style: AppTypography.mono.copyWith(
+              style: AppTypography.subhead.copyWith(
                 fontSize: 12,
                 color: AppColors.tertiaryLabel,
               ),
@@ -679,9 +788,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                       borderRadius: BorderRadius.circular(9),
                                       color: levelColor.withValues(alpha: 0.2),
                                       border: Border.all(
-                                        color: levelColor.withValues(
-                                          alpha: 0.8,
-                                        ),
+                                        color: levelColor.withValues(alpha: 0.8),
                                         width: 0.7,
                                       ),
                                     ),
@@ -741,7 +848,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           if (_todayHabits.isEmpty)
             Text(
               'No habits scheduled today.',
-              style: AppTypography.mono.copyWith(
+              style: AppTypography.subhead.copyWith(
                 fontSize: 12,
                 color: AppColors.tertiaryLabel,
               ),
@@ -768,15 +875,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         end: Alignment.bottomRight,
                         colors: marked
                             ? [
-                                AppColors.floatingGlassGradient.first
-                                    .withValues(alpha: 0.52),
+                                AppColors.floatingGlassGradient.first.withValues(
+                                  alpha: 0.52,
+                                ),
                                 AppColors.floatingGlassGradient.last.withValues(
                                   alpha: 0.44,
                                 ),
                               ]
                             : [
-                                AppColors.floatingGlassGradient.first
-                                    .withValues(alpha: 0.9),
+                                AppColors.floatingGlassGradient.first.withValues(
+                                  alpha: 0.9,
+                                ),
                                 AppColors.floatingGlassGradient.last.withValues(
                                   alpha: 0.78,
                                 ),
@@ -796,12 +905,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             habit.title,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: AppTypography.mono.copyWith(
+                            style: AppTypography.headline.copyWith(
                               fontSize: 17,
                               color: marked
                                   ? AppColors.tertiaryLabel
                                   : AppColors.label,
-                              fontWeight: FontWeight.w800,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ),
@@ -809,18 +918,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           width: 34,
                           height: 34,
                           decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(11),
-                            color: AppColors.background.withValues(alpha: 0.5),
+                            borderRadius: BorderRadius.circular(12),
+                            color: AppColors.white.withValues(alpha: 0.05),
                           ),
                           child: Center(
                             child: Text(
                               '$index',
-                              style: AppTypography.mono.copyWith(
-                                fontSize: 18,
+                              style: AppTypography.footnote.copyWith(
+                                fontSize: 15,
                                 color: marked
                                     ? AppColors.tertiaryLabel
                                     : AppColors.secondaryLabel,
-                                fontWeight: FontWeight.w900,
+                                fontWeight: FontWeight.w700,
                               ),
                             ),
                           ),
@@ -872,23 +981,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     vertical: 12,
                   ),
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(16),
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
-                      colors: [
-                        AppColors.floatingGlassGradient.first.withValues(
-                          alpha: 0.9,
-                        ),
-                        AppColors.floatingGlassGradient.last.withValues(
-                          alpha: 0.8,
-                        ),
-                      ],
+                      colors: const [Color(0xFF1A1A1A), Color(0xFF111111)],
                     ),
                     border: Border.all(
-                      color: AppColors.glassBorder.withValues(alpha: 0.72),
-                      width: 0.7,
+                      color: AppColors.white.withValues(alpha: 0.06),
+                      width: 1,
                     ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.black.withValues(alpha: 0.32),
+                        blurRadius: 16,
+                        offset: const Offset(0, 8),
+                        spreadRadius: -12,
+                      ),
+                    ],
                   ),
                   child: Row(
                     children: [
@@ -903,10 +1013,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         ),
                         child: Text(
                           _eventTimeLabel(event.eventTime),
-                          style: AppTypography.mono.copyWith(
+                          style: AppTypography.callout.copyWith(
                             fontSize: 14,
                             color: AppColors.secondaryLabel,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
@@ -916,10 +1026,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           event.title,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: AppTypography.mono.copyWith(
+                          style: AppTypography.headline.copyWith(
                             fontSize: 16,
                             color: AppColors.label,
-                            fontWeight: FontWeight.w800,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
@@ -943,11 +1053,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
       children: [
         Expanded(
           child: Text(
-            title,
-            style: AppTypography.mono.copyWith(
-              fontSize: 22,
-              color: AppColors.label,
-              fontWeight: FontWeight.w900,
+            title.toUpperCase(),
+            style: AppTypography.overline.copyWith(
+              fontSize: 14,
+              letterSpacing: 1.2,
+              color: AppColors.label.withValues(alpha: 0.7),
+              fontWeight: FontWeight.w700,
             ),
           ),
         ),
@@ -957,12 +1068,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
             minimumSize: Size.zero,
             onPressed: onViewAll,
             child: Text(
-              'VIEW ALL →',
-              style: AppTypography.mono.copyWith(
-                fontSize: 12,
-                color: AppColors.tertiaryLabel,
-                letterSpacing: 1.4,
-                fontWeight: FontWeight.w800,
+              "${_t('dashboard_view_all")} →',
+              style: AppTypography.callout.copyWith(
+                fontSize: 13,
+                color: AppColors.secondaryLabel.withValues(alpha: 0.6),
+                fontWeight: FontWeight.w500,
               ),
             ),
           ),
@@ -977,28 +1087,92 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _glowSurface({
-    required Widget child,
-    required Color glowColor,
-    double borderRadius = 18,
-  }) {
-    return Stack(
-      children: [
-        Positioned.fill(
-          child: IgnorePointer(
-            child: Container(
-              margin: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(borderRadius),
-                boxShadow: [
-                  BoxShadow(color: glowColor, blurRadius: 30, spreadRadius: 1),
-                ],
-              ),
-            ),
-          ),
+  BoxDecoration _panelDecoration({Color? accentColor}) {
+    return BoxDecoration(
+      borderRadius: BorderRadius.circular(20),
+      gradient: LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [AppColors.cardBackgroundStrong, AppColors.cardBase],
+      ),
+      border: Border.all(
+        color: AppColors.border,
+        width: 1,
+      ),
+      boxShadow: [
+        BoxShadow(
+          color: AppColors.glassShadow.withValues(alpha: 0.3),
+          blurRadius: 30,
+          offset: const Offset(0, 10),
         ),
-        child,
+        if (accentColor != null)
+          BoxShadow(
+            color: accentColor,
+            blurRadius: 24,
+            offset: const Offset(0, 6),
+            spreadRadius: -20,
+          ),
       ],
     );
   }
+}
+
+class _PriorityBadgeStyle {
+  final Color background;
+  final Color border;
+  final Color text;
+  final Color glow;
+
+  const _PriorityBadgeStyle({
+    required this.background,
+    required this.border,
+    required this.text,
+    required this.glow,
+  });
+}
+
+class _PriorityBadge extends StatelessWidget {
+  final String label;
+  final _PriorityBadgeStyle style;
+
+  const _PriorityBadge({required this.label, required this.style});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(10),
+        color: style.background,
+        border: Border.all(color: style.border, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: style.glow,
+            blurRadius: 10,
+            offset: const Offset(0, 0),
+            spreadRadius: -7,
+          ),
+        ],
+      ),
+      child: Text(
+        label,
+        style: AppTypography.overline.copyWith(
+          fontSize: 11,
+          color: style.text,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0.7,
+        ),
+      ),
+    );
+  }
+}
+
+_PriorityBadgeStyle _priorityBadgeStyle(String? raw) {
+  final style = TaskImportanceTheme.badge(raw);
+  return _PriorityBadgeStyle(
+    background: style.background,
+    border: style.border,
+    text: style.text,
+    glow: style.glow,
+  );
 }

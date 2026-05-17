@@ -98,9 +98,10 @@ class _SetupFlowScreenState extends State<SetupFlowScreen>
         if (controller.isLoading) {
           return const _SetupLoadingScreen();
         }
-        final stepIndex = _stepOrder
-            .indexOf(controller.currentStep)
-            .clamp(0, _stepOrder.length - 1);
+        final stepIndex = _stepOrder.indexOf(controller.currentStep).clamp(
+          0,
+          _stepOrder.length - 1,
+        );
         if (_lastStep != controller.currentStep) {
           _transitionDirection = stepIndex >= _lastStepIndex ? 1 : -1;
           _lastStep = controller.currentStep;
@@ -162,18 +163,17 @@ class _SetupFlowScreenState extends State<SetupFlowScreen>
                                             _t('setup_back_in_wakeapp'),
                                             style: AppTypography.footnote
                                                 .copyWith(
-                                                  color: AppColors.label,
-                                                  fontWeight: FontWeight.w600,
-                                                ),
+                                              color: AppColors.label,
+                                              fontWeight: FontWeight.w600,
+                                            ),
                                           ),
                                           const SizedBox(height: 2),
                                           Text(
                                             _t('setup_syncing_permission'),
                                             style: AppTypography.caption1
                                                 .copyWith(
-                                                  color:
-                                                      AppColors.secondaryLabel,
-                                                ),
+                                              color: AppColors.secondaryLabel,
+                                            ),
                                           ),
                                         ],
                                       ),
@@ -254,71 +254,80 @@ class _SetupFlowScreenState extends State<SetupFlowScreen>
     switch (step) {
       case SetupStep.welcome:
         return _WelcomeStep(onContinue: controller.advance);
-      case SetupStep.accessibility:
-        _maybeAutoAdvance(controller, step, controller.accessibilityGranted);
+      case SetupStep.reflection:
+        return _ReflectionStep(
+          selection: controller.reflectionSelection,
+          onSelected: controller.setReflectionSelection,
+          onContinue: controller.advance,
+        );
+      case SetupStep.loading:
+        return _LoadingInsightStep(onContinue: controller.advance);
+      case SetupStep.insight:
+        return _InsightStep(
+          selection: controller.reflectionSelection,
+          onContinue: controller.advance,
+        );
+      case SetupStep.overview:
+        return _OverviewStep(
+          overlayGranted: controller.overlayGranted,
+          usageGranted: controller.usageGranted,
+          accessibilityGranted: controller.accessibilityGranted,
+          onContinue: controller.advance,
+        );
+      case SetupStep.overlay:
+        _maybeAutoAdvance(controller, step, controller.overlayGranted);
         return _PermissionStep(
           stepIndex: 1,
-          title: _t('setup_accessibility_title'),
-          subtitle: _t('setup_accessibility_subtitle'),
-          icon: CupertinoIcons.hand_raised_fill,
-          accent: AppColors.accent,
-          reassurance: _t('setup_accessibility_reassurance'),
-          instructions: [
-            _t('setup_step_tap_open_settings'),
-            _t('setup_step_enable_service'),
-            _t('setup_step_return_auto'),
+          title: 'Show the block screen instantly',
+          subtitle:
+              'Screen Time uses the overlay permission so blocked apps are stopped the moment they open.',
+          instructions: const [
+            'Tap "Open settings".',
+            'Find Screen Time in the list.',
+            'Enable "Display over other apps".',
+            'Return to Screen Time.',
           ],
-          troubleshoot: [
-            _t('setup_if_switch_disabled'),
-            _t('setup_if_missing_service'),
-          ],
-          isGranted: controller.accessibilityGranted,
+          isGranted: controller.overlayGranted,
           showSuccess: _showStepSuccess,
-          onOpenSettings: controller.openAccessibilitySettings,
+          onOpenSettings: controller.openOverlaySettings,
           onContinue: controller.advance,
         );
       case SetupStep.usageAccess:
         _maybeAutoAdvance(controller, step, controller.usageGranted);
         return _PermissionStep(
           stepIndex: 2,
-          title: _t('setup_usage_title'),
-          subtitle: _t('setup_usage_subtitle'),
-          icon: CupertinoIcons.chart_bar_fill,
-          accent: AppColors.focusSecondary,
-          instructions: [
-            _t('setup_step_tap_open_settings'),
-            _t('setup_step_allow_service'),
-            _t('setup_step_return_auto'),
-          ],
-          troubleshoot: [
-            _t('setup_if_missing_open_app'),
-            _t('setup_then_open_usage_access'),
+          title: 'Measure usage accurately',
+          subtitle:
+              'Usage access lets Screen Time read app activity so daily limits and focus rules stay accurate.',
+          instructions: const [
+            'Tap "Open settings".',
+            'Find Screen Time in the list.',
+            'Enable usage access.',
+            'Return to Screen Time.',
           ],
           isGranted: controller.usageGranted,
           showSuccess: _showStepSuccess,
           onOpenSettings: controller.openUsageAccessSettings,
           onContinue: controller.advance,
         );
-      case SetupStep.overlay:
-        _maybeAutoAdvance(controller, step, controller.overlayGranted);
+      case SetupStep.accessibility:
+        _maybeAutoAdvance(controller, step, controller.accessibilityGranted);
         return _PermissionStep(
           stepIndex: 3,
-          title: _t('setup_overlay_title'),
-          subtitle: _t('setup_overlay_subtitle'),
-          icon: CupertinoIcons.rectangle_stack_fill,
-          accent: AppColors.focusPrimary,
-          instructions: [
-            _t('setup_step_tap_open_settings'),
-            _t('setup_step_allow_overlay'),
-            _t('setup_step_return_auto'),
+          title: 'Block apps without delay',
+          subtitle:
+              'Accessibility helps Screen Time detect the active app so blocking can happen instantly.',
+          reassurance:
+              'Screen Time does not read your messages or capture your screen. It only uses this access to enforce focus protections on-device.',
+          instructions: const [
+            'Tap "Open settings".',
+            'Choose Screen Time under Installed services.',
+            'Turn the service on and confirm.',
+            'Return to Screen Time.',
           ],
-          troubleshoot: [
-            _t('setup_if_cant_toggle_overlay'),
-            _t('setup_enable_wakeapp_and_return'),
-          ],
-          isGranted: controller.overlayGranted,
+          isGranted: controller.accessibilityGranted,
           showSuccess: _showStepSuccess,
-          onOpenSettings: controller.openOverlaySettings,
+          onOpenSettings: controller.openAccessibilitySettings,
           onContinue: controller.advance,
         );
       case SetupStep.success:
@@ -421,7 +430,10 @@ class _GlowBlob extends StatelessWidget {
       height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        gradient: RadialGradient(colors: colors, stops: const [0.0, 1.0]),
+        gradient: RadialGradient(
+          colors: colors,
+          stops: const [0.0, 1.0],
+        ),
       ),
     );
   }
@@ -447,7 +459,10 @@ class _SetupStepScaffold extends StatelessWidget {
       child: Column(
         children: [
           if (progressStep != null) ...[
-            _SetupProgressBar(step: progressStep!, total: progressTotal),
+            _SetupProgressBar(
+              step: progressStep!,
+              total: progressTotal,
+            ),
             const SizedBox(height: 14),
           ],
           Expanded(
@@ -476,97 +491,291 @@ class _WelcomeStep extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.read<LanguageProvider>().t;
     return _SetupStepScaffold(
-      footer: LiquidButton(
-        label: t('setup_start'),
-        fullWidth: true,
-        onPressed: onContinue,
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          GlassCard(
-            level: GlassCardLevel.elevated,
-            showEdgeGlow: true,
-            glowColor: AppColors.accent,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _StepProgressPill(step: 0, total: 3),
-                const SizedBox(height: 14),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    _IconOrb(
-                      icon: CupertinoIcons.timer,
-                      accent: AppColors.accent,
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(height: 6),
-                          Text(
-                            t('setup_welcome_subtitle'),
-                            style: AppTypography.body.copyWith(
-                              color: AppColors.secondaryLabel,
-                              height: 1.35,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 18),
-          GlassCard(
-            level: GlassCardLevel.standard,
-            showTopHighlight: false,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(t('setup_what_unlocks'), style: AppTypography.title3),
-                const SizedBox(height: 10),
-                _BulletLine(text: t('setup_unlock_instant_blocking')),
-                _BulletLine(text: t('setup_unlock_usage_limits')),
-                _BulletLine(text: t('setup_unlock_focus_blackout')),
-              ],
-            ),
-          ),
-          const SizedBox(height: 12),
-          GlassCard(
-            level: GlassCardLevel.subtle,
-            showTopHighlight: false,
-            child: Row(
-              children: [
-                Icon(
-                  CupertinoIcons.time_solid,
-                  color: AppColors.secondaryLabel,
-                  size: 16,
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    t('setup_takes_45s'),
-                    style: AppTypography.footnote.copyWith(
-                      color: AppColors.secondaryLabel,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
+          Text('Welcome to Screen Time', style: AppTypography.largeTitle),
           const SizedBox(height: 12),
           Text(
-            t('setup_return_auto'),
-            style: AppTypography.footnote.copyWith(
-              color: AppColors.tertiaryLabel,
+            "We'll help you set up focus protections so distractions are blocked the moment they appear.",
+            style: AppTypography.body.copyWith(
+              color: AppColors.secondaryLabel,
+            ),
+          ),
+          const SizedBox(height: 24),
+          GlassCard(
+            level: GlassCardLevel.elevated,
+            child: Padding(
+              padding: const EdgeInsets.all(18),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text("What you'll unlock", style: AppTypography.title3),
+                  const SizedBox(height: 8),
+                  _BulletLine(
+                    text: 'Instant blocking when a protected app opens.',
+                  ),
+                  _BulletLine(
+                    text: 'Accurate daily limits without manual tracking.',
+                  ),
+                  _BulletLine(
+                    text: 'Focus and blackout sessions that actually hold.',
+                  ),
+                ],
+              ),
             ),
           ),
         ],
+      ),
+      footer: LiquidButton(
+        label: 'Start setup',
+        fullWidth: true,
+        onPressed: onContinue,
+      ),
+    );
+  }
+}
+
+class _ReflectionStep extends StatelessWidget {
+  final String? selection;
+  final ValueChanged<String> onSelected;
+  final VoidCallback onContinue;
+
+  const _ReflectionStep({
+    required this.selection,
+    required this.onSelected,
+    required this.onContinue,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final options = const [
+      'Under 2 hours',
+      '2–4 hours',
+      '4–6 hours',
+      '6+ hours',
+    ];
+
+    return _SetupStepScaffold(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text("Let's calibrate your focus", style: AppTypography.title1),
+          const SizedBox(height: 12),
+          Text(
+            'Roughly how much time do you spend on your phone each day?',
+            style: AppTypography.body.copyWith(
+              color: AppColors.secondaryLabel,
+            ),
+          ),
+          const SizedBox(height: 20),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: [
+              for (final option in options)
+                _SelectableChip(
+                  label: option,
+                  selected: selection == option,
+                  onTap: () => onSelected(option),
+                ),
+            ],
+          ),
+        ],
+      ),
+      footer: LiquidButton(
+        label: 'Continue',
+        fullWidth: true,
+        onPressed: selection == null ? null : onContinue,
+      ),
+    );
+  }
+}
+
+class _LoadingInsightStep extends StatefulWidget {
+  final VoidCallback onContinue;
+
+  const _LoadingInsightStep({required this.onContinue});
+
+  @override
+  State<_LoadingInsightStep> createState() => _LoadingInsightStepState();
+}
+
+class _LoadingInsightStepState extends State<_LoadingInsightStep> {
+  double _progress = 0.18;
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer.periodic(const Duration(milliseconds: 220), (timer) {
+      setState(() {
+        _progress = (_progress + 0.18).clamp(0.18, 0.98);
+      });
+      if (_progress > 0.9) {
+        timer.cancel();
+        Future.delayed(const Duration(milliseconds: 450), widget.onContinue);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.read<LanguageProvider>().t;
+    return _SetupStepScaffold(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Preparing your report', style: AppTypography.title1),
+          const SizedBox(height: 10),
+          Text(
+            "We're setting up your Screen Time baseline.",
+            style: AppTypography.body.copyWith(
+              color: AppColors.secondaryLabel,
+            ),
+          ),
+          const SizedBox(height: 28),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: LinearProgressIndicator(
+              value: _progress,
+              minHeight: 10,
+              backgroundColor: AppColors.glassSurfaceSoft,
+              valueColor: AlwaysStoppedAnimation(AppColors.accent),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _InsightStep extends StatelessWidget {
+  final String? selection;
+  final VoidCallback onContinue;
+
+  const _InsightStep({required this.selection, required this.onContinue});
+
+  @override
+  Widget build(BuildContext context) {
+    final message = switch (selection) {
+      'Under 2 hours' =>
+        "Great baseline. We'll help you keep your focus sessions clean.",
+      '2–4 hours' =>
+        'Small adjustments can free up big chunks of focused time.',
+      '4–6 hours' =>
+        "You're close to reclaiming a full work block every day.",
+      '6+ hours' =>
+        'You can win back hours a week with a few focused sessions.',
+      _ => "Let's build a calmer focus routine together.",
+    };
+
+    return _SetupStepScaffold(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text("Here's your focus insight", style: AppTypography.title1),
+          const SizedBox(height: 12),
+          Text(
+            message,
+            style: AppTypography.body.copyWith(
+              color: AppColors.secondaryLabel,
+            ),
+          ),
+          const SizedBox(height: 22),
+          GlassCard(
+            level: GlassCardLevel.subtle,
+            child: Padding(
+              padding: const EdgeInsets.all(18),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('What happens next', style: AppTypography.title3),
+                  const SizedBox(height: 8),
+                  _BulletLine(
+                    text: "We'll walk through three quick permissions.",
+                  ),
+                  _BulletLine(
+                    text: 'Each one keeps protections fast and reliable.',
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+      footer: LiquidButton(
+        label: 'Continue',
+        fullWidth: true,
+        onPressed: onContinue,
+      ),
+    );
+  }
+}
+
+class _OverviewStep extends StatelessWidget {
+  final bool overlayGranted;
+  final bool usageGranted;
+  final bool accessibilityGranted;
+  final VoidCallback onContinue;
+
+  const _OverviewStep({
+    required this.overlayGranted,
+    required this.usageGranted,
+    required this.accessibilityGranted,
+    required this.onContinue,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return _SetupStepScaffold(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Set up Screen Time protection', style: AppTypography.title1),
+          const SizedBox(height: 12),
+          Text(
+            'A few quick permissions are required so blocking is instant and reliable.',
+            style: AppTypography.body.copyWith(
+              color: AppColors.secondaryLabel,
+            ),
+          ),
+          const SizedBox(height: 22),
+          GlassCard(
+            level: GlassCardLevel.elevated,
+            child: Padding(
+              padding: const EdgeInsets.all(18),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _ChecklistRow(
+                    label: 'Display over other apps',
+                    done: overlayGranted,
+                  ),
+                  _ChecklistRow(
+                    label: 'Usage access',
+                    done: usageGranted,
+                  ),
+                  _ChecklistRow(
+                    label: 'Accessibility service',
+                    done: accessibilityGranted,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+      footer: LiquidButton(
+        label: 'Continue setup',
+        fullWidth: true,
+        onPressed: onContinue,
       ),
     );
   }
@@ -603,18 +812,8 @@ class _PermissionStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final t = context.read<LanguageProvider>().t;
     return _SetupStepScaffold(
       progressStep: stepIndex,
-      footer: Column(
-        children: [
-          LiquidButton(
-            label: isGranted ? t('setup_continue') : t('setup_open_settings'),
-            fullWidth: true,
-            onPressed: isGranted ? onContinue : () => onOpenSettings(),
-          ),
-        ],
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -651,9 +850,7 @@ class _PermissionStep extends StatelessWidget {
                 Align(
                   alignment: Alignment.centerRight,
                   child: _StatusPill(
-                    text: isGranted
-                        ? t('setup_enabled')
-                        : t('setup_not_enabled'),
+                    text: isGranted ? t('setup_enabled') : t('setup_not_enabled'),
                     color: isGranted ? AppColors.success : AppColors.warning,
                   ),
                 ),
@@ -701,7 +898,8 @@ class _PermissionStep extends StatelessWidget {
                 children: [
                   Text(t('setup_switch_locked'), style: AppTypography.headline),
                   const SizedBox(height: 8),
-                  for (final line in troubleshoot) _BulletLine(text: line),
+                  for (final line in troubleshoot)
+                    _BulletLine(text: line),
                 ],
               ),
             ),
@@ -719,6 +917,15 @@ class _PermissionStep extends StatelessWidget {
           ),
         ],
       ),
+      footer: Column(
+        children: [
+          LiquidButton(
+            label: isGranted ? t('setup_continue') : t('setup_open_settings'),
+            fullWidth: true,
+            onPressed: isGranted ? onContinue : () => onOpenSettings(),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -733,20 +940,6 @@ class _SuccessStep extends StatelessWidget {
     final t = context.read<LanguageProvider>().t;
     return _SetupStepScaffold(
       progressStep: 3,
-      footer: LiquidButton(
-        label: t('setup_open_screen_time'),
-        fullWidth: true,
-        height: 58,
-        borderRadius: 16,
-        labelStyle: AppTypography.callout.copyWith(
-          fontWeight: FontWeight.w700,
-          fontSize: 16,
-        ),
-        onPressed: () async {
-          await onContinue();
-          if (context.mounted) context.go('/screen-time-manager');
-        },
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -777,6 +970,20 @@ class _SuccessStep extends StatelessWidget {
             ),
           ),
         ],
+      ),
+      footer: LiquidButton(
+        label: t('setup_open_screen_time'),
+        fullWidth: true,
+        height: 58,
+        borderRadius: 16,
+        labelStyle: AppTypography.callout.copyWith(
+          fontWeight: FontWeight.w700,
+          fontSize: 16,
+        ),
+        onPressed: () async {
+          await onContinue();
+          if (context.mounted) context.go('/screen-time-manager');
+        },
       ),
     );
   }
@@ -811,7 +1018,9 @@ class _SuccessHero extends StatelessWidget {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: AppColors.success.withValues(alpha: 0.18),
-            border: Border.all(color: AppColors.success.withValues(alpha: 0.5)),
+            border: Border.all(
+              color: AppColors.success.withValues(alpha: 0.5),
+            ),
           ),
           child: Icon(
             CupertinoIcons.checkmark_seal_fill,
@@ -845,7 +1054,9 @@ class _StepProgressPill extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: AppTypography.caption1.copyWith(color: AppColors.secondaryLabel),
+        style: AppTypography.caption1.copyWith(
+          color: AppColors.secondaryLabel,
+        ),
       ),
     );
   }
@@ -940,7 +1151,10 @@ class _IconOrb extends StatelessWidget {
             AppColors.glassHighlightSoft.withValues(alpha: 0.12),
           ],
         ),
-        border: Border.all(color: accent.withValues(alpha: 0.35), width: 1),
+        border: Border.all(
+          color: accent.withValues(alpha: 0.35),
+          width: 1,
+        ),
         boxShadow: [
           BoxShadow(
             color: accent.withValues(alpha: 0.18),

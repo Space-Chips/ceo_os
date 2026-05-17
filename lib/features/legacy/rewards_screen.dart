@@ -67,12 +67,12 @@ class _RewardsScreenState extends State<RewardsScreen> {
         leading: CupertinoButton(
           padding: EdgeInsets.zero,
           onPressed: () => context.go('/home'),
-          child: Icon(
+          child: const Icon(
             CupertinoIcons.back,
             color: AppColors.primaryOrange,
           ),
         ),
-        middle: NeoMonoText(
+        middle: const NeoMonoText(
           'REWARDS',
           fontSize: 18,
           fontWeight: FontWeight.bold,
@@ -92,7 +92,9 @@ class _RewardsScreenState extends State<RewardsScreen> {
         border: null,
       ),
       child: _loading
-          ? Center(child: CupertinoActivityIndicator(color: AppColors.primaryOrange))
+          ? const Center(
+              child: CupertinoActivityIndicator(color: AppColors.primaryOrange),
+            )
           : SafeArea(
               child: ListView(
                 padding: const EdgeInsets.all(20),

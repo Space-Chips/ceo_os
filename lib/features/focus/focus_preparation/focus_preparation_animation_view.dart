@@ -267,7 +267,7 @@ class _FocusPhoneMock extends StatelessWidget {
               child: Opacity(
                 opacity: finalLabel,
                 child: Text(
-                  language.t('focus_blocking_active_until_end'),
+                  'Blocage actif jusqu'à la fin',
                   textAlign: TextAlign.center,
                   style: AppTypography.footnote.copyWith(
                     color: AppColors.secondaryLabel.withValues(alpha: 0.9),
