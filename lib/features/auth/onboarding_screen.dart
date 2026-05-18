@@ -26,10 +26,7 @@ class _OnboardingPressScale extends StatefulWidget {
   final Widget child;
   final VoidCallback onTap;
 
-  const _OnboardingPressScale({
-    required this.child,
-    required this.onTap,
-  });
+  const _OnboardingPressScale({required this.child, required this.onTap});
 
   @override
   State<_OnboardingPressScale> createState() => _OnboardingPressScaleState();
@@ -85,27 +82,122 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   String _selectedThemePresetId = ThemeCatalog.defaultPresetId;
   bool _didLoadInitialTheme = false;
   final PremiumRepository _premiumRepository = PremiumRepository();
-  late final Future<PremiumRuntime> _premiumRuntimeFuture =
-      _premiumRepository.getRuntime();
+  late final Future<PremiumRuntime> _premiumRuntimeFuture = _premiumRepository
+      .getRuntime();
+
+  static const List<_LanguageOption> _languages = [
+    _LanguageOption(code: 'en', label: 'English', nativeLabel: 'English'),
+    _LanguageOption(code: 'fr', label: 'French', nativeLabel: 'Français'),
+    _LanguageOption(code: 'zh', label: 'Chinese', nativeLabel: '中文'),
+    _LanguageOption(code: 'hi', label: 'Hindi', nativeLabel: 'हिन्दी'),
+    _LanguageOption(code: 'es', label: 'Spanish', nativeLabel: 'Español'),
+    _LanguageOption(code: 'ar', label: 'Arabic', nativeLabel: 'العربية'),
+    _LanguageOption(
+      code: 'id',
+      label: 'Indonesian',
+      nativeLabel: 'Bahasa Indonesia',
+    ),
+    _LanguageOption(code: 'ru', label: 'Russian', nativeLabel: 'Русский'),
+    _LanguageOption(code: 'pt', label: 'Portuguese', nativeLabel: 'Português'),
+  ];
 
   static const _slides = [
     (
       icon: CupertinoIcons.chart_bar_alt_fill,
-      title: 'Operate Like a CEO',
-      subtitle: 'Tasks, habits, calendar, and focus in one execution system.',
+      titleKey: 'onboarding_slide_operate_title',
+      subtitleKey: 'onboarding_slide_operate_subtitle',
     ),
     (
       icon: CupertinoIcons.flame_fill,
-      title: 'Build Compounding Habits',
-      subtitle: 'Track consistency daily and recover quickly when you miss.',
+      titleKey: 'onboarding_slide_habits_title',
+      subtitleKey: 'onboarding_slide_habits_subtitle',
     ),
     (
       icon: CupertinoIcons.timer_fill,
-      title: 'Protect Deep Work',
-      subtitle:
-          'Use focus sessions and blocking to reduce context switching. On iPhone, blocking uses Apple Screen Time / Family Controls APIs and requires permission on that device.',
+      titleKey: 'onboarding_slide_focus_title',
+      subtitleKey: 'onboarding_slide_focus_subtitle',
     ),
   ];
+
+  String _t(String key) => context.watch<LanguageProvider>().t(key);
+
+  String _localizedGoal(LanguageProvider language, String goal) {
+    switch (goal) {
+      case 'Execution':
+        return language.t('onboarding_goal_execution');
+      case 'Consistency':
+        return language.t('onboarding_goal_consistency');
+      case 'Focus':
+        return language.t('onboarding_goal_focus');
+      case 'Planning':
+        return language.t('onboarding_goal_planning');
+      default:
+        return goal;
+    }
+  }
+
+  String _localizedDiscipline(LanguageProvider language, String discipline) {
+    switch (discipline) {
+      case 'Beginner':
+        return language.t('onboarding_level_beginner');
+      case 'Intermediate':
+        return language.t('onboarding_level_intermediate');
+      case 'Advanced':
+        return language.t('onboarding_level_advanced');
+      default:
+        return discipline;
+    }
+  }
+
+  String _localizedConstraint(LanguageProvider language, String challenge) {
+    switch (challenge) {
+      case 'Distractions':
+        return language.t('onboarding_constraint_distractions');
+      case 'Overload':
+        return language.t('onboarding_constraint_overload');
+      case 'Inconsistency':
+        return language.t('onboarding_constraint_inconsistency');
+      default:
+        return challenge;
+    }
+  }
+
+  String _languageDisplayLabel(String code) {
+    final normalized = code.toLowerCase();
+    for (final language in _languages) {
+      if (language.code == normalized) return language.nativeLabel;
+    }
+    return 'English';
+  }
+
+  Future<void> _showLanguagePicker() async {
+    final languageProvider = context.read<LanguageProvider>();
+    final current = languageProvider.languageCode.toLowerCase();
+    final selected = await showCupertinoModalPopup<String>(
+      context: context,
+      builder: (popupContext) {
+        return CupertinoActionSheet(
+          title: Text(_t('language')),
+          message: Text(_t('language_picker_subtitle')),
+          actions: [
+            for (final language in _languages)
+              CupertinoActionSheetAction(
+                onPressed: () => Navigator.of(popupContext).pop(language.code),
+                isDefaultAction: language.code == current,
+                child: Text('${language.nativeLabel} • ${language.label}'),
+              ),
+          ],
+          cancelButton: CupertinoActionSheetAction(
+            onPressed: () => Navigator.of(popupContext).pop(),
+            child: Text(_t('cancel')),
+          ),
+        );
+      },
+    );
+
+    if (selected == null || selected == current) return;
+    await languageProvider.setLanguage(selected, persistToCloud: true);
+  }
 
   @override
   void didChangeDependencies() {
@@ -174,232 +266,234 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 padding: const EdgeInsets.all(22),
                 child: Column(
                   children: [
-                  Row(
-                    children: [
-                      Text(
-                        _t('app_name'),
-                        style: AppTypography.title3.copyWith(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.label,
-                          letterSpacing: -0.2,
-                        ),
-                      ),
-                      const Spacer(),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          color: AppColors.white.withValues(alpha: 0.05),
-                          border: Border.all(
-                            color: AppColors.white.withValues(alpha: 0.08),
-                            width: 1,
-                          ),
-                        ),
-                        child: Text(
-                          _t(
-                            'onboarding_step_of',
-                          ).replaceAll('{step}', '$currentStep').replaceAll(
-                            '{total}',
-                            '$totalSteps',
-                          ),
-                          style: AppTypography.footnote.copyWith(
-                            fontSize: 11,
-                            color: AppColors.secondaryLabel.withValues(
-                              alpha: 0.6,
-                            ),
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 0.1,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      CupertinoButton(
-                        padding: EdgeInsets.zero,
-                        minimumSize: Size.zero,
-                        onPressed: _showLanguagePicker,
-                        child: Text(
-                          _languageDisplayLabel(language.languageCode),
-                          style: AppTypography.footnote.copyWith(
-                            fontSize: 12,
-                            color: AppColors.tertiaryLabel,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      CupertinoButton(
-                        padding: EdgeInsets.zero,
-                        minimumSize: Size.zero,
-                        onPressed: () => context.go('/login'),
-                        child: Text(
-                          _t('onboarding_log_in'),
-                          style: AppTypography.footnote.copyWith(
-                            fontSize: 12,
-                            color: AppColors.tertiaryLabel,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Container(
-                    height: 6,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(6),
-                      color: AppColors.white.withValues(alpha: 0.08),
-                    ),
-                    child: TweenAnimationBuilder<double>(
-                      tween: Tween<double>(begin: 0, end: progress.clamp(0, 1)),
-                      duration: const Duration(milliseconds: 260),
-                      curve: Curves.easeOutCubic,
-                      builder: (context, animatedProgress, _) {
-                        return FractionallySizedBox(
-                          widthFactor: animatedProgress,
-                          alignment: Alignment.centerLeft,
-                          child: Container(
-                            decoration: const BoxDecoration(
-                              borderRadius: BorderRadius.all(
-                                Radius.circular(6),
-                              ),
-                              gradient: LinearGradient(
-                                colors: [
-                                  Color(0xFF4C7DFF),
-                                  Color(0xFF7EA4FF),
-                                ],
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Expanded(
-                    child: showingQuestionnaire
-                        ? FutureBuilder<PremiumRuntime>(
-                            future: _premiumRuntimeFuture,
-                            builder: (context, snapshot) {
-                              final runtime = snapshot.data;
-                              final themeProvider = context
-                                  .read<ThemeProvider>();
-                              return _Questionnaire(
-                                goal: _goal,
-                                discipline: _discipline,
-                                focusChallenge: _focusChallenge,
-                                selectedThemePresetId: _selectedThemePresetId,
-                                premiumRuntime: runtime,
-                                language: language,
-                                onGoal: (v) => setState(() => _goal = v),
-                                onDiscipline: (v) =>
-                                    setState(() => _discipline = v),
-                                onFocusChallenge: (v) =>
-                                    setState(() => _focusChallenge = v),
-                                onThemeSelected: (presetId) async {
-                                  final themeCheck = await _premiumRepository
-                                      .canUseTheme(presetId);
-                                  if (!context.mounted) return;
-                                  if (!themeCheck.allowed) {
-                                    await showPremiumGateDialog(
-                                      context,
-                                      themeCheck,
-                                    );
-                                    return;
-                                  }
-                                  setState(
-                                    () => _selectedThemePresetId = presetId,
-                                  );
-                                  themeProvider.selectThemeForOnboarding(
-                                    presetId,
-                                  );
-                                },
-                              );
-                            },
-                          )
-                        : PageView.builder(
-                            controller: _controller,
-                            itemCount: _slides.length,
-                            onPageChanged: (v) => setState(() => _page = v),
-                            itemBuilder: (_, i) {
-                              final s = _slides[i];
-                              return _Slide(
-                                icon: s.icon,
-                                title: _t(s.titleKey),
-                                subtitle: _t(s.subtitleKey),
-                                isFocusSlide: i == _slides.length - 1,
-                              );
-                            },
-                          ),
-                  ),
-                  const SizedBox(height: 10),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(totalSteps, (i) {
-                      final activeIndex = showingQuestionnaire
-                          ? totalSteps - 1
-                          : _page;
-                      final active = activeIndex == i;
-                      return AnimatedContainer(
-                        duration: const Duration(milliseconds: 220),
-                        curve: Curves.easeOutCubic,
-                        margin: const EdgeInsets.symmetric(horizontal: 3),
-                        width: active ? 18 : 6,
-                        height: 6,
-                        decoration: BoxDecoration(
-                          color: active
-                              ? const Color(0xFF4C7DFF)
-                              : AppColors.white.withValues(alpha: 0.3),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                      );
-                    }),
-                  ),
-                  const SizedBox(height: 28),
-                  if (showingQuestionnaire)
-                    Column(
+                    Row(
                       children: [
-                        _OnboardingPrimaryButton(
-                          label: _t('onboarding_enter_wakeapp'),
-                          onTap: () {
-                            final setup = OnboardingSetupData(
-                              goal: _localizedGoal(language, _goal),
-                              discipline: _localizedDiscipline(
-                                language,
-                                _discipline,
-                              ),
-                              focusChallenge: _localizedConstraint(
-                                language,
-                                _focusChallenge,
-                              ),
-                              themePresetId: _selectedThemePresetId,
-                            );
-                            context
-                                .read<ThemeProvider>()
-                                .setPendingOnboardingSetup(setup);
-                            context.go('/signup', extra: setup);
-                          },
-                        ),
-                        const SizedBox(height: 8),
                         Text(
-                          _t('onboarding_adjust_later_settings'),
-                          style: AppTypography.caption1.copyWith(
-                            fontSize: 11,
-                            color: AppColors.tertiaryLabel.withValues(
-                              alpha: 0.78,
+                          _t('app_name'),
+                          style: AppTypography.title3.copyWith(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.label,
+                            letterSpacing: -0.2,
+                          ),
+                        ),
+                        const Spacer(),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(10),
+                            color: AppColors.white.withValues(alpha: 0.05),
+                            border: Border.all(
+                              color: AppColors.white.withValues(alpha: 0.08),
+                              width: 1,
+                            ),
+                          ),
+                          child: Text(
+                            _t('onboarding_step_of')
+                                .replaceAll('{step}', '$currentStep')
+                                .replaceAll('{total}', '$totalSteps'),
+                            style: AppTypography.footnote.copyWith(
+                              fontSize: 11,
+                              color: AppColors.secondaryLabel.withValues(
+                                alpha: 0.6,
+                              ),
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0.1,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        CupertinoButton(
+                          padding: EdgeInsets.zero,
+                          minimumSize: Size.zero,
+                          onPressed: _showLanguagePicker,
+                          child: Text(
+                            _languageDisplayLabel(language.languageCode),
+                            style: AppTypography.footnote.copyWith(
+                              fontSize: 12,
+                              color: AppColors.tertiaryLabel,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        CupertinoButton(
+                          padding: EdgeInsets.zero,
+                          minimumSize: Size.zero,
+                          onPressed: () => context.go('/login'),
+                          child: Text(
+                            _t('onboarding_log_in'),
+                            style: AppTypography.footnote.copyWith(
+                              fontSize: 12,
+                              color: AppColors.tertiaryLabel,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ),
                       ],
-                    )
-                  else
-                    _OnboardingPrimaryButton(
-                      label: _page == _slides.length - 1 ? 'CONTINUE' : 'NEXT',
-                      onTap: _next,
                     ),
+                    const SizedBox(height: 12),
+                    Container(
+                      height: 6,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(6),
+                        color: AppColors.white.withValues(alpha: 0.08),
+                      ),
+                      child: TweenAnimationBuilder<double>(
+                        tween: Tween<double>(
+                          begin: 0,
+                          end: progress.clamp(0, 1),
+                        ),
+                        duration: const Duration(milliseconds: 260),
+                        curve: Curves.easeOutCubic,
+                        builder: (context, animatedProgress, _) {
+                          return FractionallySizedBox(
+                            widthFactor: animatedProgress,
+                            alignment: Alignment.centerLeft,
+                            child: Container(
+                              decoration: const BoxDecoration(
+                                borderRadius: BorderRadius.all(
+                                  Radius.circular(6),
+                                ),
+                                gradient: LinearGradient(
+                                  colors: [
+                                    Color(0xFF4C7DFF),
+                                    Color(0xFF7EA4FF),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Expanded(
+                      child: showingQuestionnaire
+                          ? FutureBuilder<PremiumRuntime>(
+                              future: _premiumRuntimeFuture,
+                              builder: (context, snapshot) {
+                                final runtime = snapshot.data;
+                                final themeProvider = context
+                                    .read<ThemeProvider>();
+                                return _Questionnaire(
+                                  goal: _goal,
+                                  discipline: _discipline,
+                                  focusChallenge: _focusChallenge,
+                                  selectedThemePresetId: _selectedThemePresetId,
+                                  premiumRuntime: runtime,
+                                  language: language,
+                                  onGoal: (v) => setState(() => _goal = v),
+                                  onDiscipline: (v) =>
+                                      setState(() => _discipline = v),
+                                  onFocusChallenge: (v) =>
+                                      setState(() => _focusChallenge = v),
+                                  onThemeSelected: (presetId) async {
+                                    final themeCheck = await _premiumRepository
+                                        .canUseTheme(presetId);
+                                    if (!context.mounted) return;
+                                    if (!themeCheck.allowed) {
+                                      await showPremiumGateDialog(
+                                        context,
+                                        themeCheck,
+                                      );
+                                      return;
+                                    }
+                                    setState(
+                                      () => _selectedThemePresetId = presetId,
+                                    );
+                                    themeProvider.selectThemeForOnboarding(
+                                      presetId,
+                                    );
+                                  },
+                                );
+                              },
+                            )
+                          : PageView.builder(
+                              controller: _controller,
+                              itemCount: _slides.length,
+                              onPageChanged: (v) => setState(() => _page = v),
+                              itemBuilder: (_, i) {
+                                final s = _slides[i];
+                                return _Slide(
+                                  icon: s.icon,
+                                  title: _t(s.titleKey),
+                                  subtitle: _t(s.subtitleKey),
+                                  isFocusSlide: i == _slides.length - 1,
+                                );
+                              },
+                            ),
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(totalSteps, (i) {
+                        final activeIndex = showingQuestionnaire
+                            ? totalSteps - 1
+                            : _page;
+                        final active = activeIndex == i;
+                        return AnimatedContainer(
+                          duration: const Duration(milliseconds: 220),
+                          curve: Curves.easeOutCubic,
+                          margin: const EdgeInsets.symmetric(horizontal: 3),
+                          width: active ? 18 : 6,
+                          height: 6,
+                          decoration: BoxDecoration(
+                            color: active
+                                ? const Color(0xFF4C7DFF)
+                                : AppColors.white.withValues(alpha: 0.3),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                        );
+                      }),
+                    ),
+                    const SizedBox(height: 28),
+                    if (showingQuestionnaire)
+                      Column(
+                        children: [
+                          _OnboardingPrimaryButton(
+                            label: _t('onboarding_enter_wakeapp'),
+                            onTap: () {
+                              final setup = OnboardingSetupData(
+                                goal: _localizedGoal(language, _goal),
+                                discipline: _localizedDiscipline(
+                                  language,
+                                  _discipline,
+                                ),
+                                focusChallenge: _localizedConstraint(
+                                  language,
+                                  _focusChallenge,
+                                ),
+                                themePresetId: _selectedThemePresetId,
+                              );
+                              context
+                                  .read<ThemeProvider>()
+                                  .setPendingOnboardingSetup(setup);
+                              context.go('/signup', extra: setup);
+                            },
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            _t('onboarding_adjust_later_settings'),
+                            style: AppTypography.caption1.copyWith(
+                              fontSize: 11,
+                              color: AppColors.tertiaryLabel.withValues(
+                                alpha: 0.78,
+                              ),
+                            ),
+                          ),
+                        ],
+                      )
+                    else
+                      _OnboardingPrimaryButton(
+                        label: _page == _slides.length - 1
+                            ? 'CONTINUE'
+                            : 'NEXT',
+                        onTap: _next,
+                      ),
                   ],
                 ),
               ),
@@ -448,7 +542,9 @@ class _Slide extends StatelessWidget {
             ),
             boxShadow: [
               BoxShadow(
-                color: AppColors.black.withValues(alpha: isFocusSlide ? 0.45 : 0.4),
+                color: AppColors.black.withValues(
+                  alpha: isFocusSlide ? 0.45 : 0.4,
+                ),
                 blurRadius: 30,
                 offset: const Offset(0, 10),
               ),
@@ -467,9 +563,9 @@ class _Slide extends StatelessWidget {
             color: const Color(0xFF4C7DFF),
             shadows: [
               Shadow(
-                color: const Color(0xFF4C7DFF).withValues(
-                  alpha: isFocusSlide ? 0.35 : 0.25,
-                ),
+                color: const Color(
+                  0xFF4C7DFF,
+                ).withValues(alpha: isFocusSlide ? 0.35 : 0.25),
                 blurRadius: isFocusSlide ? 10 : 8,
               ),
             ],
@@ -751,6 +847,7 @@ class _Questionnaire extends StatelessWidget {
         ),
         const SizedBox(height: 10),
         _ThemeSelectorBlock(
+          premiumRuntime: premiumRuntime,
           selectedThemePresetId: selectedThemePresetId,
           onThemeSelected: onThemeSelected,
         ),
@@ -931,15 +1028,15 @@ class _ThemePreviewCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = preset.colors;
-    final borderColor = selected ? colors.accent : colors.glassBorder;
-    final titleStyle = _previewTitleStyle(preset.typography).copyWith(
-      color: colors.label,
-    );
-    final subtitleStyle = _previewBodyStyle(preset.typography).copyWith(
-      color: colors.secondaryLabel,
-      fontSize: 9,
-    );
+    final semantic = preset.semantic;
+    final palette = preset.palette;
+    final borderColor = selected ? palette.accent : semantic.cardBorder;
+    final titleStyle = _previewTitleStyle(
+      preset.typography,
+    ).copyWith(color: semantic.primaryText);
+    final subtitleStyle = _previewBodyStyle(
+      preset.typography,
+    ).copyWith(color: semantic.secondaryText, fontSize: 9);
 
     return GestureDetector(
       onTap: onTap,

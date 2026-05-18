@@ -14,6 +14,10 @@ class PremiumRepository {
     return const PremiumCheckResult.allowed();
   }
 
+  Future<PremiumCheckResult> canUseTheme(String presetId) async {
+    return const PremiumCheckResult.allowed();
+  }
+
   Future<PremiumCheckResult> canCreateTask([int currentCount = 0]) async {
     final runtime = await getRuntime();
     if (runtime.resolved.canCreateUnlimitedTasks ||
