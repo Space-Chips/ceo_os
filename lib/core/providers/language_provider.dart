@@ -43,47 +43,135 @@ class LanguageProvider extends ChangeNotifier {
 
   Future<void> _init() async {
     await _hydrateFromLocalPrefs();
-    if (_client.auth.currentUser != null) {
-      await loadFromSettings();
-    }
+    await _syncFromCloudRespectingLocalPreference();
     _authSubscription = _client.auth.onAuthStateChange.listen((event) async {
       if (event.session?.user == null) {
         await _hydrateFromLocalPrefs();
         return;
       }
-      await loadFromSettings();
+      await _syncFromCloudRespectingLocalPreference();
     });
   }
 
   Future<void> loadFromSettings() async {
+    if (_client.auth.currentUser == null) return;
+    if (_cloudSyncPending) {
+      await _syncLanguageToCloudBestEffort(_languageCode);
+      return;
+    }
+
     try {
       final settings = await _settingsRepository.getAppSettings();
-      final code = (settings?.languageCode ?? _defaultLanguage).trim();
-      _setLanguage(_normalize(code), notify: true);
-    } catch (_) {
-      _setLanguage(_defaultLanguage, notify: true);
+      final code = settings?.languageCode.trim();
+      if (code == null || code.isEmpty) return;
+      final normalized = _normalize(code);
+      _setLanguage(normalized, notify: true);
+      await _persistToLocalPrefs(normalized, markPendingCloudSync: false);
+    } catch (error) {
+      AppLogger.warning(
+        'Language load from cloud failed, keeping local language. $error',
+      );
     }
   }
 
-  Future<void> setLanguage(
-    String code, {
-    bool persistToCloud = true,
-  }) async {
+  Future<void> setLanguage(String code, {bool persistToCloud = true}) async {
     final normalized = _normalize(code);
-    final previous = _languageCode;
     _setLanguage(normalized, notify: true);
+    await _persistToLocalPrefs(
+      normalized,
+      markPendingCloudSync: persistToCloud && _client.auth.currentUser != null
+          ? true
+          : null,
+    );
     if (!persistToCloud || _client.auth.currentUser == null) return;
-    try {
-      await _settingsRepository.updateLanguageCode(normalized);
-    } catch (_) {
-      _setLanguage(previous, notify: true);
-      rethrow;
-    }
+    await _syncLanguageToCloudBestEffort(normalized);
+  }
+
+  Future<bool> syncLanguageToCloud({
+    Duration timeout = const Duration(seconds: 4),
+  }) async {
+    if (_client.auth.currentUser == null) return true;
+    return _syncLanguageToCloudBestEffort(_languageCode, timeout: timeout);
   }
 
   String t(String key) {
-    final table = _translations[_languageCode] ?? _translations[_defaultLanguage]!;
-    return table[key] ?? (_translations[_defaultLanguage]?[key] ?? key);
+    final raw = _resolveRawTranslation(key);
+    final normalized = raw
+        .replaceAll('_', ' ')
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim();
+    return _normalizeLegacyCase(normalized);
+  }
+
+  String _resolveRawTranslation(String key) {
+    final localeOverride = kTranslationOverrides[_languageCode];
+    if (localeOverride != null && localeOverride.containsKey(key)) {
+      return localeOverride[key]!;
+    }
+
+    final localeTable = _translations[_languageCode];
+    if (localeTable != null && localeTable.containsKey(key)) {
+      return localeTable[key]!;
+    }
+
+    final defaultOverride = kTranslationOverrides[_defaultLanguage];
+    if (defaultOverride != null && defaultOverride.containsKey(key)) {
+      return defaultOverride[key]!;
+    }
+
+    final defaultTable = _translations[_defaultLanguage];
+    if (defaultTable != null && defaultTable.containsKey(key)) {
+      return defaultTable[key]!;
+    }
+
+    return key;
+  }
+
+  String _normalizeLegacyCase(String value) {
+    final hasLowercase = RegExp(r'[a-zà-öø-ÿа-я]').hasMatch(value);
+    final hasUppercase = RegExp(r'[A-ZÀ-ÖØ-ÞА-Я]').hasMatch(value);
+    if (hasLowercase || !hasUppercase) return value;
+
+    final words = value.split(' ');
+    if (words.isEmpty) return value;
+    final normalizedWords = <String>[];
+    for (final word in words) {
+      if (word.isEmpty) continue;
+      if (word.contains('{') || word.contains('}')) {
+        normalizedWords.add(word);
+        continue;
+      }
+      final compact = word.replaceAll(RegExp(r'[^A-Za-zÀ-ÖØ-ÞА-Я0-9]'), '');
+      if (compact.length <= 2 && RegExp(r'^[A-Z0-9]+$').hasMatch(compact)) {
+        normalizedWords.add(word);
+        continue;
+      }
+      final lower = word.toLowerCase();
+      final lead = lower[0].toUpperCase();
+      normalizedWords.add('$lead${lower.substring(1)}');
+    }
+
+    return normalizedWords.join(' ');
+  }
+
+  Future<void> _hydrateFromLocalPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    final saved = prefs.getString(_localLanguageKey);
+    _cloudSyncPending = prefs.getBool(_cloudSyncPendingKey) ?? false;
+    final normalized = _normalize(saved ?? _defaultLanguage);
+    _setLanguage(normalized, notify: true);
+  }
+
+  Future<void> _persistToLocalPrefs(
+    String code, {
+    bool? markPendingCloudSync,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_localLanguageKey, code);
+    if (markPendingCloudSync != null) {
+      _cloudSyncPending = markPendingCloudSync;
+      await prefs.setBool(_cloudSyncPendingKey, markPendingCloudSync);
+    }
   }
 
   String _normalize(String raw) {
@@ -245,7 +333,8 @@ const Map<String, Map<String, String>> _translations = {
     'ready_for_first_sprint': 'Ready for first sprint',
     'insights': 'INSIGHTS',
     'daily_control_center': 'DAILY CONTROL CENTER',
-    'tap_open_dashboard_intelligence': 'Tap to open full dashboard intelligence',
+    'tap_open_dashboard_intelligence':
+        'Tap to open full dashboard intelligence',
     'daily_indexes': 'Daily Indexes',
     'task_index': 'Task index',
     'habit_index': 'Habit index',
@@ -293,7 +382,8 @@ const Map<String, Map<String, String>> _translations = {
     'rank_previous': 'PREVIOUS',
     'rank_best': 'BEST',
     'rank_screen': 'SCREEN',
-    'rank_global_summary': 'Global position #{position} of {total} • Top {top}%',
+    'rank_global_summary':
+        'Global position #{position} of {total} • Top {top}%',
     'live': 'LIVE',
     'highest_tier': 'You are at the highest configured tier.',
     'next_tier': 'Next tier',
@@ -485,7 +575,8 @@ const Map<String, Map<String, String>> _translations = {
     'habits_reward': 'Reward',
     'habits_sanction': 'Sanction',
     'not_set': 'Not set',
-    'habits_threshold_locked': 'Threshold {threshold}% • Locked until next week',
+    'habits_threshold_locked':
+        'Threshold {threshold}% • Locked until next week',
     'habits_unlock_edit': 'UNLOCK_EDIT',
     'habits_reward_placeholder': 'Reward if successful',
     'habits_sanction_placeholder': 'Sanction if failed',
@@ -587,7 +678,8 @@ const Map<String, Map<String, String>> _translations = {
     'no_active_modules':
         'Aucun module actif. Activez des modules depuis la grille en en-tête.',
     'mission': 'MISSION',
-    'mission_statement': "Construis aujourd'hui des blocs d'exécution à fort levier.",
+    'mission_statement':
+        "Construis aujourd'hui des blocs d'exécution à fort levier.",
     'focus_mode_active': 'Mode focus actif',
     'ready_for_first_sprint': 'Prêt pour le premier sprint',
     'insights': 'INSIGHTS',
@@ -642,7 +734,8 @@ const Map<String, Map<String, String>> _translations = {
     'rank_previous': 'PRÉCÉDENT',
     'rank_best': 'MEILLEUR',
     'rank_screen': 'ÉCRAN',
-    'rank_global_summary': 'Position globale #{position} sur {total} • Top {top}%',
+    'rank_global_summary':
+        'Position globale #{position} sur {total} • Top {top}%',
     'live': 'LIVE',
     'highest_tier': 'Vous êtes au plus haut niveau configuré.',
     'next_tier': 'Prochain niveau',
@@ -743,7 +836,8 @@ const Map<String, Map<String, String>> _translations = {
         'Les apps de ta liste de blocage sont bloquées pendant la session.',
     'focus_prep_rule_streak_daily_first':
         'La première session complétée de la journée ajoute +1 à ta streak.',
-    'focus_prep_rule_streak_once_per_day': 'Une seule hausse de streak par jour.',
+    'focus_prep_rule_streak_once_per_day':
+        'Une seule hausse de streak par jour.',
     'focus_prep_rule_no_daily_session_required':
         "Tu n'as pas besoin de faire une session chaque jour pour garder ta streak.",
     'focus_prep_rule_keep_streak_no_quit':
@@ -892,8 +986,7 @@ const Map<String, Map<String, String>> _translations = {
     'focus_min': 'min',
     'focus_custom_duration': 'Duración personalizada',
     'focus_warning': 'AVISO',
-    'focus_warning_exit_resets_streak':
-        'Salir antes REINICIA tu racha a CERO',
+    'focus_warning_exit_resets_streak': 'Salir antes REINICIA tu racha a CERO',
     'focus_current_streak': 'Racha actual',
     'focus_begin_mode': 'INICIAR MODO FOCUS',
     'focus_plan': 'PLAN',
@@ -928,8 +1021,7 @@ const Map<String, Map<String, String>> _translations = {
         'Las apps de tu lista de bloqueo se bloquean durante la sesión.',
     'focus_prep_rule_streak_daily_first':
         'La primera sesión completada del día suma +1 a tu racha.',
-    'focus_prep_rule_streak_once_per_day':
-        'Solo un aumento de racha por día.',
+    'focus_prep_rule_streak_once_per_day': 'Solo un aumento de racha por día.',
     'focus_prep_rule_no_daily_session_required':
         'No necesitas hacer una sesión cada día para mantener tu racha.',
     'focus_prep_rule_keep_streak_no_quit':
@@ -959,8 +1051,7 @@ const Map<String, Map<String, String>> _translations = {
         'No se pudieron guardar los canales de notificación.',
     'last_updated_dec_2025': 'Última actualización: diciembre 2025',
     'support_contact': 'CONTACTO_SOPORTE',
-    'support_email_copied':
-        'Correo de soporte copiado: timofrmac@gmail.com.',
+    'support_email_copied': 'Correo de soporte copiado: timofrmac@gmail.com.',
     'data_deletion_type_delete_hint':
         'Escribe DELETE para eliminar tu cuenta y datos de forma permanente.',
     'type_delete': 'Escribe DELETE',
@@ -1044,7 +1135,8 @@ const Map<String, Map<String, String>> _translations = {
     'focus_prep_intro_title': 'Prepare seu modo Focus',
     'focus_prep_intro_body':
         'Durante uma sessão, a WakeApp bloqueia todos os apps da sua lista, inclusive os que ainda tinham tempo de ecrã.',
-    'focus_prep_intro_goal': 'Objetivo: começar com clareza em menos de 15 segundos.',
+    'focus_prep_intro_goal':
+        'Objetivo: começar com clareza em menos de 15 segundos.',
     'focus_prep_demo_title': 'O que acontece durante o Focus',
     'focus_prep_demo_body':
         'Os apps-alvo ficam indisponíveis até o fim do cronômetro. A sessão continua ativa mesmo fora da WakeApp.',
@@ -1209,7 +1301,8 @@ const Map<String, Map<String, String>> _translations = {
     'focus_prep_intro_title': 'Siapkan mode Fokus',
     'focus_prep_intro_body':
         'Selama sesi, WakeApp memblokir semua aplikasi di daftar blokir kamu, termasuk aplikasi yang masih punya sisa waktu layar.',
-    'focus_prep_intro_goal': 'Tujuan: mulai dengan jelas dalam kurang dari 15 detik.',
+    'focus_prep_intro_goal':
+        'Tujuan: mulai dengan jelas dalam kurang dari 15 detik.',
     'focus_prep_demo_title': 'Apa yang terjadi saat Focus',
     'focus_prep_demo_body':
         'Aplikasi target menjadi tidak tersedia sampai timer selesai. Sesi tetap aktif meski kamu keluar dari WakeApp.',
@@ -1318,12 +1411,10 @@ const Map<String, Map<String, String>> _translations = {
     'focus_understood': '明白了',
     'focus_later': '稍后',
     'focus_prep_intro_title': '准备你的专注模式',
-    'focus_prep_intro_body':
-        '在专注会话期间，WakeApp 会屏蔽你拉黑列表中的所有应用，包括仍有剩余屏幕时间的应用。',
+    'focus_prep_intro_body': '在专注会话期间，WakeApp 会屏蔽你拉黑列表中的所有应用，包括仍有剩余屏幕时间的应用。',
     'focus_prep_intro_goal': '目标：在 15 秒内清晰进入状态。',
     'focus_prep_demo_title': '专注期间会发生什么',
-    'focus_prep_demo_body':
-        '目标应用会在计时结束前保持不可用。即使离开 WakeApp，会话也会继续进行。',
+    'focus_prep_demo_body': '目标应用会在计时结束前保持不可用。即使离开 WakeApp，会话也会继续进行。',
     'focus_prep_checklist_title': '会话规则',
     'focus_prep_checklist_body': '现在你可以放心开始。',
     'focus_prep_rule_blocking': '拉黑列表中的应用会在会话期间被屏蔽。',

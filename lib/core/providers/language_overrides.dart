@@ -13,8 +13,7 @@ const Map<String, Map<String, String>> kTranslationOverrides = {
     'onboarding_step_of': 'Step {step} of {total}',
     'onboarding_log_in': 'Log in',
     'onboarding_enter_wakeapp': 'Enter WakeApp',
-    'onboarding_adjust_later_settings':
-        'You can adjust this later in Settings',
+    'onboarding_adjust_later_settings': 'You can adjust this later in Settings',
     'onboarding_continue': 'Continue',
     'onboarding_next': 'Next',
     'onboarding_slide_operate_title': 'Operate like a CEO',
@@ -33,8 +32,7 @@ const Map<String, Map<String, String>> kTranslationOverrides = {
     'onboarding_current_level': 'Current level',
     'onboarding_main_constraint': 'Main constraint',
     'onboarding_system_theme': 'System theme',
-    'onboarding_system_theme_subtitle':
-        '定义你系统的视觉环境',
+    'onboarding_system_theme_subtitle': '定义你系统的视觉环境',
     'onboarding_system_profile': 'System profile',
     'onboarding_orientation': 'Orientation',
     'onboarding_level': 'Level',
@@ -80,8 +78,7 @@ const Map<String, Map<String, String>> kTranslationOverrides = {
     'setup_overlay_subtitle':
         'This lets WakeApp place a clean block screen when needed.',
     'setup_step_tap_open_settings': 'Tap "Open settings".',
-    'setup_step_enable_service':
-        'Enable Screen Time under Installed services.',
+    'setup_step_enable_service': 'Enable Screen Time under Installed services.',
     'setup_step_allow_service': 'Allow Screen Time in the list.',
     'setup_step_allow_overlay': 'Allow "Display over other apps".',
     'setup_step_return_auto': "We'll bring you back automatically.",
@@ -148,16 +145,14 @@ const Map<String, Map<String, String>> kTranslationOverrides = {
     'ios_setup_ready_subtitle':
         'You can now block apps and websites instantly during Focus or Blackout sessions.',
     'ios_setup_next': 'Next',
-    'ios_setup_next_subtitle':
-        'Pick the apps or sites you want to protect.',
+    'ios_setup_next_subtitle': 'Pick the apps or sites you want to protect.',
     'ios_setup_open_screen_time': 'Open Screen Time',
     'ios_setup_continue': 'Continue',
     'auth_signin_error_title': 'Sign-in error',
     'auth_invalid_email_title': 'Invalid email',
     'auth_invalid_email_message': 'Please enter a valid email address.',
     'auth_password_required_title': 'Password required',
-    'auth_password_required_message':
-        'Please enter your password to continue.',
+    'auth_password_required_message': 'Please enter your password to continue.',
     'auth_reset_password_title': 'Reset password',
     'auth_reset_password_enter_email_first':
         'Enter your account email first, then try again.',
@@ -212,8 +207,7 @@ const Map<String, Map<String, String>> kTranslationOverrides = {
     'blackout_prep_checklist_body': 'When you are done, come back here.',
     'blackout_prep_step_hold_app': 'Long-press an app icon',
     'blackout_prep_step_drag_on_other': 'Drag it over another app',
-    'blackout_prep_step_create_folder':
-        'Create a folder named "Out of Focus"',
+    'blackout_prep_step_create_folder': 'Create a folder named "Out of Focus"',
     'blackout_prep_step_add_system_apps':
         'Add visible system apps into that folder',
     'blackout_prep_done': 'Done',
@@ -313,7 +307,8 @@ const Map<String, Map<String, String>> kTranslationOverrides = {
     'calendar_stats_overload_too_many_events':
         '{count} events planned - high intensity.',
     'calendar_stats_habit_conflict': 'Habit Conflict',
-    'calendar_stats_habit_conflict_message': '{habits} habit(s) + {hours}h events.',
+    'calendar_stats_habit_conflict_message':
+        '{habits} habit(s) + {hours}h events.',
     'calendar_focus_opportunity': 'Focus Opportunity',
     'calendar_focus_reason_no_events': 'Day is free - perfect for deep work',
     'calendar_focus_reason_light_schedule':
@@ -381,8 +376,7 @@ const Map<String, Map<String, String>> kTranslationOverrides = {
     'tasks_picker_done': 'Done',
     'tasks_your_priorities': 'Your Priorities',
     'tasks_no_priorities': 'No priorities yet',
-    'tasks_no_priorities_subtitle':
-        '添加你的第一个优先任务，开始执行。',
+    'tasks_no_priorities_subtitle': '添加你的第一个优先任务，开始执行。',
     'tasks_other_tasks': 'Other Tasks',
     'tasks_swipe_hint_list': 'Swipe to complete or reopen',
     'tasks_tab_title_todo': 'To-Do',
@@ -419,7 +413,7 @@ const Map<String, Map<String, String>> kTranslationOverrides = {
     'system_preferences': 'Préférences système',
     'focus_protocols': 'Protocoles Focus',
     'notification_channels': 'Canaux de notification',
-    'prepare_home_screen_blackout': 'Préparer l'écran pour Blackout',
+    'prepare_home_screen_blackout': "Préparer l'écran pour Blackout",
     'focus_session_duration': 'Durée de session',
     'focus_short_break': 'Pause courte',
     'focus_auto_start_breaks': 'Démarrage auto des pauses',
@@ -475,8 +469,7 @@ const Map<String, Map<String, String>> kTranslationOverrides = {
     'setup_what_unlocks': 'Ce que cela active',
     'setup_unlock_instant_blocking':
         "Blocage instantané dès l'ouverture d'une app.",
-    'setup_unlock_usage_limits':
-        "Limites d'usage fiables en arrière-plan.",
+    'setup_unlock_usage_limits': "Limites d'usage fiables en arrière-plan.",
     'setup_unlock_focus_blackout': 'Sessions Focus et Blackout robustes.',
     'setup_takes_45s':
         'Environ 45 secondes. Tu peux refaire cela à tout moment dans les réglages Screen Time.',
@@ -523,8 +516,7 @@ const Map<String, Map<String, String>> kTranslationOverrides = {
         'Screen Time est configuré et prêt à protéger ton focus.',
     'setup_success_instant_blocking': 'Blocage instantané sur apps protégées.',
     'setup_success_usage_limits': "Limites d'usage appliquées sur l'appareil.",
-    'setup_success_focus_blackout':
-        'Sessions Focus et Blackout prêtes.',
+    'setup_success_focus_blackout': 'Sessions Focus et Blackout prêtes.',
     'setup_open_screen_time': 'Ouvrir Screen Time',
     'ios_setup_preparing': 'Préparation de Screen Time…',
     'ios_setup_progress_label': 'Screen Time',
@@ -658,7 +650,8 @@ const Map<String, Map<String, String>> kTranslationOverrides = {
     'leaderboard_friend': 'Ami',
     'leaderboard_your_position': 'Ta position',
     'leaderboard_no_friends': 'Aucun ami ajouté',
-    'leaderboard_add_friends_hint': 'Ajoute des amis pour comparer ta progression !',
+    'leaderboard_add_friends_hint':
+        'Ajoute des amis pour comparer ta progression !',
     'leaderboard_invite_friends': 'Inviter des amis',
     'leaderboard_invite_message':
         'Rejoins-moi sur WakeApp pour comparer progression et win streak : ',
@@ -717,7 +710,8 @@ const Map<String, Map<String, String>> kTranslationOverrides = {
     'calendar_weekday_sat': 'SAM',
     'calendar_weekday_sun': 'DIM',
     'calendar_event_all_day': 'Toute la journée',
-    'calendar_event_birthday_repeats_yearly': 'Anniversaire • se répète chaque année',
+    'calendar_event_birthday_repeats_yearly':
+        'Anniversaire • se répète chaque année',
     'calendar_event_minutes_short': 'min',
     'calendar_event_weekly_short': 'hebdo',
     'calendar_stats_overloaded_day': 'Journée surchargée',
@@ -728,7 +722,8 @@ const Map<String, Map<String, String>> kTranslationOverrides = {
     'calendar_stats_overload_too_many_events':
         '{count} événements planifiés - intensité élevée.',
     'calendar_stats_habit_conflict': "Conflit d'habitudes",
-    'calendar_stats_habit_conflict_message': "{habits} habitude(s) + {hours}h d'événements.",
+    'calendar_stats_habit_conflict_message':
+        "{habits} habitude(s) + {hours}h d'événements.",
     'calendar_focus_opportunity': 'Opportunité Focus',
     'calendar_focus_reason_no_events':
         'Journée libre - parfaite pour du deep work',
@@ -765,8 +760,7 @@ const Map<String, Map<String, String>> kTranslationOverrides = {
     'calendar_add_event_title_placeholder_default': 'Titre',
     'calendar_add_event_section_description': 'DESCRIPTION',
     'calendar_add_event_description_placeholder_birthday': 'Notes (optionnel)',
-    'calendar_add_event_description_placeholder_focus':
-        'Contexte (optionnel)',
+    'calendar_add_event_description_placeholder_focus': 'Contexte (optionnel)',
     'calendar_add_event_description_placeholder_default':
         'Description (optionnel)',
     'calendar_add_event_section_date': 'DATE',
@@ -895,7 +889,8 @@ const Map<String, Map<String, String>> kTranslationOverrides = {
     'setup_unlock_instant_blocking':
         'Bloqueo instantáneo cuando se abre una app.',
     'setup_unlock_usage_limits': 'Límites de uso fiables en segundo plano.',
-    'setup_unlock_focus_blackout': 'Sesiones de Focus y Blackout que se mantienen.',
+    'setup_unlock_focus_blackout':
+        'Sesiones de Focus y Blackout que se mantienen.',
     'setup_takes_45s':
         'Tarda unos 45 segundos. Puedes repetirlo en cualquier momento desde los ajustes de Tiempo en pantalla.',
     'setup_return_auto':
@@ -912,8 +907,7 @@ const Map<String, Map<String, String>> kTranslationOverrides = {
     'setup_overlay_subtitle':
         'Esto permite a WakeApp mostrar una pantalla de bloqueo limpia cuando sea necesario.',
     'setup_step_tap_open_settings': 'Toca "Abrir ajustes".',
-    'setup_step_enable_service':
-        'Activa Screen Time en Servicios instalados.',
+    'setup_step_enable_service': 'Activa Screen Time en Servicios instalados.',
     'setup_step_allow_service': 'Permite Screen Time en la lista.',
     'setup_step_allow_overlay': 'Permite "Mostrar sobre otras apps".',
     'setup_step_return_auto': 'Te traeremos de vuelta automáticamente.',
@@ -923,8 +917,7 @@ const Map<String, Map<String, String>> kTranslationOverrides = {
         'Si Screen Time no aparece, desplázate hasta Servicios descargados.',
     'setup_if_missing_open_app':
         'Si Screen Time no aparece, abre Ajustes → Apps → Screen Time.',
-    'setup_then_open_usage_access':
-        'Luego abre Acceso de uso y concédelo.',
+    'setup_then_open_usage_access': 'Luego abre Acceso de uso y concédelo.',
     'setup_if_cant_toggle_overlay':
         'Si no puedes activarlo, abre Acceso especial a apps → Mostrar sobre otras apps.',
     'setup_enable_wakeapp_and_return': 'Luego activa WakeApp y vuelve.',
@@ -935,8 +928,7 @@ const Map<String, Map<String, String>> kTranslationOverrides = {
     'setup_permission_granted': 'Permiso concedido',
     'setup_success_subtitle':
         'Tiempo en pantalla está configurado y listo para proteger tu Focus.',
-    'setup_success_instant_blocking':
-        'Bloqueo instantáneo en apps protegidas.',
+    'setup_success_instant_blocking': 'Bloqueo instantáneo en apps protegidas.',
     'setup_success_usage_limits': 'Límites de uso aplicados en el dispositivo.',
     'setup_success_focus_blackout': 'Sesiones de Focus y Blackout listas.',
     'setup_preparing': 'Preparando configuración…',
@@ -969,11 +961,9 @@ const Map<String, Map<String, String>> kTranslationOverrides = {
     'ios_setup_continue': 'Continuar',
     'auth_signin_error_title': 'Error de inicio de sesión',
     'auth_invalid_email_title': 'Correo inválido',
-    'auth_invalid_email_message':
-        'Introduce una dirección de correo válida.',
+    'auth_invalid_email_message': 'Introduce una dirección de correo válida.',
     'auth_password_required_title': 'Contraseña obligatoria',
-    'auth_password_required_message':
-        'Introduce tu contraseña para continuar.',
+    'auth_password_required_message': 'Introduce tu contraseña para continuar.',
     'auth_reset_password_title': 'Restablecer contraseña',
     'auth_reset_password_enter_email_first':
         'Primero escribe tu correo de cuenta y vuelve a intentarlo.',
@@ -994,11 +984,9 @@ const Map<String, Map<String, String>> kTranslationOverrides = {
     'auth_create_account': 'Crear cuenta',
     'auth_account_setup_error_title': 'Error al crear la cuenta',
     'auth_name_required_title': 'Nombre obligatorio',
-    'auth_name_required_message':
-        'Introduce tu nombre para crear la cuenta.',
+    'auth_name_required_message': 'Introduce tu nombre para crear la cuenta.',
     'auth_weak_password_title': 'Contraseña débil',
-    'auth_weak_password_message':
-        'Usa al menos 8 caracteres en tu contraseña.',
+    'auth_weak_password_message': 'Usa al menos 8 caracteres en tu contraseña.',
     'auth_password_mismatch_title': 'Contraseñas distintas',
     'auth_password_mismatch_message':
         'La confirmación de contraseña no coincide.',
@@ -1029,8 +1017,7 @@ const Map<String, Map<String, String>> kTranslationOverrides = {
     'blackout_prep_step_hold_app': 'Mantén pulsada una app',
     'blackout_prep_step_drag_on_other': 'Arrástrala sobre otra',
     'blackout_prep_step_create_folder': 'Crea una carpeta "Fuera de Focus"',
-    'blackout_prep_step_add_system_apps':
-        'Añade las apps del sistema visibles',
+    'blackout_prep_step_add_system_apps': 'Añade las apps del sistema visibles',
     'blackout_prep_done': 'Listo',
     'blackout_prep_animation_calm_screen': 'Pantalla más calmada',
     'blackout_prep_animation_folder_name': 'Fuera de Focus',
@@ -1100,8 +1087,7 @@ const Map<String, Map<String, String>> kTranslationOverrides = {
     'auth_invalid_email_title': 'Email inválido',
     'auth_invalid_email_message': 'Insira um endereço de email válido.',
     'auth_password_required_title': 'Senha obrigatória',
-    'auth_password_required_message':
-        'Insira sua senha para continuar.',
+    'auth_password_required_message': 'Insira sua senha para continuar.',
     'auth_reset_password_title': 'Redefinir senha',
     'auth_reset_password_enter_email_first':
         'Digite primeiro o email da conta e tente novamente.',
@@ -1124,11 +1110,9 @@ const Map<String, Map<String, String>> kTranslationOverrides = {
     'auth_name_required_title': 'Nome obrigatório',
     'auth_name_required_message': 'Digite seu nome para criar a conta.',
     'auth_weak_password_title': 'Senha fraca',
-    'auth_weak_password_message':
-        'Use pelo menos 8 caracteres na sua senha.',
+    'auth_weak_password_message': 'Use pelo menos 8 caracteres na sua senha.',
     'auth_password_mismatch_title': 'Senhas diferentes',
-    'auth_password_mismatch_message':
-        'A confirmação de senha não corresponde.',
+    'auth_password_mismatch_message': 'A confirmação de senha não corresponde.',
     'auth_check_email_signup_message':
         'Sua conta foi criada. Confirme seu email antes de entrar.',
     'auth_create_account_title': 'Crie sua conta',
@@ -1165,8 +1149,7 @@ const Map<String, Map<String, String>> kTranslationOverrides = {
     'onboarding_step_of': 'Шаг {step} из {total}',
     'onboarding_log_in': 'Войти',
     'onboarding_enter_wakeapp': 'Войти в WakeApp',
-    'onboarding_adjust_later_settings':
-        'Это можно изменить позже в настройках',
+    'onboarding_adjust_later_settings': 'Это можно изменить позже в настройках',
     'onboarding_continue': 'Продолжить',
     'onboarding_next': 'Далее',
     'onboarding_slide_operate_title': 'Действуй как CEO',
@@ -1249,11 +1232,9 @@ const Map<String, Map<String, String>> kTranslationOverrides = {
     'auth_name_required_title': 'Требуется имя',
     'auth_name_required_message': 'Введите имя, чтобы создать аккаунт.',
     'auth_weak_password_title': 'Слабый пароль',
-    'auth_weak_password_message':
-        'Используйте не менее 8 символов в пароле.',
+    'auth_weak_password_message': 'Используйте не менее 8 символов в пароле.',
     'auth_password_mismatch_title': 'Пароли не совпадают',
-    'auth_password_mismatch_message':
-        'Подтверждение пароля не совпадает.',
+    'auth_password_mismatch_message': 'Подтверждение пароля не совпадает.',
     'auth_check_email_signup_message':
         'Аккаунт создан. Подтвердите email перед входом.',
     'auth_create_account_title': 'Создайте аккаунт',
@@ -1272,7 +1253,8 @@ const Map<String, Map<String, String>> kTranslationOverrides = {
         'Некоторые системные приложения остаются видимыми на iPhone. Сгруппируйте их в папку для более чистого Blackout.',
     'blackout_prep_intro_goal':
         'Цель: сделать домашний экран спокойнее менее чем за 20 секунд.',
-    'blackout_prep_demo_title': 'Сгруппируйте вторичные приложения во время фокуса',
+    'blackout_prep_demo_title':
+        'Сгруппируйте вторичные приложения во время фокуса',
     'blackout_prep_demo_body':
         'FaceTime, Карты, Файлы, Дом, Локатор… Сгруппируйте их, чтобы снизить визуальный шум.',
     'blackout_prep_demo_primary': 'Оптимизировать экран',
@@ -1291,16 +1273,14 @@ const Map<String, Map<String, String>> kTranslationOverrides = {
     'onboarding_step_of': 'الخطوة {step} من {total}',
     'onboarding_log_in': 'تسجيل الدخول',
     'onboarding_enter_wakeapp': 'الدخول إلى WakeApp',
-    'onboarding_adjust_later_settings':
-        'يمكنك تعديل ذلك لاحقًا من الإعدادات',
+    'onboarding_adjust_later_settings': 'يمكنك تعديل ذلك لاحقًا من الإعدادات',
     'onboarding_continue': 'متابعة',
     'onboarding_next': 'التالي',
     'onboarding_slide_operate_title': 'اعمل بعقلية CEO',
     'onboarding_slide_habits_title': 'ابنِ عادات تراكمية',
     'onboarding_slide_focus_title': 'احمِ العمل العميق',
     'onboarding_questionnaire_title': 'هيّئ نظامك',
-    'onboarding_questionnaire_subtitle':
-        'حدّد طريقة عملك قبل دخول النظام',
+    'onboarding_questionnaire_subtitle': 'حدّد طريقة عملك قبل دخول النظام',
     'onboarding_primary_orientation': 'التوجّه الأساسي',
     'onboarding_current_level': 'المستوى الحالي',
     'onboarding_main_constraint': 'القيد الرئيسي',
@@ -1350,11 +1330,9 @@ const Map<String, Map<String, String>> kTranslationOverrides = {
     'ios_setup_continue': 'متابعة',
     'auth_signin_error_title': 'خطأ في تسجيل الدخول',
     'auth_invalid_email_title': 'بريد إلكتروني غير صالح',
-    'auth_invalid_email_message':
-        'يرجى إدخال عنوان بريد إلكتروني صالح.',
+    'auth_invalid_email_message': 'يرجى إدخال عنوان بريد إلكتروني صالح.',
     'auth_password_required_title': 'كلمة المرور مطلوبة',
-    'auth_password_required_message':
-        'يرجى إدخال كلمة المرور للمتابعة.',
+    'auth_password_required_message': 'يرجى إدخال كلمة المرور للمتابعة.',
     'auth_reset_password_title': 'إعادة تعيين كلمة المرور',
     'auth_reset_password_enter_email_first':
         'أدخل بريد حسابك أولاً ثم حاول مرة أخرى.',
@@ -1377,11 +1355,9 @@ const Map<String, Map<String, String>> kTranslationOverrides = {
     'auth_name_required_title': 'الاسم مطلوب',
     'auth_name_required_message': 'يرجى إدخال اسمك لإنشاء الحساب.',
     'auth_weak_password_title': 'كلمة مرور ضعيفة',
-    'auth_weak_password_message':
-        'استخدم 8 أحرف على الأقل في كلمة المرور.',
+    'auth_weak_password_message': 'استخدم 8 أحرف على الأقل في كلمة المرور.',
     'auth_password_mismatch_title': 'كلمتا المرور غير متطابقتين',
-    'auth_password_mismatch_message':
-        'تأكيد كلمة المرور غير مطابق.',
+    'auth_password_mismatch_message': 'تأكيد كلمة المرور غير مطابق.',
     'auth_check_email_signup_message':
         'تم إنشاء حسابك. يرجى تأكيد بريدك الإلكتروني قبل تسجيل الدخول.',
     'auth_create_account_title': 'أنشئ حسابك',
@@ -1480,8 +1456,7 @@ const Map<String, Map<String, String>> kTranslationOverrides = {
     'auth_invalid_email_title': 'Email tidak valid',
     'auth_invalid_email_message': 'Masukkan alamat email yang valid.',
     'auth_password_required_title': 'Kata sandi wajib diisi',
-    'auth_password_required_message':
-        'Masukkan kata sandi untuk melanjutkan.',
+    'auth_password_required_message': 'Masukkan kata sandi untuk melanjutkan.',
     'auth_reset_password_title': 'Atur ulang kata sandi',
     'auth_reset_password_enter_email_first':
         'Masukkan email akun terlebih dahulu, lalu coba lagi.',
@@ -1507,8 +1482,7 @@ const Map<String, Map<String, String>> kTranslationOverrides = {
     'auth_weak_password_message':
         'Gunakan minimal 8 karakter untuk kata sandi.',
     'auth_password_mismatch_title': 'Kata sandi tidak cocok',
-    'auth_password_mismatch_message':
-        'Konfirmasi kata sandi tidak cocok.',
+    'auth_password_mismatch_message': 'Konfirmasi kata sandi tidak cocok.',
     'auth_check_email_signup_message':
         'Akun kamu berhasil dibuat. Konfirmasi email sebelum masuk.',
     'auth_create_account_title': 'Buat akunmu',
@@ -1734,17 +1708,13 @@ const Map<String, Map<String, String>> kTranslationOverrides = {
     'auth_password_required_title': '需要密码',
     'auth_password_required_message': '请输入密码后继续。',
     'auth_reset_password_title': '重置密码',
-    'auth_reset_password_enter_email_first':
-        '请先输入账户邮箱，再重试。',
+    'auth_reset_password_enter_email_first': '请先输入账户邮箱，再重试。',
     'auth_check_email_title': '请检查邮箱',
-    'auth_check_email_reset_message':
-        '如果 {email} 对应的账户存在，重置密码邮件已发送。',
-    'auth_login_subtitle':
-        '登录以恢复你的系统、同步数据，并从上次中断处继续。',
+    'auth_check_email_reset_message': '如果 {email} 对应的账户存在，重置密码邮件已发送。',
+    'auth_login_subtitle': '登录以恢复你的系统、同步数据，并从上次中断处继续。',
     'auth_secure_sync': '在你的设备间进行安全云同步。',
     'auth_sign_in': '登录',
-    'auth_use_same_credentials':
-        '使用你在 WakeApp 创建的同一邮箱和密码。',
+    'auth_use_same_credentials': '使用你在 WakeApp 创建的同一邮箱和密码。',
     'auth_email': '邮箱',
     'auth_email_placeholder': 'name@example.com',
     'auth_password': '密码',
@@ -1758,11 +1728,9 @@ const Map<String, Map<String, String>> kTranslationOverrides = {
     'auth_weak_password_message': '密码至少需要 8 个字符。',
     'auth_password_mismatch_title': '密码不一致',
     'auth_password_mismatch_message': '密码确认不匹配。',
-    'auth_check_email_signup_message':
-        '账户已创建。登录前请先完成邮箱验证。',
+    'auth_check_email_signup_message': '账户已创建。登录前请先完成邮箱验证。',
     'auth_create_account_title': '创建你的账户',
-    'auth_create_account_subtitle':
-        '只需一次设置 WakeApp 登录，随后可在所有设备使用。',
+    'auth_create_account_subtitle': '只需一次设置 WakeApp 登录，随后可在所有设备使用。',
     'auth_account_details': '账户信息',
     'auth_account_details_subtitle': '选择你稍后登录时要使用的信息。',
     'auth_full_name': '姓名',
@@ -1771,12 +1739,10 @@ const Map<String, Map<String, String>> kTranslationOverrides = {
     'auth_confirm_password_placeholder': '确认密码',
     'auth_already_registered': '已经注册？',
     'blackout_prep_intro_title': '为 Blackout 准备你的主屏幕',
-    'blackout_prep_intro_body':
-        'iPhone 上部分系统应用仍可见。把它们放进同一个文件夹，让 Blackout 更干净。',
+    'blackout_prep_intro_body': 'iPhone 上部分系统应用仍可见。把它们放进同一个文件夹，让 Blackout 更干净。',
     'blackout_prep_intro_goal': '目标：在 20 秒内让主屏幕更安静。',
     'blackout_prep_demo_title': '专注时整理次要应用',
-    'blackout_prep_demo_body':
-        'FaceTime、地图、文件、家庭、查找… 将它们分组以降低视觉干扰。',
+    'blackout_prep_demo_body': 'FaceTime、地图、文件、家庭、查找… 将它们分组以降低视觉干扰。',
     'blackout_prep_demo_primary': '优化我的主屏幕',
     'blackout_prep_checklist_title': '20 秒内完成',
     'blackout_prep_checklist_body': '完成后回到这里。',

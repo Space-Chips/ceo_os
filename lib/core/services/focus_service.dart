@@ -512,6 +512,35 @@ class FocusService {
     }
   }
 
+  Future<bool> launchExternalApp(String packageName) async {
+    const method = 'launchExternalApp';
+    if (_shouldSkipMissingMethod(method)) return false;
+    try {
+      return await _channel.invokeMethod<bool>(method, {
+            'packageName': packageName,
+          }) ??
+          false;
+    } on PlatformException catch (e) {
+      AppLogger.error("Failed to launch external app: '${e.message}'.");
+      return false;
+    } on MissingPluginException {
+      _markMissingMethod(method);
+      return false;
+    }
+  }
+
+  Future<void> syncScreenTimeTheme(Map<String, String> tokens) async {
+    const method = 'syncScreenTimeTheme';
+    if (_shouldSkipMissingMethod(method)) return;
+    try {
+      await _channel.invokeMethod(method, tokens);
+    } on PlatformException catch (e) {
+      AppLogger.error("Failed to sync Screen Time theme: '${e.message}'.");
+    } on MissingPluginException {
+      _markMissingMethod(method);
+    }
+  }
+
   // iOS only: Open Family Activity Picker
   Future<List<String>?> openFamilyActivityPicker() async {
     const method = 'openFamilyActivityPicker';

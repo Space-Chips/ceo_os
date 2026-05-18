@@ -13,8 +13,6 @@ import 'focus_repository.dart';
 class FeatureRepository {
   static const String adultContentShieldMarker = '__ADULT_CONTENT__';
   final SupabaseService _supabaseService;
-  final FamilyControlsLocalStore _familyControlsLocalStore =
-      FamilyControlsLocalStore();
   final FamilyControlsLocalStore _familyControlsLocalStore;
   late final FocusRepository _focusRepository = FocusRepository(
     supabaseService: _supabaseService,
@@ -45,8 +43,6 @@ class FeatureRepository {
         .split('/')
         .first;
   }
-  bool get _useLocalFamilyControlsStorage =>
-      AppleReviewCompliance.exposesLocalOnlyFamilyControls;
 
   Future<AppSettings?> getAppSettings() async {
     final response = await _client
@@ -90,10 +86,10 @@ class FeatureRepository {
 
     final created = await _client
         .from('app_settings')
-        .upsert(
-          {'created_by': _currentUserId, 'active_apps': apps},
-          onConflict: 'created_by',
-        )
+        .upsert({
+          'created_by': _currentUserId,
+          'active_apps': apps,
+        }, onConflict: 'created_by')
         .select('id')
         .single();
     return created['id'] as String;

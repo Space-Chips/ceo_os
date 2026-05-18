@@ -44,6 +44,7 @@ class UserRank {
   final int? daysAtCurrentRank;
   final String? previousRankName;
   final String? lastRankChangeDate;
+  final int? screenTimeAvgMinutes;
   final DateTime createdAt;
 
   UserRank({
@@ -56,6 +57,7 @@ class UserRank {
     this.daysAtCurrentRank,
     this.previousRankName,
     this.lastRankChangeDate,
+    this.screenTimeAvgMinutes,
     required this.createdAt,
   });
 
@@ -70,6 +72,7 @@ class UserRank {
       daysAtCurrentRank: json['days_at_current_rank'],
       previousRankName: json['previous_rank_name'],
       lastRankChangeDate: json['last_rank_change_date'],
+      screenTimeAvgMinutes: json['screen_time_avg_minutes'],
       createdAt: DateTime.parse(json['created_at']),
     );
   }
