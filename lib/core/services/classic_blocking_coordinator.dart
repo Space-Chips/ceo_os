@@ -7,12 +7,16 @@ import 'classic_blocking_local_store.dart';
 import 'focus_service.dart';
 
 class ClassicBlockingSyncResult {
+  final bool syncApplied;
+  final String? failureReason;
   final bool activePause;
   final int enforceableAppCount;
   final int enforceableWebsiteCount;
   final int effectiveTargetCount;
 
   const ClassicBlockingSyncResult({
+    this.syncApplied = true,
+    this.failureReason,
     required this.activePause,
     required this.enforceableAppCount,
     required this.enforceableWebsiteCount,
@@ -305,8 +309,7 @@ class ClassicBlockingCoordinator {
       if (encoded == null || encoded.trim().isEmpty) continue;
 
       final binding = ClassicBlockBinding(
-        nativeIdentifier:
-            _clean(existing?.nativeIdentifier) ?? normalized,
+        nativeIdentifier: _clean(existing?.nativeIdentifier) ?? normalized,
         nativePayload: encoded.trim(),
       );
       mutable[website.id] = binding;

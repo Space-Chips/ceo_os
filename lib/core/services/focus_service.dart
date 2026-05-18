@@ -2,7 +2,46 @@ import 'package:flutter/services.dart';
 
 import '../utils/app_logger.dart';
 
-enum FocusPermissionState { unknown, approved, notDetermined, denied, unsupported }
+enum FocusPermissionState {
+  unknown,
+  approved,
+  notDetermined,
+  denied,
+  unsupported,
+}
+
+enum AndroidProtectionStep {
+  unknown,
+  accessibility,
+  usageAccess,
+  overlay,
+  complete,
+}
+
+class IosFamilyActivitySelection {
+  final String payload;
+  final String? preferredLabel;
+  final String? bundleIdentifier;
+  final String? domain;
+
+  const IosFamilyActivitySelection({
+    required this.payload,
+    this.preferredLabel,
+    this.bundleIdentifier,
+    this.domain,
+  });
+
+  factory IosFamilyActivitySelection.fromJson(Map<Object?, Object?> json) {
+    final appName = (json['appName'] as String?)?.trim();
+    final domain = (json['domain'] as String?)?.trim();
+    return IosFamilyActivitySelection(
+      payload: (json['payload'] as String?)?.trim() ?? '',
+      preferredLabel: appName == null || appName.isEmpty ? null : appName,
+      bundleIdentifier: (json['bundleIdentifier'] as String?)?.trim(),
+      domain: domain == null || domain.isEmpty ? null : domain,
+    );
+  }
+}
 
 class FocusProtectionStatus {
   final FocusPermissionState permissionState;
@@ -18,8 +57,7 @@ class FocusProtectionStatus {
   bool get shouldPrompt =>
       permissionState == FocusPermissionState.notDetermined ||
       permissionState == FocusPermissionState.unknown;
-  bool get shouldOpenSettings =>
-      permissionState == FocusPermissionState.denied;
+  bool get shouldOpenSettings => permissionState == FocusPermissionState.denied;
 
   factory FocusProtectionStatus.fromNativeStatus(String? rawStatus) {
     switch ((rawStatus ?? '').trim().toLowerCase()) {
@@ -72,6 +110,7 @@ class AndroidLaunchableApp {
 class FocusService {
   static const MethodChannel _channel = MethodChannel('com.ceoos.app/focus');
   static final Set<String> _missingNativeMethods = <String>{};
+  String? _lastIosWebsitePickerError;
 
   bool _shouldSkipMissingMethod(String method) {
     return _missingNativeMethods.contains(method);
@@ -161,6 +200,151 @@ class FocusService {
     } on MissingPluginException {
       _markMissingMethod(method);
       return false;
+    }
+  }
+
+  Future<FocusPermissionState> getAccessibilityPermissionState() {
+    return _getPermissionState('getAccessibilityStatus');
+  }
+
+  Future<FocusPermissionState> getUsageAccessPermissionState() {
+    return _getPermissionState('getUsageAccessStatus');
+  }
+
+  Future<FocusPermissionState> getOverlayPermissionState() {
+    return _getPermissionState('getOverlayStatus');
+  }
+
+  Future<FocusPermissionState> _getPermissionState(String method) async {
+    if (_shouldSkipMissingMethod(method)) return FocusPermissionState.unknown;
+    try {
+      final raw = await _channel.invokeMethod<String>(method);
+      return _permissionStateFromNative(raw);
+    } on PlatformException catch (e) {
+      AppLogger.error("Failed to read $method: '${e.message}'.");
+      return FocusPermissionState.unknown;
+    } on MissingPluginException {
+      _markMissingMethod(method);
+      return FocusPermissionState.unknown;
+    }
+  }
+
+  FocusPermissionState _permissionStateFromNative(String? raw) {
+    switch ((raw ?? '').trim().toLowerCase()) {
+      case 'approved':
+      case 'granted':
+      case 'enabled':
+        return FocusPermissionState.approved;
+      case 'not_determined':
+      case 'notdetermined':
+        return FocusPermissionState.notDetermined;
+      case 'denied':
+      case 'disabled':
+        return FocusPermissionState.denied;
+      case 'unsupported':
+      case 'unsupported_os':
+        return FocusPermissionState.unsupported;
+      default:
+        return FocusPermissionState.unknown;
+    }
+  }
+
+  Future<AndroidProtectionStep> getNextAndroidProtectionStep() async {
+    const method = 'getNextProtectionStep';
+    if (_shouldSkipMissingMethod(method)) return AndroidProtectionStep.unknown;
+    try {
+      final raw = await _channel.invokeMethod<String>(method);
+      return _androidProtectionStepFromNative(raw);
+    } on PlatformException catch (e) {
+      AppLogger.error("Failed to read next protection step: '${e.message}'.");
+      return AndroidProtectionStep.unknown;
+    } on MissingPluginException {
+      _markMissingMethod(method);
+      return AndroidProtectionStep.unknown;
+    }
+  }
+
+  AndroidProtectionStep _androidProtectionStepFromNative(String? raw) {
+    switch ((raw ?? '').trim().toLowerCase()) {
+      case 'accessibility':
+        return AndroidProtectionStep.accessibility;
+      case 'usage_access':
+      case 'usageaccess':
+        return AndroidProtectionStep.usageAccess;
+      case 'overlay':
+        return AndroidProtectionStep.overlay;
+      case 'complete':
+        return AndroidProtectionStep.complete;
+      default:
+        return AndroidProtectionStep.unknown;
+    }
+  }
+
+  Future<bool> openAccessibilitySettings() {
+    return _openAndroidSettings('openAccessibilitySettings');
+  }
+
+  Future<bool> openUsageAccessSettings() {
+    return _openAndroidSettings('openUsageAccessSettings');
+  }
+
+  Future<bool> openOverlaySettings() {
+    return _openAndroidSettings('openOverlaySettings');
+  }
+
+  Future<bool> _openAndroidSettings(String method) async {
+    if (_shouldSkipMissingMethod(method)) return false;
+    try {
+      return await _channel.invokeMethod<bool>(method) ?? false;
+    } on PlatformException catch (e) {
+      AppLogger.error("Failed to open $method: '${e.message}'.");
+      return false;
+    } on MissingPluginException {
+      _markMissingMethod(method);
+      return false;
+    }
+  }
+
+  Future<void> setPendingPermissionReturn(AndroidProtectionStep step) async {
+    const method = 'setPendingPermissionReturn';
+    if (_shouldSkipMissingMethod(method)) return;
+    try {
+      await _channel.invokeMethod(method, {'step': _androidStepName(step)});
+    } on PlatformException catch (e) {
+      AppLogger.error(
+        "Failed to set pending permission return: '${e.message}'.",
+      );
+    } on MissingPluginException {
+      _markMissingMethod(method);
+    }
+  }
+
+  Future<void> clearPendingPermissionReturn() async {
+    const method = 'clearPendingPermissionReturn';
+    if (_shouldSkipMissingMethod(method)) return;
+    try {
+      await _channel.invokeMethod(method);
+    } on PlatformException catch (e) {
+      AppLogger.error(
+        "Failed to clear pending permission return: '${e.message}'.",
+      );
+    } on MissingPluginException {
+      _markMissingMethod(method);
+    }
+  }
+
+  String _androidStepName(AndroidProtectionStep step) {
+    switch (step) {
+      case AndroidProtectionStep.accessibility:
+        return 'accessibility';
+      case AndroidProtectionStep.usageAccess:
+        return 'usage_access';
+      case AndroidProtectionStep.overlay:
+        return 'overlay';
+      case AndroidProtectionStep.complete:
+        return 'complete';
+      case AndroidProtectionStep.unknown:
+        return 'unknown';
     }
   }
 
@@ -338,6 +522,113 @@ class FocusService {
       return result?.cast<String>();
     } on PlatformException catch (e) {
       AppLogger.error("Failed to open picker: '${e.message}'.");
+      return null;
+    } on MissingPluginException {
+      _markMissingMethod(method);
+      return null;
+    }
+  }
+
+  Future<List<String>?> openFamilyActivityWebsitePicker() async {
+    const method = 'openFamilyActivityWebsitePicker';
+    if (_shouldSkipMissingMethod(method)) return null;
+    try {
+      final List<dynamic>? result = await _channel.invokeMethod(method);
+      return result?.cast<String>();
+    } on PlatformException catch (e) {
+      _lastIosWebsitePickerError = e.message;
+      AppLogger.error("Failed to open website picker: '${e.message}'.");
+      return null;
+    } on MissingPluginException {
+      _markMissingMethod(method);
+      return null;
+    }
+  }
+
+  Future<List<IosFamilyActivitySelection>?>
+  openFamilyActivityWebsitePickerWithMetadata() async {
+    final payloads = await openFamilyActivityWebsitePicker();
+    if (payloads == null) return null;
+    final selections = <IosFamilyActivitySelection>[];
+    for (final payload in payloads) {
+      final trimmed = payload.trim();
+      if (trimmed.isEmpty) continue;
+      final described = await describeWebsiteSelectionPayload(trimmed);
+      selections.add(
+        IosFamilyActivitySelection(payload: trimmed, domain: described?.domain),
+      );
+    }
+    return selections;
+  }
+
+  String? takeLastIosWebsitePickerError() {
+    final error = _lastIosWebsitePickerError;
+    _lastIosWebsitePickerError = null;
+    return error;
+  }
+
+  Future<String?> encodeApplicationBundleSelection(
+    String bundleIdentifier,
+  ) async {
+    return _invokeStringMethod('encodeApplicationBundleSelection', {
+      'bundleIdentifier': bundleIdentifier,
+    });
+  }
+
+  Future<String?> encodeWebsiteDomainSelection(String domain) async {
+    return _invokeStringMethod('encodeWebsiteDomainSelection', {
+      'domain': domain,
+    });
+  }
+
+  Future<IosFamilyActivitySelection?> describeAppSelectionPayload(
+    String payload,
+  ) async {
+    return _describeSelectionPayload('describeAppSelectionPayload', payload);
+  }
+
+  Future<IosFamilyActivitySelection?> describeWebsiteSelectionPayload(
+    String payload,
+  ) async {
+    return _describeSelectionPayload(
+      'describeWebsiteSelectionPayload',
+      payload,
+    );
+  }
+
+  Future<String?> _invokeStringMethod(
+    String method,
+    Map<String, dynamic> args,
+  ) async {
+    if (_shouldSkipMissingMethod(method)) return null;
+    try {
+      return await _channel.invokeMethod<String>(method, args);
+    } on PlatformException catch (e) {
+      AppLogger.error("Failed to invoke $method: '${e.message}'.");
+      return null;
+    } on MissingPluginException {
+      _markMissingMethod(method);
+      return null;
+    }
+  }
+
+  Future<IosFamilyActivitySelection?> _describeSelectionPayload(
+    String method,
+    String payload,
+  ) async {
+    if (_shouldSkipMissingMethod(method)) return null;
+    try {
+      final result = await _channel.invokeMethod<Map<Object?, Object?>>(
+        method,
+        {'payload': payload},
+      );
+      if (result == null) return null;
+      return IosFamilyActivitySelection.fromJson({
+        ...result,
+        'payload': payload,
+      });
+    } on PlatformException catch (e) {
+      AppLogger.error("Failed to invoke $method: '${e.message}'.");
       return null;
     } on MissingPluginException {
       _markMissingMethod(method);

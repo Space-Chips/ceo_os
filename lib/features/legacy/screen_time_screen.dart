@@ -16,10 +16,12 @@ import '../../core/services/classic_blocking_local_store.dart';
 import '../../core/services/focus_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
-import '../focus/app_selection_sheet.dart';
+import '../../core/utils/android_protection_disclosure.dart';
+import '../../core/utils/domain_utils.dart';
 import '../../components/ambient_backdrop.dart';
 import '../../components/glass_card.dart';
 import '../../components/liquid_button.dart';
+import '../focus/app_selection_sheet.dart';
 
 class ScreenTimeScreen extends StatefulWidget {
   final String? initialSection;
@@ -255,6 +257,7 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
   final ClassicBlockingCoordinator _classicCoordinator =
       ClassicBlockingCoordinator();
   final TextEditingController _siteCtrl = TextEditingController();
+  final TextEditingController _appCtrl = TextEditingController();
   final GlobalKey _accessSectionKey = GlobalKey();
   final GlobalKey _appsSectionKey = GlobalKey();
   final GlobalKey _sitesSectionKey = GlobalKey();
@@ -263,6 +266,7 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
   List<BlockedApp> _blockedApps = [];
   List<BlockedWebsite> _blockedWebsites = [];
   List<RestPeriod> _restPeriods = [];
+  List<Map<String, dynamic>> _logs = [];
   Map<String, ClassicBlockBinding> _appBindings = const {};
   Map<String, ClassicBlockBinding> _websiteBindings = const {};
   bool _adultContentShieldEnabled = false;
@@ -272,10 +276,19 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
 
   bool _loading = true;
   bool _saving = false;
+  bool _showAddApp = false;
   bool _showAddWebsite = false;
   bool _didJumpToInitialSection = false;
 
   bool get _isAndroid => Platform.isAndroid;
+  String get totalHours {
+    final seconds = _logs.fold<int>(
+      0,
+      (sum, log) => sum + ((log['duration_seconds'] as num?)?.toInt() ?? 0),
+    );
+    return (seconds / 3600).toStringAsFixed(1);
+  }
+
   String _t(String key) => context.read<LanguageProvider>().t(key);
 
   @override
@@ -299,7 +312,8 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
       }
     }
 
-    final selections = await _focusService.openFamilyActivityWebsitePickerWithMetadata();
+    final selections = await _focusService
+        .openFamilyActivityWebsitePickerWithMetadata();
     final picked = (selections ?? [])
         .where((item) => item.payload.trim().isNotEmpty)
         .toList(growable: false);
@@ -332,9 +346,9 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
         if (payload.isEmpty || existingPayloads.contains(payload)) continue;
         var resolved = selected.domain?.trim();
         if (resolved == null || resolved.isEmpty) {
-          resolved = (await _focusService.describeWebsiteSelectionPayload(payload))
-              ?.domain
-              ?.trim();
+          resolved = (await _focusService.describeWebsiteSelectionPayload(
+            payload,
+          ))?.domain?.trim();
         }
         final domain = (resolved != null && resolved.isNotEmpty)
             ? normalizeDomainInput(resolved) ?? resolved.toLowerCase()
@@ -345,7 +359,10 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
             existingDomains.contains(normalizedDomain)) {
           continue;
         }
-        final record = await _repo.createBlockedWebsiteRecord(domain);
+        final label =
+            domain ??
+            'selected-website-${DateTime.now().microsecondsSinceEpoch}';
+        final record = await _repo.createBlockedWebsiteRecord(label);
         if (record == null) continue;
         await _classicLocalStore.saveWebsiteBinding(
           rowId: record.id,
@@ -373,16 +390,6 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
       return;
     }
 
-    final alreadyBlocked = _blockedWebsites.any(
-      (site) => (site.urlDomain ?? '').trim().toLowerCase() == normalizedDomain,
-    );
-    if (alreadyBlocked) {
-      await _showNotice(
-        title: _t('screen_time_already_blocked'),
-        message: "$normalizedDomain ${_t('screen_time_already_blocked_message_suffix")}',
-      );
-      return;
-    }
     _didJumpToInitialSection = true;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
@@ -501,6 +508,7 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
   @override
   void dispose() {
     _siteCtrl.dispose();
+    _appCtrl.dispose();
     super.dispose();
   }
 
@@ -517,14 +525,16 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
     if (needle.isEmpty) {
       return _iosAppSuggestions.take(12).toList(growable: false);
     }
-    final ranked = _iosAppSuggestions.where((item) {
-      final label = item.label.toLowerCase();
-      final bundle = item.bundleIdentifier.toLowerCase();
-      if (label.contains(needle) || bundle.contains(needle)) return true;
-      return item.keywords.any(
-        (keyword) => keyword.toLowerCase().contains(needle),
-      );
-    }).toList(growable: false);
+    final ranked = _iosAppSuggestions
+        .where((item) {
+          final label = item.label.toLowerCase();
+          final bundle = item.bundleIdentifier.toLowerCase();
+          if (label.contains(needle) || bundle.contains(needle)) return true;
+          return item.keywords.any(
+            (keyword) => keyword.toLowerCase().contains(needle),
+          );
+        })
+        .toList(growable: false);
     ranked.sort((a, b) {
       final aStarts = a.label.toLowerCase().startsWith(needle) ? 0 : 1;
       final bStarts = b.label.toLowerCase().startsWith(needle) ? 0 : 1;
@@ -560,7 +570,11 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
         ),
         child: Row(
           children: [
-            Icon(CupertinoIcons.globe, size: 14, color: AppColors.secondaryLabel),
+            Icon(
+              CupertinoIcons.globe,
+              size: 14,
+              color: AppColors.secondaryLabel,
+            ),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
@@ -614,14 +628,18 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
 
   String _displayNameForBlockedApp(BlockedApp app) {
     final explicit = app.appName?.trim();
-    if (explicit != null && explicit.isNotEmpty && !_isGenericAppName(explicit)) {
+    if (explicit != null &&
+        explicit.isNotEmpty &&
+        !_isGenericAppName(explicit)) {
       return explicit;
     }
     final bundle = _appBindings[app.id]?.nativeIdentifier?.trim();
     if (bundle != null && bundle.isNotEmpty) {
       return _prettyBundleLabel(bundle);
     }
-    return explicit?.isNotEmpty == true ? explicit! : _t('screen_time_unknown_app');
+    return explicit?.isNotEmpty == true
+        ? explicit!
+        : _t('screen_time_unknown_app');
   }
 
   String _resolvedAppLabel(IosFamilyActivitySelection selection) {
@@ -687,8 +705,7 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
 
     final currentPackages = currentByPackage.keys.toSet();
     final desiredPackages = desiredByPackage.keys.toSet();
-    final toAdd = desiredPackages.difference(currentPackages).toList()
-      ..sort();
+    final toAdd = desiredPackages.difference(currentPackages).toList()..sort();
     final toRemove = currentPackages.difference(desiredPackages).toList()
       ..sort();
 
@@ -727,9 +744,13 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
 
     final parts = <String>[
       if (added > 0)
-        added == 1 ? _t('screen_time_one_app_added') : "$added ${_t('screen_time_apps_added")}',
+        added == 1
+            ? _t('screen_time_one_app_added')
+            : "$added ${_t('screen_time_apps_added')}",
       if (removed > 0)
-        removed == 1 ? _t('screen_time_one_app_removed') : "$removed ${_t('screen_time_apps_removed")}',
+        removed == 1
+            ? _t('screen_time_one_app_removed')
+            : "$removed ${_t('screen_time_apps_removed')}",
     ];
     await _showNotice(
       title: _t('screen_time_blocked_apps_updated'),
@@ -746,15 +767,6 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
     }
 
     if (Platform.isIOS) {
-      if (_iosWebsitePayloadByDomain.isNotEmpty &&
-          !_iosWebsitePayloadByDomain.containsKey(normalizedDomain)) {
-        await _showNotice(
-          title: 'Website unavailable',
-          message:
-              '$normalizedDomain is not currently supported by the Screen Time website API on this iPhone.',
-        );
-        return;
-      }
       final authorized = await _focusService.isAuthorized();
       if (!authorized) {
         final granted = await _focusService.requestPermissions();
@@ -766,24 +778,29 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
           return;
         }
       }
-      final selection = await _focusService.openFamilyActivityWebsitePicker();
+      final selection = await _focusService.openFamilyActivityPicker();
       final payload = _firstNonEmpty(selection);
       if (payload == null) {
         await _showNotice(
           title: 'Selection canceled',
           message:
-              'Select at least one website in the Apple picker, then tap Done to save your block.',
+              'Select at least one app in the Apple picker, then tap Done to save your block.',
         );
         return;
       }
 
+      final described = await _focusService.describeAppSelectionPayload(
+        payload,
+      );
+      final label = described == null
+          ? _nextAppSelectionLabel()
+          : _resolvedAppLabel(described);
       await _runMutation(() async {
-        final record = await _repo.createBlockedAppRecord(
-          _nextAppSelectionLabel(),
-        );
+        final record = await _repo.createBlockedAppRecord(label);
         if (record == null) return;
         await _classicLocalStore.saveAppBinding(
           rowId: record.id,
+          nativeIdentifier: described?.bundleIdentifier,
           nativePayload: payload,
         );
       });
@@ -852,15 +869,15 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
       final websitesFuture = _repo.getBlockedWebsites();
       final restFuture = _repo.getRestPeriods();
       final protectionFuture = _focusService.getProtectionStatus();
-      final accessibilityFuture =
-          _isAndroid
-              ? _focusService.getAccessibilityPermissionState()
-              : Future.value(FocusPermissionState.unknown);
-      final usageAccessFuture =
-          _isAndroid
-              ? _focusService.getUsageAccessPermissionState()
-              : Future.value(FocusPermissionState.unknown);
+      final accessibilityFuture = _isAndroid
+          ? _focusService.getAccessibilityPermissionState()
+          : Future.value(FocusPermissionState.unknown);
+      final usageAccessFuture = _isAndroid
+          ? _focusService.getUsageAccessPermissionState()
+          : Future.value(FocusPermissionState.unknown);
       final appBindingsFuture = _classicLocalStore.loadAppBindings();
+      final websiteBindingsFuture = _classicLocalStore.loadWebsiteBindings();
+      final logsFuture = _repo.getScreenTimeLogs(days: 14);
 
       final apps = await appsFuture;
       final websites = await websitesFuture;
@@ -870,6 +887,7 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
       final usageAccessState = await usageAccessFuture;
       final appBindings = await appBindingsFuture;
       final websiteBindings = await websiteBindingsFuture;
+      final logs = await logsFuture;
       final upgradedApps = await _upgradeIosBlockedAppNames(
         apps: apps,
         appBindings: appBindings,
@@ -934,6 +952,7 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
         _blockedApps = effectiveApps;
         _blockedWebsites = effectiveFilteredWebsites;
         _restPeriods = rests;
+        _logs = logs;
         _appBindings = Map<String, ClassicBlockBinding>.fromEntries(
           refreshedAppBindings.entries.where(
             (entry) => validAppIds.contains(entry.key),
@@ -941,9 +960,8 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
         );
         _websiteBindings = Map<String, ClassicBlockBinding>.fromEntries(
           refreshedWebsiteBindings.entries.where(
-            (entry) => effectiveFilteredWebsites.any(
-              (site) => site.id == entry.key,
-            ),
+            (entry) =>
+                effectiveFilteredWebsites.any((site) => site.id == entry.key),
           ),
         );
         _adultContentShieldEnabled = effectiveAdultEnabled;
@@ -980,14 +998,15 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
       final payload = binding?.nativePayload?.trim();
       if (payload == null || payload.isEmpty) continue;
 
-      final described = await _focusService.describeAppSelectionPayload(payload);
+      final described = await _focusService.describeAppSelectionPayload(
+        payload,
+      );
       final resolvedName = described?.preferredLabel?.trim();
       final bindingBundle = binding?.nativeIdentifier?.trim();
       final bundleFallback = (bindingBundle != null && bindingBundle.isNotEmpty)
           ? _prettyBundleLabel(bindingBundle)
           : null;
-      final effectiveName =
-          (resolvedName != null && resolvedName.isNotEmpty)
+      final effectiveName = (resolvedName != null && resolvedName.isNotEmpty)
           ? resolvedName
           : bundleFallback;
       if (effectiveName == null || effectiveName.isEmpty) continue;
@@ -1028,16 +1047,16 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
     return _repo.getBlockedWebsites();
   }
 
-  Future<Map<String, IosFamilyActivitySelection>> _refreshIosAppCatalog() async {
+  Future<Map<String, String>> _refreshIosAppCatalog() async {
     if (!Platform.isIOS) return const {};
-    final map = <String, IosFamilyActivitySelection>{};
+    final map = <String, String>{};
     for (final suggestion in _iosAppSuggestions) {
       final encoded = await _focusService.encodeApplicationBundleSelection(
         suggestion.bundleIdentifier,
       );
-      final payload = encoded?.payload.trim();
+      final payload = encoded?.trim();
       if (payload == null || payload.isEmpty) continue;
-      map[suggestion.bundleIdentifier] = encoded!;
+      map[suggestion.bundleIdentifier] = payload;
     }
     return map;
   }
@@ -1060,10 +1079,9 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
   }) {
     return _showNotice(
       title: title,
-      message:
-          _isAndroid
-              ? 'Daily limit: ${limitMinutes}m\nUsage data for Android daily limits stays on this device and is not used for ads or unrelated analytics.'
-              : 'Daily limit: ${limitMinutes}m\nUsage for Screen Time protections stays on this device and is not synced, exported, or shared.',
+      message: _isAndroid
+          ? 'Daily limit: ${limitMinutes}m\nUsage data for Android daily limits stays on this device and is not used for ads or unrelated analytics.'
+          : 'Daily limit: ${limitMinutes}m\nUsage for Screen Time protections stays on this device and is not synced, exported, or shared.',
     );
   }
 
@@ -1106,6 +1124,120 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
     );
   }
 
+  String? _firstNonEmpty(List<String>? values) {
+    if (values == null) return null;
+    for (final value in values) {
+      final trimmed = value.trim();
+      if (trimmed.isNotEmpty) return trimmed;
+    }
+    return null;
+  }
+
+  String _nextAppSelectionLabel() {
+    return '${_t('screen_time_blocked_app')} ${_blockedApps.length + 1}';
+  }
+
+  String _durationLabel(int minutes) {
+    if (minutes <= 0) return _t('screen_time_always_blocked');
+    if (minutes < 60) return '${minutes}m/day';
+    final hours = minutes ~/ 60;
+    final rest = minutes % 60;
+    return rest == 0 ? '${hours}h/day' : '${hours}h ${rest}m/day';
+  }
+
+  Future<void> _startRestPeriod(int minutes) {
+    final now = DateTime.now();
+    return _runMutation(
+      () => _repo.createRestPeriod(
+        startTime: now,
+        endTime: now.add(Duration(minutes: minutes)),
+        active: true,
+      ),
+    );
+  }
+
+  Future<void> _activateScheduledRest(RestPeriod period) {
+    final end = period.endTime;
+    return _runMutation(
+      () => _repo.updateRestPeriod(
+        id: period.id,
+        startTime: DateTime.now(),
+        endTime: end,
+        active: true,
+      ),
+    );
+  }
+
+  Widget _pressScale({
+    required Widget child,
+    required VoidCallback? onPressed,
+  }) {
+    return GestureDetector(
+      onTap: onPressed,
+      behavior: HitTestBehavior.opaque,
+      child: AnimatedOpacity(
+        duration: const Duration(milliseconds: 120),
+        opacity: onPressed == null ? 0.45 : 1,
+        child: child,
+      ),
+    );
+  }
+
+  Widget _glowSurface({
+    required Widget child,
+    required Color glowColor,
+    required double borderRadius,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(borderRadius),
+        boxShadow: [
+          BoxShadow(color: glowColor, blurRadius: 18, spreadRadius: 1),
+        ],
+      ),
+      child: child,
+    );
+  }
+
+  Widget _metric(String label, String value) {
+    return Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: AppTypography.mono.copyWith(
+              fontSize: 10,
+              color: AppColors.tertiaryLabel,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: AppTypography.title3.copyWith(
+              fontSize: 22,
+              color: AppColors.label,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  BoxDecoration _moduleDecoration({
+    double radius = 18,
+    Color? borderColor,
+    Color? overlay,
+  }) {
+    return BoxDecoration(
+      color: overlay ?? AppColors.cardBase,
+      borderRadius: BorderRadius.circular(radius),
+      border: Border.all(color: borderColor ?? AppColors.glassBorder),
+    );
+  }
+
   Widget _secondaryAction({
     required String label,
     required VoidCallback? onTap,
@@ -1143,11 +1275,7 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
           border: Border.all(color: AppColors.error.withValues(alpha: 0.18)),
         ),
         alignment: Alignment.center,
-        child: Icon(
-          CupertinoIcons.delete,
-          size: 16,
-          color: AppColors.error,
-        ),
+        child: Icon(CupertinoIcons.delete, size: 16, color: AppColors.error),
       ),
     );
   }
@@ -1164,7 +1292,9 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
 
   List<RestPeriod> _scheduledRestPeriods() {
     final now = DateTime.now();
-    return _restPeriods.where((period) => _isScheduledRest(period, now)).toList();
+    return _restPeriods
+        .where((period) => _isScheduledRest(period, now))
+        .toList();
   }
 
   bool _isRestActive(RestPeriod period, DateTime now) {
@@ -1195,7 +1325,7 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
     final start = period.startTime;
     final end = period.endTime;
     if (start == null || end == null) return _t('screen_time_unknown_period');
-    return "${DateFormat('MMM d, HH:mm").format(start)} → ${DateFormat('HH:mm').format(end)}';
+    return "${DateFormat('MMM d, HH:mm').format(start)} - ${DateFormat('HH:mm').format(end)}";
   }
 
   String _todayKey() => DateFormat('yyyy-MM-dd').format(DateTime.now());
@@ -1216,7 +1346,9 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
       final name = (log['entity_name'] ?? '').toString().toLowerCase().trim();
       final matchesType = isWebsite
           ? (type.contains('web') || type.contains('site') || type.isEmpty)
-          : (type.contains('app') || type.contains('application') || type.isEmpty);
+          : (type.contains('app') ||
+                type.contains('application') ||
+                type.isEmpty);
       if (!matchesType) continue;
 
       final matchesName = isWebsite
@@ -1261,7 +1393,7 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
     final result = await showCupertinoDialog<String>(
       context: context,
       builder: (ctx) => CupertinoAlertDialog(
-        title: Text("${_t('screen_time_daily_limit_prefix")} · $title'),
+        title: Text("${_t('screen_time_daily_limit_prefix')} - $title"),
         content: Padding(
           padding: const EdgeInsets.only(top: 8),
           child: CupertinoTextField(
@@ -1325,10 +1457,13 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
     final start = now.add(Duration(minutes: startsInMinutes));
     final end = start.add(Duration(minutes: durationMinutes));
     return _runMutation(() {
-      return _repo.createRestPeriod(startTime: start, endTime: end, active: false);
+      return _repo.createRestPeriod(
+        startTime: start,
+        endTime: end,
+        active: false,
+      );
     });
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -1372,20 +1507,26 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
       child: AmbientBackdrop(
         child: _loading
             ? Center(
-                child: CupertinoActivityIndicator(color: AppColors.primaryOrange),
+                child: CupertinoActivityIndicator(
+                  color: AppColors.primaryOrange,
+                ),
               )
             : SafeArea(
                 child: ListView(
                   padding: const EdgeInsets.fromLTRB(14, 12, 14, 18),
                   children: [
                     _glowSurface(
-                      glowColor: AppColors.primaryOrange.withValues(alpha: 0.14),
+                      glowColor: AppColors.primaryOrange.withValues(
+                        alpha: 0.14,
+                      ),
                       borderRadius: 16,
                       child: GlassCard(
                         padding: const EdgeInsets.all(14),
                         borderRadius: 16,
                         border: Border.all(
-                          color: AppColors.primaryOrange.withValues(alpha: 0.22),
+                          color: AppColors.primaryOrange.withValues(
+                            alpha: 0.22,
+                          ),
                           width: 0.7,
                         ),
                         child: Row(
@@ -1561,7 +1702,9 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
                                         final domain = _siteCtrl.text.trim();
                                         if (domain.isEmpty) return;
                                         _runMutation(() {
-                                          return _repo.createBlockedWebsite(domain);
+                                          return _repo.createBlockedWebsite(
+                                            domain,
+                                          );
                                         });
                                         _siteCtrl.clear();
                                         setState(() => _showAddWebsite = false);
@@ -1578,20 +1721,26 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
                         (site) => Padding(
                           padding: const EdgeInsets.only(bottom: 8),
                           child: _blockedItemCard(
-                            title:
-                                (site.urlDomain ?? 'Unknown website').toUpperCase(),
-                            subtitle: _durationLabel(site.timeLimitMinutes ?? 0),
+                            title: (site.urlDomain ?? 'Unknown website')
+                                .toUpperCase(),
+                            subtitle: _durationLabel(
+                              site.timeLimitMinutes ?? 0,
+                            ),
                             onAdd15: _saving
                                 ? null
                                 : () => _runMutation(
-                                    () =>
-                                        _repo.addBlockedWebsiteTime(site.id, 15),
+                                    () => _repo.addBlockedWebsiteTime(
+                                      site.id,
+                                      15,
+                                    ),
                                   ),
                             onAdd30: _saving
                                 ? null
                                 : () => _runMutation(
-                                    () =>
-                                        _repo.addBlockedWebsiteTime(site.id, 30),
+                                    () => _repo.addBlockedWebsiteTime(
+                                      site.id,
+                                      30,
+                                    ),
                                   ),
                             onDelete: _saving
                                 ? null
@@ -1608,7 +1757,7 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
                       title: 'REST_PERIODS',
                       subtitle: activeRest == null
                           ? 'No active rest period'
-                          : "Active until ${DateFormat('HH:mm").format(activeRest.endTime ?? DateTime.now())}',
+                          : "Active until ${DateFormat('HH:mm').format(activeRest.endTime ?? DateTime.now())}",
                       trailing: null,
                     ),
                     GlassCard(
@@ -1621,21 +1770,27 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
                               Expanded(
                                 child: _quickPill(
                                   label: '15m',
-                                  onTap: _saving ? null : () => _startRestPeriod(15),
+                                  onTap: _saving
+                                      ? null
+                                      : () => _startRestPeriod(15),
                                 ),
                               ),
                               const SizedBox(width: 8),
                               Expanded(
                                 child: _quickPill(
                                   label: '30m',
-                                  onTap: _saving ? null : () => _startRestPeriod(30),
+                                  onTap: _saving
+                                      ? null
+                                      : () => _startRestPeriod(30),
                                 ),
                               ),
                               const SizedBox(width: 8),
                               Expanded(
                                 child: _quickPill(
                                   label: '60m',
-                                  onTap: _saving ? null : () => _startRestPeriod(60),
+                                  onTap: _saving
+                                      ? null
+                                      : () => _startRestPeriod(60),
                                 ),
                               ),
                             ],
@@ -1649,9 +1804,9 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
                                   onTap: _saving
                                       ? null
                                       : () => _scheduleRestPeriod(
-                                            startsInMinutes: 30,
-                                            durationMinutes: 30,
-                                          ),
+                                          startsInMinutes: 30,
+                                          durationMinutes: 30,
+                                        ),
                                 ),
                               ),
                               const SizedBox(width: 8),
@@ -1661,9 +1816,9 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
                                   onTap: _saving
                                       ? null
                                       : () => _scheduleRestPeriod(
-                                            startsInMinutes: 60,
-                                            durationMinutes: 30,
-                                          ),
+                                          startsInMinutes: 60,
+                                          durationMinutes: 30,
+                                        ),
                                 ),
                               ),
                               const SizedBox(width: 8),
@@ -1673,9 +1828,9 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
                                   onTap: _saving
                                       ? null
                                       : () => _scheduleRestPeriod(
-                                            startsInMinutes: 120,
-                                            durationMinutes: 30,
-                                          ),
+                                          startsInMinutes: 120,
+                                          durationMinutes: 30,
+                                        ),
                                 ),
                               ),
                             ],
@@ -1685,7 +1840,9 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
                             SizedBox(
                               width: double.infinity,
                               child: CupertinoButton(
-                                padding: const EdgeInsets.symmetric(vertical: 10),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 10,
+                                ),
                                 color: AppColors.error.withValues(alpha: 0.18),
                                 borderRadius: BorderRadius.circular(10),
                                 onPressed: _saving
@@ -1713,117 +1870,127 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
                     ),
                     const SizedBox(height: 8),
                     if (scheduledRests.isNotEmpty) ...[
-                      ...scheduledRests.take(4).map(
-                        (period) => Padding(
-                          padding: const EdgeInsets.only(bottom: 8),
-                          child: GlassCard(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 14,
-                              vertical: 10,
-                            ),
-                            borderRadius: 12,
-                            border: Border.all(
-                              color: AppColors.warning.withValues(alpha: 0.24),
-                              width: 0.5,
-                            ),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    'SCHEDULED ${_restLabel(period)}',
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: AppTypography.mono.copyWith(
-                                      fontSize: 10,
-                                      color: AppColors.secondaryLabel,
-                                    ),
-                                  ),
+                      ...scheduledRests
+                          .take(4)
+                          .map(
+                            (period) => Padding(
+                              padding: const EdgeInsets.only(bottom: 8),
+                              child: GlassCard(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                  vertical: 10,
                                 ),
-                                CupertinoButton(
-                                  padding: EdgeInsets.zero,
-                                  minimumSize: const Size(24, 24),
-                                  onPressed: _saving
-                                      ? null
-                                      : () => _activateScheduledRest(period),
-                                  child: Text(
-                                    'START',
-                                    style: AppTypography.mono.copyWith(
-                                      fontSize: 9,
-                                      color: AppColors.primaryOrange,
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                                borderRadius: 12,
+                                border: Border.all(
+                                  color: AppColors.warning.withValues(
+                                    alpha: 0.24,
                                   ),
+                                  width: 0.5,
                                 ),
-                                const SizedBox(width: 6),
-                                CupertinoButton(
-                                  padding: EdgeInsets.zero,
-                                  minimumSize: const Size(24, 24),
-                                  onPressed: _saving
-                                      ? null
-                                      : () => _runMutation(
-                                            () => _repo.updateRestPeriodActive(
-                                              period.id,
-                                              false,
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        'SCHEDULED ${_restLabel(period)}',
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: AppTypography.mono.copyWith(
+                                          fontSize: 10,
+                                          color: AppColors.secondaryLabel,
+                                        ),
+                                      ),
+                                    ),
+                                    CupertinoButton(
+                                      padding: EdgeInsets.zero,
+                                      minimumSize: const Size(24, 24),
+                                      onPressed: _saving
+                                          ? null
+                                          : () =>
+                                                _activateScheduledRest(period),
+                                      child: Text(
+                                        'START',
+                                        style: AppTypography.mono.copyWith(
+                                          fontSize: 9,
+                                          color: AppColors.primaryOrange,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    CupertinoButton(
+                                      padding: EdgeInsets.zero,
+                                      minimumSize: const Size(24, 24),
+                                      onPressed: _saving
+                                          ? null
+                                          : () => _runMutation(
+                                              () =>
+                                                  _repo.updateRestPeriodActive(
+                                                    period.id,
+                                                    false,
+                                                  ),
                                             ),
-                                          ),
-                                  child: Icon(
-                                    CupertinoIcons.clear_circled,
-                                    size: 15,
-                                    color: AppColors.error,
-                                  ),
+                                      child: Icon(
+                                        CupertinoIcons.clear_circled,
+                                        size: 15,
+                                        color: AppColors.error,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ],
+                              ),
                             ),
                           ),
-                        ),
-                      ),
                     ],
                     if (_restPeriods.isEmpty)
                       _emptyCard('No rest periods yet.')
                     else
-                      ..._restPeriods.take(10).map(
-                        (period) => Padding(
-                          padding: const EdgeInsets.only(bottom: 8),
-                          child: GlassCard(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 14,
-                              vertical: 10,
-                            ),
-                            borderRadius: 12,
-                            border: Border.all(
-                              color: period.active
-                                  ? AppColors.success.withValues(alpha: 0.24)
-                                  : AppColors.glassBorder,
-                              width: 0.5,
-                            ),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    _restLabel(period),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: AppTypography.mono.copyWith(
-                                      fontSize: 10,
-                                      color: AppColors.secondaryLabel,
+                      ..._restPeriods
+                          .take(10)
+                          .map(
+                            (period) => Padding(
+                              padding: const EdgeInsets.only(bottom: 8),
+                              child: GlassCard(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                  vertical: 10,
+                                ),
+                                borderRadius: 12,
+                                border: Border.all(
+                                  color: period.active
+                                      ? AppColors.success.withValues(
+                                          alpha: 0.24,
+                                        )
+                                      : AppColors.glassBorder,
+                                  width: 0.5,
+                                ),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        _restLabel(period),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: AppTypography.mono.copyWith(
+                                          fontSize: 10,
+                                          color: AppColors.secondaryLabel,
+                                        ),
+                                      ),
                                     ),
-                                  ),
+                                    Text(
+                                      period.active ? 'ACTIVE' : 'ENDED',
+                                      style: AppTypography.mono.copyWith(
+                                        fontSize: 9,
+                                        color: period.active
+                                            ? AppColors.success
+                                            : AppColors.tertiaryLabel,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                Text(
-                                  period.active ? 'ACTIVE' : 'ENDED',
-                                  style: AppTypography.mono.copyWith(
-                                    fontSize: 9,
-                                    color: period.active
-                                        ? AppColors.success
-                                        : AppColors.tertiaryLabel,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
+                              ),
                             ),
                           ),
-                        ),
-                      ),
                     const SizedBox(height: 14),
                     _sectionHeader(
                       title: 'USAGE_LOGS',
@@ -1833,51 +2000,51 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
                     if (_logs.isEmpty)
                       _emptyCard('No screen-time logs yet.')
                     else
-                      ..._logs.take(30).map(
-                        (log) => Padding(
-                          padding: const EdgeInsets.only(bottom: 8),
-                          child: GlassCard(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 14,
-                              vertical: 10,
-                            ),
-                            borderRadius: 12,
-                            border: Border.all(
-                              color: AppColors.glassBorder,
-                              width: 0.5,
-                            ),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    (log['entity_name']?.toString() ??
-                                            'Unknown')
-                                        .toUpperCase(),
-                                    style: AppTypography.mono.copyWith(
-                                      fontSize: 10,
+                      ..._logs
+                          .take(30)
+                          .map(
+                            (log) => Padding(
+                              padding: const EdgeInsets.only(bottom: 8),
+                              child: GlassCard(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                  vertical: 10,
+                                ),
+                                borderRadius: 12,
+                                border: Border.all(
+                                  color: AppColors.glassBorder,
+                                  width: 0.5,
+                                ),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        (log['entity_name']?.toString() ??
+                                                'Unknown')
+                                            .toUpperCase(),
+                                        style: AppTypography.mono.copyWith(
+                                          fontSize: 10,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
                                     ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
+                                    Text(
+                                      "${((log['duration_seconds'] as num?)?.toInt() ?? 0) ~/ 60}m",
+                                      style: AppTypography.mono.copyWith(
+                                        fontSize: 11,
+                                        color: AppColors.primaryOrange,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                Text(
-                                  "${((log['duration_seconds"] as num?)?.toInt() ?? 0) ~/ 60}m',
-                                  style: AppTypography.mono.copyWith(
-                                    fontSize: 11,
-                                    color: AppColors.primaryOrange,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
+                              ),
                             ),
                           ),
-                        ),
-                      ),
-                      ],
-                    ),
-                  ),
-          ),
-        ),
+                  ],
+                ),
+              ),
       ),
     );
   }
@@ -1931,6 +2098,7 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
     required VoidCallback? onAdd15,
     required VoidCallback? onAdd30,
     required VoidCallback? onDelete,
+    VoidCallback? onSetLimit,
   }) {
     return GlassCard(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
@@ -1964,13 +2132,19 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
             ),
           ),
           const SizedBox(width: 8),
-          _tinyAction(label: 'LIMIT', onTap: onSetLimit),
-          const SizedBox(width: 6),
+          if (onSetLimit != null) ...[
+            _tinyAction(label: 'LIMIT', onTap: onSetLimit),
+            const SizedBox(width: 6),
+          ],
           CupertinoButton(
             padding: EdgeInsets.zero,
             minimumSize: const Size(26, 26),
             onPressed: onDelete,
-            child: Icon(CupertinoIcons.delete, size: 16, color: AppColors.error),
+            child: Icon(
+              CupertinoIcons.delete,
+              size: 16,
+              color: AppColors.error,
+            ),
           ),
         ],
       ),
@@ -2026,10 +2200,7 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
             ),
           ),
           const SizedBox(width: 10),
-          _tinyAction(
-            label: _permissionStatusLabel(state),
-            onTap: onTap,
-          ),
+          _tinyAction(label: _permissionStatusLabel(state), onTap: onTap),
         ],
       ),
     );
@@ -2083,7 +2254,6 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
       ),
     );
   }
-
 }
 
 // Recovered class _IosAppSuggestion @ 2026-04-15T15:08:58.030Z
