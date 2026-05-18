@@ -1,4 +1,23 @@
-enum StatsEventType { dashboardOpened }
+enum StatsEventType {
+  focusSessionStarted,
+  focusSessionCompleted,
+  focusSessionBroken,
+  ceoSessionStarted,
+  ceoSessionCompleted,
+  ceoSessionBroken,
+  blockedAppAttempt,
+  blockedSiteAttempt,
+  screenTimeRecorded,
+  productiveTimeRecorded,
+  distractingTimeRecorded,
+  habitPlanned,
+  habitCompleted,
+  habitMissed,
+  rankChanged,
+  manualTimeExtensionRequested,
+  manualTimeExtensionConfirmed,
+  dashboardOpened,
+}
 
 class StatsEventInput {
   final StatsEventType eventType;
