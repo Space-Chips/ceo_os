@@ -2,7 +2,6 @@ import 'dart:ui';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart' show Colors, TimeOfDay;
-import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
@@ -93,7 +92,7 @@ class _AddEventSheetState extends State<AddEventSheet> {
 
     final dateStr = DateFormat('yyyy-MM-dd').format(_selectedDate);
     final timeStr = _selectedTime != null
-        ? "${_selectedTime!.hour.toString().padLeft(2, '0")}:${_selectedTime!.minute.toString().padLeft(2, '0')}:00'
+        ? '${_selectedTime!.hour.toString().padLeft(2, '0')}:${_selectedTime!.minute.toString().padLeft(2, '0')}:00'
         : null;
 
     if (_isFocusSession && timeStr == null) {
@@ -186,7 +185,10 @@ class _AddEventSheetState extends State<AddEventSheet> {
           child: Column(
             children: [
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -194,7 +196,10 @@ class _AddEventSheetState extends State<AddEventSheet> {
                       onPressed: () => Navigator.pop(context),
                       child: Text(
                         'CANCEL',
-                        style: TextStyle(color: AppColors.secondaryLabel, fontSize: 12),
+                        style: TextStyle(
+                          color: AppColors.secondaryLabel,
+                          fontSize: 12,
+                        ),
                       ),
                     ),
                     CupertinoButton(
@@ -215,7 +220,8 @@ class _AddEventSheetState extends State<AddEventSheet> {
                 child: CupertinoDatePicker(
                   mode: CupertinoDatePickerMode.date,
                   initialDateTime: _selectedDate,
-                  onDateTimeChanged: (val) => setState(() => _selectedDate = val),
+                  onDateTimeChanged: (val) =>
+                      setState(() => _selectedDate = val),
                 ),
               ),
             ],
@@ -239,7 +245,10 @@ class _AddEventSheetState extends State<AddEventSheet> {
           child: Column(
             children: [
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -250,7 +259,10 @@ class _AddEventSheetState extends State<AddEventSheet> {
                       },
                       child: Text(
                         'CLEAR',
-                        style: TextStyle(color: AppColors.secondaryLabel, fontSize: 12),
+                        style: TextStyle(
+                          color: AppColors.secondaryLabel,
+                          fontSize: 12,
+                        ),
                       ),
                     ),
                     CupertinoButton(
@@ -340,11 +352,15 @@ class _AddEventSheetState extends State<AddEventSheet> {
     return BackdropFilter(
       filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
       child: Container(
-        padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
         decoration: BoxDecoration(
           color: AppColors.background.withValues(alpha: 0.88),
           borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-          border: Border(top: BorderSide(color: AppColors.glassBorder, width: 0.5)),
+          border: Border(
+            top: BorderSide(color: AppColors.glassBorder, width: 0.5),
+          ),
         ),
         child: SafeArea(
           child: Padding(
@@ -390,11 +406,16 @@ class _AddEventSheetState extends State<AddEventSheet> {
                   const SizedBox(height: 8),
                   if (_loadingTypes)
                     GlassCard(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 10,
+                      ),
                       borderRadius: 12,
                       child: Row(
                         children: [
-                          CupertinoActivityIndicator(color: AppColors.primaryOrange),
+                          CupertinoActivityIndicator(
+                            color: AppColors.primaryOrange,
+                          ),
                           const SizedBox(width: 8),
                           Text(
                             'Loading types…',
@@ -428,12 +449,19 @@ class _AddEventSheetState extends State<AddEventSheet> {
                             });
                           },
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 8,
+                            ),
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(10),
-                              color: color.withValues(alpha: selected ? 0.28 : 0.13),
+                              color: color.withValues(
+                                alpha: selected ? 0.28 : 0.13,
+                              ),
                               border: Border.all(
-                                color: color.withValues(alpha: selected ? 0.9 : 0.45),
+                                color: color.withValues(
+                                  alpha: selected ? 0.9 : 0.45,
+                                ),
                                 width: selected ? 1.2 : 0.7,
                               ),
                             ),
@@ -475,14 +503,22 @@ class _AddEventSheetState extends State<AddEventSheet> {
                             GestureDetector(
                               onTap: _showDatePicker,
                               child: GlassCard(
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 12,
+                                ),
                                 borderRadius: 12,
                                 child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
                                     Text(
-                                      DateFormat('MMM d, y').format(_selectedDate),
-                                      style: AppTypography.mono.copyWith(fontSize: 12),
+                                      DateFormat(
+                                        'MMM d, y',
+                                      ).format(_selectedDate),
+                                      style: AppTypography.mono.copyWith(
+                                        fontSize: 12,
+                                      ),
                                     ),
                                     Icon(
                                       CupertinoIcons.calendar,
@@ -506,10 +542,14 @@ class _AddEventSheetState extends State<AddEventSheet> {
                             GestureDetector(
                               onTap: _showTimePicker,
                               child: GlassCard(
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 12,
+                                ),
                                 borderRadius: 12,
                                 child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
                                     Text(
                                       _timeLabel(),
@@ -538,17 +578,27 @@ class _AddEventSheetState extends State<AddEventSheet> {
                   _sectionLabel('Duration (minutes)'),
                   const SizedBox(height: 8),
                   GlassCard(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 8,
+                    ),
                     borderRadius: 12,
                     child: Row(
                       children: [
                         CupertinoButton(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
                           minimumSize: Size.zero,
                           color: AppColors.accentMuted,
                           borderRadius: BorderRadius.circular(8),
                           onPressed: () => _adjustDuration(-15),
-                          child: Icon(CupertinoIcons.minus, size: 14, color: AppColors.primaryOrange),
+                          child: Icon(
+                            CupertinoIcons.minus,
+                            size: 14,
+                            color: AppColors.primaryOrange,
+                          ),
                         ),
                         const Spacer(),
                         Column(
@@ -573,12 +623,19 @@ class _AddEventSheetState extends State<AddEventSheet> {
                         ),
                         const Spacer(),
                         CupertinoButton(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
                           minimumSize: Size.zero,
                           color: AppColors.accentMuted,
                           borderRadius: BorderRadius.circular(8),
                           onPressed: () => _adjustDuration(15),
-                          child: Icon(CupertinoIcons.add, size: 14, color: AppColors.primaryOrange),
+                          child: Icon(
+                            CupertinoIcons.add,
+                            size: 14,
+                            color: AppColors.primaryOrange,
+                          ),
                         ),
                       ],
                     ),
@@ -589,7 +646,9 @@ class _AddEventSheetState extends State<AddEventSheet> {
                       Expanded(
                         child: CupertinoButton(
                           padding: const EdgeInsets.symmetric(vertical: 12),
-                          color: AppColors.backgroundLight.withValues(alpha: 0.6),
+                          color: AppColors.backgroundLight.withValues(
+                            alpha: 0.6,
+                          ),
                           borderRadius: BorderRadius.circular(12),
                           onPressed: () => Navigator.of(context).pop(),
                           child: Text(
