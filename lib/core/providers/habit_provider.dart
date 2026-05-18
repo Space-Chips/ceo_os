@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/habit_models.dart';
@@ -88,8 +89,9 @@ class HabitProvider extends ChangeNotifier {
           reminderTime: item['reminderTime'] as String?,
           autoPopup: (item['autoPopup'] as bool?) ?? false,
           colorTheme: item['colorTheme'] as String?,
-          specificDays:
-              (item['specificDays'] as List?)?.map((e) => e as int).toList(),
+          specificDays: (item['specificDays'] as List?)
+              ?.map((e) => e as int)
+              .toList(),
           syncToCalendar: (item['syncToCalendar'] as bool?) ?? false,
         );
       } catch (_) {
@@ -116,8 +118,7 @@ class HabitProvider extends ChangeNotifier {
   /// Count of habits completed today.
   int get completedToday {
     final now = DateTime.now();
-    final todayStr =
-        "${now.year}-${now.month.toString().padLeft(2, '0")}-${now.day.toString().padLeft(2, '0')}';
+    final todayStr = DateFormat('yyyy-MM-dd').format(now);
     int count = 0;
 
     for (var habit in _habits) {
@@ -130,8 +131,7 @@ class HabitProvider extends ChangeNotifier {
 
   bool isHabitCompletedToday(String habitId) {
     final now = DateTime.now();
-    final todayStr =
-        "${now.year}-${now.month.toString().padLeft(2, '0")}-${now.day.toString().padLeft(2, '0')}';
+    final todayStr = DateFormat('yyyy-MM-dd').format(now);
     final comps = _completions[habitId] ?? [];
     return comps.any((c) => c.date == todayStr && c.completed);
   }
@@ -153,7 +153,8 @@ class HabitProvider extends ChangeNotifier {
     final start = end.subtract(const Duration(days: 6));
     _widgetLast7Days = List.generate(
       7,
-      (i) => DateTime(start.year, start.month, start.day).add(Duration(days: i)),
+      (i) =>
+          DateTime(start.year, start.month, start.day).add(Duration(days: i)),
     );
 
     try {
@@ -186,17 +187,6 @@ class HabitProvider extends ChangeNotifier {
 
   Future<void> addHabitLog(String habitId, String content) async {
     await _repository.createHabitLog(habitId, content);
-  }
-
-  Future<void> deleteHabit(String habitId) async {
-    try {
-      await _repository.deleteHabit(habitId);
-      _habits.removeWhere((h) => h.id == habitId);
-      _completions.remove(habitId);
-      notifyListeners();
-    } catch (e) {
-      print('Error deleting habit: $e');
-    }
   }
 
   Future<void> deleteHabit(String habitId) async {
@@ -338,8 +328,7 @@ class HabitProvider extends ChangeNotifier {
     try {
       // Optimistic update
       final now = DateTime.now();
-      final todayStr =
-          "${now.year}-${now.month.toString().padLeft(2, '0")}-${now.day.toString().padLeft(2, '0')}';
+      final todayStr = DateFormat('yyyy-MM-dd').format(now);
 
       final comps = _completions.putIfAbsent(habitId, () => []);
       final index = comps.indexWhere((c) => c.date == todayStr);

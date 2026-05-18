@@ -16,6 +16,9 @@ class HabitRepository {
   SupabaseClient get _client => _supabaseService.client;
   String get _currentUserId => _client.auth.currentUser!.id;
 
+  String _cacheKey(String suffix) =>
+      'habit_repository::$_currentUserId::$suffix';
+
   Future<List<Habit>> getHabits() async {
     try {
       final response = await _client
@@ -154,8 +157,7 @@ class HabitRepository {
   }
 
   Future<List<HabitCompletion>> getCompletionsForDate(DateTime date) async {
-    final dateStr =
-        "${date.year}-${date.month.toString().padLeft(2, '0")}-${date.day.toString().padLeft(2, '0')}';
+    final dateStr = DateFormat('yyyy-MM-dd').format(date);
 
     try {
       final response = await _client
@@ -188,8 +190,7 @@ class HabitRepository {
         return decoded
             .whereType<Map>()
             .map(
-              (row) =>
-                  HabitCompletion.fromJson(Map<String, dynamic>.from(row)),
+              (row) => HabitCompletion.fromJson(Map<String, dynamic>.from(row)),
             )
             .toList();
       } catch (_) {
@@ -238,8 +239,7 @@ class HabitRepository {
         return decoded
             .whereType<Map>()
             .map(
-              (row) =>
-                  HabitCompletion.fromJson(Map<String, dynamic>.from(row)),
+              (row) => HabitCompletion.fromJson(Map<String, dynamic>.from(row)),
             )
             .toList();
       } catch (_) {
@@ -253,8 +253,7 @@ class HabitRepository {
     DateTime date, {
     double? amount,
   }) async {
-    final dateStr =
-        "${date.year}-${date.month.toString().padLeft(2, '0")}-${date.day.toString().padLeft(2, '0')}';
+    final dateStr = DateFormat('yyyy-MM-dd').format(date);
 
     // Check if exists
     final existing = await _client
