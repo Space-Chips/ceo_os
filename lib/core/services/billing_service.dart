@@ -172,10 +172,7 @@ class BillingService {
       }
       await _diag.log(
         'purchase_failed_platform',
-        data: {
-          'code': code.name,
-          'message': error.message,
-        },
+        data: {'code': code.name, 'message': error.message},
       );
       return BillingPurchaseResult(
         status: BillingPurchaseStatus.failed,
@@ -456,18 +453,22 @@ String? _introOfferLabelForProduct(StoreProduct product) {
   if (intro == null) return null;
 
   final unitLabel = switch (intro.periodUnit) {
-    PeriodUnit.day => intro.periodNumberOfUnits == 1
-        ? 'day'
-        : '${intro.periodNumberOfUnits} days',
-    PeriodUnit.week => intro.periodNumberOfUnits == 1
-        ? 'week'
-        : '${intro.periodNumberOfUnits} weeks',
-    PeriodUnit.month => intro.periodNumberOfUnits == 1
-        ? 'month'
-        : '${intro.periodNumberOfUnits} months',
-    PeriodUnit.year => intro.periodNumberOfUnits == 1
-        ? 'year'
-        : '${intro.periodNumberOfUnits} years',
+    PeriodUnit.day =>
+      intro.periodNumberOfUnits == 1
+          ? 'day'
+          : '${intro.periodNumberOfUnits} days',
+    PeriodUnit.week =>
+      intro.periodNumberOfUnits == 1
+          ? 'week'
+          : '${intro.periodNumberOfUnits} weeks',
+    PeriodUnit.month =>
+      intro.periodNumberOfUnits == 1
+          ? 'month'
+          : '${intro.periodNumberOfUnits} months',
+    PeriodUnit.year =>
+      intro.periodNumberOfUnits == 1
+          ? 'year'
+          : '${intro.periodNumberOfUnits} years',
     PeriodUnit.unknown => 'period',
   };
 
@@ -475,18 +476,4 @@ String? _introOfferLabelForProduct(StoreProduct product) {
     return '${intro.priceString} for the first $unitLabel';
   }
   return '${intro.priceString} for ${intro.cycles} billing cycles';
-
-  // Recovered static_method _durationLabel @ 2026-05-16T08:36:24.714Z
-  static String _durationLabel(Package package) {
-    switch (package.packageType) {
-      case PackageType.monthly:
-        return 'Monthly';
-      case PackageType.annual:
-        return 'Annual';
-      case PackageType.lifetime:
-        return 'Lifetime';
-      default:
-        return package.identifier;
-    }
-  }
 }

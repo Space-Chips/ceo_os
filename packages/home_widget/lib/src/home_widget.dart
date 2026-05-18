@@ -104,9 +104,9 @@ class HomeWidget {
 
   /// Receives Updates if App Launched via the Widget
   static Stream<Uri?> get widgetClicked {
-    return _eventChannel
-        .receiveBroadcastStream()
-        .map<Uri?>(_handleReceivedData);
+    return _eventChannel.receiveBroadcastStream().map<Uri?>(
+      _handleReceivedData,
+    );
   }
 
   static Uri? _handleReceivedData(dynamic value) {
@@ -130,8 +130,7 @@ class HomeWidget {
   @Deprecated('Use `registerInteractivityCallback` instead')
   static Future<bool?> registerBackgroundCallback(
     FutureOr<void> Function(Uri?) callback,
-  ) =>
-      registerInteractivityCallback(callback);
+  ) => registerInteractivityCallback(callback);
 
   /// Register a callback that gets called when clicked on a specific View in a HomeWidget
   /// This enables having Interactive Widgets that can call Dart Code
@@ -187,18 +186,16 @@ class HomeWidget {
       /// setting the rootElement with the widget that has to be captured
       final RenderObjectToWidgetElement<RenderBox> rootElement =
           RenderObjectToWidgetAdapter<RenderBox>(
-        container: repaintBoundary,
-        child: Directionality(
-          textDirection: TextDirection.ltr,
-          child: Column(
-            // image is center aligned
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              widget,
-            ],
-          ),
-        ),
-      ).attachToRenderTree(buildOwner);
+            container: repaintBoundary,
+            child: Directionality(
+              textDirection: TextDirection.ltr,
+              child: Column(
+                // image is center aligned
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [widget],
+              ),
+            ),
+          ).attachToRenderTree(buildOwner);
 
       ///adding the rootElement to the buildScope
       buildOwner.buildScope(rootElement);
@@ -218,3 +215,69 @@ class HomeWidget {
       /// Flush paint
       pipelineOwner.flushPaint();
 
+      final ui.Image image = await repaintBoundary.toImage(
+        pixelRatio: pixelRatio,
+      );
+
+      /// The raw image is converted to byte data.
+      final ByteData? byteData = await image.toByteData(
+        format: ui.ImageByteFormat.png,
+      );
+
+      try {
+        late final String? directory;
+
+        // coverage:ignore-start
+        if (Platform.isIOS) {
+          final PathProviderFoundation provider = PathProviderFoundation();
+          assert(
+            HomeWidget.groupId != null,
+            'No groupId defined. Did you forget to call `HomeWidget.setAppGroupId`',
+          );
+          directory = await provider.getContainerPath(
+            appGroupIdentifier: HomeWidget.groupId!,
+          );
+        } else {
+          // coverage:ignore-end
+          directory = (await getApplicationSupportDirectory()).path;
+        }
+
+        final String path = '$directory/home_widget/$key.png';
+        final File file = File(path);
+        if (!await file.exists()) {
+          await file.create(recursive: true);
+        }
+        await file.writeAsBytes(byteData!.buffer.asUint8List());
+
+        _channel.invokeMethod<bool>('saveWidgetData', {
+          'id': key,
+          'data': path,
+        });
+
+        return path;
+      } catch (e) {
+        throw Exception('Failed to save screenshot to app group container: $e');
+      }
+    } catch (e) {
+      throw Exception('Failed to render the widget: $e');
+    }
+  }
+
+  /// On iOS, returns a list of [HomeWidgetInfo] for each type of widget currently installed,
+  /// regardless of the number of instances.
+  /// On Android, returns a list of [HomeWidgetInfo] for each instance of each widget
+  /// currently pinned on the home screen.
+  /// Returns an empty list if no widgets are pinned.
+  static Future<List<HomeWidgetInfo>> getInstalledWidgets() async {
+    final List<dynamic>? result = await _channel.invokeMethod(
+      'getInstalledWidgets',
+    );
+    return result
+            ?.map(
+              (widget) =>
+                  HomeWidgetInfo.fromMap(widget.cast<String, dynamic>()),
+            )
+            .toList() ??
+        [];
+  }
+}
