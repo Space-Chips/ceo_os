@@ -1,5 +1,4 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../config/apple_review_compliance.dart';
 import '../models/user_models.dart';
 import 'focus_repository.dart';
 import '../services/supabase_service.dart';
@@ -16,8 +15,6 @@ class UserRepository {
 
   SupabaseClient get _client => _supabaseService.client;
   String get _currentUserId => _client.auth.currentUser!.id;
-  bool get _allowSocialScreenTimeSurfaces =>
-      AppleReviewCompliance.allowSocialScreenTimeSurfaces;
 
   Future<Profile?> getProfile() async {
     try {
@@ -43,11 +40,113 @@ class UserRepository {
           .eq('created_by', _currentUserId)
           .maybeSingle();
 
-      if (response == null) return null;
-      return UserRank.fromJson(response);
+      final rank = response == null ? null : UserRank.fromJson(response);
+      return await _resolveBronzeFallback(rank);
     } catch (e) {
       AppLogger.error('Error getting rank.', e);
       return null;
+    }
+  }
+
+  Future<UserRank?> _resolveBronzeFallback(UserRank? current) async {
+    final currentLevel = current?.rankLevel ?? 0;
+    final currentName = (current?.rankName ?? '').trim().toLowerCase();
+    final alreadyUnlockedBronze =
+        currentLevel >= 1 ||
+        {
+          'bronze',
+          'silver',
+          'gold',
+          'platinum',
+          'diamond',
+          'immortal',
+          'awakened',
+        }.contains(currentName);
+
+    if (alreadyUnlockedBronze) return current;
+
+    try {
+      final profile = await _client
+          .from('profiles')
+          .select('created_at')
+          .eq('id', _currentUserId)
+          .maybeSingle();
+      if (profile == null) return current;
+
+      final createdAtRaw = profile['created_at'] as String?;
+      final createdAt = createdAtRaw != null
+          ? DateTime.tryParse(createdAtRaw)
+          : null;
+      if (createdAt == null) return current;
+
+      final nowUtc = DateTime.now().toUtc();
+      final todayUtc = DateTime.utc(nowUtc.year, nowUtc.month, nowUtc.day);
+      final createdUtc = createdAt.toUtc();
+      final createdDateUtc = DateTime.utc(
+        createdUtc.year,
+        createdUtc.month,
+        createdUtc.day,
+      );
+      final daysInApp = todayUtc.difference(createdDateUtc).inDays + 1;
+      if (daysInApp < 7) return current;
+
+      final focusSessions = await _client
+          .from('focus_sessions')
+          .select('id')
+          .eq('created_by', _currentUserId)
+          .eq('completed', true);
+      final focusCompleted = (focusSessions as List).length;
+      if (focusCompleted < 1) return current;
+
+      final streakRow = await _client
+          .from('win_streaks')
+          .select('current_streak')
+          .eq('created_by', _currentUserId)
+          .maybeSingle();
+      final streak = (streakRow?['current_streak'] as num?)?.toInt() ?? 0;
+      final today = DateTime.now().toIso8601String().split('T').first;
+
+      await _client.from('user_ranks').upsert({
+        'created_by': _currentUserId,
+        'rank_name': 'Bronze',
+        'rank_level': 1,
+        'total_rank_points': current?.totalRankPoints ?? 0,
+        'win_streak_bonus': current?.winStreakBonus ?? streak,
+        'previous_rank_name': current?.rankName,
+        'last_rank_change_date': today,
+      });
+
+      await _client.from('leaderboard_entries').upsert({
+        'created_by': _currentUserId,
+        'rank_level': 1,
+        'rank_name': 'Bronze',
+        'win_streak': streak,
+        'last_sync_date': DateTime.now().toIso8601String(),
+      });
+
+      final freshResponse = await _client
+          .from('user_ranks')
+          .select()
+          .eq('created_by', _currentUserId)
+          .maybeSingle();
+      if (freshResponse != null) return UserRank.fromJson(freshResponse);
+
+      return UserRank(
+        id: current?.id ?? _currentUserId,
+        createdBy: _currentUserId,
+        rankName: 'Bronze',
+        rankLevel: 1,
+        screenTimeAvgMinutes: current?.screenTimeAvgMinutes,
+        winStreakBonus: current?.winStreakBonus ?? streak,
+        totalRankPoints: current?.totalRankPoints ?? 0,
+        daysAtCurrentRank: current?.daysAtCurrentRank,
+        previousRankName: current?.rankName,
+        lastRankChangeDate: today,
+        createdAt: current?.createdAt ?? DateTime.now(),
+      );
+    } catch (e) {
+      AppLogger.error('Error resolving local Bronze fallback.', e);
+      return current;
     }
   }
 
@@ -56,7 +155,6 @@ class UserRepository {
   }
 
   Future<List<LeaderboardEntry>> getLeaderboard() async {
-    if (!_allowSocialScreenTimeSurfaces) return [];
     try {
       final response = await _client
           .from('leaderboard_entries')
@@ -74,7 +172,6 @@ class UserRepository {
   }
 
   Future<void> refreshLeaderboardForMe() async {
-    if (!_allowSocialScreenTimeSurfaces) return;
     try {
       await _client.rpc(
         'refresh_user_gamification',
@@ -92,10 +189,7 @@ class UserRepository {
   }
 
   Future<Profile> upsertProfile({String? fullName, String? avatarUrl}) async {
-    final user = _client.auth.currentUser;
-    if (user == null) {
-      throw StateError('Cannot upsert profile without an authenticated user.');
-    }
+    final user = _client.auth.currentUser!;
     final payload = {
       'id': _currentUserId,
       'email': user.email,
@@ -122,7 +216,6 @@ class UserRepository {
   }
 
   Future<List<FriendConnection>> getFriendConnections() async {
-    if (!_allowSocialScreenTimeSurfaces) return [];
     try {
       final response = await _client
           .from('friend_connections')
@@ -145,7 +238,6 @@ class UserRepository {
     required String friendEmail,
     String? friendName,
   }) async {
-    if (!_allowSocialScreenTimeSurfaces) return;
     final normalizedEmail = friendEmail.trim().toLowerCase();
     if (normalizedEmail.isEmpty) {
       throw ArgumentError('Friend email is required.');
@@ -174,7 +266,9 @@ class UserRepository {
       if (profile != null) {
         friendUserId = profile['id'] as String?;
         final profileName = (profile['full_name'] as String?)?.trim();
-        if (resolvedName.isEmpty && profileName != null && profileName.isNotEmpty) {
+        if (resolvedName.isEmpty &&
+            profileName != null &&
+            profileName.isNotEmpty) {
           resolvedName = profileName;
         }
       }
@@ -236,11 +330,15 @@ class UserRepository {
       'friend_name': resolvedName,
       'last_updated': resolvedUpdatedAt.toIso8601String(),
     };
-    if (resolvedRankLevel != null) payload['friend_rank_level'] = resolvedRankLevel;
+    if (resolvedRankLevel != null) {
+      payload['friend_rank_level'] = resolvedRankLevel;
+    }
     if (resolvedRankName != null && resolvedRankName.trim().isNotEmpty) {
       payload['friend_rank_name'] = resolvedRankName.trim();
     }
-    if (resolvedWinStreak != null) payload['friend_win_streak'] = resolvedWinStreak;
+    if (resolvedWinStreak != null) {
+      payload['friend_win_streak'] = resolvedWinStreak;
+    }
 
     if (existing == null) {
       await _client.from('friend_connections').insert({
@@ -258,7 +356,6 @@ class UserRepository {
   }
 
   Future<void> deleteFriendConnection(String id) async {
-    if (!_allowSocialScreenTimeSurfaces) return;
     await _client
         .from('friend_connections')
         .delete()
@@ -299,7 +396,6 @@ class UserRepository {
   }
 
   Future<void> syncFriendConnections() async {
-    if (!_allowSocialScreenTimeSurfaces) return;
     try {
       final current = await getFriendConnections();
       for (final friend in current) {

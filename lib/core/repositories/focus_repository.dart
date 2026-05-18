@@ -9,8 +9,6 @@ import '../utils/app_logger.dart';
 
 class FocusRepository {
   final SupabaseService _supabaseService;
-  final FamilyControlsLocalStore _familyControlsLocalStore =
-      FamilyControlsLocalStore();
   final FamilyControlsLocalStore _familyControlsLocalStore;
 
   FocusRepository({
@@ -21,9 +19,7 @@ class FocusRepository {
            familyControlsLocalStore ?? FamilyControlsLocalStore();
 
   SupabaseClient get _client => _supabaseService.client;
-  String get _currentUserId => _client.auth.currentUser!.id;
-  bool get _useLocalFamilyControlsStorage =>
-      AppleReviewCompliance.exposesLocalOnlyFamilyControls;
+  String get _currentUserId => _client.auth.currentUser?.id ?? "";
   bool get _useLocalFamilyControlsStorage =>
       AppleReviewCompliance.exposesLocalOnlyFamilyControls;
 
@@ -39,7 +35,9 @@ class FocusRepository {
           .select()
           .eq('created_by', _currentUserId);
 
-      return (response as List).map((data) => BlockList.fromJson(data)).toList();
+      return (response as List)
+          .map((data) => BlockList.fromJson(data))
+          .toList();
     } catch (e) {
       AppLogger.error('Error getting block lists.', e);
       return [];
@@ -72,7 +70,7 @@ class FocusRepository {
         .from('block_lists')
         .update({'is_active': false})
         .eq('created_by', _currentUserId);
-    
+
     // Set the specific one to true
     if (activeId != null) {
       await _client
@@ -146,50 +144,6 @@ class FocusRepository {
     }
   }
 
-  Future<void> replaceScreenTimeLogsForDay({
-    required DateTime day,
-    required List<AppUsage> usage,
-  }) async {
-    final dateKey =
-        "${day.year.toString().padLeft(4, '0")}-'
-        "${day.month.toString().padLeft(2, '0")}-'
-        "${day.day.toString().padLeft(2, '0")}';
-
-    try {
-      await _client
-          .from('screen_time_logs')
-          .delete()
-          .eq('created_by', _currentUserId)
-          .eq('date', dateKey);
-
-      final rows = usage
-          .where((app) => (app.usageTime?.inSeconds ?? 0) > 0)
-          .map(
-            (app) => {
-              'created_by': _currentUserId,
-              'date': dateKey,
-              'entity_type': 'app',
-              'entity_name':
-                  (app.packageName?.trim().isNotEmpty ?? false)
-                  ? app.packageName!.trim()
-                  : ((app.appName?.trim().isNotEmpty ?? false)
-                        ? app.appName!.trim()
-                        : 'Unknown app'),
-              'duration_seconds': app.usageTime!.inSeconds,
-              'start_time': app.firstTime?.toIso8601String(),
-              'end_time': app.lastTime?.toIso8601String(),
-              'awareness_notifications_shown': 0,
-            },
-          )
-          .toList(growable: false);
-
-      if (rows.isEmpty) return;
-      await _client.from('screen_time_logs').insert(rows);
-    } catch (e) {
-      AppLogger.error('Error syncing screen time logs.', e);
-    }
-  }
-
   Future<void> _refreshWinStreakForSession({
     required bool completed,
     required DateTime endTime,
@@ -197,9 +151,15 @@ class FocusRepository {
     try {
       final today = DateTime(endTime.year, endTime.month, endTime.day);
       final todayKey =
-          "${today.year.toString().padLeft(4, '0")}-'
-          "${today.month.toString().padLeft(2, '0")}-'
-          "${today.day.toString().padLeft(2, '0")}';
+          '${today.year.toString().padLeft(4, '0')}-'
+          '${today.month.toString().padLeft(2, '0')}-'
+          '${today.day.toString().padLeft(2, '0')}';
+      final yesterday = today.subtract(const Duration(days: 1));
+      final yesterdayKey =
+          '${yesterday.year.toString().padLeft(4, '0')}-'
+          '${yesterday.month.toString().padLeft(2, '0')}-'
+          '${yesterday.day.toString().padLeft(2, '0')}';
+
       final current = await _client
           .from('win_streaks')
           .select()
@@ -212,7 +172,8 @@ class FocusRepository {
           (current?['total_completed_sessions'] as num?)?.toInt() ?? 0;
       final totalFailed =
           (current?['total_failed_sessions'] as num?)?.toInt() ?? 0;
-      final lastSessionDate = (current?['last_session_date'] as String?)?.trim();
+      final lastSessionDate = (current?['last_session_date'] as String?)
+          ?.trim();
 
       var nextCurrentStreak = currentStreak;
       var nextLongestStreak = longestStreak;
@@ -222,16 +183,19 @@ class FocusRepository {
 
       if (completed) {
         nextTotalCompleted += 1;
-        nextCurrentStreak = lastSessionDate == todayKey
-            ? (currentStreak == 0 ? 1 : currentStreak)
-            : (currentStreak + 1);
+        if (lastSessionDate == todayKey) {
+          nextCurrentStreak = currentStreak == 0 ? 1 : currentStreak;
+        } else if (lastSessionDate == yesterdayKey) {
+          nextCurrentStreak = currentStreak + 1;
+        } else {
+          nextCurrentStreak = 1;
+        }
         nextLongestStreak = nextCurrentStreak > longestStreak
             ? nextCurrentStreak
             : longestStreak;
         nextLastSessionDate = todayKey;
       } else {
         nextTotalFailed += 1;
-        nextCurrentStreak = 0;
       }
 
       await _client.from('win_streaks').upsert({
@@ -295,8 +259,7 @@ class FocusRepository {
       var currentRun = 0;
       DateTime? previousDay;
       for (final day in sortedDays) {
-        if (previousDay != null &&
-            day.difference(previousDay).inDays == 1) {
+        if (previousDay != null && day.difference(previousDay).inDays == 1) {
           currentRun += 1;
         } else {
           currentRun = 1;
@@ -310,9 +273,9 @@ class FocusRepository {
       if (sortedDays.isNotEmpty) {
         final latestDay = sortedDays.last;
         lastSessionDate =
-            "${latestDay.year.toString().padLeft(4, '0")}-'
-            "${latestDay.month.toString().padLeft(2, '0")}-'
-            "${latestDay.day.toString().padLeft(2, '0")}';
+            '${latestDay.year.toString().padLeft(4, '0')}-'
+            '${latestDay.month.toString().padLeft(2, '0')}-'
+            '${latestDay.day.toString().padLeft(2, '0')}';
 
         final today = DateTime.now();
         final todayDay = DateTime(today.year, today.month, today.day);
@@ -333,7 +296,9 @@ class FocusRepository {
 
       final totalCompleted = rows.length;
       final allSessions = (sessions as List).cast<Map<String, dynamic>>();
-      final totalFailed = allSessions.where((row) => row['completed'] != true).length;
+      final totalFailed = allSessions
+          .where((row) => row['completed'] != true)
+          .length;
 
       final currentStreakExisting =
           (existing?['current_streak'] as num?)?.toInt() ?? 0;

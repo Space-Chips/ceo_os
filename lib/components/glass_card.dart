@@ -19,7 +19,6 @@ class GlassCard extends StatelessWidget {
   final bool textured;
   final GlassCardLevel level;
   final bool showEdgeGlow;
-  final bool showTopHighlight;
   final Color? glowColor;
   final bool showTopHighlight;
 
@@ -42,29 +41,27 @@ class GlassCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final baseGradient = gradientColors ?? [
-      AppColors.cardBackgroundAlt,
-      AppColors.cardBase,
-    ];
+    final baseGradient =
+        gradientColors ?? [AppColors.cardBackgroundAlt, AppColors.cardBase];
     final shadowSpec = switch (level) {
       GlassCardLevel.subtle => (
-          alpha: AppColors.isDark ? 0.12 : 0.08,
-          blur: 12.0,
-          offsetY: 6.0,
-          spread: -8.0,
-        ),
+        alpha: AppColors.isDark ? 0.12 : 0.08,
+        blur: 12.0,
+        offsetY: 6.0,
+        spread: -8.0,
+      ),
       GlassCardLevel.standard => (
-          alpha: AppColors.isDark ? 0.16 : 0.095,
-          blur: 14.0,
-          offsetY: 7.0,
-          spread: -10.0,
-        ),
+        alpha: AppColors.isDark ? 0.16 : 0.095,
+        blur: 14.0,
+        offsetY: 7.0,
+        spread: -10.0,
+      ),
       GlassCardLevel.elevated => (
-          alpha: AppColors.isDark ? 0.22 : 0.12,
-          blur: 18.0,
-          offsetY: 9.0,
-          spread: -12.0,
-        ),
+        alpha: AppColors.isDark ? 0.22 : 0.12,
+        blur: 18.0,
+        offsetY: 9.0,
+        spread: -12.0,
+      ),
     };
 
     final edgeColor = (glowColor ?? AppColors.themeGlow).withValues(
@@ -105,10 +102,17 @@ class GlassCard extends StatelessWidget {
                 end: Alignment.bottomRight,
                 colors: [
                   Color.alphaBlend(
-                    AppColors.white.withValues(alpha: AppColors.isDark ? 0.03 : 0.5),
+                    AppColors.ambientTint.withValues(
+                      alpha: AppColors.isDark ? 0.06 : 0.03,
+                    ),
                     baseGradient.first,
                   ),
-                  baseGradient.last,
+                  Color.alphaBlend(
+                    AppColors.glassHighlightSoft.withValues(
+                      alpha: AppColors.isDark ? 0.04 : 0.02,
+                    ),
+                    baseGradient.last,
+                  ),
                 ],
               ),
             ),
@@ -133,9 +137,7 @@ class GlassCard extends StatelessWidget {
                   ),
                 if (textured)
                   const Positioned.fill(
-                    child: IgnorePointer(
-                      child: _SubtleGrain(),
-                    ),
+                    child: IgnorePointer(child: _SubtleGrain()),
                   ),
                 Padding(
                   padding: padding ?? const EdgeInsets.all(14),

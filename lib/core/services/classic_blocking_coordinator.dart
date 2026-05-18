@@ -2,6 +2,7 @@ import 'dart:io';
 
 import '../models/settings_models.dart';
 import '../utils/app_logger.dart';
+import '../utils/domain_utils.dart';
 import 'classic_blocking_local_store.dart';
 import 'focus_service.dart';
 
@@ -10,69 +11,13 @@ class ClassicBlockingSyncResult {
   final int enforceableAppCount;
   final int enforceableWebsiteCount;
   final int effectiveTargetCount;
-  final int unresolvedAppCount;
-  final int unresolvedWebsiteCount;
-  final int pushedClassicPackageCount;
-  final int pushedClassicWebsiteCount;
-  final int pushedPausePackageCount;
-  final int pushedPauseWebsiteCount;
-  final int pushedDailyLimitCount;
-  final bool syncApplied;
-  final String? failureReason;
 
   const ClassicBlockingSyncResult({
     required this.activePause,
     required this.enforceableAppCount,
     required this.enforceableWebsiteCount,
     required this.effectiveTargetCount,
-    required this.unresolvedAppCount,
-    required this.unresolvedWebsiteCount,
-    required this.pushedClassicPackageCount,
-    required this.pushedClassicWebsiteCount,
-    required this.pushedPausePackageCount,
-    required this.pushedPauseWebsiteCount,
-    required this.pushedDailyLimitCount,
-    required this.syncApplied,
-    this.failureReason,
   });
-
-  ClassicBlockingSyncResult copyWith({
-    bool? activePause,
-    int? enforceableAppCount,
-    int? enforceableWebsiteCount,
-    int? effectiveTargetCount,
-    int? unresolvedAppCount,
-    int? unresolvedWebsiteCount,
-    int? pushedClassicPackageCount,
-    int? pushedClassicWebsiteCount,
-    int? pushedPausePackageCount,
-    int? pushedPauseWebsiteCount,
-    int? pushedDailyLimitCount,
-    bool? syncApplied,
-    String? failureReason,
-  }) {
-    return ClassicBlockingSyncResult(
-      activePause: activePause ?? this.activePause,
-      enforceableAppCount: enforceableAppCount ?? this.enforceableAppCount,
-      enforceableWebsiteCount:
-          enforceableWebsiteCount ?? this.enforceableWebsiteCount,
-      effectiveTargetCount: effectiveTargetCount ?? this.effectiveTargetCount,
-      unresolvedAppCount: unresolvedAppCount ?? this.unresolvedAppCount,
-      unresolvedWebsiteCount:
-          unresolvedWebsiteCount ?? this.unresolvedWebsiteCount,
-      pushedClassicPackageCount:
-          pushedClassicPackageCount ?? this.pushedClassicPackageCount,
-      pushedClassicWebsiteCount:
-          pushedClassicWebsiteCount ?? this.pushedClassicWebsiteCount,
-      pushedPausePackageCount:
-          pushedPausePackageCount ?? this.pushedPausePackageCount,
-      pushedPauseWebsiteCount:
-          pushedPauseWebsiteCount ?? this.pushedPauseWebsiteCount,
-      pushedDailyLimitCount: pushedDailyLimitCount ?? this.pushedDailyLimitCount,
-      syncApplied: syncApplied ?? this.syncApplied,
-      failureReason: failureReason ?? this.failureReason,
-    );
-  }
 }
 
 class ClassicBlockingCoordinator {
@@ -112,75 +57,152 @@ class ClassicBlockingCoordinator {
     );
 
     final appBindings = await _localStore.loadAppBindings();
-    final websiteBindings = await _localStore.loadWebsiteBindings();
+    final hydratedAppBindings = await _backfillIosAppBindings(
+      apps: apps,
+      existingBindings: appBindings,
+    );
+    var websiteBindings = await _localStore.loadWebsiteBindings();
+    websiteBindings = await _backfillAndroidWebsiteBindings(
+      websites: websites,
+      existingBindings: websiteBindings,
+    );
+    websiteBindings = await _backfillIosWebsiteBindings(
+      websites: websites,
+      existingBindings: websiteBindings,
+    );
     final pauseActive = _hasActivePause(restPeriods);
 
     final alwaysBlockedApps = apps.where(
-      (item) => _isFullyBlocked(item.timeLimitMinutes) && _isAppEnforceable(appBindings[item.id]),
+      (item) =>
+          _isFullyBlocked(item.timeLimitMinutes) &&
+          _isAppEnforceable(hydratedAppBindings[item.id]),
     );
-    final pauseScopedApps = pauseActive
-        ? apps.where((item) => _isAppEnforceable(appBindings[item.id]))
-        : const <BlockedApp>[];
+    final pauseScopedApps = apps.where(
+      (item) => _isAppEnforceable(hydratedAppBindings[item.id]),
+    );
 
     final alwaysBlockedSites = websites.where(
       (item) =>
           _isFullyBlocked(item.timeLimitMinutes) &&
           _isWebsiteEnforceable(websiteBindings[item.id]),
     );
-    final pauseScopedSites = pauseActive
-        ? websites.where((item) => _isWebsiteEnforceable(websiteBindings[item.id]))
-        : const <BlockedWebsite>[];
+    final pauseScopedSites = websites.where(
+      (item) => _isWebsiteEnforceable(websiteBindings[item.id]),
+    );
 
-    final effectiveAppBindings = {
-      for (final item in [...alwaysBlockedApps, ...pauseScopedApps])
-        item.id: appBindings[item.id]!,
+    final baseAppBindings = {
+      for (final item in alwaysBlockedApps)
+        item.id: hydratedAppBindings[item.id]!,
     };
-    final effectiveWebsiteBindings = {
-      for (final item in [...alwaysBlockedSites, ...pauseScopedSites])
-        item.id: websiteBindings[item.id]!,
+    final baseWebsiteBindings = {
+      for (final item in alwaysBlockedSites) item.id: websiteBindings[item.id]!,
+    };
+    final pauseAppBindings = {
+      for (final item in pauseScopedApps)
+        item.id: hydratedAppBindings[item.id]!,
+    };
+    final pauseWebsiteBindings = {
+      for (final item in pauseScopedSites) item.id: websiteBindings[item.id]!,
     };
 
-    final packageIdentifiers = <String>{
-      for (final binding in effectiveAppBindings.values)
-        if (binding.nativeIdentifier?.trim().isNotEmpty ?? false)
-          binding.nativeIdentifier!.trim(),
-    }.toList(growable: false);
+    final basePackageIdentifiers = _collectNonEmpty(
+      baseAppBindings.values.map((binding) => binding.nativeIdentifier),
+    );
 
-    final payloads = <String>[
-      for (final binding in [...effectiveAppBindings.values, ...effectiveWebsiteBindings.values])
-        if (binding.nativePayload?.trim().isNotEmpty ?? false)
-          binding.nativePayload!.trim(),
-    ];
+    final basePayloads = _collectNonEmpty([
+      ...baseAppBindings.values.map((binding) => binding.nativePayload),
+      ...baseWebsiteBindings.values.map((binding) => binding.nativePayload),
+    ]);
 
-    final classicPackages = Platform.isIOS ? payloads : packageIdentifiers;
-    final enabled = classicPackages.isNotEmpty;
+    final baseWebsiteDomains = _collectNonEmpty(
+      baseWebsiteBindings.values.map((binding) => binding.nativeIdentifier),
+    );
+
+    final pausePackageIdentifiers = _collectNonEmpty(
+      pauseAppBindings.values.map((binding) => binding.nativeIdentifier),
+    );
+
+    final pausePayloads = _collectNonEmpty([
+      ...pauseAppBindings.values.map((binding) => binding.nativePayload),
+      ...pauseWebsiteBindings.values.map((binding) => binding.nativePayload),
+    ]);
+
+    final pauseWebsiteDomains = _collectNonEmpty(
+      pauseWebsiteBindings.values.map((binding) => binding.nativeIdentifier),
+    );
+
+    final baseClassicPackages = Platform.isIOS
+        ? basePayloads
+        : basePackageIdentifiers;
+    final pauseClassicPackages = Platform.isIOS
+        ? pausePayloads
+        : pausePackageIdentifiers;
+    final enabled =
+        baseClassicPackages.isNotEmpty || baseWebsiteDomains.isNotEmpty;
+    final dailyLimitEntries = _buildDailyLimitEntries(
+      apps: apps,
+      websites: websites,
+      appBindings: hydratedAppBindings,
+      websiteBindings: websiteBindings,
+    );
+    final scheduledPausePeriods = restPeriods
+        .map(_toNativePausePeriod)
+        .whereType<Map<String, dynamic>>()
+        .toList(growable: false);
 
     try {
-      await _focusService.syncClassicShieldConfig(classicPackages, const []);
+      await _focusService.syncClassicShieldConfig(
+        baseClassicPackages,
+        const [],
+        websiteDomains: baseWebsiteDomains,
+      );
       await _focusService.setClassicShieldEnabled(enabled);
+      await _focusService.syncClassicPauseSchedule(
+        pauseClassicPackages,
+        const [],
+        scheduledPausePeriods,
+        websiteDomains: pauseWebsiteDomains,
+      );
+      await _focusService.syncClassicDailyLimits(dailyLimitEntries);
     } catch (error) {
       AppLogger.error('Failed to sync classic blocking state.', error);
     }
 
     return ClassicBlockingSyncResult(
       activePause: pauseActive,
-      enforceableAppCount: appBindings.values.where((item) => item.isEnforceable).length,
-      enforceableWebsiteCount:
-          websiteBindings.values.where((item) => item.isEnforceable).length,
-      effectiveTargetCount:
-          effectiveAppBindings.length + effectiveWebsiteBindings.length,
+      enforceableAppCount: hydratedAppBindings.values
+          .where((item) => item.isEnforceable)
+          .length,
+      enforceableWebsiteCount: websiteBindings.values
+          .where((item) => item.isEnforceable)
+          .length,
+      effectiveTargetCount: pauseActive
+          ? pauseAppBindings.length + pauseWebsiteBindings.length
+          : baseAppBindings.length + baseWebsiteBindings.length,
     );
   }
 
   bool _hasActivePause(List<RestPeriod> periods) {
     final now = DateTime.now();
     return periods.any((period) {
-      if (!period.active) return false;
       final start = period.startTime;
       final end = period.endTime;
+      if (end == null) return false;
       if (start != null && start.isAfter(now)) return false;
-      return end == null || end.isAfter(now);
+      return end.isAfter(now);
     });
+  }
+
+  Map<String, dynamic>? _toNativePausePeriod(RestPeriod period) {
+    final start = period.startTime;
+    final end = period.endTime;
+    if (start == null || end == null) return null;
+    if (!end.isAfter(start)) return null;
+    return {
+      'id': period.id,
+      'startMillis': start.millisecondsSinceEpoch,
+      'endMillis': end.millisecondsSinceEpoch,
+    };
   }
 
   bool _isFullyBlocked(int? limitMinutes) => (limitMinutes ?? 0) <= 0;
@@ -192,7 +214,111 @@ class ClassicBlockingCoordinator {
           : (binding.nativeIdentifier?.trim().isNotEmpty ?? false));
 
   bool _isWebsiteEnforceable(ClassicBlockBinding? binding) =>
-      binding != null && (binding.nativePayload?.trim().isNotEmpty ?? false);
+      binding != null &&
+      (Platform.isIOS
+          ? ((binding.nativePayload?.trim().isNotEmpty ?? false) ||
+                (binding.nativeIdentifier?.trim().isNotEmpty ?? false))
+          : (binding.nativeIdentifier?.trim().isNotEmpty ?? false));
+
+  Future<Map<String, ClassicBlockBinding>> _backfillIosAppBindings({
+    required List<BlockedApp> apps,
+    required Map<String, ClassicBlockBinding> existingBindings,
+  }) async {
+    if (!Platform.isIOS) return existingBindings;
+
+    var changed = false;
+    final mutable = Map<String, ClassicBlockBinding>.from(existingBindings);
+    for (final app in apps) {
+      final existing = mutable[app.id];
+      if (existing?.nativePayload?.trim().isNotEmpty ?? false) {
+        continue;
+      }
+      final bundleId = existing?.nativeIdentifier?.trim();
+      if (bundleId == null || bundleId.isEmpty) continue;
+      final encoded = await _focusService.encodeApplicationBundleSelection(
+        bundleId,
+      );
+      if (encoded == null || encoded.trim().isEmpty) continue;
+
+      final binding = ClassicBlockBinding(
+        nativeIdentifier: bundleId,
+        nativePayload: encoded.trim(),
+      );
+      mutable[app.id] = binding;
+      await _localStore.saveAppBinding(
+        rowId: app.id,
+        nativeIdentifier: binding.nativeIdentifier,
+        nativePayload: binding.nativePayload,
+      );
+      changed = true;
+    }
+    return changed ? mutable : existingBindings;
+  }
+
+  Future<Map<String, ClassicBlockBinding>> _backfillAndroidWebsiteBindings({
+    required List<BlockedWebsite> websites,
+    required Map<String, ClassicBlockBinding> existingBindings,
+  }) async {
+    if (!Platform.isAndroid) return existingBindings;
+
+    var changed = false;
+    final mutable = Map<String, ClassicBlockBinding>.from(existingBindings);
+    for (final website in websites) {
+      final existing = mutable[website.id];
+      if (existing?.nativeIdentifier?.trim().isNotEmpty ?? false) {
+        continue;
+      }
+      final normalized = normalizeDomainInput(
+        website.urlDomain,
+        allowedSpecialValues: {'__ADULT_CONTENT__'},
+      );
+      if (normalized == null || normalized == '__ADULT_CONTENT__') continue;
+      final binding = ClassicBlockBinding(nativeIdentifier: normalized);
+      mutable[website.id] = binding;
+      await _localStore.saveWebsiteBinding(
+        rowId: website.id,
+        nativeIdentifier: normalized,
+      );
+      changed = true;
+    }
+    return changed ? mutable : existingBindings;
+  }
+
+  Future<Map<String, ClassicBlockBinding>> _backfillIosWebsiteBindings({
+    required List<BlockedWebsite> websites,
+    required Map<String, ClassicBlockBinding> existingBindings,
+  }) async {
+    if (!Platform.isIOS) return existingBindings;
+
+    var changed = false;
+    final mutable = Map<String, ClassicBlockBinding>.from(existingBindings);
+    for (final website in websites) {
+      final existing = mutable[website.id];
+      if (existing?.nativePayload?.trim().isNotEmpty ?? false) {
+        continue;
+      }
+      final normalized = normalizeDomainInput(website.urlDomain);
+      if (normalized == null || normalized.isEmpty) continue;
+      final encoded = await _focusService.encodeWebsiteDomainSelection(
+        normalized,
+      );
+      if (encoded == null || encoded.trim().isEmpty) continue;
+
+      final binding = ClassicBlockBinding(
+        nativeIdentifier:
+            _clean(existing?.nativeIdentifier) ?? normalized,
+        nativePayload: encoded.trim(),
+      );
+      mutable[website.id] = binding;
+      await _localStore.saveWebsiteBinding(
+        rowId: website.id,
+        nativeIdentifier: binding.nativeIdentifier,
+        nativePayload: binding.nativePayload,
+      );
+      changed = true;
+    }
+    return changed ? mutable : existingBindings;
+  }
 
   List<Map<String, dynamic>> _buildDailyLimitEntries({
     required List<BlockedApp> apps,
@@ -259,37 +385,5 @@ class ClassicBlockingCoordinator {
         'kind': kind,
       };
     }
-  }
-
-  String _normalizeLabel(String? raw) {
-    return (raw ?? '')
-        .trim()
-        .toLowerCase()
-        .replaceAll(RegExp(r'\s+'), ' ');
-  }
-
-  bool _looksLikePackageName(String value) {
-    return RegExp(r'^[a-zA-Z0-9_]+(?:\.[a-zA-Z0-9_]+)+$').hasMatch(value);
-  }
-
-  String? _inferAndroidPackageName({
-    required String? rawName,
-    required Set<String> installedPackages,
-    required Map<String, Set<String>> packagesByLabel,
-  }) {
-    final cleaned = _clean(rawName);
-    if (cleaned == null) return null;
-
-    if (_looksLikePackageName(cleaned) && installedPackages.contains(cleaned)) {
-      return cleaned;
-    }
-
-    final normalizedLabel = _normalizeLabel(cleaned);
-    final matches = packagesByLabel[normalizedLabel];
-    if (matches != null && matches.length == 1) {
-      return matches.first;
-    }
-
-    return null;
   }
 }

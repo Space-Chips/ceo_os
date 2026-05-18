@@ -1,9 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/cupertino.dart';
-import 'package:provider/provider.dart';
 
-import '../../../core/providers/language_provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 
@@ -31,7 +29,6 @@ class _FocusPreparationAnimationViewState
 
   @override
   Widget build(BuildContext context) {
-    final language = context.watch<LanguageProvider>();
     return RepaintBoundary(
       child: AspectRatio(
         aspectRatio: 0.66,
@@ -62,8 +59,7 @@ class _FocusPreparationAnimationViewState
           padding: const EdgeInsets.fromLTRB(14, 14, 14, 16),
           child: AnimatedBuilder(
             animation: _controller,
-            builder: (context, _) =>
-                _FocusPhoneMock(progress: _controller.value, language: language),
+            builder: (context, _) => _FocusPhoneMock(progress: _controller.value),
           ),
         ),
       ),
@@ -72,10 +68,9 @@ class _FocusPreparationAnimationViewState
 }
 
 class _FocusPhoneMock extends StatelessWidget {
-  const _FocusPhoneMock({required this.progress, required this.language});
+  const _FocusPhoneMock({required this.progress});
 
   final double progress;
-  final LanguageProvider language;
 
   double _segment(double begin, double end, {Curve curve = Curves.easeInOut}) {
     final t = ((progress - begin) / (end - begin)).clamp(0.0, 1.0);
@@ -213,7 +208,7 @@ class _FocusPhoneMock extends StatelessWidget {
                           ),
                           const SizedBox(height: 6),
                           Text(
-                            language.t('focus_active'),
+                            'FOCUS ACTIVE',
                             style: AppTypography.overline.copyWith(
                               fontSize: 11,
                               color: AppColors.accentText.withValues(alpha: 0.9),
@@ -249,7 +244,7 @@ class _FocusPhoneMock extends StatelessWidget {
                       ),
                     ),
                     child: Text(
-                      language.t('focus_plus_one_streak'),
+                      '+1 WIN STREAK',
                       style: AppTypography.caption1.copyWith(
                         fontSize: 11,
                         color: AppColors.success,
@@ -267,7 +262,7 @@ class _FocusPhoneMock extends StatelessWidget {
               child: Opacity(
                 opacity: finalLabel,
                 child: Text(
-                  'Blocage actif jusqu'à la fin',
+                  "Blocage actif jusqu'à la fin",
                   textAlign: TextAlign.center,
                   style: AppTypography.footnote.copyWith(
                     color: AppColors.secondaryLabel.withValues(alpha: 0.9),

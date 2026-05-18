@@ -2,40 +2,31 @@ import 'dart:async';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../models/block_list_model.dart';
 import '../models/premium_models.dart';
 import '../repositories/ceo_mode_repository.dart';
-import '../repositories/focus_repository.dart';
 import '../repositories/premium_repository.dart';
 import '../services/focus_service.dart';
+import '../services/stats_engine.dart';
+import '../../features/ceo_mode/blackout_preparation/blackout_preparation_models.dart';
 import 'package:flutter/widgets.dart';
-import '../../features/ceo_mode/blackout_preparation/blackout_preparation_models.dart';
-import '../../features/ceo_mode/blackout_preparation/blackout_preparation_models.dart';
 
 enum CeoModeState { idle, active, exitPending }
 
 class CeoModeProvider extends ChangeNotifier with WidgetsBindingObserver {
   CeoModeProvider({
     CeoModeRepository? ceoModeRepository,
-    FocusRepository? focusRepository,
     FocusService? focusService,
     PremiumRepository? premiumRepository,
   }) : _ceoModeRepository = ceoModeRepository ?? CeoModeRepository(),
-       _focusRepository = focusRepository ?? FocusRepository(),
        _focusService = focusService ?? FocusService(),
        _premiumRepository = premiumRepository ?? PremiumRepository() {
     Future.microtask(initialize);
   }
 
-  Future<void> _refreshProtectionStatus() async {
-    _protectionStatus = await _focusService.getProtectionStatus();
-    _isAuthorized = _protectionStatus.isAuthorized;
-  }
-
   final CeoModeRepository _ceoModeRepository;
-  final FocusRepository _focusRepository;
   final FocusService _focusService;
   final PremiumRepository _premiumRepository;
+  final StatsEngine _statsEngine = StatsEngine();
 
   static const List<String> approvedApps = [];
   static const int _defaultDurationMinutes = 30;
@@ -209,6 +200,11 @@ class CeoModeProvider extends ChangeNotifier with WidgetsBindingObserver {
         durationMinutes: _selectedDurationMinutes,
         approvedAppsCount: approvedApps.length,
       );
+      unawaited(
+        _statsEngine.recordCeoSessionStarted(
+          plannedDurationMinutes: _selectedDurationMinutes,
+        ),
+      );
 
       await _persistState();
       _ensureTicker();
@@ -222,7 +218,9 @@ class CeoModeProvider extends ChangeNotifier with WidgetsBindingObserver {
   void requestExit() {
     if (_state == CeoModeState.idle) return;
     _state = CeoModeState.exitPending;
-    _exitReadyAt = DateTime.now().add(const Duration(minutes: _exitDelayMinutes));
+    _exitReadyAt = DateTime.now().add(
+      const Duration(minutes: _exitDelayMinutes),
+    );
     unawaited(_persistState());
     notifyListeners();
   }
@@ -237,12 +235,17 @@ class CeoModeProvider extends ChangeNotifier with WidgetsBindingObserver {
 
   Future<bool> finalizeExit() async {
     if (!canFinalizeExit || _ending) return false;
-    await _endSession();
+    await _endSession(completed: false);
     return true;
   }
 
   Future<bool> _activateShielding() async {
     return _focusService.startCeoShield();
+  }
+
+  Future<void> _refreshProtectionStatus() async {
+    _protectionStatus = await _focusService.getProtectionStatus();
+    _isAuthorized = _protectionStatus.isAuthorized;
   }
 
   void _ensureTicker() {
@@ -260,13 +263,13 @@ class CeoModeProvider extends ChangeNotifier with WidgetsBindingObserver {
     }
 
     if (sessionRemainingSeconds <= 0) {
-      unawaited(_endSession());
+      unawaited(_endSession(completed: true));
       return;
     }
     notifyListeners();
   }
 
-  Future<void> _endSession() async {
+  Future<void> _endSession({required bool completed}) async {
     if (_ending) return;
     _ending = true;
     final endedAt = DateTime.now();
@@ -276,7 +279,27 @@ class CeoModeProvider extends ChangeNotifier with WidgetsBindingObserver {
       await _focusService.stopShield();
 
       if (sessionId != null) {
-        await _ceoModeRepository.endSession(sessionId: sessionId, endTime: endedAt);
+        await _ceoModeRepository.endSession(
+          sessionId: sessionId,
+          endTime: endedAt,
+        );
+      }
+      final startedAt = _sessionStartAt;
+      if (startedAt != null) {
+        final elapsed = endedAt
+            .difference(startedAt)
+            .inMinutes
+            .clamp(0, 24 * 60);
+        if (completed) {
+          unawaited(
+            _statsEngine.recordCeoSessionCompleted(durationMinutes: elapsed),
+          );
+          unawaited(_statsEngine.recordProductiveTime(minutes: elapsed));
+        } else {
+          unawaited(
+            _statsEngine.recordCeoSessionBroken(elapsedMinutes: elapsed),
+          );
+        }
       }
 
       _state = CeoModeState.idle;
@@ -329,7 +352,10 @@ class CeoModeProvider extends ChangeNotifier with WidgetsBindingObserver {
     final now = DateTime.now();
     if (!restoredEnd.isAfter(now)) {
       if (sessionId != null) {
-        await _ceoModeRepository.endSession(sessionId: sessionId, endTime: restoredEnd);
+        await _ceoModeRepository.endSession(
+          sessionId: sessionId,
+          endTime: restoredEnd,
+        );
       }
       await _clearPersistedState();
       return;
@@ -359,7 +385,10 @@ class CeoModeProvider extends ChangeNotifier with WidgetsBindingObserver {
     }
 
     if (_sessionStartAt != null) {
-      await prefs.setInt(_prefsStartAtMs, _sessionStartAt!.millisecondsSinceEpoch);
+      await prefs.setInt(
+        _prefsStartAtMs,
+        _sessionStartAt!.millisecondsSinceEpoch,
+      );
     } else {
       await prefs.remove(_prefsStartAtMs);
     }
@@ -397,9 +426,9 @@ class CeoModeProvider extends ChangeNotifier with WidgetsBindingObserver {
     final s = secs % 60;
 
     if (h > 0) {
-      return "${h.toString().padLeft(2, '0")}:${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
+      return '${h.toString().padLeft(2, '0')}:${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
     }
-    return "${m.toString().padLeft(2, '0")}:${s.toString().padLeft(2, '0')}';
+    return '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
   }
 
   @override
@@ -419,8 +448,9 @@ class CeoModeProvider extends ChangeNotifier with WidgetsBindingObserver {
     }
 
     if (state == AppLifecycleState.resumed) {
+      unawaited(refreshProtectionStatus());
       if (sessionRemainingSeconds <= 0) {
-        unawaited(_endSession());
+        unawaited(_endSession(completed: true));
       } else {
         _ensureTicker();
         notifyListeners();

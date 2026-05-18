@@ -119,7 +119,6 @@ class LeaderboardEntry {
   final String? rankName;
   final int? winStreak;
   final int? percentile;
-  final int? screenTimeAvgMinutes;
   final bool optedIn;
   final DateTime? lastSyncDate;
   final DateTime createdAt;
@@ -131,8 +130,6 @@ class LeaderboardEntry {
     this.rankName,
     this.winStreak,
     this.percentile,
-    this.screenTimeAvgMinutes,
-    this.screenTimeAvgMinutes,
     this.optedIn = true,
     this.lastSyncDate,
     required this.createdAt,
@@ -146,8 +143,6 @@ class LeaderboardEntry {
       rankName: json['rank_name'],
       winStreak: json['win_streak'],
       percentile: json['percentile'],
-      screenTimeAvgMinutes: (json['screen_time_avg_minutes'] as num?)?.toInt(),
-      screenTimeAvgMinutes: (json['screen_time_avg_minutes'] as num?)?.toInt(),
       optedIn: json['opted_in'] ?? true,
       lastSyncDate: json['last_sync_date'] != null
           ? DateTime.parse(json['last_sync_date'])

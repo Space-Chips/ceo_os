@@ -1,10 +1,6 @@
-import 'dart:convert';
-
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../models/task_models.dart';
 import '../services/supabase_service.dart';
-import '../utils/app_logger.dart';
 
 class TaskRepository {
   final SupabaseService _supabaseService;
@@ -28,37 +24,12 @@ class TaskRepository {
 
       final response = await query.order('sort_order', ascending: true);
 
-      try {
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString(
-          _cacheKey(includeCompleted ? 'tasks_all_v1' : 'tasks_active_v1'),
-          jsonEncode(response),
-        );
-      } catch (_) {
-        // Best effort only.
-      }
-
       return (response as List)
           .map((data) => ParetoTask.fromJson(data))
           .toList();
     } catch (e) {
-      AppLogger.error('Error getting tasks.', e);
-      // Offline-first fallback: return last cached snapshot if present.
-      try {
-        final prefs = await SharedPreferences.getInstance();
-        final raw = prefs.getString(
-          _cacheKey(includeCompleted ? 'tasks_all_v1' : 'tasks_active_v1'),
-        );
-        if (raw == null || raw.isEmpty) return [];
-        final decoded = jsonDecode(raw);
-        if (decoded is! List) return [];
-        return decoded
-            .whereType<Map>()
-            .map((row) => ParetoTask.fromJson(Map<String, dynamic>.from(row)))
-            .toList();
-      } catch (_) {
-        return [];
-      }
+      print('Error getting tasks: $e');
+      return [];
     }
   }
 
@@ -66,16 +37,11 @@ class TaskRepository {
     await _client
         .from('pareto_tasks')
         .update({'completed': false, 'completed_date': null})
-        .eq('id', taskId)
-        .eq('created_by', _currentUserId);
+        .eq('id', taskId);
   }
 
   Future<void> deleteTask(String taskId) async {
-    await _client
-        .from('pareto_tasks')
-        .delete()
-        .eq('id', taskId)
-        .eq('created_by', _currentUserId);
+    await _client.from('pareto_tasks').delete().eq('id', taskId);
   }
 
   Future<void> addTask(
@@ -141,7 +107,7 @@ class TaskRepository {
     if (syncToCalendar && deadline != null) {
       await addEvent(
         title,
-        "${deadline.year.toString().padLeft(4, '0")}-${deadline.month.toString().padLeft(2, '0')}-${deadline.day.toString().padLeft(2, '0')}',
+        '${deadline.year.toString().padLeft(4, '0')}-${deadline.month.toString().padLeft(2, '0')}-${deadline.day.toString().padLeft(2, '0')}',
         description: description,
         sourceType: 'task',
         sourceId: response['id'] as String?,
@@ -156,8 +122,7 @@ class TaskRepository {
           'completed': true,
           'completed_date': DateTime.now().toIso8601String(),
         })
-        .eq('id', taskId)
-        .eq('created_by', _currentUserId);
+        .eq('id', taskId);
   }
 
   // --- Task Groups ---
@@ -174,7 +139,7 @@ class TaskRepository {
           .map((data) => TaskGroup.fromJson(data))
           .toList();
     } catch (e) {
-      AppLogger.error('Error getting task groups.', e);
+      print('Error getting task groups: $e');
       return [];
     }
   }
@@ -230,43 +195,14 @@ class TaskRepository {
           .map((data) => CalendarEvent.fromJson(data))
           .toList();
 
-      final expanded = _expandRecurringEvents(
+      return _expandRecurringEvents(
         baseEvents,
         cutoffDate: cutoffDate,
         horizonDate: horizonDate,
       );
-
-      try {
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString(_cacheKey('events_v1'), jsonEncode(merged.values));
-      } catch (_) {
-        // Best effort only.
-      }
-
-      return expanded;
     } catch (e) {
-      AppLogger.error('Error getting events.', e);
-      try {
-        final prefs = await SharedPreferences.getInstance();
-        final raw = prefs.getString(_cacheKey('events_v1'));
-        if (raw == null || raw.isEmpty) return [];
-        final decoded = jsonDecode(raw);
-        if (decoded is! List) return [];
-        final baseEvents = decoded
-            .whereType<Map>()
-            .map((row) => CalendarEvent.fromJson(Map<String, dynamic>.from(row)))
-            .toList();
-
-        final cutoffDate = DateTime.now().subtract(const Duration(days: 30));
-        final horizonDate = DateTime.now().add(const Duration(days: 740));
-        return _expandRecurringEvents(
-          baseEvents,
-          cutoffDate: cutoffDate,
-          horizonDate: horizonDate,
-        );
-      } catch (_) {
-        return [];
-      }
+      print('Error getting events: $e');
+      return [];
     }
   }
 
@@ -290,22 +226,151 @@ class TaskRepository {
       'duration_minutes': durationMinutes,
       'source_type': sourceType ?? 'manual',
       'source_id': sourceId,
-      'event_type_id': eventTypeId,
       'recurrence_rule': recurrenceRule,
+      'event_type_id': eventTypeId,
     };
 
     try {
       await _client.from('calendar_events').insert(payload);
     } on PostgrestException catch (e) {
-      final missingDuration =
-          e.code == 'PGRST204' ||
-          e.code == '42703' ||
-          e.message.contains('duration_minutes');
-      if (!missingDuration) rethrow;
+      var current = e;
+      final fallbackPayload = Map<String, dynamic>.from(payload);
 
-      final fallbackPayload = Map<String, dynamic>.from(payload)
-        ..remove('duration_minutes');
-      await _client.from('calendar_events').insert(fallbackPayload);
+      while (true) {
+        final isSchemaColumnIssue =
+            current.code == 'PGRST204' || current.code == '42703';
+        if (!isSchemaColumnIssue) rethrow;
+
+        final msg = current.message;
+        final quoted = RegExp(r"'([^']+)' column").firstMatch(msg)?.group(1);
+        final dotted = RegExp(
+          r'calendar_events\\.([a-zA-Z0-9_]+)',
+        ).firstMatch(msg)?.group(1);
+        final missingColumn = quoted ?? dotted;
+        if (missingColumn == null ||
+            !fallbackPayload.containsKey(missingColumn)) {
+          rethrow;
+        }
+
+        fallbackPayload.remove(missingColumn);
+
+        try {
+          await _client.from('calendar_events').insert(fallbackPayload);
+          break;
+        } on PostgrestException catch (next) {
+          current = next;
+          continue;
+        }
+      }
     }
+  }
+
+  List<CalendarEvent> _expandRecurringEvents(
+    List<CalendarEvent> baseEvents, {
+    required DateTime cutoffDate,
+    required DateTime horizonDate,
+  }) {
+    final output = <CalendarEvent>[];
+
+    for (final event in baseEvents) {
+      final recurrence = (event.recurrenceRule ?? '').trim().toLowerCase();
+      final baseDate = _parseDate(event.eventDate);
+
+      if (recurrence.isEmpty || baseDate == null) {
+        if (baseDate != null &&
+            (baseDate.isBefore(cutoffDate) || baseDate.isAfter(horizonDate))) {
+          continue;
+        }
+        output.add(event);
+        continue;
+      }
+
+      if (recurrence.contains('year')) {
+        for (var year = cutoffDate.year - 1; year <= horizonDate.year; year++) {
+          final occurrenceDate = _safeDate(year, baseDate.month, baseDate.day);
+          if (occurrenceDate.isBefore(cutoffDate) ||
+              occurrenceDate.isAfter(horizonDate)) {
+            continue;
+          }
+          output.add(_cloneWithDate(event, occurrenceDate, suffix: 'y-$year'));
+        }
+        continue;
+      }
+
+      if (recurrence.contains('week')) {
+        var occurrenceDate = DateTime(
+          baseDate.year,
+          baseDate.month,
+          baseDate.day,
+        );
+        while (occurrenceDate.isBefore(cutoffDate)) {
+          occurrenceDate = occurrenceDate.add(const Duration(days: 7));
+        }
+
+        while (!occurrenceDate.isAfter(horizonDate)) {
+          output.add(
+            _cloneWithDate(
+              event,
+              occurrenceDate,
+              suffix: 'w-${_formatDate(occurrenceDate)}',
+            ),
+          );
+          occurrenceDate = occurrenceDate.add(const Duration(days: 7));
+        }
+        continue;
+      }
+
+      if (!baseDate.isBefore(cutoffDate) && !baseDate.isAfter(horizonDate)) {
+        output.add(event);
+      }
+    }
+
+    output.sort((a, b) {
+      final byDate = (a.eventDate ?? '').compareTo(b.eventDate ?? '');
+      if (byDate != 0) return byDate;
+      return (a.eventTime ?? '').compareTo(b.eventTime ?? '');
+    });
+    return output;
+  }
+
+  CalendarEvent _cloneWithDate(
+    CalendarEvent source,
+    DateTime day, {
+    required String suffix,
+  }) {
+    return CalendarEvent(
+      id: '${source.id}::$suffix',
+      createdBy: source.createdBy,
+      title: source.title,
+      description: source.description,
+      eventDate: _formatDate(day),
+      eventTime: source.eventTime,
+      durationMinutes: source.durationMinutes,
+      sourceType: source.sourceType,
+      sourceId: source.sourceId,
+      recurrenceRule: source.recurrenceRule,
+      eventTypeId: source.eventTypeId,
+      notification24hTime: source.notification24hTime,
+      notification2hTime: source.notification2hTime,
+      notification24hSent: source.notification24hSent,
+      notification2hSent: source.notification2hSent,
+      createdAt: source.createdAt,
+    );
+  }
+
+  DateTime? _parseDate(String? raw) {
+    if (raw == null || raw.isEmpty) return null;
+    return DateTime.tryParse(raw);
+  }
+
+  String _formatDate(DateTime date) {
+    return '${date.year.toString().padLeft(4, '0')}-'
+        '${date.month.toString().padLeft(2, '0')}-'
+        '${date.day.toString().padLeft(2, '0')}';
+  }
+
+  DateTime _safeDate(int year, int month, int day) {
+    final maxDay = DateTime(year, month + 1, 0).day;
+    return DateTime(year, month, day > maxDay ? maxDay : day);
   }
 }

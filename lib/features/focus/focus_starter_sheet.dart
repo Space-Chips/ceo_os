@@ -4,17 +4,12 @@ import 'package:flutter/material.dart' show Colors;
 import 'package:provider/provider.dart';
 import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import '../../components/components.dart';
+import '../../core/providers/language_provider.dart';
 import '../../core/models/task_models.dart';
 import '../../core/providers/focus_provider.dart';
-import '../../core/providers/language_provider.dart';
 import '../../core/providers/task_provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
-import '../../../packages/adaptive_platform_ui/lib/src/widgets/adaptive_slider.dart';
-import '../../components/glass_card.dart';
-import '../../components/glass_input_field.dart';
-import '../../components/liquid_button.dart';
-import '../../components/neo_mono_text.dart';
 
 class FocusStarterSheet extends StatefulWidget {
   const FocusStarterSheet({super.key});
@@ -58,7 +53,6 @@ class _FocusStarterSheetState extends State<FocusStarterSheet> {
 
   @override
   Widget build(BuildContext context) {
-    context.watch<LanguageProvider>().languageCode;
     final focusProv = context.read<FocusProvider>();
     final taskProv = context.read<TaskProvider>();
     final activeTasks = taskProv.tasks.where((t) => !t.completed).toList();
@@ -114,17 +108,17 @@ class _FocusStarterSheetState extends State<FocusStarterSheet> {
                         size: 22,
                       ),
                     ),
-                    const SizedBox(width: 16),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
+                        const SizedBox(width: 16),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
                         NeoMonoText(
-                          'ENTER_FOCUS',
+                          _t('focus_starter_enter_focus'),
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
                         ),
                         Text(
-                          'CONFIGURE_SESSION',
+                          _t('focus_starter_configure_session'),
                           style: AppTypography.mono.copyWith(
                             fontSize: 10,
                             color: AppColors.tertiaryLabel,

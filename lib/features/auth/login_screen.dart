@@ -4,14 +4,9 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../components/components.dart';
 import '../../core/providers/auth_provider.dart';
-import '../../core/providers/language_provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import 'auth_support.dart';
-import '../../components/glass_card.dart';
-import '../../components/glass_input_field.dart';
-import '../../components/liquid_button.dart';
-import '../../components/neo_mono_text.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -23,57 +18,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
   bool _loading = false;
-  bool _showPassword = false;
-
-  String _t(String key) => context.read<LanguageProvider>().t(key);
-  static const List<(String code, String nativeLabel)> _languages = [
-    ('en', 'English'),
-    ('fr', 'Français'),
-    ('zh', '中文'),
-    ('hi', 'हिन्दी'),
-    ('es', 'Español'),
-    ('ar', 'العربية'),
-    ('id', 'Bahasa Indonesia'),
-    ('ru', 'Русский'),
-    ('pt', 'Português'),
-  ];
-
-  String _languageDisplayLabel(String code) {
-    final normalized = code.toLowerCase();
-    for (final option in _languages) {
-      if (option.$1 == normalized) return option.$2;
-    }
-    return 'English';
-  }
-
-  Future<void> _showLanguagePicker() async {
-    final languageProvider = context.read<LanguageProvider>();
-    final current = languageProvider.languageCode.toLowerCase();
-    final selected = await showCupertinoModalPopup<String>(
-      context: context,
-      builder: (popupContext) {
-        return CupertinoActionSheet(
-          title: Text(_t('language')),
-          message: Text(_t('language_picker_subtitle')),
-          actions: [
-            for (final option in _languages)
-              CupertinoActionSheetAction(
-                isDefaultAction: option.$1 == current,
-                onPressed: () => Navigator.of(popupContext).pop(option.$1),
-                child: Text(option.$2),
-              ),
-          ],
-          cancelButton: CupertinoActionSheetAction(
-            onPressed: () => Navigator.of(popupContext).pop(),
-            child: Text(_t('cancel')),
-          ),
-        );
-      },
-    );
-
-    if (selected == null || selected == current) return;
-    await languageProvider.setLanguage(selected, persistToCloud: true);
-  }
 
   @override
   void dispose() {
@@ -84,42 +28,69 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _showError(dynamic error) async {
     if (!mounted) return;
-    showCupertinoDialog(
-      context: context,
-      builder: (context) => BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-        child: CupertinoAlertDialog(
-          title: Text('AUTH ERROR', style: AppTypography.mono.copyWith(fontSize: 16)),
-          content: Padding(
-            padding: const EdgeInsets.only(top: 8.0),
-            child: Text(error.toString(), style: AppTypography.caption1),
-          ),
-          actions: [
-            CupertinoDialogAction(
-              child: Text('DISMISS', style: TextStyle(color: AppColors.primaryOrange)),
-              onPressed: () => Navigator.pop(context),
-            ),
-          ],
-        ),
-      ),
+    await showAuthDialog(
+      context,
+      title: 'AUTH ERROR',
+      message: humanizeAuthError(error),
     );
   }
 
   Future<void> _login() async {
-    if (_emailCtrl.text.isEmpty || _passCtrl.text.isEmpty) return;
+    final email = _emailCtrl.text.trim();
+    final password = _passCtrl.text;
+    if (!isValidEmail(email)) {
+      await showAuthDialog(
+        context,
+        title: 'INVALID EMAIL',
+        message: 'Please enter a valid email address.',
+      );
+      return;
+    }
+    if (password.isEmpty) {
+      await showAuthDialog(
+        context,
+        title: 'PASSWORD REQUIRED',
+        message: 'Please enter your password to continue.',
+      );
+      return;
+    }
     setState(() => _loading = true);
     try {
-      await context.read<AuthProvider>().login(_emailCtrl.text, _passCtrl.text);
+      await context.read<AuthProvider>().login(email, password);
     } catch (e) {
-      _showError(e);
+      await _showError(e);
     } finally {
       if (mounted) setState(() => _loading = false);
     }
   }
 
+  Future<void> _resetPassword() async {
+    final email = _emailCtrl.text.trim();
+    if (!isValidEmail(email)) {
+      await showAuthDialog(
+        context,
+        title: 'RESET PASSWORD',
+        message: 'Enter your account email first, then try again.',
+      );
+      return;
+    }
+
+    try {
+      await context.read<AuthProvider>().resetPassword(email);
+      if (!mounted) return;
+      await showAuthDialog(
+        context,
+        title: 'CHECK YOUR EMAIL',
+        message:
+            'If an account exists for $email, a password reset email has been sent.',
+      );
+    } catch (e) {
+      await _showError(e);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final language = context.watch<LanguageProvider>();
     return CupertinoPageScaffold(
       backgroundColor: AppColors.background,
       child: Stack(
@@ -141,7 +112,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
           ),
-          
+
           SafeArea(
             child: Center(
               child: SingleChildScrollView(
@@ -191,14 +162,28 @@ class _LoginScreenState extends State<LoginScreen> {
                             placeholder: 'EMAIL_ADDRESS',
                             controller: _emailCtrl,
                             keyboardType: TextInputType.emailAddress,
-                            prefix: Icon(CupertinoIcons.mail, size: 16, color: AppColors.secondaryLabel),
+                            autocorrect: false,
+                            textInputAction: TextInputAction.next,
+                            autofillHints: const [AutofillHints.username],
+                            prefix: Icon(
+                              CupertinoIcons.mail,
+                              size: 16,
+                              color: AppColors.secondaryLabel,
+                            ),
                           ),
                           const SizedBox(height: 16),
                           GlassInputField(
                             placeholder: 'ACCESS_KEY',
                             controller: _passCtrl,
                             obscureText: true,
-                            prefix: Icon(CupertinoIcons.lock, size: 16, color: AppColors.secondaryLabel),
+                            autocorrect: false,
+                            textInputAction: TextInputAction.done,
+                            autofillHints: const [AutofillHints.password],
+                            prefix: Icon(
+                              CupertinoIcons.lock,
+                              size: 16,
+                              color: AppColors.secondaryLabel,
+                            ),
                           ),
                           const SizedBox(height: 32),
                           LiquidButton(

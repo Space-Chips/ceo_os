@@ -6,9 +6,6 @@ import '../../core/models/habit_models.dart';
 import '../../core/repositories/feature_repository.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
-import '../../components/glass_card.dart';
-import '../../components/glass_input_field.dart';
-import '../../components/neo_mono_text.dart';
 
 class RewardsScreen extends StatefulWidget {
   const RewardsScreen({super.key});
@@ -70,10 +67,7 @@ class _RewardsScreenState extends State<RewardsScreen> {
         leading: CupertinoButton(
           padding: EdgeInsets.zero,
           onPressed: () => context.go('/home'),
-          child: const Icon(
-            CupertinoIcons.back,
-            color: AppColors.primaryOrange,
-          ),
+          child: Icon(CupertinoIcons.back, color: AppColors.primaryOrange),
         ),
         middle: const NeoMonoText(
           'REWARDS',
@@ -95,7 +89,7 @@ class _RewardsScreenState extends State<RewardsScreen> {
         border: null,
       ),
       child: _loading
-          ? const Center(
+          ? Center(
               child: CupertinoActivityIndicator(color: AppColors.primaryOrange),
             )
           : SafeArea(
@@ -136,10 +130,11 @@ class _RewardsScreenState extends State<RewardsScreen> {
                             ),
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(8),
-                              color: (_committed
-                                      ? AppColors.success
-                                      : AppColors.warning)
-                                  .withValues(alpha: 0.14),
+                              color:
+                                  (_committed
+                                          ? AppColors.success
+                                          : AppColors.warning)
+                                      .withValues(alpha: 0.14),
                             ),
                             child: Text(
                               _committed ? 'LOCKED' : 'DRAFT',

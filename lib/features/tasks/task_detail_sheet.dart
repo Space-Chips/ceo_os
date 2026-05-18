@@ -11,8 +11,6 @@ import '../../core/providers/language_provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import 'task_importance_theme.dart';
-import '../../components/glass_card.dart';
-import '../../components/liquid_button.dart';
 
 class TaskDetailSheet extends StatelessWidget {
   final ParetoTask task;
@@ -59,21 +57,8 @@ class TaskDetailSheet extends StatelessWidget {
     }
   }
 
-  String _importanceLabel(String? raw, LanguageProvider language) {
-    switch ((raw ?? '').toLowerCase()) {
-      case 'crucial':
-      case 'critical':
-        return language.t('tasks_importance_crucial');
-      case 'essential':
-      case 'high':
-        return language.t('tasks_importance_essential');
-      case 'average':
-      case 'medium':
-        return language.t('tasks_importance_average');
-      case 'low':
-      default:
-        return language.t('tasks_importance_low');
-    }
+  String _importanceLabel(String? raw) {
+    return TaskImportanceTheme.detailLabel(raw);
   }
 
   String? _deadlineUrgency(DateTime? d) {
@@ -115,7 +100,7 @@ class TaskDetailSheet extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppColors.background.withValues(alpha: 0.9),
           borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-          border: const Border(
+          border: Border(
             top: BorderSide(color: AppColors.glassBorder, width: 0.5),
           ),
         ),
@@ -152,7 +137,7 @@ class TaskDetailSheet extends StatelessWidget {
                   runSpacing: 8,
                   children: [
                     _chip(
-                      _importanceLabel(task.importanceLevel, language),
+                      _importanceLabel(task.importanceLevel),
                       _priorityColor,
                     ),
                     _chip(
@@ -161,7 +146,7 @@ class TaskDetailSheet extends StatelessWidget {
                     ),
                     if (task.deadline != null)
                       _chip(
-                        "${language.t('tasks_due")} ${_formatDate(task.deadline!, language)}',
+                        '${language.t('tasks_due')} ${_formatDate(task.deadline!, language)}',
                         urgencyLabel == 'tasks_overdue'
                             ? AppColors.error
                             : AppColors.primaryOrange,
@@ -242,7 +227,7 @@ class TaskDetailSheet extends StatelessWidget {
                             width: 0.6,
                           ),
                         ),
-                        child: const Icon(
+                        child: Icon(
                           CupertinoIcons.delete,
                           color: AppColors.error,
                           size: 20,
@@ -253,7 +238,7 @@ class TaskDetailSheet extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  "${language.t('tasks_created")} ${_formatDate(task.createdAt, language)}',
+                  '${language.t('tasks_created')} ${_formatDate(task.createdAt, language)}',
                   style: AppTypography.mono.copyWith(
                     fontSize: 9,
                     color: AppColors.quaternaryLabel,

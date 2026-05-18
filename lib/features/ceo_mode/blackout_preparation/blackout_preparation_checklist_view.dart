@@ -1,7 +1,5 @@
 import 'package:flutter/cupertino.dart';
-import 'package:provider/provider.dart';
 
-import '../../../core/providers/language_provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 
@@ -29,7 +27,7 @@ class BlackoutPreparationChecklistView extends StatelessWidget {
       children: [
         const Spacer(),
         Text(
-          language.t('blackout_prep_checklist_title'),
+          'Fais-le en 20 secondes',
           style: AppTypography.title1.copyWith(
             fontSize: 34,
             height: 1.08,

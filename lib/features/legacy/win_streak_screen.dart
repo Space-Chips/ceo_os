@@ -1,16 +1,12 @@
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
 
 import '../../components/components.dart';
 import '../../core/models/user_models.dart';
-import '../../core/providers/language_provider.dart';
-import '../../core/providers/language_provider.dart';
 import '../../core/repositories/feature_repository.dart';
 import '../../core/repositories/focus_repository.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
-import '../../components/ambient_backdrop.dart';
 
 class WinStreakScreen extends StatefulWidget {
   const WinStreakScreen({super.key});
@@ -26,8 +22,6 @@ class _WinStreakScreenState extends State<WinStreakScreen> {
   WinStreak? _streak;
   List<Map<String, dynamic>> _recentSessions = const [];
   bool _loading = true;
-
-  String _t(String key) => context.read<LanguageProvider>().t(key);
 
   @override
   void initState() {
@@ -57,18 +51,19 @@ class _WinStreakScreenState extends State<WinStreakScreen> {
   String _sessionLine(Map<String, dynamic> row) {
     final duration = (row['duration_minutes'] as num?)?.toInt() ?? 0;
     final completed = row['completed'] == true;
-    return "${completed ? _t('win_streak_completed") : _t('win_streak_stopped_early')} • ${duration}m';
+    return '${completed ? 'Completed' : 'Stopped early'} • ${duration}m';
   }
 
   @override
   Widget build(BuildContext context) {
-    context.watch<LanguageProvider>().languageCode;
     return CupertinoPageScaffold(
       backgroundColor: AppColors.background,
       child: AmbientBackdrop(
         child: _loading
             ? Center(
-                child: CupertinoActivityIndicator(color: AppColors.primaryOrange),
+                child: CupertinoActivityIndicator(
+                  color: AppColors.primaryOrange,
+                ),
               )
             : SafeArea(
                 child: ListView(
@@ -85,7 +80,7 @@ class _WinStreakScreenState extends State<WinStreakScreen> {
                             icon: CupertinoIcons.rosette,
                             color: AppColors.warning,
                             value: '${_streak?.longestStreak ?? 0}',
-                            label: _t('focus_record'),
+                            label: 'RECORD',
                           ),
                         ),
                         const SizedBox(width: 10),
@@ -94,7 +89,7 @@ class _WinStreakScreenState extends State<WinStreakScreen> {
                             icon: CupertinoIcons.arrow_up_right,
                             color: AppColors.success,
                             value: '$_successRate%',
-                            label: _t('focus_success'),
+                            label: 'SUCCESS',
                           ),
                         ),
                         const SizedBox(width: 10),
@@ -103,7 +98,7 @@ class _WinStreakScreenState extends State<WinStreakScreen> {
                             icon: CupertinoIcons.check_mark_circled,
                             color: AppColors.info,
                             value: '${_streak?.totalCompletedSessions ?? 0}',
-                            label: _t('focus_complete'),
+                            label: 'COMPLETE',
                           ),
                         ),
                       ],
@@ -116,7 +111,7 @@ class _WinStreakScreenState extends State<WinStreakScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            _t('win_streak_recent_sessions'),
+                            'RECENT SESSIONS',
                             style: AppTypography.overline.copyWith(
                               fontSize: 18,
                               color: AppColors.label,
@@ -133,7 +128,7 @@ class _WinStreakScreenState extends State<WinStreakScreen> {
                               ),
                               child: Center(
                                 child: Text(
-                                  _t('win_streak_no_sessions_yet'),
+                                  'No sessions yet. Start your first focus session!',
                                   textAlign: TextAlign.center,
                                   style: AppTypography.footnote.copyWith(
                                     fontSize: 13,
@@ -146,38 +141,32 @@ class _WinStreakScreenState extends State<WinStreakScreen> {
                               ),
                             )
                           else
-                            ..._recentSessions.take(8).map(
-                              (row) => Padding(
-                                padding: const EdgeInsets.only(bottom: 8),
-                                child: Container(
-                                  width: double.infinity,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 10,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(12),
-                                    color: AppColors.backgroundLight.withValues(
-                                      alpha: 0.66,
-                                    ),
-                                    border: Border.all(
-                                      color: AppColors.glassBorder.withValues(
-                                        alpha: 0.68,
+                            ..._recentSessions
+                                .take(8)
+                                .map(
+                                  (row) => Padding(
+                                    padding: const EdgeInsets.only(bottom: 8),
+                                    child: Container(
+                                      width: double.infinity,
+                                      padding: const EdgeInsets.all(12),
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(12),
+                                        color: AppColors.white.withValues(
+                                          alpha: 0.04,
+                                        ),
                                       ),
-                                      width: 0.7,
-                                    ),
-                                  ),
-                                  child: Text(
-                                    _sessionLine(row),
-                                    style: AppTypography.mono.copyWith(
-                                      fontSize: 13,
-                                      color: AppColors.secondaryLabel,
-                                      fontWeight: FontWeight.w600,
+                                      child: Text(
+                                        _sessionLine(row),
+                                        style: AppTypography.callout.copyWith(
+                                          fontSize: 13,
+                                          color: AppColors.secondaryLabel
+                                              .withValues(alpha: 0.85),
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                            ),
                         ],
                       ),
                     ),
@@ -205,8 +194,8 @@ class _WinStreakScreenState extends State<WinStreakScreen> {
                   color: AppColors.secondaryLabel,
                 ),
                 const SizedBox(width: 4),
-                  Text(
-                  _t('screen_time'),
+                Text(
+                  'Screen Time',
                   style: AppTypography.callout.copyWith(
                     fontSize: 16,
                     color: AppColors.secondaryLabel,
@@ -229,8 +218,8 @@ class _WinStreakScreenState extends State<WinStreakScreen> {
                   color: AppColors.secondaryLabel,
                 ),
                 const SizedBox(width: 4),
-                  Text(
-                  _t('home'),
+                Text(
+                  'Home',
                   style: AppTypography.callout.copyWith(
                     fontSize: 16,
                     color: AppColors.secondaryLabel,
@@ -260,7 +249,7 @@ class _WinStreakScreenState extends State<WinStreakScreen> {
           ),
           const SizedBox(height: 12),
           Text(
-            _t('win_streak_current_streak'),
+            'CURRENT STREAK',
             style: AppTypography.overline.copyWith(
               fontSize: 14,
               color: AppColors.secondaryLabel.withValues(alpha: 0.7),
@@ -286,10 +275,9 @@ class _WinStreakScreenState extends State<WinStreakScreen> {
                 color: AppColors.secondaryLabel.withValues(alpha: 0.7),
               ),
               children: [
-                TextSpan(text: "${_t('win_streak_best_streak")}: '),
+                const TextSpan(text: 'Best Streak: '),
                 TextSpan(
-                  text:
-                      "$bestStreak ${_t('win_streak_days_suffix")}',
+                  text: '$bestStreak days',
                   style: AppTypography.footnote.copyWith(
                     fontSize: 13,
                     color: AppColors.secondaryLabel.withValues(alpha: 0.85),
@@ -301,9 +289,7 @@ class _WinStreakScreenState extends State<WinStreakScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            streak == 0
-                ? _t('win_streak_start_first_session')
-                : _t('win_streak_keep_momentum'),
+            streak == 0 ? 'Start your first session' : 'Keep the momentum',
             style: AppTypography.footnote.copyWith(
               fontSize: 13,
               color: AppColors.secondaryLabel.withValues(alpha: 0.6),
@@ -373,10 +359,7 @@ class _WinStreakScreenState extends State<WinStreakScreen> {
         colors: [AppColors.cardBackgroundStrong, AppColors.cardBase],
       ),
       borderRadius: BorderRadius.circular(radius),
-      border: Border.all(
-        color: AppColors.border,
-        width: 1,
-      ),
+      border: Border.all(color: AppColors.border, width: 1),
       boxShadow: [
         BoxShadow(
           color: AppColors.glassShadow.withValues(alpha: 0.3),

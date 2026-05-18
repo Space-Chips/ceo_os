@@ -1,14 +1,22 @@
-class SupabaseConfig {
-  static const String _defaultUrl = 'https://fyjojdynapdaoinpooyd.supabase.co';
-  static const String _defaultAnonKey =
-      'sb_publishable_wlDCa_sX4q5GVucuWbxMFw_4HPhUjzP';
+import 'package:flutter/foundation.dart';
 
-  static String get url =>
-      const String.fromEnvironment('SUPABASE_URL', defaultValue: _defaultUrl);
-  static String get anonKey => const String.fromEnvironment(
-    'SUPABASE_ANON_KEY',
-    defaultValue: _defaultAnonKey,
-  );
+class SupabaseConfig {
+  static const String _debugUrl =
+      'https://fyjojdynapdaoinpooyd.supabase.co';
+  static const String _debugAnonKey =
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ5am9qZHluYXBkYW9pbnBvb3lkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5OTk3MTgsImV4cCI6MjA4NjU3NTcxOH0.GcHhxLQF6UA149KQUkph4XYsVnc3K_TlcKWOup3ki_4';
+
+  static String get url {
+    const env = String.fromEnvironment('SUPABASE_URL');
+    if (env.isNotEmpty) return env;
+    return _debugUrl;
+  }
+
+  static String get anonKey {
+    const env = String.fromEnvironment('SUPABASE_ANON_KEY');
+    if (env.isNotEmpty) return env;
+    return _debugAnonKey;
+  }
   static String get googleWebClientId =>
       const String.fromEnvironment('GOOGLE_WEB_CLIENT_ID');
   static String get googleIosClientId =>
@@ -22,17 +30,6 @@ class SupabaseConfig {
   static bool get hasGoogleAndroidMobileClientConfig =>
       googleWebClientId.isNotEmpty;
 
-  static bool get hasGoogleMobileClientConfig =>
-      hasGoogleIosMobileClientConfig || hasGoogleAndroidMobileClientConfig;
-
-  static bool get hasRequiredConfiguration =>
-      url.trim().isNotEmpty && anonKey.trim().isNotEmpty;
-
-  static List<String> get missingRequiredKeys => [
-        if (url.trim().isEmpty) 'SUPABASE_URL',
-        if (anonKey.trim().isEmpty) 'SUPABASE_ANON_KEY',
-      ];
-
   static List<String> get missingRequiredKeys {
     final missing = <String>[];
     if (url.trim().isEmpty) {
@@ -44,8 +41,7 @@ class SupabaseConfig {
     return missing;
   }
 
-  static bool get hasRequiredConfiguration =>
-      missingRequiredKeys.isEmpty;
+  static bool get hasRequiredConfiguration => missingRequiredKeys.isEmpty;
 
   static String get missingConfigurationMessage {
     final missing = missingRequiredKeys;

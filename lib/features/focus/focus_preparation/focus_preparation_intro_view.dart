@@ -1,7 +1,5 @@
 import 'package:flutter/cupertino.dart';
-import 'package:provider/provider.dart';
 
-import '../../../core/providers/language_provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 
@@ -17,13 +15,12 @@ class FocusPreparationIntroView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final language = context.watch<LanguageProvider>();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Spacer(),
         Text(
-          language.t('focus_prep_intro_title'),
+          'Prépare ton mode Focus',
           style: AppTypography.title1.copyWith(
             fontSize: 34,
             height: 1.08,
@@ -34,7 +31,7 @@ class FocusPreparationIntroView extends StatelessWidget {
         ),
         const SizedBox(height: 14),
         Text(
-          'Pendant une session, WakeApp bloque toutes les apps de ta liste, même celles pour lesquelles il restait du temps d'écran.',
+          "Pendant une session, WakeApp bloque toutes les apps de ta liste, même celles pour lesquelles il restait du temps d'écran.",
           style: AppTypography.body.copyWith(
             fontSize: 16,
             height: 1.45,
@@ -77,7 +74,7 @@ class FocusPreparationIntroView extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  language.t('focus_prep_intro_goal'),
+                  'Objectif: un démarrage clair, en moins de 15 secondes.',
                   style: AppTypography.callout.copyWith(
                     fontSize: 14,
                     color: AppColors.secondaryLabel.withValues(alpha: 0.92),
@@ -88,14 +85,14 @@ class FocusPreparationIntroView extends StatelessWidget {
           ),
         ),
         const Spacer(),
-        _PrimaryButton(label: language.t('focus_continue'), onTap: onContinue),
+        _PrimaryButton(label: 'Continuer', onTap: onContinue),
         const SizedBox(height: 10),
         Center(
           child: CupertinoButton(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             onPressed: onSkip,
             child: Text(
-              language.t('focus_skip'),
+              'Passer',
               style: AppTypography.callout.copyWith(
                 fontSize: 15,
                 color: AppColors.secondaryLabel.withValues(alpha: 0.84),

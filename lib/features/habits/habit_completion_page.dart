@@ -9,8 +9,6 @@ import '../../core/providers/habit_provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import 'habit_stats_page.dart';
-import '../../components/glass_card.dart';
-import '../../components/neo_mono_text.dart';
 
 class HabitCompletionPage extends StatefulWidget {
   final Habit habit;
@@ -111,7 +109,7 @@ class _HabitCompletionPageState extends State<HabitCompletionPage> with SingleTi
           padding: const EdgeInsets.only(top: 16),
           child: Column(
             children: [
-              Text("ENTER_${widget.habit.targetUnit ?? 'AMOUNT"}'.toUpperCase(), style: AppTypography.mono.copyWith(fontSize: 10, color: AppColors.secondaryLabel)),
+              Text('ENTER_${widget.habit.targetUnit ?? 'AMOUNT'}'.toUpperCase(), style: AppTypography.mono.copyWith(fontSize: 10, color: AppColors.secondaryLabel)),
               const SizedBox(height: 12),
               CupertinoTextField(
                 controller: ctrl,
@@ -294,7 +292,7 @@ class _HabitCompletionPageState extends State<HabitCompletionPage> with SingleTi
                                     BoxShadow(color: themeColor.withOpacity(0.4), blurRadius: 15, spreadRadius: 2),
                                   ],
                                 ),
-                                child: Icon(CupertinoIcons.chevron_right_2, color: Colors.white),
+                                child: const Icon(CupertinoIcons.chevron_right_2, color: Colors.white),
                               ),
                             ),
                           )
@@ -307,7 +305,7 @@ class _HabitCompletionPageState extends State<HabitCompletionPage> with SingleTi
                               width: 72,
                               height: 72,
                               decoration: BoxDecoration(color: AppColors.success, shape: BoxShape.circle),
-                              child: Icon(CupertinoIcons.checkmark, color: Colors.white),
+                              child: const Icon(CupertinoIcons.checkmark, color: Colors.white),
                             ),
                           ),
                       ],

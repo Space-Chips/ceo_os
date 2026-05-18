@@ -6,7 +6,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../components/components.dart';
 import '../../components/premium_surface_card.dart';
-import '../../core/config/tester_config.dart';
 import '../../core/models/premium_models.dart';
 import '../../core/providers/language_provider.dart';
 import '../../core/providers/theme_provider.dart';
@@ -16,10 +15,6 @@ import '../../core/services/app_environment_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import 'premium_comparison_table.dart';
-import '../../components/ambient_backdrop.dart';
-import '../../components/glass_card.dart';
-import '../../components/glass_card.dart';
-import '../../components/premium_paywall.dart';
 
 class UpgradeScreen extends StatelessWidget {
   const UpgradeScreen({super.key});
@@ -107,9 +102,10 @@ class UpgradeScreen extends StatelessWidget {
                             final info = debugSnap.data;
                             if (info == null) return const SizedBox.shrink();
                             final lines = <String>[
-                              "Channel: ${info['build_channel"]}',
-                              "Beta grant mode: ${info['beta_grant_mode"]}',
-                              "Server override last sync: ${info['server_override_last_sync"]}',
+                              'Channel: ${info['build_channel']}',
+                              'TestFlight premium enabled: ${info['testflight_enabled']}',
+                              'Beta key present: ${info['beta_key_present']}',
+                              'Server override last sync: ${info['server_override_last_sync']}',
                               'Status: ${runtime.subscriptionStatus}',
                               'Resolved premium: ${runtime.resolved.isPremiumUser}',
                               'Grace active: ${runtime.resolved.clientGraceActive}',

@@ -214,10 +214,4 @@ class AppColors {
   static Color get habitsTodayRingAccent => isCarbonSystem
       ? _carbonWarmTone.withValues(alpha: 0.72)
       : primaryOrange.withValues(alpha: 0.6);
-
-  // Recovered static_getter glassSurface @ 2026-05-16T08:36:14.618Z
-  static Color get glassSurface => glassSurfaceSoft;
-
-  // Recovered static_getter primaryAccent @ 2026-05-16T08:36:14.618Z
-  static Color get primaryAccent => accent;
 }

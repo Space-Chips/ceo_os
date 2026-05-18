@@ -1,7 +1,5 @@
 import 'package:flutter/cupertino.dart';
-import 'package:provider/provider.dart';
 
-import '../../../core/providers/language_provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import 'focus_preparation_animation_view.dart';
@@ -18,12 +16,11 @@ class FocusPreparationDemoView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final language = context.watch<LanguageProvider>();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          language.t('focus_prep_demo_title'),
+          'Ce qui se passe pendant Focus',
           style: AppTypography.title2.copyWith(
             fontSize: 28,
             height: 1.14,
@@ -34,7 +31,7 @@ class FocusPreparationDemoView extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         Text(
-          'Les apps ciblées deviennent indisponibles jusqu'à la fin du chrono. La session reste active même si tu quittes WakeApp.',
+          "Les apps ciblées deviennent indisponibles jusqu'à la fin du chrono. La session reste active même si tu quittes WakeApp.",
           style: AppTypography.body.copyWith(
             fontSize: 15,
             height: 1.42,
@@ -44,14 +41,14 @@ class FocusPreparationDemoView extends StatelessWidget {
         const SizedBox(height: 16),
         const Expanded(child: FocusPreparationAnimationView()),
         const SizedBox(height: 18),
-        _PrimaryButton(label: language.t('focus_understood'), onTap: onPrimary),
+        _PrimaryButton(label: 'Compris', onTap: onPrimary),
         const SizedBox(height: 10),
         Center(
           child: CupertinoButton(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             onPressed: onSecondary,
             child: Text(
-              language.t('focus_later'),
+              'Plus tard',
               style: AppTypography.callout.copyWith(
                 fontSize: 15,
                 color: AppColors.secondaryLabel.withValues(alpha: 0.84),
