@@ -12,6 +12,8 @@ import '../../core/providers/task_provider.dart';
 import '../../core/repositories/feature_repository.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
+import '../../components/glass_card.dart';
+import '../../components/glass_input_field.dart';
 
 enum AddEventPreset { standard, focusPlan }
 

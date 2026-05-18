@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
+import '../../../../lib/src/widgets/adaptive_app_bar.dart';
+import '../../../../lib/src/widgets/adaptive_card.dart';
+import '../../../../lib/src/widgets/adaptive_floating_action_button.dart';
+import '../../../../lib/src/widgets/adaptive_scaffold.dart';
+import '../../../../lib/src/widgets/adaptive_switch.dart';
 
 class FloatingActionButtonDemoPage extends StatefulWidget {
   const FloatingActionButtonDemoPage({super.key});

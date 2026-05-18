@@ -7,6 +7,8 @@ import '../../core/models/habit_models.dart';
 import '../../core/providers/habit_provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
+import '../../components/glass_card.dart';
+import '../../components/neo_mono_text.dart';
 
 class HabitStatsPage extends StatefulWidget {
   final Habit habit;

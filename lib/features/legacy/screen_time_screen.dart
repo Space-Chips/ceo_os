@@ -17,6 +17,9 @@ import '../../core/services/focus_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../focus/app_selection_sheet.dart';
+import '../../components/ambient_backdrop.dart';
+import '../../components/glass_card.dart';
+import '../../components/liquid_button.dart';
 
 class ScreenTimeScreen extends StatefulWidget {
   final String? initialSection;
@@ -2081,4 +2084,17 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
     );
   }
 
+}
+
+// Recovered class _IosAppSuggestion @ 2026-04-15T15:08:58.030Z
+class _IosAppSuggestion {
+  final String label;
+  final String bundleIdentifier;
+  final List<String> keywords;
+
+  const _IosAppSuggestion({
+    required this.label,
+    required this.bundleIdentifier,
+    this.keywords = const [],
+  });
 }

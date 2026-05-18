@@ -281,3 +281,15 @@ class FocusService {
     }
   }
 }
+
+// Recovered class IosFamilyActivitySelection @ 2026-04-15T21:16:23.162Z
+class IosFamilyActivitySelection {
+
+// Recovered enum PrivateScreenTimeSummaryStatus @ 2026-04-05T16:14:58.993Z
+enum PrivateScreenTimeSummaryStatus {
+  available,
+  requiresAuthorization,
+  requiresFullRelaunch,
+  unavailableOnSimulator,
+  unsupported,
+}

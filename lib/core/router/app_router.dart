@@ -50,6 +50,8 @@ import '../../features/setup/setup_flow_screen.dart';
 import '../../core/models/habit_models.dart';
 import '../models/task_models.dart';
 import '../providers/task_provider.dart';
+import '../../../packages/adaptive_platform_ui/example/lib/pages/demos/demo_tabbar_page.dart';
+import '../../../packages/adaptive_platform_ui/example/lib/pages/demos/demo_tabbar_page.dart';
 
 /// App router — AdaptiveApp.router with AdaptiveBottomNavigationBar shell.
 class AppRouter {

@@ -21,6 +21,10 @@ import '../../core/services/performance_score_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../tasks/task_importance_theme.dart';
+import '../../components/ambient_backdrop.dart';
+import '../../components/glass_card.dart';
+import '../../components/glass_card.dart';
+import '../../components/liquid_button.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});

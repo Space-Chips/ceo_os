@@ -2,6 +2,12 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
+import '../lib/src/widgets/adaptive_button.dart';
+import '../lib/src/widgets/adaptive_button.dart';
+import '../lib/src/widgets/adaptive_button.dart';
+import '../lib/src/widgets/ios26/ios26_button.dart';
+import '../lib/src/widgets/ios26/ios26_button.dart';
+import '../lib/src/widgets/ios26/ios26_button.dart';
 
 void main() {
   group('AdaptiveButton', () {

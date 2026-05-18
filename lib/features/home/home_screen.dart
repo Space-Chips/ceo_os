@@ -30,6 +30,11 @@ import '../control_center_setup/control_center_setup_store.dart';
 import '../calendar/add_event_sheet.dart';
 import '../habits/habit_gallery_sheet.dart';
 import '../tasks/add_task_sheet.dart';
+import '../../components/ambient_backdrop.dart';
+import '../../components/glass_card.dart';
+import '../../components/glass_card.dart';
+import '../../core/providers/language_provider.dart';
+import '../../core/services/premium_onboarding_prompt_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -2234,3 +2239,21 @@ class _ModuleToggleOption {
     required this.icon,
   });
 }
+
+// Recovered class _ShortcutCardData @ 2026-03-14T12:04:18.221Z
+class _ShortcutCardData {
+  final String shortcutId;
+  final String title;
+  final IconData icon;
+  final VoidCallback onTap;
+
+  const _ShortcutCardData({
+    required this.shortcutId,
+    required this.title,
+    required this.icon,
+    required this.onTap,
+  });
+}
+
+// Recovered class _TopShortcutsBar @ 2026-05-10T09:52:09.673Z
+class _TopShortcutsBar extends StatelessWidget {

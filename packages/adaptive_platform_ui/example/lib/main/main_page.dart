@@ -5,6 +5,11 @@ import 'package:adaptive_platform_ui_example/utils/global_variables.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../../lib/src/widgets/adaptive_bottom_navigation_bar.dart';
+import '../../../lib/src/widgets/adaptive_scaffold.dart';
+import '../../../lib/src/widgets/adaptive_scaffold.dart';
+import '../../../lib/src/platform/platform_info.dart';
+import '../../../lib/src/widgets/adaptive_scaffold.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({required this.navigationShell, super.key});

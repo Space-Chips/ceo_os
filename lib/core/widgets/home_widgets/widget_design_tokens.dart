@@ -102,4 +102,18 @@ class WidgetDesignTokens {
     fontWeight: FontWeight.w700,
     color: primaryText.withValues(alpha: 0.92),
   );
+
+  // Recovered static_getter primaryText @ 2026-05-16T08:45:05.099Z
+  static Color get primaryText => AppColors.label;
+
+  // Recovered static_getter secondaryText @ 2026-05-16T08:45:05.099Z
+  static Color get secondaryText => AppColors.secondaryLabel;
+
+  // Recovered static_getter tertiaryText @ 2026-05-04T15:24:19.919Z
+  static Color get tertiaryText {
+    final candidate = AppColors.tertiaryLabel;
+    return candidate.computeLuminance() < 0.55
+        ? AppColors.white.withValues(alpha: 0.58)
+        : candidate.withValues(alpha: 0.58);
+  }
 }

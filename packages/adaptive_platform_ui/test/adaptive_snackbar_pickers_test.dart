@@ -1,6 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
+import '../lib/src/widgets/adaptive_app_bar.dart';
+import '../lib/src/widgets/adaptive_app_bar_action.dart';
+import '../lib/src/widgets/adaptive_bottom_navigation_bar.dart';
+import '../lib/src/widgets/adaptive_date_picker.dart';
+import '../lib/src/widgets/adaptive_scaffold.dart';
+import '../lib/src/widgets/adaptive_scaffold.dart';
+import '../lib/src/widgets/adaptive_snackbar.dart';
+import '../lib/src/widgets/adaptive_snackbar.dart';
+import '../lib/src/widgets/adaptive_time_picker.dart';
 
 void main() {
   group('AdaptiveSnackBar', () {

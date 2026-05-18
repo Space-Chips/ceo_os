@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
+import '../../../../lib/src/widgets/adaptive_app_bar.dart';
+import '../../../../lib/src/widgets/adaptive_scaffold.dart';
+import '../../../../lib/src/widgets/adaptive_tab_view.dart';
+import '../../../../lib/src/platform/platform_info.dart';
 
 class TabViewDemoPage extends StatelessWidget {
   const TabViewDemoPage({super.key});

@@ -475,4 +475,18 @@ String? _introOfferLabelForProduct(StoreProduct product) {
     return '${intro.priceString} for the first $unitLabel';
   }
   return '${intro.priceString} for ${intro.cycles} billing cycles';
+
+  // Recovered static_method _durationLabel @ 2026-05-16T08:36:24.714Z
+  static String _durationLabel(Package package) {
+    switch (package.packageType) {
+      case PackageType.monthly:
+        return 'Monthly';
+      case PackageType.annual:
+        return 'Annual';
+      case PackageType.lifetime:
+        return 'Lifetime';
+      default:
+        return package.identifier;
+    }
+  }
 }

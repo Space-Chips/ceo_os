@@ -1,6 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
+import '../lib/src/widgets/adaptive_alert_dialog.dart';
+import '../lib/src/widgets/adaptive_alert_dialog.dart';
+import '../lib/src/widgets/adaptive_context_menu.dart';
+import '../lib/src/widgets/adaptive_context_menu.dart';
+import '../lib/src/widgets/adaptive_popup_menu_button.dart';
+import '../lib/src/widgets/ios26/ios26_popup_menu_button.dart';
+import '../lib/src/widgets/adaptive_segmented_control.dart';
+import '../lib/src/widgets/ios26/ios26_alert_dialog.dart';
+import '../lib/src/widgets/ios26/ios26_alert_dialog.dart';
 
 void main() {
   group('AdaptiveSegmentedControl', () {

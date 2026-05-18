@@ -11,6 +11,15 @@ import '../../core/services/stats_engine.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/widgets/rank_art.dart';
+import '../../components/glass_card.dart';
+import '../../components/glass_card.dart';
+import '../../core/models/habit_models.dart';
+import '../../core/models/habit_models.dart';
+import '../../core/providers/habit_provider.dart';
+import '../../core/repositories/habit_repository.dart';
+import '../../core/providers/language_provider.dart';
+import '../../components/liquid_button.dart';
+import '../../core/providers/task_provider.dart';
 
 String _localizedRankDisplay(BuildContext context, String rawRankName) {
   final language = context.watch<LanguageProvider>();

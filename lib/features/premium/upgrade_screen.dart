@@ -16,6 +16,10 @@ import '../../core/services/app_environment_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import 'premium_comparison_table.dart';
+import '../../components/ambient_backdrop.dart';
+import '../../components/glass_card.dart';
+import '../../components/glass_card.dart';
+import '../../components/premium_paywall.dart';
 
 class UpgradeScreen extends StatelessWidget {
   const UpgradeScreen({super.key});

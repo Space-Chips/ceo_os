@@ -13,6 +13,7 @@ import '../../core/models/premium_models.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/theme/theme_catalog.dart';
+import '../../components/glass_card.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});

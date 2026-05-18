@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
+import '../lib/src/widgets/adaptive_tab_view.dart';
 
 void main() {
   group('AdaptiveTabBarView', () {

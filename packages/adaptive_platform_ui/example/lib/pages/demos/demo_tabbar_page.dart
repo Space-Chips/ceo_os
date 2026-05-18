@@ -2,6 +2,12 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
+import '../../../../lib/src/widgets/adaptive_app_bar.dart';
+import '../../../../lib/src/widgets/adaptive_app_bar_action.dart';
+import '../../../../lib/src/widgets/adaptive_bottom_navigation_bar.dart';
+import '../../../../lib/src/widgets/adaptive_scaffold.dart';
+import '../../../../lib/src/widgets/adaptive_scaffold.dart';
+import '../../../../lib/src/platform/platform_info.dart';
 
 /// Demo page showcasing AdaptiveButton features
 class DemoTabbarPage extends StatefulWidget {

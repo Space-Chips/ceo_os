@@ -12,6 +12,7 @@ import '../../core/providers/language_provider.dart';
 import '../../core/repositories/family_time_repository.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
+import '../../components/ambient_backdrop.dart';
 
 class FamilyTimeScreen extends StatefulWidget {
   const FamilyTimeScreen({super.key});

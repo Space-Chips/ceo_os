@@ -10,6 +10,9 @@ import '../../core/repositories/user_repository.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/widgets/rank_art.dart';
+import '../../components/ambient_backdrop.dart';
+import '../../components/glass_card.dart';
+import '../../components/glass_card.dart';
 
 class RankScreen extends StatefulWidget {
   const RankScreen({super.key});

@@ -9,6 +9,8 @@ import '../../core/providers/habit_provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import 'habit_stats_page.dart';
+import '../../components/glass_card.dart';
+import '../../components/neo_mono_text.dart';
 
 class HabitCompletionPage extends StatefulWidget {
   final Habit habit;

@@ -8,6 +8,10 @@ import '../../core/providers/language_provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import 'auth_support.dart';
+import '../../components/glass_card.dart';
+import '../../components/glass_input_field.dart';
+import '../../components/liquid_button.dart';
+import '../../components/neo_mono_text.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});

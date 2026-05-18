@@ -10,6 +10,7 @@ import '../../core/repositories/feature_repository.dart';
 import '../../core/repositories/focus_repository.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
+import '../../components/ambient_backdrop.dart';
 
 class WinStreakScreen extends StatefulWidget {
   const WinStreakScreen({super.key});

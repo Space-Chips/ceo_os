@@ -1,6 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:flutter/material.dart';
+import '../../../../lib/src/widgets/adaptive_app_bar.dart';
+import '../../../../lib/src/widgets/adaptive_scaffold.dart';
+import '../../../../lib/src/widgets/adaptive_segmented_control.dart';
+import '../../../../lib/src/platform/platform_info.dart';
 
 class SegmentedControlDemoPage extends StatefulWidget {
   const SegmentedControlDemoPage({super.key});

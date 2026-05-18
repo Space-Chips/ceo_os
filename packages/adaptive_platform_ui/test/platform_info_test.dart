@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
+import '../lib/src/platform/platform_info.dart';
 
 void main() {
   group('PlatformInfo', () {

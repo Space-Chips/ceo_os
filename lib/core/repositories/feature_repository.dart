@@ -8,6 +8,7 @@ import '../models/user_models.dart';
 import '../services/family_controls_local_store.dart';
 import '../services/supabase_service.dart';
 import '../config/apple_review_compliance.dart';
+import 'focus_repository.dart';
 
 class FeatureRepository {
   static const String adultContentShieldMarker = '__ADULT_CONTENT__';

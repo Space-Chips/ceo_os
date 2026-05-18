@@ -671,3 +671,21 @@ class _PackageOptionCard extends StatelessWidget {
     );
   }
 }
+
+// Recovered class _HeroPricePill @ 2026-05-10T09:05:55.879Z
+class _HeroPricePill extends StatelessWidget {
+  final bool isFr;
+  final String priceLabel;
+  final String durationLabel;
+  final Color primaryTextColor;
+  final Color secondaryTextColor;
+  final Color accentColor;
+
+  const _HeroPricePill({
+    required this.isFr,
+    required this.priceLabel,
+    required this.durationLabel,
+    required this.primaryTextColor,
+    required this.secondaryTextColor,
+    required this.accentColor,
+  });

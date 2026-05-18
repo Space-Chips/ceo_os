@@ -10,6 +10,11 @@ import '../../core/providers/language_provider.dart';
 import '../../core/providers/task_provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
+import '../../../packages/adaptive_platform_ui/lib/src/widgets/adaptive_slider.dart';
+import '../../components/glass_card.dart';
+import '../../components/glass_input_field.dart';
+import '../../components/liquid_button.dart';
+import '../../components/neo_mono_text.dart';
 
 class FocusStarterSheet extends StatefulWidget {
   const FocusStarterSheet({super.key});

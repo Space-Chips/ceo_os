@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import '../../components/components.dart';
 import '../theme/app_colors.dart';
+import '../../components/glass_card.dart';
 
 class CeoChip extends StatelessWidget {
   final String label;

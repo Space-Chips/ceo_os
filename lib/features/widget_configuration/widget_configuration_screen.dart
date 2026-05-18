@@ -13,6 +13,7 @@ import '../../core/providers/task_provider.dart';
 import '../../core/services/home_widget_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
+import '../../components/ambient_backdrop.dart';
 
 class WidgetConfigurationScreen extends StatefulWidget {
   const WidgetConfigurationScreen({super.key});

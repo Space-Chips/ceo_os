@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import '../../lib/src/widgets/adaptive_app.dart';
 
 void main() {
   runApp(const AdaptivePlatformUIDemo());

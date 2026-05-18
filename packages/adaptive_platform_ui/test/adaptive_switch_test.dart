@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
+import '../lib/src/widgets/adaptive_checkbox.dart';
+import '../lib/src/widgets/adaptive_radio.dart';
+import '../lib/src/widgets/adaptive_slider.dart';
+import '../lib/src/widgets/adaptive_switch.dart';
 
 void main() {
   group('AdaptiveSwitch', () {

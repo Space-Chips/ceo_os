@@ -15,6 +15,9 @@ import '../../core/theme/app_typography.dart';
 import '../../core/widgets/rank_art.dart';
 import '../screen_time_setup/screen_time_setup_controller.dart';
 import '../setup/setup_flow_controller.dart';
+import '../../components/ambient_backdrop.dart';
+import '../../core/config/apple_review_compliance.dart';
+import '../../components/glass_card.dart';
 
 class ScreenTimeManagerScreen extends StatefulWidget {
   const ScreenTimeManagerScreen({super.key});
@@ -749,4 +752,18 @@ class _ScreenTimeManagerScreenState extends State<ScreenTimeManagerScreen> {
       ],
     );
   }
+}
+
+// Recovered class _ScreenTimePressScale @ 2026-03-09T18:44:16.804Z
+class _ScreenTimePressScale extends StatefulWidget {
+  final Widget child;
+  final VoidCallback onTap;
+
+  const _ScreenTimePressScale({
+    required this.child,
+    required this.onTap,
+  });
+
+  @override
+  State<_ScreenTimePressScale> createState() => _ScreenTimePressScaleState();
 }

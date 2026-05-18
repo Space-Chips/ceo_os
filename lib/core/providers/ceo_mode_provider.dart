@@ -9,6 +9,8 @@ import '../repositories/focus_repository.dart';
 import '../repositories/premium_repository.dart';
 import '../services/focus_service.dart';
 import 'package:flutter/widgets.dart';
+import '../../features/ceo_mode/blackout_preparation/blackout_preparation_models.dart';
+import '../../features/ceo_mode/blackout_preparation/blackout_preparation_models.dart';
 
 enum CeoModeState { idle, active, exitPending }
 

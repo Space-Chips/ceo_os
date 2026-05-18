@@ -12,6 +12,7 @@ import '../../core/providers/language_provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import 'setup_flow_controller.dart';
+import '../control_center_setup/control_center_setup_models.dart';
 
 class SetupFlowScreen extends StatefulWidget {
   const SetupFlowScreen({super.key});
@@ -1299,6 +1300,91 @@ class _BulletLine extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// Recovered class _ChecklistRow @ 2026-04-13T10:49:54.852Z
+class _ChecklistRow extends StatelessWidget {
+  final String label;
+  final bool done;
+
+  const _ChecklistRow({required this.label, required this.done});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        children: [
+          Container(
+            width: 22,
+            height: 22,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: done
+                  ? AppColors.success.withValues(alpha: 0.2)
+                  : AppColors.glassSurfaceSoft,
+              border: Border.all(
+                color: done ? AppColors.success : AppColors.border,
+              ),
+            ),
+            child: Icon(
+              done ? CupertinoIcons.checkmark : CupertinoIcons.circle,
+              size: 14,
+              color: done ? AppColors.success : AppColors.tertiaryLabel,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              label,
+              style: AppTypography.body.copyWith(
+                color: AppColors.secondaryLabel,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// Recovered class _SelectableChip @ 2026-04-13T10:49:54.852Z
+class _SelectableChip extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _SelectableChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final background = selected
+        ? AppColors.accentSurfaceSoft.withValues(alpha: 0.45)
+        : AppColors.glassSurfaceSoft;
+    final border = selected ? AppColors.activeBorder : AppColors.border;
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: background,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: border),
+        ),
+        child: Text(
+          label,
+          style: AppTypography.callout.copyWith(
+            color: selected ? AppColors.label : AppColors.secondaryLabel,
+            fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+          ),
+        ),
       ),
     );
   }

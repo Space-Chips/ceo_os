@@ -25,6 +25,7 @@ import 'core/theme/app_colors.dart';
 import 'core/theme/theme_catalog.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../packages/adaptive_platform_ui/lib/src/widgets/adaptive_app.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

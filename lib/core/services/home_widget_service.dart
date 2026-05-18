@@ -13,6 +13,9 @@ import '../repositories/feature_repository.dart';
 import '../providers/task_provider.dart';
 import '../models/task_models.dart';
 import '../widgets/home_widgets/widget_views.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_typography.dart';
+import '../models/habit_models.dart';
 
 enum CeoWidgetMode { todo, dashboard, habits }
 
@@ -959,4 +962,121 @@ class _CeoWidgetCard extends StatelessWidget {
           ),
     );
   }
+}
+
+// Recovered class _CeoTodoCard @ 2026-05-02T16:40:07.088Z
+class _CeoTodoCard extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final List<ParetoTask> tasks;
+  final LanguageProvider language;
+  final bool large;
+
+  const _CeoTodoCard._({
+    required this.title,
+    required this.subtitle,
+    required this.tasks,
+    required this.language,
+    required this.large,
+  });
+
+  factory _CeoTodoCard.small({
+    required String title,
+    required String subtitle,
+    required List<ParetoTask> tasks,
+    required LanguageProvider language,
+  }) {
+    return _CeoTodoCard._(
+      title: title,
+      subtitle: subtitle,
+      tasks: tasks,
+      language: language,
+      large: false,
+    );
+  }
+
+  factory _CeoTodoCard.large({
+    required String title,
+    required String subtitle,
+    required List<ParetoTask> tasks,
+    required LanguageProvider language,
+  }) {
+    return _CeoTodoCard._(
+      title: title,
+      subtitle: subtitle,
+      tasks: tasks,
+      language: language,
+      large: true,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final maxItems = large ? 4 : 3;
+    final items = tasks.take(maxItems).toList();
+    return _CeoBaseCard(
+      headerTitle: title,
+      headerSubtitle: subtitle,
+      child: items.isEmpty
+          ? _CeoEmptyState(
+              title: language.t('widget_no_tasks'),
+              subtitle: language.t('widget_add_tasks_hint'),
+            )
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 8),
+                for (final task in items)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 7),
+                    child: Row(
+                      children: [
+                        Text(
+                          '○',
+                          style: AppTypography.callout.copyWith(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w900,
+                            color: AppColors.secondaryLabel.withValues(alpha: 0.85),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            task.title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppTypography.callout.copyWith(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.label.withValues(alpha: 0.92),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                if (tasks.length > maxItems) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    "+${tasks.length - maxItems} ${language.t('widget_more")}',
+                    style: AppTypography.caption1.copyWith(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.secondaryLabel.withValues(alpha: 0.72),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+    );
+  }
+
+  // Recovered static_field _keyHabitsTableLarge @ 2026-05-02T16:40:07.088Z
+  static const String _keyHabitsTableLarge = 'ceo_widget_habits_table_large';
+
+  // Recovered static_field _keyHabitsTableSmall @ 2026-05-02T16:40:07.088Z
+  static const String _keyHabitsTableSmall = 'ceo_widget_habits_table_small';
+
+  // Recovered static_field keyEnabledHabits @ 2026-05-16T08:52:19.742Z
+  static const String keyEnabledHabits = 'ceo_widget_enabled_habits';
 }

@@ -12,40 +12,72 @@ class AppColors {
   static String get themeId => ThemeRuntime.preset.id;
   static bool get isCarbonSystem => themeId == 'carbon_system';
 
-  static Color get background => ThemeRuntime.preset.colors.background;
+  static Color get background => ThemeRuntime.preset.semantic.appBackground;
   static Color get backgroundElevated =>
-      ThemeRuntime.preset.colors.backgroundElevated;
+      ThemeRuntime.preset.semantic.sectionBackground;
+  static Color get sectionBackground =>
+      ThemeRuntime.preset.semantic.sectionBackground;
   static Color get backgroundLight => backgroundElevated;
-  static Color get surface => ThemeRuntime.preset.colors.surface;
-  static Color get surfaceMuted => ThemeRuntime.preset.colors.surfaceMuted;
-  static Color get cardBase => ThemeRuntime.preset.colors.cardBase;
-  static Color get cardRaised => ThemeRuntime.preset.colors.cardRaised;
+  static Color get surface => ThemeRuntime.preset.semantic.cardBackground;
+  static Color get cardBackgroundAlt =>
+      ThemeRuntime.preset.semantic.cardBackgroundAlt;
+  static Color get cardBackgroundStrong =>
+      ThemeRuntime.preset.semantic.cardBackgroundStrong;
+  static Color get surfaceMuted => ThemeRuntime.preset.palette.surfaceTertiary;
+  static Color get cardBase => ThemeRuntime.preset.semantic.cardBackground;
+  static Color get cardRaised => ThemeRuntime.preset.semantic.cardBackgroundAlt;
 
-  static Color get accent => ThemeRuntime.preset.colors.accent;
-  static Color get accentSoft => ThemeRuntime.preset.colors.accentSoft;
-  static Color get accentSecondary => Color.lerp(accent, backgroundLight, isDark ? 0.22 : 0.32)!;
+  static Color get accent => ThemeRuntime.preset.palette.accent;
+  static Color get accentLight => ThemeRuntime.preset.palette.accentLight;
+  static Color get accentDeep => ThemeRuntime.preset.palette.accentDeep;
+  static Color get accentSoft => ThemeRuntime.preset.semantic.accentSurfaceSoft;
+  static Color get accentSurfaceSoft =>
+      ThemeRuntime.preset.semantic.accentSurfaceSoft;
+  static Color get accentSecondary =>
+      Color.lerp(accent, backgroundLight, isDark ? 0.22 : 0.32) ?? accent;
+  static Color get themeGlow => ThemeRuntime.preset.semantic.accentGlow;
+  static Color get activeBorder => ThemeRuntime.preset.semantic.accentBorder;
+  static Color get toggleOn => ThemeRuntime.preset.semantic.activeToggle;
+  static Color get selectionOutline =>
+      ThemeRuntime.preset.semantic.selectionOutline;
+  static Color get accentSurfaceStrong =>
+      ThemeRuntime.preset.semantic.accentSurfaceStrong;
+  static Color get buttonGradientStart => accent;
+  static Color get buttonGradientEnd => accentLight;
+  static List<Color> get buttonGradient => [
+    buttonGradientStart,
+    buttonGradientEnd,
+  ];
 
-  static Color get label => ThemeRuntime.preset.colors.label;
-  static Color get secondaryLabel => ThemeRuntime.preset.colors.secondaryLabel;
-  static Color get tertiaryLabel => ThemeRuntime.preset.colors.tertiaryLabel;
-  static Color get quaternaryLabel => ThemeRuntime.preset.colors.quaternaryLabel;
+  static Color get label => ThemeRuntime.preset.semantic.primaryText;
+  static Color get secondaryLabel => ThemeRuntime.preset.semantic.secondaryText;
+  static Color get tertiaryLabel => ThemeRuntime.preset.semantic.tertiaryText;
+  static Color get quaternaryLabel => tertiaryLabel.withValues(alpha: 0.72);
+  static Color get accentText => ThemeRuntime.preset.semantic.accentText;
+  static Color get accentIcon => ThemeRuntime.preset.semantic.accentIcon;
+  static Color get rankAccent => ThemeRuntime.preset.semantic.rankAccent;
+  static Color get scoreValue => ThemeRuntime.preset.semantic.scoreValue;
 
-  static Color get success => ThemeRuntime.preset.colors.success;
-  static Color get warning => ThemeRuntime.preset.colors.warning;
-  static Color get error => ThemeRuntime.preset.colors.error;
+  static const Color success = Color(0xFF2CB67D);
+  static const Color warning = Color(0xFFF5A524);
+  static const Color error = Color(0xFFEA5E67);
+  static const Color info = Color(0xFF4F8CFF);
 
-  static Color get chartA => ThemeRuntime.preset.colors.chartA;
-  static Color get chartB => ThemeRuntime.preset.colors.chartB;
-  static Color get chartC => ThemeRuntime.preset.colors.chartC;
-  static Color get chartD => ThemeRuntime.preset.colors.chartD;
+  static Color get chartA => accentLight;
+  static Color get chartB => accent;
+  static Color get chartC => warning;
+  static Color get chartD => success.withValues(alpha: 0.88);
 
-  static Color get focusPrimary => ThemeRuntime.preset.colors.focusPrimary;
-  static Color get focusSecondary => ThemeRuntime.preset.colors.focusSecondary;
-  static Color get ceoPrimary => ThemeRuntime.preset.colors.ceoPrimary;
-  static Color get ceoSecondary => ThemeRuntime.preset.colors.ceoSecondary;
+  static Color get focusPrimary => ThemeRuntime.preset.semantic.focusRing;
+  static Color get focusSecondary => accentLight;
+  static const Color ceoPrimary = Color(0xFFFFB04E);
+  static const Color ceoSecondary = Color(0xFFFFD48A);
 
-  static Color get border => ThemeRuntime.preset.colors.border;
-  static Color get borderStrong => ThemeRuntime.preset.colors.borderStrong;
+  static Color get border => ThemeRuntime.preset.semantic.cardBorder;
+  static Color get borderStrong =>
+      ThemeRuntime.preset.semantic.cardBorderStrong;
+  static Color get cardBorder => border;
+  static Color get cardBorderStrong => borderStrong;
 
   static const Color white = Color(0xFFFFFFFF);
   static const Color black = Color(0xFF000000);
@@ -66,9 +98,11 @@ class AppColors {
       ThemeRuntime.preset.semantic.topBarControlBackground;
   static Color get topBarControlBorder =>
       ThemeRuntime.preset.semantic.topBarControlBorder;
-  static Color get pillBackground => ThemeRuntime.preset.semantic.pillBackground;
+  static Color get pillBackground =>
+      ThemeRuntime.preset.semantic.pillBackground;
   static Color get pillBorder => ThemeRuntime.preset.semantic.pillBorder;
-  static Color get inputBackground => ThemeRuntime.preset.semantic.inputBackground;
+  static Color get inputBackground =>
+      ThemeRuntime.preset.semantic.inputBackground;
   static Color get inputBorder => ThemeRuntime.preset.semantic.inputBorder;
   static Color get moduleIconBackground =>
       ThemeRuntime.preset.semantic.moduleIconBackground;
@@ -78,10 +112,8 @@ class AppColors {
       ThemeRuntime.preset.semantic.dashboardGradientEnd;
   static Color get overlayScrim => ThemeRuntime.preset.semantic.overlayScrim;
   static Color get ambientTint => ThemeRuntime.preset.palette.ambientTint;
-  static Color get glassSurfaceSoft => Color.alphaBlend(
-    border.withValues(alpha: 0.48),
-    cardBase,
-  );
+  static Color get glassSurfaceSoft =>
+      Color.alphaBlend(border.withValues(alpha: 0.48), cardBase);
   static Color get glassSurfaceStrong => Color.alphaBlend(
     borderStrong.withValues(alpha: 0.78),
     cardBackgroundStrong,
@@ -96,51 +128,56 @@ class AppColors {
     background,
   );
 
-  static Color get glassShadow => isDark
-      ? const Color(0xB1000000)
-      : const Color(0x260E1A2A);
-  static Color get glassShadowSoft => isDark
-      ? const Color(0x6E000000)
-      : const Color(0x180E1A2A);
+  static Color get glassShadow => switch (themeId) {
+    'modern_desert' => const Color(0x2E7B5A35),
+    'cloud_studio' => const Color(0x1F42586F),
+    _ => isDark ? const Color(0xB1000000) : const Color(0x260E1A2A),
+  };
+  static Color get glassShadowSoft => switch (themeId) {
+    'modern_desert' => const Color(0x1C8A6440),
+    'cloud_studio' => const Color(0x143E556D),
+    _ => isDark ? const Color(0x6E000000) : const Color(0x180E1A2A),
+  };
 
-  static Color get edgeGlow => accent.withValues(alpha: isDark ? 0.18 : 0.1);
-  static Color get edgeGlowSoft => accent.withValues(alpha: isDark ? 0.1 : 0.06);
+  static Color get edgeGlow =>
+      themeGlow.withValues(alpha: isDark ? themeGlow.a : 0.1);
+  static Color get edgeGlowSoft =>
+      themeGlow.withValues(alpha: isDark ? 0.12 : 0.06);
 
   static List<Color> get backdropGradient => [
     background,
-    Color.lerp(background, backgroundLight, 0.58)!,
+    Color.alphaBlend(
+      ThemeRuntime.preset.palette.ambientTint.withValues(
+        alpha: isDark
+            ? ThemeRuntime.preset.palette.ambientTint.a
+            : ThemeRuntime.preset.palette.ambientTint.a * 0.4,
+      ),
+      backgroundLight,
+    ),
     background,
   ];
 
   static List<Color> get floatingGlassGradient => [
     Color.alphaBlend(
-      isDark ? const Color(0x08FFFFFF) : const Color(0xCCFFFFFF),
+      ambientTint.withValues(alpha: isDark ? 0.14 : 0.08),
       cardRaised,
     ),
-    Color.alphaBlend(
-      isDark ? const Color(0x04FFFFFF) : const Color(0xAAFFFFFF),
-      cardBase,
-    ),
+    Color.alphaBlend(border.withValues(alpha: 0.42), cardBase),
   ];
 
   static List<Color> get inputGlassGradient => [
-    Color.alphaBlend(
-      isDark ? const Color(0x0AFFFFFF) : const Color(0xF2FFFFFF),
-      surface,
-    ),
-    Color.alphaBlend(
-      isDark ? const Color(0x04FFFFFF) : const Color(0xE8FFFFFF),
-      surfaceMuted,
-    ),
+    inputBackground,
+    Color.alphaBlend(border.withValues(alpha: 0.22), cardBackgroundStrong),
   ];
 
   // Legacy aliases (for existing feature screens).
   static Color get primaryOrange => accent;
   static Color get orangeDim => accentSoft;
-  static Color get accentMuted => accentSoft.withValues(alpha: isDark ? 0.28 : 0.16);
-  static Color get liquidGradientStart => focusPrimary;
-  static Color get liquidGradientEnd => focusSecondary;
-  static List<Color> get liquidGradient => [focusPrimary, focusSecondary];
+  static Color get accentMuted =>
+      accentSoft.withValues(alpha: isDark ? 0.28 : 0.16);
+  static Color get liquidGradientStart => buttonGradientStart;
+  static Color get liquidGradientEnd => buttonGradientEnd;
+  static List<Color> get liquidGradient => buttonGradient;
 
   static Color get electricCyan => accent;
   static Color get royalPurple => accentSoft;
@@ -178,49 +215,9 @@ class AppColors {
       ? _carbonWarmTone.withValues(alpha: 0.72)
       : primaryOrange.withValues(alpha: 0.6);
 
-  // ---- Recovered from Codex session patches (2026-02 to 2026-05) ----
-  static Color get _backgroundLight =>
-  static Color get _cardGradientStart =>
-  static Color get _cardGradientEnd =>
-  static Color get _accentSecondary =>
-  static Color get _secondaryLabel =>
-  static Color get _tertiaryLabel =>
-  static Color get _quaternaryLabel =>
-  static Color get _opaqueSeparator =>
-  static Color get cardGradientStart => _cardGradientStart;
-  static Color get cardGradientEnd => _cardGradientEnd;
-  static Color get systemGroupedBackground => background;
-  static Color get _background => ThemeRuntime.preset.colors.background;
-  static Color get _surface => ThemeRuntime.preset.colors.surface;
-  static Color get _glassBase => ThemeRuntime.preset.colors.glassBase;
-  static Color get _glassBorder => ThemeRuntime.preset.colors.glassBorder;
-  static Color get _accent => ThemeRuntime.preset.colors.accent;
-  static Color get _label => ThemeRuntime.preset.colors.label;
-  static Color get _success => ThemeRuntime.preset.colors.success;
-  static Color get _warning => ThemeRuntime.preset.colors.warning;
-  static Color get _error => ThemeRuntime.preset.colors.error;
-  static Color get _separator => ThemeRuntime.preset.colors.separator;
-  static Color get _accentMuted => ThemeRuntime.preset.colors.accentMuted;
-  static Color get accentDeep => ThemeRuntime.preset.palette.accentDeep;
-  static Color get cardBorderStrong => borderStrong;
-  static Color get accentLight => accent.withValues(alpha: 0.18);
-  static Color get themeGlow => accent;
-  static Color get activeBorder => selectionOutline;
-  static Color get toggleOn => success;
-  static Color get buttonGradientStart => accent;
-  static Color get buttonGradientEnd => accentSecondary;
-  static Color get sectionBackground => backgroundLight;
-  static Color get cardBackgroundAlt => elevatedBackground;
-  static Color get selectionOutline => accent.withValues(alpha: 0.62);
-  static Color get accentSurfaceStrong => accent.withValues(alpha: 0.18);
-  static Color get accentText => accent;
-  static Color get accentIcon => accent;
-  static Color get rankAccent => accent;
-  static Color get accentSurfaceSoft => accent.withValues(alpha: 0.10);
-  static Color get scoreValue => accent;
-  static Color get cardBackgroundStrong => glassSurfaceStrong;
-  static Color get cardBorder => border;
+  // Recovered static_getter glassSurface @ 2026-05-16T08:36:14.618Z
   static Color get glassSurface => glassSurfaceSoft;
-  static Color get info => systemBlue;
+
+  // Recovered static_getter primaryAccent @ 2026-05-16T08:36:14.618Z
   static Color get primaryAccent => accent;
 }
