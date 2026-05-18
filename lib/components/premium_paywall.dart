@@ -16,7 +16,6 @@ import '../core/theme/app_typography.dart';
 import 'glass_card.dart';
 import 'legal_document_sheet.dart';
 import 'liquid_button.dart';
-import 'premium_surface_card.dart';
 
 Future<void> showPremiumPaywallSheet({
   required BuildContext context,
@@ -104,7 +103,6 @@ class PremiumPaywallSheet extends StatelessWidget {
       ),
     );
   }
-
 }
 
 class PremiumPaywallContent extends StatefulWidget {
@@ -138,6 +136,7 @@ class _PremiumPaywallContentState extends State<PremiumPaywallContent> {
       BillingService().getPackageOptions();
   String? _selectedIdentifier;
   bool _purchaseInFlight = false;
+  bool _restoreInFlight = false;
 
   bool get _isAndroid =>
       !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
@@ -208,14 +207,18 @@ class _PremiumPaywallContentState extends State<PremiumPaywallContent> {
     );
   }
 
-  BillingPackageOption? _preferredHeroOption(List<BillingPackageOption> options) {
+  BillingPackageOption? _preferredHeroOption(
+    List<BillingPackageOption> options,
+  ) {
     if (options.isEmpty) return null;
     final lower = options.map((o) => o.identifier.toLowerCase()).toList();
     // Prefer monthly if present (simple price anchor).
     for (int i = 0; i < options.length; i++) {
       if (lower[i].contains('month')) return options[i];
-      if (options[i].durationLabel.toLowerCase().contains('month')) return options[i];
-      if (options[i].durationLabel.toLowerCase().contains('mo')) return options[i];
+      if (options[i].durationLabel.toLowerCase().contains('month'))
+        return options[i];
+      if (options[i].durationLabel.toLowerCase().contains('mo'))
+        return options[i];
     }
     return options.first;
   }
@@ -255,7 +258,11 @@ class _PremiumPaywallContentState extends State<PremiumPaywallContent> {
             'Rapports avancés + thèmes Premium',
           ];
         default:
-          return _benefitsForReason(widget.message, widget.runtime, widget.isFr);
+          return _benefitsForReason(
+            widget.message,
+            widget.runtime,
+            widget.isFr,
+          );
       }
     }
     switch (r) {
@@ -394,37 +401,40 @@ class _PremiumPaywallContentState extends State<PremiumPaywallContent> {
               ),
             ),
             const SizedBox(height: 12),
-            ..._benefitsForReason(widget.message, widget.runtime, widget.isFr)
-                .map(
-                  (benefit) => Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(top: 3),
-                          child: Icon(
-                            CupertinoIcons.check_mark_circled_solid,
-                            size: 16,
-                            color: AppColors.accentText.withValues(alpha: 0.95),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                            benefit,
-                            style: AppTypography.callout.copyWith(
-                              color: AppColors.secondaryLabel.withValues(
-                                alpha: 0.92,
-                              ),
-                              height: 1.35,
-                            ),
-                          ),
-                        ),
-                      ],
+            ..._benefitsForReason(
+              widget.message,
+              widget.runtime,
+              widget.isFr,
+            ).map(
+              (benefit) => Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(top: 3),
+                      child: Icon(
+                        CupertinoIcons.check_mark_circled_solid,
+                        size: 16,
+                        color: AppColors.accentText.withValues(alpha: 0.95),
+                      ),
                     ),
-                  ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        benefit,
+                        style: AppTypography.callout.copyWith(
+                          color: AppColors.secondaryLabel.withValues(
+                            alpha: 0.92,
+                          ),
+                          height: 1.35,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
+              ),
+            ),
             const SizedBox(height: 14),
             if (options.isNotEmpty) ...[
               ...options.map(
@@ -452,15 +462,19 @@ class _PremiumPaywallContentState extends State<PremiumPaywallContent> {
                         final result = await BillingService().purchasePremium();
                         if (!context.mounted) return;
                         final title = result.succeeded
-                            ? (widget.isFr ? 'Premium activé' : 'Premium activated')
-                            : (widget.isFr ? 'Synchronisation en cours' : 'Activation pending');
+                            ? (widget.isFr
+                                  ? 'Premium activé'
+                                  : 'Premium activated')
+                            : (widget.isFr
+                                  ? 'Synchronisation en cours'
+                                  : 'Activation pending');
                         final message = result.succeeded
                             ? (widget.isFr
-                                ? 'Ton achat a été confirmé. Ton accès Premium est maintenant actif.'
-                                : 'Your purchase was confirmed. Premium is now active.')
+                                  ? 'Ton achat a été confirmé. Ton accès Premium est maintenant actif.'
+                                  : 'Your purchase was confirmed. Premium is now active.')
                             : (widget.isFr
-                                ? 'Le store a confirmé ton achat. Ton accès Premium est en cours de synchronisation.'
-                                : 'Store confirmed your purchase. Premium is still syncing.');
+                                  ? 'Le store a confirmé ton achat. Ton accès Premium est en cours de synchronisation.'
+                                  : 'Store confirmed your purchase. Premium is still syncing.');
                         showCupertinoDialog<void>(
                           context: context,
                           builder: (_) => CupertinoAlertDialog(
@@ -494,8 +508,8 @@ class _PremiumPaywallContentState extends State<PremiumPaywallContent> {
                         : () async {
                             setState(() => _restoreInFlight = true);
                             try {
-                              final result =
-                                  await BillingService().restorePurchases();
+                              final result = await BillingService()
+                                  .restorePurchases();
                               if (!context.mounted) return;
                               final title = result.succeeded
                                   ? (widget.isFr ? 'Restauré' : 'Restored')
@@ -689,3 +703,36 @@ class _HeroPricePill extends StatelessWidget {
     required this.secondaryTextColor,
     required this.accentColor,
   });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(999),
+        color: accentColor.withValues(alpha: 0.10),
+        border: Border.all(color: accentColor.withValues(alpha: 0.24)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            priceLabel,
+            style: AppTypography.headline.copyWith(
+              color: primaryTextColor,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            durationLabel,
+            style: AppTypography.subhead.copyWith(
+              color: secondaryTextColor,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
