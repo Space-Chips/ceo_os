@@ -24,61 +24,8 @@ class WidgetRoot extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox.expand(
       child: Container(
-        decoration: WidgetDesignTokens.outerDecoration(),
-        child: Padding(
-          padding: padding,
-          child: child,
-        ),
-      ),
-    );
-  }
-}
-
-class FocusWidgetSquareView extends StatelessWidget {
-  final LanguageProvider language;
-  final int durationMinutes;
-
-  const FocusWidgetSquareView({
-    super.key,
-    required this.language,
-    required this.durationMinutes,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return WidgetRoot(
-      padding: WidgetDesignTokens.padSquare,
-      child: Center(
-        child: Text(
-          "${language.t('focus")} · ${durationMinutes}m',
-          textAlign: TextAlign.center,
-          style: WidgetDesignTokens.title,
-        ),
-      ),
-    );
-  }
-}
-
-class BlackoutWidgetSquareView extends StatelessWidget {
-  final LanguageProvider language;
-  final int durationMinutes;
-
-  const BlackoutWidgetSquareView({
-    super.key,
-    required this.language,
-    required this.durationMinutes,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return WidgetRoot(
-      padding: WidgetDesignTokens.padSquare,
-      child: Center(
-        child: Text(
-          "${language.t('ceo_mode")} · ${durationMinutes}m',
-          textAlign: TextAlign.center,
-          style: WidgetDesignTokens.title,
-        ),
+        decoration: decorationOverride ?? WidgetDesignTokens.outerDecoration(),
+        child: Padding(padding: padding, child: child),
       ),
     );
   }
@@ -106,7 +53,7 @@ class TodoWidgetSquareView extends StatelessWidget {
           Text('To‑Do', style: WidgetDesignTokens.title),
           const SizedBox(height: 4),
           Text(
-            "${language.t('today")} · $remaining ${language.t('widget_remaining')}',
+            "${language.t('today')} · $remaining ${language.t('widget_remaining')}",
             style: WidgetDesignTokens.subtitle,
           ),
           const SizedBox(height: 12),
@@ -127,16 +74,13 @@ class TodoWidgetSquareView extends StatelessWidget {
             )
           else ...[
             for (var i = 0; i < items.length; i++) ...[
-              _TodoRow(
-                index: i + 1,
-                task: items[i],
-              ),
+              _TodoRow(index: i + 1, task: items[i]),
               if (i != items.length - 1) const SizedBox(height: 8),
             ],
             if (remaining > 3) ...[
               const SizedBox(height: 8),
               Text(
-                "+${remaining - 3} ${language.t('widget_more")}',
+                "+${remaining - 3} ${language.t('widget_more')}",
                 style: WidgetDesignTokens.subtitle,
               ),
             ],
@@ -180,7 +124,9 @@ class _TodoRow extends StatelessWidget {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: AppColors.cardBackgroundAlt,
-              border: Border.all(color: AppColors.border.withValues(alpha: 0.7)),
+              border: Border.all(
+                color: AppColors.border.withValues(alpha: 0.7),
+              ),
             ),
             alignment: Alignment.center,
             child: Text(
@@ -239,7 +185,9 @@ class _TodoRow extends StatelessWidget {
                         style: AppTypography.caption1.copyWith(
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
-                          color: AppColors.secondaryLabel.withValues(alpha: 0.7),
+                          color: AppColors.secondaryLabel.withValues(
+                            alpha: 0.7,
+                          ),
                         ),
                       ),
                     ],
@@ -512,7 +460,9 @@ class DashboardWidgetRectangularView extends StatelessWidget {
                   style: AppTypography.callout.copyWith(
                     fontSize: 15,
                     fontWeight: FontWeight.w800,
-                    color: WidgetDesignTokens.primaryText.withValues(alpha: 0.95),
+                    color: WidgetDesignTokens.primaryText.withValues(
+                      alpha: 0.95,
+                    ),
                     height: 1.15,
                   ),
                 ),
@@ -631,7 +581,7 @@ class HabitsTodayWidgetSquareView extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            "${language.t('today")} · $completed/$total ${language.t('widget_completed')}',
+            "${language.t('today')} · $completed/$total ${language.t('widget_completed')}",
             style: WidgetDesignTokens.subtitle,
           ),
           const SizedBox(height: 12),
@@ -641,7 +591,9 @@ class HabitsTodayWidgetSquareView extends StatelessWidget {
                 tint: const Color(0xFF191B20),
               ),
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(WidgetDesignTokens.radiusInner),
+                borderRadius: BorderRadius.circular(
+                  WidgetDesignTokens.radiusInner,
+                ),
                 child: Column(
                   children: [
                     for (var i = 0; i < items.length; i++) ...[
@@ -667,10 +619,12 @@ class HabitsTodayWidgetSquareView extends StatelessWidget {
                         child: Align(
                           alignment: Alignment.centerLeft,
                           child: Text(
-                            "+$more ${language.t('widget_more")}',
+                            "+$more ${language.t('widget_more')}",
                             style: WidgetDesignTokens.subtitle.copyWith(
                               fontSize: 11,
-                              color: AppColors.secondaryLabel.withValues(alpha: 0.7),
+                              color: AppColors.secondaryLabel.withValues(
+                                alpha: 0.7,
+                              ),
                             ),
                           ),
                         ),
@@ -779,7 +733,10 @@ class HabitsTableWidgetRectangularView extends StatelessWidget {
             children: [
               Text('Habits Table', style: WidgetDesignTokens.title),
               const SizedBox(height: 2),
-              Text(language.t('widget_last_7_days'), style: WidgetDesignTokens.subtitle),
+              Text(
+                language.t('widget_last_7_days'),
+                style: WidgetDesignTokens.subtitle,
+              ),
               const SizedBox(height: 10),
               Row(
                 children: [
@@ -797,7 +754,9 @@ class HabitsTableWidgetRectangularView extends StatelessWidget {
                           label,
                           style: WidgetDesignTokens.subtitle.copyWith(
                             fontSize: 11,
-                            color: AppColors.secondaryLabel.withValues(alpha: 0.6),
+                            color: AppColors.secondaryLabel.withValues(
+                              alpha: 0.6,
+                            ),
                           ),
                         ),
                       ),
@@ -809,7 +768,8 @@ class HabitsTableWidgetRectangularView extends StatelessWidget {
                 _HabitsTableRow(
                   habit: habit,
                   days: days,
-                  completions: completions,
+                  completionsDone: completionsDone,
+                  completionsFailed: completionsFailed,
                 ),
                 const SizedBox(height: 8),
               ],
@@ -824,20 +784,23 @@ class HabitsTableWidgetRectangularView extends StatelessWidget {
 class _HabitsTableRow extends StatelessWidget {
   final Habit habit;
   final List<DateTime> days;
-  final Map<String, Set<String>> completions;
+  final Map<String, Set<String>> completionsDone;
+  final Map<String, Set<String>> completionsFailed;
 
   const _HabitsTableRow({
     required this.habit,
     required this.days,
-    required this.completions,
+    required this.completionsDone,
+    required this.completionsFailed,
   });
 
   @override
   Widget build(BuildContext context) {
-    final doneDates = completions[habit.id] ?? const <String>{};
+    final doneDates = completionsDone[habit.id] ?? const <String>{};
+    final failedDates = completionsFailed[habit.id] ?? const <String>{};
     final today = DateTime.now();
     final todayKey =
-        "${today.year}-${today.month.toString().padLeft(2, '0")}-${today.day.toString().padLeft(2, '0')}';
+        "${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}";
 
     return Row(
       children: [
@@ -861,6 +824,7 @@ class _HabitsTableRow extends StatelessWidget {
               child: _cellSymbol(
                 day: day,
                 doneDates: doneDates,
+                failedDates: failedDates,
                 todayKey: todayKey,
               ),
             ),
@@ -872,10 +836,11 @@ class _HabitsTableRow extends StatelessWidget {
   Widget _cellSymbol({
     required DateTime day,
     required Set<String> doneDates,
+    required Set<String> failedDates,
     required String todayKey,
   }) {
     final key =
-        "${day.year}-${day.month.toString().padLeft(2, '0")}-${day.day.toString().padLeft(2, '0')}';
+        "${day.year}-${day.month.toString().padLeft(2, '0')}-${day.day.toString().padLeft(2, '0')}";
     final isDone = doneDates.contains(key);
     if (isDone) {
       return Text(
@@ -884,6 +849,18 @@ class _HabitsTableRow extends StatelessWidget {
           fontSize: 14,
           fontWeight: FontWeight.w900,
           color: AppColors.success,
+          height: 1,
+        ),
+      );
+    }
+    final isFailed = failedDates.contains(key);
+    if (isFailed) {
+      return Text(
+        'x',
+        style: AppTypography.callout.copyWith(
+          fontSize: 14,
+          fontWeight: FontWeight.w900,
+          color: AppColors.error,
           height: 1,
         ),
       );
@@ -901,7 +878,7 @@ class _HabitsTableRow extends StatelessWidget {
       );
     }
     return Text(
-      '✖',
+      '-',
       style: AppTypography.callout.copyWith(
         fontSize: 14,
         fontWeight: FontWeight.w900,
@@ -1017,7 +994,9 @@ class WidgetActionButton extends StatelessWidget {
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(16),
                         color: accent.withValues(alpha: 0.18),
-                        border: Border.all(color: accent.withValues(alpha: 0.28)),
+                        border: Border.all(
+                          color: accent.withValues(alpha: 0.28),
+                        ),
                       ),
                       alignment: Alignment.center,
                       child: Icon(
@@ -1050,7 +1029,9 @@ class WidgetActionButton extends StatelessWidget {
                   style: AppTypography.largeTitle.copyWith(
                     fontSize: 34,
                     fontWeight: FontWeight.w800,
-                    color: WidgetDesignTokens.primaryText.withValues(alpha: 0.98),
+                    color: WidgetDesignTokens.primaryText.withValues(
+                      alpha: 0.98,
+                    ),
                     height: 1.0,
                   ),
                 ),
@@ -1279,9 +1260,7 @@ class _ProgressBar extends StatelessWidget {
           alignment: Alignment.centerLeft,
           child: FractionallySizedBox(
             widthFactor: p,
-            child: Container(
-              color: AppColors.accent.withValues(alpha: 0.85),
-            ),
+            child: Container(color: AppColors.accent.withValues(alpha: 0.85)),
           ),
         ),
       ),
