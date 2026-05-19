@@ -12,17 +12,15 @@ import '../../core/models/task_models.dart';
 import '../../core/providers/habit_provider.dart';
 import '../../core/providers/language_provider.dart';
 import '../../core/providers/task_provider.dart';
-import '../../core/providers/language_provider.dart';
-import '../../core/providers/task_provider.dart';
 import '../../core/repositories/habit_repository.dart';
 import '../../core/repositories/insights_repository.dart';
 import '../../core/repositories/task_repository.dart';
 import '../../core/services/performance_score_service.dart';
+import '../../core/services/stats_engine.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../tasks/task_importance_theme.dart';
 import '../../components/ambient_backdrop.dart';
-import '../../components/glass_card.dart';
 import '../../components/glass_card.dart';
 import '../../components/liquid_button.dart';
 
@@ -75,6 +73,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   final TaskRepository _taskRepository = TaskRepository();
   final HabitRepository _habitRepository = HabitRepository();
   final InsightsRepository _insightsRepository = InsightsRepository();
+  final StatsEngine _statsEngine = StatsEngine.instance;
   HabitProvider? _habitProvider;
   TaskProvider? _taskProvider;
   Timer? _refreshDebounce;
@@ -203,6 +202,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return TaskImportanceTheme.dashboardLabel(raw);
   }
 
+  Color _importanceColor(String? raw) {
+    return TaskImportanceTheme.badge(raw).text;
+  }
+
   String _durationLabel(String? raw) {
     switch ((raw ?? '').toLowerCase()) {
       case 'less_than_30min':
@@ -295,7 +298,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
       int wakeScore = _wakeScore;
       try {
         final statsSnapshot = await _statsEngine.buildSnapshot(now: now);
-        final dashboardSnapshot = await _insightsRepository.getDashboardSnapshot();
+        final dashboardSnapshot = await _insightsRepository
+            .getDashboardSnapshot();
         final bundle = PerformanceScoreService.build(
           dashboard: dashboardSnapshot,
           daily: statsSnapshot.daily,
@@ -320,18 +324,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
       final openTasks = allTasks.where((t) => !t.completed).toList()
         ..sort((a, b) => _taskScore(b).compareTo(_taskScore(a)));
 
-      final todayEvents = allEvents.where((event) {
-        final eventDay = _parseEventDate(event.eventDate);
-        if (eventDay == null) return false;
-        return eventDay == today;
-      }).toList()
-        ..sort((a, b) {
-          final byTime = _eventTimeSortKey(
-            a.eventTime,
-          ).compareTo(_eventTimeSortKey(b.eventTime));
-          if (byTime != 0) return byTime;
-          return a.title.toLowerCase().compareTo(b.title.toLowerCase());
-        });
+      final todayEvents =
+          allEvents.where((event) {
+            final eventDay = _parseEventDate(event.eventDate);
+            if (eventDay == null) return false;
+            return eventDay == today;
+          }).toList()..sort((a, b) {
+            final byTime = _eventTimeSortKey(
+              a.eventTime,
+            ).compareTo(_eventTimeSortKey(b.eventTime));
+            if (byTime != 0) return byTime;
+            return a.title.toLowerCase().compareTo(b.title.toLowerCase());
+          });
 
       final yesterdayCompletionMap = {
         for (final item in yesterdayCompletions) item.habitId: item,
@@ -363,7 +367,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
         _yesterdayHabits = unresolvedYesterday;
         _yesterdayStates
           ..clear()
-          ..addEntries(unresolvedYesterday.map((habit) => MapEntry(habit.id, false)));
+          ..addEntries(
+            unresolvedYesterday.map((habit) => MapEntry(habit.id, false)),
+          );
         _todayHabitMarks
           ..clear()
           ..addAll(restoredMarks);
@@ -382,7 +388,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Future<void> _confirmYesterday() async {
     if (_isConfirmingYesterday || _yesterdayHabits.isEmpty) return;
     final provider = context.read<HabitProvider>();
-    final yesterday = _dateOnly(DateTime.now().subtract(const Duration(days: 1)));
+    final yesterday = _dateOnly(
+      DateTime.now().subtract(const Duration(days: 1)),
+    );
     setState(() => _isConfirmingYesterday = true);
 
     try {
@@ -573,7 +581,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget _attentionScoreCard() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 22),
-      decoration: _panelDecoration(accentColor: AppColors.accent.withValues(alpha: 0.22)),
+      decoration: _panelDecoration(
+        accentColor: AppColors.accent.withValues(alpha: 0.22),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -597,6 +607,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
     );
   }
+
+  int get _attentionScore => _wakeScore;
+
+  Widget _wakeScoreCard() => _attentionScoreCard();
 
   Widget _yesterdayValidationCard() {
     return Container(
@@ -792,7 +806,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                       borderRadius: BorderRadius.circular(9),
                                       color: levelColor.withValues(alpha: 0.2),
                                       border: Border.all(
-                                        color: levelColor.withValues(alpha: 0.8),
+                                        color: levelColor.withValues(
+                                          alpha: 0.8,
+                                        ),
                                         width: 0.7,
                                       ),
                                     ),
@@ -879,17 +895,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         end: Alignment.bottomRight,
                         colors: marked
                             ? [
-                                AppColors.floatingGlassGradient.first.withValues(
-                                  alpha: 0.52,
-                                ),
+                                AppColors.floatingGlassGradient.first
+                                    .withValues(alpha: 0.52),
                                 AppColors.floatingGlassGradient.last.withValues(
                                   alpha: 0.44,
                                 ),
                               ]
                             : [
-                                AppColors.floatingGlassGradient.first.withValues(
-                                  alpha: 0.9,
-                                ),
+                                AppColors.floatingGlassGradient.first
+                                    .withValues(alpha: 0.9),
                                 AppColors.floatingGlassGradient.last.withValues(
                                   alpha: 0.78,
                                 ),
@@ -1072,7 +1086,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             minimumSize: Size.zero,
             onPressed: onViewAll,
             child: Text(
-              "${_t('dashboard_view_all")} →',
+              '${_t('dashboard_view_all')} >',
               style: AppTypography.callout.copyWith(
                 fontSize: 13,
                 color: AppColors.secondaryLabel.withValues(alpha: 0.6),
@@ -1099,10 +1113,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         end: Alignment.bottomCenter,
         colors: [AppColors.cardBackgroundStrong, AppColors.cardBase],
       ),
-      border: Border.all(
-        color: AppColors.border,
-        width: 1,
-      ),
+      border: Border.all(color: AppColors.border, width: 1),
       boxShadow: [
         BoxShadow(
           color: AppColors.glassShadow.withValues(alpha: 0.3),
