@@ -80,8 +80,6 @@ class _SignupScreenState extends State<SignupScreen> {
     if (selected == null || selected == current) return;
     await languageProvider.setLanguage(selected, persistToCloud: true);
   }
-  OnboardingSetupData? _setupData;
-  bool _didHydrateSetup = false;
 
   @override
   void dispose() {
@@ -105,19 +103,6 @@ class _SignupScreenState extends State<SignupScreen> {
     _didHydrateSetup = true;
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (_didHydrateSetup) return;
-    final state = GoRouterState.of(context);
-    final extra = state.extra;
-    if (extra is OnboardingSetupData) {
-      _setupData = extra;
-      context.read<ThemeProvider>().setPendingOnboardingSetup(extra);
-    }
-    _didHydrateSetup = true;
-  }
-
   Future<void> _showError(dynamic error) async {
     if (!mounted) return;
     showCupertinoDialog(
@@ -125,14 +110,20 @@ class _SignupScreenState extends State<SignupScreen> {
       builder: (context) => BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
         child: CupertinoAlertDialog(
-          title: Text('AUTH ERROR', style: AppTypography.mono.copyWith(fontSize: 16)),
+          title: Text(
+            'AUTH ERROR',
+            style: AppTypography.mono.copyWith(fontSize: 16),
+          ),
           content: Padding(
             padding: const EdgeInsets.only(top: 8.0),
             child: Text(error.toString(), style: AppTypography.caption1),
           ),
           actions: [
             CupertinoDialogAction(
-              child: Text('DISMISS', style: TextStyle(color: AppColors.primaryOrange)),
+              child: Text(
+                'DISMISS',
+                style: TextStyle(color: AppColors.primaryOrange),
+              ),
               onPressed: () => Navigator.pop(context),
             ),
           ],
@@ -142,16 +133,18 @@ class _SignupScreenState extends State<SignupScreen> {
   }
 
   Future<void> _signup() async {
-    if (_nameCtrl.text.isEmpty || _emailCtrl.text.isEmpty || _passCtrl.text.isEmpty) {
+    if (_nameCtrl.text.isEmpty ||
+        _emailCtrl.text.isEmpty ||
+        _passCtrl.text.isEmpty) {
       return;
     }
     setState(() => _loading = true);
     try {
       await context.read<AuthProvider>().signup(
-            _nameCtrl.text,
-            _emailCtrl.text,
-            _passCtrl.text,
-          );
+        _nameCtrl.text,
+        _emailCtrl.text,
+        _passCtrl.text,
+      );
       if (!mounted) return;
       if (_setupData != null) {
         context.read<ThemeProvider>().setPendingOnboardingSetup(_setupData!);
@@ -260,21 +253,33 @@ class _SignupScreenState extends State<SignupScreen> {
                           GlassInputField(
                             placeholder: 'FULL_NAME',
                             controller: _nameCtrl,
-                            prefix: Icon(CupertinoIcons.person, size: 16, color: AppColors.secondaryLabel),
+                            prefix: Icon(
+                              CupertinoIcons.person,
+                              size: 16,
+                              color: AppColors.secondaryLabel,
+                            ),
                           ),
                           const SizedBox(height: 16),
                           GlassInputField(
                             placeholder: 'EMAIL_ADDRESS',
                             controller: _emailCtrl,
                             keyboardType: TextInputType.emailAddress,
-                            prefix: Icon(CupertinoIcons.mail, size: 16, color: AppColors.secondaryLabel),
+                            prefix: Icon(
+                              CupertinoIcons.mail,
+                              size: 16,
+                              color: AppColors.secondaryLabel,
+                            ),
                           ),
                           const SizedBox(height: 16),
                           GlassInputField(
                             placeholder: 'ACCESS_KEY',
                             controller: _passCtrl,
                             obscureText: true,
-                            prefix: Icon(CupertinoIcons.lock, size: 16, color: AppColors.secondaryLabel),
+                            prefix: Icon(
+                              CupertinoIcons.lock,
+                              size: 16,
+                              color: AppColors.secondaryLabel,
+                            ),
                           ),
                           const SizedBox(height: 16),
                           GlassInputField(
