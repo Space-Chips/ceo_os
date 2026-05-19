@@ -12,14 +12,12 @@ import '../../components/components.dart';
 import '../../core/providers/ceo_mode_provider.dart';
 import '../../core/providers/language_provider.dart';
 import '../../core/services/home_widget_service.dart';
-import '../../core/services/home_widget_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/utils/android_protection_disclosure.dart';
 import 'blackout_preparation/blackout_preparation_flow_view.dart';
 import 'blackout_preparation/blackout_preparation_models.dart';
 import '../../components/ambient_backdrop.dart';
-import '../../components/glass_card.dart';
 import '../../components/glass_card.dart';
 import '../../components/liquid_button.dart';
 
@@ -73,13 +71,6 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
     240,
   ];
 
-  Future<void> _persistWidgetDuration(int minutes) async {
-    await HomeWidget.saveWidgetData<int>(
-      CeoHomeWidgetService.keyFocusDurationMinutes,
-      minutes,
-    );
-  }
-
   bool get _isAndroid =>
       !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
 
@@ -129,7 +120,7 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
     if (minutes >= 60) {
       final hours = minutes ~/ 60;
       final remainingMinutes = minutes % 60;
-      return "${hours}h ${remainingMinutes.toString().padLeft(2, '0")}';
+      return "${hours}h ${remainingMinutes.toString().padLeft(2, '0')}";
     }
     return '${minutes}m';
   }
@@ -172,11 +163,11 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
       final (title, message) = switch (issue) {
         'block_list' => (
           'Block List Required',
-          'Choose at least one blocked app or category before starting CEO Mode so the session can be enforced.'
+          'Choose at least one blocked app or category before starting CEO Mode so the session can be enforced.',
         ),
         _ => (
           'Setup Required',
-          'Enable Screen Time / Family Controls permissions to enforce CEO Mode protections.'
+          'Enable Screen Time / Family Controls permissions to enforce CEO Mode protections.',
         ),
       };
       await showCupertinoDialog<void>(
@@ -199,7 +190,9 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
                   }
                   await provider.openSystemSettings();
                 },
-                child: Text(context.read<LanguageProvider>().t('open_settings')),
+                child: Text(
+                  context.read<LanguageProvider>().t('open_settings'),
+                ),
               ),
             CupertinoDialogAction(
               onPressed: () => Navigator.of(ctx).pop(),
@@ -546,8 +539,6 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
     );
   }
 
-  Widget _glowSurface({
-
   Widget _setupView(CeoModeProvider ceo) {
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 6),
@@ -623,9 +614,9 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
                   child: CupertinoPicker(
                     itemExtent: 34,
                     scrollController: FixedExtentScrollController(
-                      initialItem: _durationOptions.indexWhere(
-                        (m) => m == ceo.selectedDurationMinutes,
-                      ).clamp(0, _durationOptions.length - 1),
+                      initialItem: _durationOptions
+                          .indexWhere((m) => m == ceo.selectedDurationMinutes)
+                          .clamp(0, _durationOptions.length - 1),
                     ),
                     onSelectedItemChanged: (index) {
                       final value = _durationOptions[index];
@@ -772,9 +763,7 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
                 ),
                 alignment: Alignment.center,
                 child: ceo.isBusy
-                    ? CupertinoActivityIndicator(
-                        color: AppColors.onAccent,
-                      )
+                    ? CupertinoActivityIndicator(color: AppColors.onAccent)
                     : Text(
                         'Start CEO Session',
                         style: AppTypography.callout.copyWith(
@@ -889,8 +878,12 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
                               center: const Alignment(0, -0.08),
                               radius: 0.92,
                               colors: [
-                                AppColors.backgroundLight.withValues(alpha: 0.96),
-                                AppColors.cardBackgroundAlt.withValues(alpha: 0.96),
+                                AppColors.backgroundLight.withValues(
+                                  alpha: 0.96,
+                                ),
+                                AppColors.cardBackgroundAlt.withValues(
+                                  alpha: 0.96,
+                                ),
                                 AppColors.background.withValues(alpha: 0.98),
                               ],
                               stops: const [0, 0.62, 1],
@@ -922,7 +915,9 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   border: Border.all(
-                                    color: AppColors.white.withValues(alpha: 0.04),
+                                    color: AppColors.white.withValues(
+                                      alpha: 0.04,
+                                    ),
                                     width: 1,
                                   ),
                                 ),
@@ -932,11 +927,15 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
                                 height: dialSize * 0.56,
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
-                                  color: AppColors.white.withValues(alpha: 0.015),
+                                  color: AppColors.white.withValues(
+                                    alpha: 0.015,
+                                  ),
                                 ),
                               ),
                               Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 24),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 24,
+                                ),
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
@@ -945,9 +944,13 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
                                       height: 44,
                                       decoration: BoxDecoration(
                                         shape: BoxShape.circle,
-                                        color: AppColors.white.withValues(alpha: 0.055),
+                                        color: AppColors.white.withValues(
+                                          alpha: 0.055,
+                                        ),
                                         border: Border.all(
-                                          color: AppColors.white.withValues(alpha: 0.08),
+                                          color: AppColors.white.withValues(
+                                            alpha: 0.08,
+                                          ),
                                         ),
                                       ),
                                       alignment: Alignment.center,
@@ -996,7 +999,9 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
                         style: AppTypography.footnote.copyWith(
                           fontSize: 13,
                           height: 1.42,
-                          color: AppColors.secondaryLabel.withValues(alpha: 0.74),
+                          color: AppColors.secondaryLabel.withValues(
+                            alpha: 0.74,
+                          ),
                         ),
                       ),
                     ),
@@ -1014,7 +1019,9 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
                             ? 'QUIT NOW'
                             : 'WAIT FOR COUNTDOWN',
                         fullWidth: true,
-                        onPressed: ceo.canFinalizeExit ? ceo.finalizeExit : null,
+                        onPressed: ceo.canFinalizeExit
+                            ? ceo.finalizeExit
+                            : null,
                       ),
                     ),
                   ],
@@ -1034,10 +1041,7 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(14),
         color: AppColors.cardBackgroundAlt,
-        border: Border.all(
-          color: AppColors.border,
-          width: 0.9,
-        ),
+        border: Border.all(color: AppColors.border, width: 0.9),
       ),
       child: Row(
         children: [
@@ -1079,11 +1083,7 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(borderRadius),
                 boxShadow: [
-                  BoxShadow(
-                    color: glowColor,
-                    blurRadius: 26,
-                    spreadRadius: -2,
-                  ),
+                  BoxShadow(color: glowColor, blurRadius: 26, spreadRadius: -2),
                 ],
               ),
             ),
@@ -1112,29 +1112,25 @@ class _CountdownRingPainter extends CustomPainter {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = (size.shortestSide - strokeWidth) / 2;
 
-    final basePaint =
-        Paint()
-          ..color = baseColor
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = strokeWidth
-          ..strokeCap = StrokeCap.round;
+    final basePaint = Paint()
+      ..color = baseColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.round;
 
-    final progressPaint =
-        Paint()
-          ..shader = SweepGradient(
-            startAngle: -math.pi / 2,
-            endAngle: math.pi * 1.5,
-            colors: [
-              accentColor.withValues(alpha: 0.12),
-              accentColor.withValues(alpha: 0.7),
-              accentColor,
-            ],
-          ).createShader(
-            Rect.fromCircle(center: center, radius: radius),
-          )
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = strokeWidth
-          ..strokeCap = StrokeCap.round;
+    final progressPaint = Paint()
+      ..shader = SweepGradient(
+        startAngle: -math.pi / 2,
+        endAngle: math.pi * 1.5,
+        colors: [
+          accentColor.withValues(alpha: 0.12),
+          accentColor.withValues(alpha: 0.7),
+          accentColor,
+        ],
+      ).createShader(Rect.fromCircle(center: center, radius: radius))
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.round;
 
     canvas.drawCircle(center, radius, basePaint);
     final sweep = math.pi * 2 * progress;
@@ -1152,35 +1148,5 @@ class _CountdownRingPainter extends CustomPainter {
     return oldDelegate.progress != progress ||
         oldDelegate.baseColor != baseColor ||
         oldDelegate.accentColor != accentColor;
-  }
-}
-
-class _PressScale extends StatefulWidget {
-  final Widget child;
-  final double pressedScale;
-
-  const _PressScale({required this.child, required this.pressedScale});
-
-  @override
-  State<_PressScale> createState() => _PressScaleState();
-}
-
-class _PressScaleState extends State<_PressScale> {
-  bool _pressed = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      behavior: HitTestBehavior.translucent,
-      onTapDown: (_) => setState(() => _pressed = true),
-      onTapUp: (_) => setState(() => _pressed = false),
-      onTapCancel: () => setState(() => _pressed = false),
-      child: AnimatedScale(
-        scale: _pressed ? widget.pressedScale : 1,
-        duration: const Duration(milliseconds: 120),
-        curve: Curves.easeOut,
-        child: widget.child,
-      ),
-    );
   }
 }
