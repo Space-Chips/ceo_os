@@ -15,7 +15,6 @@ import 'add_task_sheet.dart';
 import 'task_importance_theme.dart';
 import '../../components/ambient_backdrop.dart';
 import '../../components/glass_card.dart';
-import '../../components/glass_card.dart';
 
 enum _TaskTab { list, matrix, history }
 
@@ -30,6 +29,7 @@ class _TasksScreenState extends State<TasksScreen> {
   final PremiumRepository _premiumRepository = PremiumRepository();
   final PageController _pageController = PageController();
   _TaskTab _activeTab = _TaskTab.list;
+  int _tabDirection = 1;
 
   @override
   void initState() {
@@ -240,6 +240,28 @@ class _TasksScreenState extends State<TasksScreen> {
     }
   }
 
+  void _setActiveTab(_TaskTab nextTab) {
+    if (_activeTab == nextTab) return;
+    final tabs = _TaskTab.values;
+    final currentIndex = tabs.indexOf(_activeTab);
+    final nextIndex = tabs.indexOf(nextTab);
+    setState(() {
+      _tabDirection = nextIndex >= currentIndex ? 1 : -1;
+      _activeTab = nextTab;
+    });
+  }
+
+  void _handleTabSwipe(DragEndDetails details) {
+    final velocity = details.primaryVelocity ?? 0;
+    if (velocity.abs() < 160) return;
+    final tabs = _TaskTab.values;
+    final currentIndex = tabs.indexOf(_activeTab);
+    final nextIndex = velocity < 0
+        ? (currentIndex + 1).clamp(0, tabs.length - 1)
+        : (currentIndex - 1).clamp(0, tabs.length - 1);
+    _setActiveTab(tabs[nextIndex]);
+  }
+
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>();
@@ -296,28 +318,36 @@ class _TasksScreenState extends State<TasksScreen> {
                             ).animate(animation);
                             return FadeTransition(
                               opacity: animation,
-                              child: SlideTransition(position: slide, child: child),
+                              child: SlideTransition(
+                                position: slide,
+                                child: child,
+                              ),
                             );
                           },
                           child: _activeTab == _TaskTab.list
                               ? _buildListTab(
                                   key: const ValueKey('list'),
+                                  language: language,
                                   topFive: topFive,
                                   others: others,
                                   onAdd: _showAddTask,
-                                  onComplete: (task) => prov.completeTask(task.id),
+                                  onComplete: (task) =>
+                                      prov.completeTask(task.id),
                                 )
                               : _activeTab == _TaskTab.matrix
                               ? _buildMatrixTab(
                                   key: const ValueKey('matrix'),
+                                  language: language,
                                   quickImportant: quickImportant.toList(),
                                   slowImportant: slowImportant.toList(),
                                   quickNotImportant: quickNotImportant.toList(),
                                   slowNotImportant: slowNotImportant.toList(),
-                                  onComplete: (task) => prov.completeTask(task.id),
+                                  onComplete: (task) =>
+                                      prov.completeTask(task.id),
                                 )
                               : _buildHistoryTab(
                                   key: const ValueKey('history'),
+                                  language: language,
                                   tasks: recentWeekTasks,
                                   onToggle: (task) async {
                                     if (task.completed) {
@@ -359,7 +389,11 @@ class _TasksScreenState extends State<TasksScreen> {
             onPressed: () => context.go('/home'),
             child: Row(
               children: [
-                Icon(CupertinoIcons.arrow_left, size: 20, color: AppColors.secondaryLabel),
+                Icon(
+                  CupertinoIcons.arrow_left,
+                  size: 20,
+                  color: AppColors.secondaryLabel,
+                ),
                 const SizedBox(width: 6),
                 Text(
                   language.t('home'),
@@ -477,7 +511,9 @@ class _TasksScreenState extends State<TasksScreen> {
           ...topFive.asMap().entries.map((entry) {
             final index = entry.key;
             final task = entry.value;
-            final widthFactor = (1 - (index * 0.03)).clamp(0.88, 1.0).toDouble();
+            final widthFactor = (1 - (index * 0.03))
+                .clamp(0.88, 1.0)
+                .toDouble();
             return Padding(
               padding: const EdgeInsets.only(bottom: 12),
               child: _priorityCard(
@@ -532,7 +568,11 @@ class _TasksScreenState extends State<TasksScreen> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(CupertinoIcons.add, size: 20, color: AppColors.secondaryLabel),
+                  Icon(
+                    CupertinoIcons.add,
+                    size: 20,
+                    color: AppColors.secondaryLabel,
+                  ),
                   const SizedBox(width: 8),
                   Text(
                     'Add Task',
@@ -590,7 +630,10 @@ class _TasksScreenState extends State<TasksScreen> {
                 ),
               ),
               GlassCard(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 12,
+                ),
                 borderRadius: 20,
                 level: GlassCardLevel.elevated,
                 showEdgeGlow: true,
@@ -639,7 +682,11 @@ class _TasksScreenState extends State<TasksScreen> {
                           const SizedBox(height: 6),
                           Row(
                             children: [
-                              _importanceBadge(task, palette, language: language),
+                              _importanceBadge(
+                                task,
+                                palette,
+                                language: language,
+                              ),
                               const SizedBox(width: 8),
                               Text(
                                 _durationLabel(task.timeDuration, language),
@@ -749,7 +796,9 @@ class _TasksScreenState extends State<TasksScreen> {
                         _durationLabel(task.timeDuration, language),
                         style: AppTypography.caption1.copyWith(
                           fontSize: 11,
-                          color: AppColors.tertiaryLabel.withValues(alpha: 0.72),
+                          color: AppColors.tertiaryLabel.withValues(
+                            alpha: 0.72,
+                          ),
                         ),
                       ),
                     ],
@@ -1035,10 +1084,7 @@ class _TasksScreenState extends State<TasksScreen> {
                 colors: [AppColors.cardBackgroundAlt, AppColors.cardBase],
               ),
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(
-                color: AppColors.border,
-                width: 1,
-              ),
+              border: Border.all(color: AppColors.border, width: 1),
               boxShadow: [
                 BoxShadow(
                   color: AppColors.glassShadow.withValues(
@@ -1093,10 +1139,7 @@ class _TasksScreenState extends State<TasksScreen> {
               colors: [AppColors.cardBackgroundAlt, AppColors.cardBase],
             ),
             borderRadius: BorderRadius.circular(18),
-            border: Border.all(
-              color: AppColors.border,
-              width: 1,
-            ),
+            border: Border.all(color: AppColors.border, width: 1),
             boxShadow: [
               BoxShadow(
                 color: AppColors.glassShadow.withValues(
@@ -1132,7 +1175,10 @@ class _TasksScreenState extends State<TasksScreen> {
                     Row(
                       children: [
                         _HistoryBadge(
-                          label: _importanceLabel(task.importanceLevel, language),
+                          label: _importanceLabel(
+                            task.importanceLevel,
+                            language,
+                          ),
                           style: badgeStyle,
                         ),
                         const SizedBox(width: 8),
@@ -1140,7 +1186,9 @@ class _TasksScreenState extends State<TasksScreen> {
                           _durationLabel(task.timeDuration, language),
                           style: AppTypography.caption1.copyWith(
                             fontSize: 11,
-                            color: AppColors.tertiaryLabel.withValues(alpha: 0.72),
+                            color: AppColors.tertiaryLabel.withValues(
+                              alpha: 0.72,
+                            ),
                           ),
                         ),
                         if (task.completed && completedDate != null) ...[
@@ -1281,10 +1329,7 @@ class _DarkGlassAddButton extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppColors.topBarControlBackground,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-            color: AppColors.topBarControlBorder,
-            width: 1,
-          ),
+          border: Border.all(color: AppColors.topBarControlBorder, width: 1),
         ),
         child: Center(
           child: Icon(CupertinoIcons.add, color: AppColors.label, size: 20),
@@ -1316,10 +1361,7 @@ class _FloatingPrimaryAddTaskButton extends StatelessWidget {
             colors: [AppColors.sectionBackground, AppColors.cardBackgroundAlt],
           ),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: AppColors.borderStrong,
-            width: 1,
-          ),
+          border: Border.all(color: AppColors.borderStrong, width: 1),
           boxShadow: [
             BoxShadow(
               color: AppColors.glassShadow.withValues(

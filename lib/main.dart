@@ -5,7 +5,6 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:home_widget/home_widget.dart';
-import 'package:intl/date_symbol_data_local.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:app_links/app_links.dart';
 import 'core/config/supabase_config.dart';
@@ -25,7 +24,6 @@ import 'core/theme/app_colors.dart';
 import 'core/theme/theme_catalog.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../packages/adaptive_platform_ui/lib/src/widgets/adaptive_app.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -166,10 +164,7 @@ class _CeoOsAppState extends State<CeoOsApp> {
 class StartupConfigurationErrorApp extends StatelessWidget {
   final List<String> missingKeys;
 
-  const StartupConfigurationErrorApp({
-    super.key,
-    required this.missingKeys,
-  });
+  const StartupConfigurationErrorApp({super.key, required this.missingKeys});
 
   @override
   Widget build(BuildContext context) {
@@ -254,7 +249,9 @@ class StartupConfigurationErrorApp extends StatelessWidget {
                         decoration: BoxDecoration(
                           color: codeBackground,
                           borderRadius: BorderRadius.circular(18),
-                          border: Border.all(color: border.withValues(alpha: 0.9)),
+                          border: Border.all(
+                            color: border.withValues(alpha: 0.9),
+                          ),
                         ),
                         child: const SelectableText(
                           'flutter run \\\n'

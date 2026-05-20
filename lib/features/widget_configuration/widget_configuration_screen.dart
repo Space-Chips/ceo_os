@@ -44,6 +44,9 @@ class _WidgetConfigurationScreenState extends State<WidgetConfigurationScreen> {
   Future<void> _setEnabled({
     bool? todo,
     bool? dashboard,
+    bool? habitsToday,
+    bool? focus,
+    bool? blackout,
     bool? habits,
   }) async {
     if (_saving) return;
@@ -146,7 +149,6 @@ class _WidgetConfigurationScreenState extends State<WidgetConfigurationScreen> {
     final language = context.read<LanguageProvider>();
     final ceoMode = context.read<CeoModeProvider>();
     final focusProvider = context.read<FocusProvider>();
-    final focus = context.read<FocusProvider>();
     setState(() {
       _saving = true;
       _defaultMode = mode;
@@ -175,6 +177,7 @@ class _WidgetConfigurationScreenState extends State<WidgetConfigurationScreen> {
     final habits = context.read<HabitProvider>();
     final language = context.read<LanguageProvider>();
     final ceoMode = context.read<CeoModeProvider>();
+    final focusProvider = context.read<FocusProvider>();
     setState(() => _saving = true);
     try {
       await _ensureWidgetDataLoaded(tasks: tasks, habits: habits);

@@ -286,7 +286,7 @@ class _IOS26ButtonState extends State<IOS26Button> {
   }
 
   String _colorToHex(Color color) {
-    return "#${color.toARGB32().toRadixString(16).padLeft(8, '0").substring(2)}';
+    return '#${color.toARGB32().toRadixString(16).padLeft(8, '0').substring(2)}';
   }
 
   int _colorToARGB(Color color) {
