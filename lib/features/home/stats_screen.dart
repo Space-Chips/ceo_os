@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 import '../../components/components.dart';
 import '../../core/models/advanced_stats_models.dart';
@@ -12,8 +15,6 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/widgets/rank_art.dart';
 import '../../components/glass_card.dart';
-import '../../components/glass_card.dart';
-import '../../core/models/habit_models.dart';
 import '../../core/models/habit_models.dart';
 import '../../core/providers/habit_provider.dart';
 import '../../core/repositories/habit_repository.dart';
@@ -172,7 +173,11 @@ class _StatsScreenState extends State<StatsScreen> {
         trailing: CupertinoButton(
           padding: EdgeInsets.zero,
           onPressed: _load,
-          child: Icon(CupertinoIcons.refresh, color: AppColors.accent, size: 20),
+          child: Icon(
+            CupertinoIcons.refresh,
+            color: AppColors.accent,
+            size: 20,
+          ),
         ),
       ),
       child: _loading
@@ -241,21 +246,28 @@ class _Content extends StatelessWidget {
                   },
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 160),
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 9,
+                    ),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(12),
                       color: selected
                           ? AppColors.accentSoft.withValues(alpha: 0.2)
                           : AppColors.surface.withValues(alpha: 0.72),
                       border: Border.all(
-                        color: selected ? AppColors.borderStrong : AppColors.border,
+                        color: selected
+                            ? AppColors.borderStrong
+                            : AppColors.border,
                         width: 0.9,
                       ),
                     ),
                     child: Text(
                       _StatsScreenState._tabs[index],
                       style: AppTypography.footnote.copyWith(
-                        color: selected ? AppColors.label : AppColors.secondaryLabel,
+                        color: selected
+                            ? AppColors.label
+                            : AppColors.secondaryLabel,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -302,12 +314,15 @@ class _HeroHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final language = context.watch<LanguageProvider>();
     final weekly = snapshot.weekly;
     final daily = snapshot.daily;
     final lifetime = snapshot.lifetime;
     final wakeScore = dashboardSnapshot == null
         ? 0
-        : PerformanceScoreService.build(dashboard: dashboardSnapshot!).wake.score;
+        : PerformanceScoreService.build(
+            dashboard: dashboardSnapshot!,
+          ).wake.score;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 14),
@@ -318,7 +333,10 @@ class _HeroHeader extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Discipline analytics', style: AppTypography.overline.copyWith(color: AppColors.accent)),
+            Text(
+              'Discipline analytics',
+              style: AppTypography.overline.copyWith(color: AppColors.accent),
+            ),
             const SizedBox(height: 8),
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -329,12 +347,16 @@ class _HeroHeader extends StatelessWidget {
                     children: [
                       Text(
                         '${daily?.attentionScore ?? 0}',
-                        style: AppTypography.heroNumber.copyWith(color: AppColors.label),
+                        style: AppTypography.heroNumber.copyWith(
+                          color: AppColors.label,
+                        ),
                       ),
                       const SizedBox(height: 2),
                       Text(
                         'Attention Score',
-                        style: AppTypography.subhead.copyWith(color: AppColors.secondaryLabel),
+                        style: AppTypography.subhead.copyWith(
+                          color: AppColors.secondaryLabel,
+                        ),
                       ),
                     ],
                   ),
@@ -347,7 +369,9 @@ class _HeroHeader extends StatelessWidget {
                 _CompactMetric(
                   label: 'Rank',
                   value: RankArt.displayName(
-                    lifetime?.currentRank ?? weekly?.mostDistractingApp ?? 'Asleep',
+                    lifetime?.currentRank ??
+                        weekly?.mostDistractingApp ??
+                        'Asleep',
                   ),
                 ),
               ],
@@ -378,14 +402,18 @@ class _HeroHeader extends StatelessWidget {
                           item.value,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: AppTypography.headline.copyWith(fontWeight: FontWeight.w700),
+                          style: AppTypography.headline.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                         if (item.deltaLabel != null)
                           Text(
                             item.deltaLabel!,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: AppTypography.caption2.copyWith(color: AppColors.secondaryLabel),
+                            style: AppTypography.caption2.copyWith(
+                              color: AppColors.secondaryLabel,
+                            ),
                           ),
                       ],
                     ),
@@ -430,7 +458,10 @@ class _OverviewPage extends StatelessWidget {
             accent: AppColors.accent,
             items: [
               _DetailItem('Execution Score', '${scores.wake.executionScore}'),
-              _DetailItem('Consistency Score', '${scores.wake.consistencyScore}'),
+              _DetailItem(
+                'Consistency Score',
+                '${scores.wake.consistencyScore}',
+              ),
               _DetailItem('Attention Score', '${scores.wake.attentionScore}'),
             ],
           ),
@@ -482,10 +513,7 @@ class _OverviewPage extends StatelessWidget {
                 'Best streak',
                 '${scores.consistency.bestStreak} days',
               ),
-              _DetailItem(
-                'Active days',
-                '${scores.consistency.activeDays}/7',
-              ),
+              _DetailItem('Active days', '${scores.consistency.activeDays}/7'),
             ],
           ),
           const SizedBox(height: 10),
@@ -558,7 +586,9 @@ class _OverviewPage extends StatelessWidget {
             title: 'Today card',
             child: _TodayCard(
               card: snapshot.todayCard!,
-              score: wakeScore > 0 ? wakeScore : snapshot.todayCard!.attentionScore,
+              score: wakeScore > 0
+                  ? wakeScore
+                  : snapshot.todayCard!.attentionScore,
             ),
           ),
         ],
@@ -581,10 +611,19 @@ class _OverviewPage extends StatelessWidget {
           _DetailListCard(
             title: 'Streaks',
             items: [
-              _DetailItem('Focus streak', '${daily?.focusStreakValue ?? 0} days'),
+              _DetailItem(
+                'Focus streak',
+                '${daily?.focusStreakValue ?? 0} days',
+              ),
               _DetailItem('CEO streak', '${daily?.ceoStreakValue ?? 0} days'),
-              _DetailItem('Habit streak', '${daily?.habitStreakValue ?? 0} days'),
-              _DetailItem('Full discipline days', '${snapshot.heatmap.where((cell) => cell.attentionScore >= 75).length} / ${snapshot.heatmap.length}'),
+              _DetailItem(
+                'Habit streak',
+                '${daily?.habitStreakValue ?? 0} days',
+              ),
+              _DetailItem(
+                'Full discipline days',
+                '${snapshot.heatmap.where((cell) => cell.attentionScore >= 75).length} / ${snapshot.heatmap.length}',
+              ),
             ],
           ),
         ],
@@ -614,7 +653,8 @@ class _WeekPage extends StatelessWidget {
               child: _MetricCard(
                 title: 'Weekly discipline',
                 value: '${weekly.weeklyAttentionScore}',
-                subtitle: '${weekly.weeklyTransformationDelta >= 0 ? '+' : ''}${weekly.weeklyTransformationDelta.toStringAsFixed(0)} vs last week',
+                subtitle:
+                    '${weekly.weeklyTransformationDelta >= 0 ? '+' : ''}${weekly.weeklyTransformationDelta.toStringAsFixed(0)} vs last week',
               ),
             ),
             const SizedBox(width: 10),
@@ -631,26 +671,53 @@ class _WeekPage extends StatelessWidget {
         _DetailListCard(
           title: 'Execution',
           items: [
-            _DetailItem('Deep work', _formatMinutes(weekly.totalDeepWorkTimeMinutes)),
+            _DetailItem(
+              'Deep work',
+              _formatMinutes(weekly.totalDeepWorkTimeMinutes),
+            ),
             _DetailItem('CEO time', _formatMinutes(weekly.totalCeoTimeMinutes)),
-            _DetailItem('Time recovered', _formatMinutes(weekly.totalTimeRecoveredMinutes)),
-            _DetailItem('Distractions blocked', '${weekly.totalDistractionsBlocked}'),
-            _DetailItem('Average focus session', '${weekly.averageFocusSessionLengthMinutes.toStringAsFixed(0)}m'),
-            _DetailItem('Completion rate', _formatPercent(weekly.completionRate)),
+            _DetailItem(
+              'Time recovered',
+              _formatMinutes(weekly.totalTimeRecoveredMinutes),
+            ),
+            _DetailItem(
+              'Distractions blocked',
+              '${weekly.totalDistractionsBlocked}',
+            ),
+            _DetailItem(
+              'Average focus session',
+              '${weekly.averageFocusSessionLengthMinutes.toStringAsFixed(0)}m',
+            ),
+            _DetailItem(
+              'Completion rate',
+              _formatPercent(weekly.completionRate),
+            ),
           ],
         ),
         const SizedBox(height: 10),
         _DetailListCard(
           title: 'Behavior windows',
           items: [
-            _DetailItem('Best focus window', weekly.bestFocusWindow ?? 'Not enough data'),
-            _DetailItem('Most distracting app', weekly.mostDistractingApp ?? 'Not enough data'),
+            _DetailItem(
+              'Best focus window',
+              weekly.bestFocusWindow ?? 'Not enough data',
+            ),
+            _DetailItem(
+              'Most distracting app',
+              weekly.mostDistractingApp ?? 'Not enough data',
+            ),
             _DetailItem(
               'Most distracting time',
               weekly.mostDistractingTimeWindow ?? 'Not enough data',
             ),
-            _DetailItem('Screen time trend', '${weekly.screenTimeTrend.toStringAsFixed(1)}%'),
-            _DetailItem('Leaderboard percentile', weekly.percentile.toStringAsFixed(0)),
+            _DetailItem(
+              'Screen time trend',
+              '${weekly.screenTimeTrend.toStringAsFixed(1)}%',
+            ),
+            _DetailItem(
+              'Leaderboard percentile',
+              weekly.percentile.toStringAsFixed(0),
+            ),
           ],
         ),
       ],
@@ -699,14 +766,38 @@ class _MonthPage extends StatelessWidget {
           _DetailListCard(
             title: 'Monthly totals',
             items: [
-              _DetailItem('Focus time', _formatMinutes(monthly.totalFocusTimeMinutes)),
-              _DetailItem('CEO time', _formatMinutes(monthly.totalCeoTimeMinutes)),
-              _DetailItem('Deep work', _formatMinutes(monthly.totalDeepWorkTimeMinutes)),
-              _DetailItem('Time recovered', _formatMinutes(monthly.totalTimeRecoveredMinutes)),
-              _DetailItem('Habits completed', '${monthly.totalHabitsCompleted}'),
-              _DetailItem('Best week score', '${monthly.bestWeekAttentionScore}'),
-              _DetailItem('Lowest screen-time day', monthly.lowestScreenTimeDay ?? 'N/A'),
-              _DetailItem('Longest session', '${monthly.longestSessionOfMonth}m'),
+              _DetailItem(
+                'Focus time',
+                _formatMinutes(monthly.totalFocusTimeMinutes),
+              ),
+              _DetailItem(
+                'CEO time',
+                _formatMinutes(monthly.totalCeoTimeMinutes),
+              ),
+              _DetailItem(
+                'Deep work',
+                _formatMinutes(monthly.totalDeepWorkTimeMinutes),
+              ),
+              _DetailItem(
+                'Time recovered',
+                _formatMinutes(monthly.totalTimeRecoveredMinutes),
+              ),
+              _DetailItem(
+                'Habits completed',
+                '${monthly.totalHabitsCompleted}',
+              ),
+              _DetailItem(
+                'Best week score',
+                '${monthly.bestWeekAttentionScore}',
+              ),
+              _DetailItem(
+                'Lowest screen-time day',
+                monthly.lowestScreenTimeDay ?? 'N/A',
+              ),
+              _DetailItem(
+                'Longest session',
+                '${monthly.longestSessionOfMonth}m',
+              ),
             ],
           ),
           const SizedBox(height: 10),
@@ -766,15 +857,39 @@ class _LifetimePage extends StatelessWidget {
         _DetailListCard(
           title: 'Lifetime totals',
           items: [
-            _DetailItem('Focus time', _formatMinutes(lifetime.totalFocusTimeMinutes)),
-            _DetailItem('CEO time', _formatMinutes(lifetime.totalCeoTimeMinutes)),
-            _DetailItem('Deep work', _formatMinutes(lifetime.totalDeepWorkTimeMinutes)),
-            _DetailItem('Distractions blocked', '${lifetime.totalDistractionsBlocked}'),
-            _DetailItem('Focus sessions completed', '${lifetime.totalFocusSessionsCompleted}'),
-            _DetailItem('CEO sessions completed', '${lifetime.totalCeoSessionsCompleted}'),
+            _DetailItem(
+              'Focus time',
+              _formatMinutes(lifetime.totalFocusTimeMinutes),
+            ),
+            _DetailItem(
+              'CEO time',
+              _formatMinutes(lifetime.totalCeoTimeMinutes),
+            ),
+            _DetailItem(
+              'Deep work',
+              _formatMinutes(lifetime.totalDeepWorkTimeMinutes),
+            ),
+            _DetailItem(
+              'Distractions blocked',
+              '${lifetime.totalDistractionsBlocked}',
+            ),
+            _DetailItem(
+              'Focus sessions completed',
+              '${lifetime.totalFocusSessionsCompleted}',
+            ),
+            _DetailItem(
+              'CEO sessions completed',
+              '${lifetime.totalCeoSessionsCompleted}',
+            ),
             _DetailItem('Habits completed', '${lifetime.totalHabitsCompleted}'),
-            _DetailItem('Best attention score', '${lifetime.bestAttentionScoreEver}'),
-            _DetailItem('Lowest screen time', '${lifetime.lowestScreenTimeEver}m'),
+            _DetailItem(
+              'Best attention score',
+              '${lifetime.bestAttentionScoreEver}',
+            ),
+            _DetailItem(
+              'Lowest screen time',
+              '${lifetime.lowestScreenTimeEver}m',
+            ),
           ],
         ),
         if (snapshot.milestoneCards.isNotEmpty) ...[
@@ -807,7 +922,9 @@ class _InsightsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final wakeScore = dashboardSnapshot == null
         ? 0
-        : PerformanceScoreService.build(dashboard: dashboardSnapshot!).wake.score;
+        : PerformanceScoreService.build(
+            dashboard: dashboardSnapshot!,
+          ).wake.score;
     return ListView(
       padding: const EdgeInsets.fromLTRB(14, 0, 14, 20),
       children: [
@@ -848,7 +965,9 @@ class _InsightsPage extends StatelessWidget {
             title: 'Screenshot summary',
             child: _TodayCard(
               card: snapshot.todayCard!,
-              score: wakeScore > 0 ? wakeScore : snapshot.todayCard!.attentionScore,
+              score: wakeScore > 0
+                  ? wakeScore
+                  : snapshot.todayCard!.attentionScore,
             ),
           ),
         ],
@@ -880,7 +999,9 @@ class _ErrorState extends StatelessWidget {
                 Text(
                   message,
                   textAlign: TextAlign.center,
-                  style: AppTypography.subhead.copyWith(color: AppColors.secondaryLabel),
+                  style: AppTypography.subhead.copyWith(
+                    color: AppColors.secondaryLabel,
+                  ),
                 ),
                 const SizedBox(height: 14),
                 LiquidButton(label: 'Retry', onPressed: onRetry),
@@ -914,11 +1035,16 @@ class _MetricCard extends StatelessWidget {
         children: [
           Text(title, style: AppTypography.caption1),
           const SizedBox(height: 10),
-          Text(value, style: AppTypography.title2.copyWith(fontWeight: FontWeight.w700)),
+          Text(
+            value,
+            style: AppTypography.title2.copyWith(fontWeight: FontWeight.w700),
+          ),
           const SizedBox(height: 4),
           Text(
             subtitle,
-            style: AppTypography.caption1.copyWith(color: AppColors.secondaryLabel),
+            style: AppTypography.caption1.copyWith(
+              color: AppColors.secondaryLabel,
+            ),
           ),
         ],
       ),
@@ -973,7 +1099,10 @@ class _DetailListCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: AppTypography.headline.copyWith(fontWeight: FontWeight.w700)),
+          Text(
+            title,
+            style: AppTypography.headline.copyWith(fontWeight: FontWeight.w700),
+          ),
           const SizedBox(height: 10),
           ...items.map(
             (item) => Padding(
@@ -983,7 +1112,9 @@ class _DetailListCard extends StatelessWidget {
                   Expanded(
                     child: Text(
                       item.label,
-                      style: AppTypography.subhead.copyWith(color: AppColors.secondaryLabel),
+                      style: AppTypography.subhead.copyWith(
+                        color: AppColors.secondaryLabel,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -991,7 +1122,9 @@ class _DetailListCard extends StatelessWidget {
                     child: Text(
                       item.value,
                       textAlign: TextAlign.right,
-                      style: AppTypography.callout.copyWith(fontWeight: FontWeight.w600),
+                      style: AppTypography.callout.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ],
@@ -1082,7 +1215,10 @@ class _ShareCardContainer extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: AppTypography.overline.copyWith(color: AppColors.accent)),
+          Text(
+            title,
+            style: AppTypography.overline.copyWith(color: AppColors.accent),
+          ),
           const SizedBox(height: 10),
           child,
         ],
@@ -1115,13 +1251,31 @@ class _TodayCard extends StatelessWidget {
         children: [
           Text('Today', style: AppTypography.overline),
           const SizedBox(height: 8),
-          Text('${card.attentionScore}/100', style: AppTypography.title1.copyWith(fontWeight: FontWeight.w700)),
+          Text(
+            '${card.attentionScore}/100',
+            style: AppTypography.title1.copyWith(fontWeight: FontWeight.w700),
+          ),
           const SizedBox(height: 12),
           Row(
             children: [
-              Expanded(child: _MiniShareMetric(label: 'Deep Work', value: _formatMinutes(card.deepWorkTimeMinutes))),
-              Expanded(child: _MiniShareMetric(label: 'Blocked', value: '${card.distractionsBlocked}')),
-              Expanded(child: _MiniShareMetric(label: 'Streak', value: '${card.currentStreak}d')),
+              Expanded(
+                child: _MiniShareMetric(
+                  label: 'Deep Work',
+                  value: _formatMinutes(card.deepWorkTimeMinutes),
+                ),
+              ),
+              Expanded(
+                child: _MiniShareMetric(
+                  label: 'Blocked',
+                  value: '${card.distractionsBlocked}',
+                ),
+              ),
+              Expanded(
+                child: _MiniShareMetric(
+                  label: 'Streak',
+                  value: '${card.currentStreak}d',
+                ),
+              ),
             ],
           ),
         ],
@@ -1214,12 +1368,18 @@ class _CeoCardView extends StatelessWidget {
                 const SizedBox(height: 8),
                 Text(
                   '${card.sessionDurationMinutes} min',
-                  style: AppTypography.title2.copyWith(fontWeight: FontWeight.w700),
+                  style: AppTypography.title2.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  card.completedWithoutExit ? 'Completed without exit' : 'Broken early',
-                  style: AppTypography.subhead.copyWith(color: AppColors.secondaryLabel),
+                  card.completedWithoutExit
+                      ? 'Completed without exit'
+                      : 'Broken early',
+                  style: AppTypography.subhead.copyWith(
+                    color: AppColors.secondaryLabel,
+                  ),
                 ),
               ],
             ),
@@ -1253,11 +1413,16 @@ class _MilestoneCardView extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(card.title, style: AppTypography.title3.copyWith(fontWeight: FontWeight.w700)),
+          Text(
+            card.title,
+            style: AppTypography.title3.copyWith(fontWeight: FontWeight.w700),
+          ),
           const SizedBox(height: 6),
           Text(
             card.subtitle,
-            style: AppTypography.subhead.copyWith(color: AppColors.secondaryLabel),
+            style: AppTypography.subhead.copyWith(
+              color: AppColors.secondaryLabel,
+            ),
           ),
         ],
       ),
@@ -1272,14 +1437,19 @@ class _HeatmapCardView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cells = card.cells.length > 30 ? card.cells.sublist(card.cells.length - 30) : card.cells;
+    final cells = card.cells.length > 30
+        ? card.cells.sublist(card.cells.length - 30)
+        : card.cells;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
             Expanded(
-              child: _MiniShareMetric(label: 'Best score', value: '${card.bestScore}'),
+              child: _MiniShareMetric(
+                label: 'Best score',
+                value: '${card.bestScore}',
+              ),
             ),
             Expanded(
               child: _MiniShareMetric(
@@ -1293,7 +1463,9 @@ class _HeatmapCardView extends StatelessWidget {
         Wrap(
           spacing: 6,
           runSpacing: 6,
-          children: cells.map((cell) => _HeatCell(cell: cell)).toList(growable: false),
+          children: cells
+              .map((cell) => _HeatCell(cell: cell))
+              .toList(growable: false),
         ),
       ],
     );
@@ -1313,7 +1485,10 @@ class _MiniShareMetric extends StatelessWidget {
       children: [
         Text(label, style: AppTypography.caption2),
         const SizedBox(height: 4),
-        Text(value, style: AppTypography.callout.copyWith(fontWeight: FontWeight.w700)),
+        Text(
+          value,
+          style: AppTypography.callout.copyWith(fontWeight: FontWeight.w700),
+        ),
       ],
     );
   }
@@ -1328,11 +1503,17 @@ class _HeatCell extends StatelessWidget {
   Widget build(BuildContext context) {
     final base = AppColors.accentSurfaceSoft;
     final color = switch (cell.intensityLevel) {
-      0 => Color.alphaBlend(AppColors.error.withValues(alpha: 0.16), AppColors.surface),
+      0 => Color.alphaBlend(
+        AppColors.error.withValues(alpha: 0.16),
+        AppColors.surface,
+      ),
       1 => Color.alphaBlend(base.withValues(alpha: 0.52), AppColors.surface),
       2 => Color.alphaBlend(base.withValues(alpha: 0.72), AppColors.surface),
       3 => Color.alphaBlend(AppColors.accentSurfaceStrong, AppColors.surface),
-      _ => Color.alphaBlend(AppColors.accent.withValues(alpha: 0.26), AppColors.surface),
+      _ => Color.alphaBlend(
+        AppColors.accent.withValues(alpha: 0.26),
+        AppColors.surface,
+      ),
     };
 
     return Container(
@@ -1360,7 +1541,9 @@ class _EmptyStatsPage extends StatelessWidget {
         child: Text(
           message,
           textAlign: TextAlign.center,
-          style: AppTypography.subhead.copyWith(color: AppColors.secondaryLabel),
+          style: AppTypography.subhead.copyWith(
+            color: AppColors.secondaryLabel,
+          ),
         ),
       ),
     );
@@ -1422,7 +1605,10 @@ class _HabitMonthOverviewSection extends StatelessWidget {
                 ),
               ),
               CupertinoButton(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
                 minimumSize: const Size(34, 34),
                 onPressed: () {
                   Navigator.of(context).push(
@@ -1489,7 +1675,7 @@ class _HabitWeekBoard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "${DateFormat('MMM d").format(weekStart)} — ${DateFormat('MMM d').format(weekStart.add(const Duration(days: 6)))}',
+            "${DateFormat('MMM d').format(weekStart)} - ${DateFormat('MMM d').format(weekStart.add(const Duration(days: 6)))}",
             style: AppTypography.caption1.copyWith(
               color: AppColors.secondaryLabel,
               fontWeight: FontWeight.w600,
@@ -1553,9 +1739,7 @@ class _HabitWeekBoard extends StatelessWidget {
                     );
                     return SizedBox(
                       width: 24,
-                      child: Center(
-                        child: _HabitMiniCell(status: status),
-                      ),
+                      child: Center(child: _HabitMiniCell(status: status)),
                     );
                   }),
                 ],
@@ -1707,17 +1891,19 @@ class _HabitMonthHeatmapCard extends StatelessWidget {
           Wrap(
             spacing: 6,
             runSpacing: 6,
-            children: days.map((day) {
-              final status = _dayAggregate(
-                day: day,
-                habits: habits,
-                completionsByHabit: completionIndex,
-              );
-              return _HabitYearCell(
-                status: status,
-                inMonth: day.month == monthStart.month,
-              );
-            }).toList(growable: false),
+            children: days
+                .map((day) {
+                  final status = _dayAggregate(
+                    day: day,
+                    habits: habits,
+                    completionsByHabit: completionIndex,
+                  );
+                  return _HabitYearCell(
+                    status: status,
+                    inMonth: day.month == monthStart.month,
+                  );
+                })
+                .toList(growable: false),
           ),
         ],
       ),
@@ -1733,7 +1919,9 @@ class _HabitYearCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Color color = AppColors.surfaceMuted.withValues(alpha: inMonth ? 0.34 : 0.14);
+    Color color = AppColors.surfaceMuted.withValues(
+      alpha: inMonth ? 0.34 : 0.14,
+    );
     Color border = AppColors.border;
 
     if (status.expected > 0) {
@@ -1744,8 +1932,12 @@ class _HabitYearCell extends StatelessWidget {
         color = AppColors.error.withValues(alpha: inMonth ? 0.18 : 0.1);
         border = AppColors.error.withValues(alpha: inMonth ? 0.55 : 0.26);
       } else {
-        color = AppColors.primaryOrange.withValues(alpha: inMonth ? 0.24 : 0.12);
-        border = AppColors.primaryOrange.withValues(alpha: inMonth ? 0.48 : 0.22);
+        color = AppColors.primaryOrange.withValues(
+          alpha: inMonth ? 0.24 : 0.12,
+        );
+        border = AppColors.primaryOrange.withValues(
+          alpha: inMonth ? 0.48 : 0.22,
+        );
       }
     }
 
@@ -1811,8 +2003,7 @@ _HabitDayStatus _habitDayStatus({
   final isScheduled =
       !normalizedDay.isBefore(createdDay) &&
       (habit.isDaily ||
-          (habit.specificDays != null &&
-              habit.specificDays!.contains(dayNum)));
+          (habit.specificDays != null && habit.specificDays!.contains(dayNum)));
   if (!isScheduled) {
     return const _HabitDayStatus(
       isScheduled: false,
@@ -1882,5 +2073,3 @@ String _formatMinutes(int minutes) {
 }
 
 String _formatPercent(num value) => '${value.toStringAsFixed(0)}%';
-
-String _localizedRankDisplay(BuildContext context, String rank) => rank;
