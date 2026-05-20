@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:home_widget/home_widget.dart';
 import 'package:intl/intl.dart';
 
+import '../models/habit_models.dart';
 import '../models/task_models.dart';
 import '../providers/ceo_mode_provider.dart';
 import '../providers/focus_provider.dart';
@@ -12,6 +13,8 @@ import '../providers/habit_provider.dart';
 import '../providers/language_provider.dart';
 import '../providers/task_provider.dart';
 import '../repositories/feature_repository.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_typography.dart';
 import '../widgets/home_widgets/widget_views.dart';
 
 enum CeoWidgetMode { todo, dashboard, habits }
@@ -23,6 +26,598 @@ extension CeoWidgetModeParsing on CeoWidgetMode {
       if (mode.name == raw) return mode;
     }
     return null;
+  }
+}
+
+class _CeoWidgetCard extends StatelessWidget {
+  final String title;
+  final String? subtitle;
+  final List<String> lines;
+  final bool large;
+  final Widget? childOverride;
+
+  const _CeoWidgetCard({
+    required this.title,
+    this.subtitle,
+    this.lines = const <String>[],
+    this.large = false,
+    this.childOverride,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox.expand(
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [AppColors.background, AppColors.cardBackgroundAlt],
+          ),
+          borderRadius: BorderRadius.circular(large ? 28 : 24),
+          border: Border.all(color: AppColors.border.withValues(alpha: 0.8)),
+        ),
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(
+            large ? 22 : 16,
+            large ? 18 : 16,
+            large ? 22 : 16,
+            large ? 18 : 16,
+          ),
+          child: childOverride ?? _defaultContent(),
+        ),
+      ),
+    );
+  }
+
+  Widget _defaultContent() {
+    final maxLines = large ? 6 : 4;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: AppTypography.headline.copyWith(
+            fontSize: large ? 17 : 15,
+            fontWeight: FontWeight.w800,
+            color: AppColors.label,
+            letterSpacing: 0,
+          ),
+        ),
+        if (subtitle != null && subtitle!.trim().isNotEmpty) ...[
+          const SizedBox(height: 4),
+          Text(
+            subtitle!,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AppTypography.caption1.copyWith(
+              fontSize: large ? 12 : 11,
+              fontWeight: FontWeight.w700,
+              color: AppColors.secondaryLabel,
+              letterSpacing: 0,
+            ),
+          ),
+        ],
+        const SizedBox(height: 12),
+        Expanded(
+          child: lines.isEmpty
+              ? Center(
+                  child: Text(
+                    '-',
+                    style: AppTypography.title2.copyWith(
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.tertiaryLabel,
+                      letterSpacing: 0,
+                    ),
+                  ),
+                )
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    for (final line in lines.take(maxLines)) ...[
+                      _CeoLine(text: line, large: large),
+                      const SizedBox(height: 7),
+                    ],
+                  ],
+                ),
+        ),
+      ],
+    );
+  }
+}
+
+class _CeoLine extends StatelessWidget {
+  final String text;
+  final bool large;
+
+  const _CeoLine({required this.text, required this.large});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          width: large ? 7 : 6,
+          height: large ? 7 : 6,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: AppColors.accent.withValues(alpha: 0.9),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            text,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AppTypography.caption1.copyWith(
+              fontSize: large ? 13 : 11,
+              fontWeight: FontWeight.w700,
+              color: AppColors.label,
+              letterSpacing: 0,
+              height: 1.15,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _CeoTodoCard extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final List<String> lines;
+  final bool large;
+
+  const _CeoTodoCard._({
+    required this.title,
+    required this.subtitle,
+    required this.lines,
+    required this.large,
+  });
+
+  factory _CeoTodoCard.small({
+    required String title,
+    required String subtitle,
+    required List<String> lines,
+  }) {
+    return _CeoTodoCard._(
+      title: title,
+      subtitle: subtitle,
+      lines: lines,
+      large: false,
+    );
+  }
+
+  factory _CeoTodoCard.large({
+    required String title,
+    required String subtitle,
+    required List<String> lines,
+  }) {
+    return _CeoTodoCard._(
+      title: title,
+      subtitle: subtitle,
+      lines: lines,
+      large: true,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _CeoWidgetCard(
+      title: title,
+      subtitle: '${lines.length} $subtitle',
+      lines: lines,
+      large: large,
+    );
+  }
+}
+
+class _CeoDashboardCard extends StatelessWidget {
+  final String title;
+  final String tasksLabel;
+  final String habitsLabel;
+  final String eventsLabel;
+  final int pendingTasks;
+  final int completedTasks;
+  final int completedHabits;
+  final int totalHabits;
+  final int eventsCount;
+  final String nextEventTitle;
+  final String nextEventTime;
+  final bool large;
+
+  const _CeoDashboardCard._({
+    required this.title,
+    required this.tasksLabel,
+    required this.habitsLabel,
+    required this.eventsLabel,
+    required this.pendingTasks,
+    required this.completedTasks,
+    required this.completedHabits,
+    required this.totalHabits,
+    required this.eventsCount,
+    required this.nextEventTitle,
+    required this.nextEventTime,
+    required this.large,
+  });
+
+  factory _CeoDashboardCard.small({
+    required String title,
+    required String tasksLabel,
+    required String habitsLabel,
+    required String eventsLabel,
+    required int pendingTasks,
+    required int completedHabits,
+    required int totalHabits,
+    required int eventsCount,
+  }) {
+    return _CeoDashboardCard._(
+      title: title,
+      tasksLabel: tasksLabel,
+      habitsLabel: habitsLabel,
+      eventsLabel: eventsLabel,
+      pendingTasks: pendingTasks,
+      completedTasks: 0,
+      completedHabits: completedHabits,
+      totalHabits: totalHabits,
+      eventsCount: eventsCount,
+      nextEventTitle: '',
+      nextEventTime: '',
+      large: false,
+    );
+  }
+
+  factory _CeoDashboardCard.large({
+    required String title,
+    required String tasksLabel,
+    required String habitsLabel,
+    required String eventsLabel,
+    required int pendingTasks,
+    required int completedTasks,
+    required int completedHabits,
+    required int totalHabits,
+    required int eventsCount,
+    required String nextEventTitle,
+    required String nextEventTime,
+  }) {
+    return _CeoDashboardCard._(
+      title: title,
+      tasksLabel: tasksLabel,
+      habitsLabel: habitsLabel,
+      eventsLabel: eventsLabel,
+      pendingTasks: pendingTasks,
+      completedTasks: completedTasks,
+      completedHabits: completedHabits,
+      totalHabits: totalHabits,
+      eventsCount: eventsCount,
+      nextEventTitle: nextEventTitle,
+      nextEventTime: nextEventTime,
+      large: true,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _CeoWidgetCard(
+      title: title,
+      large: large,
+      childOverride: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AppTypography.headline.copyWith(
+              fontSize: large ? 17 : 15,
+              fontWeight: FontWeight.w800,
+              color: AppColors.label,
+              letterSpacing: 0,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Expanded(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(child: _metric(tasksLabel, pendingTasks, large)),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _metric(
+                    habitsLabel,
+                    totalHabits == 0
+                        ? completedHabits
+                        : '$completedHabits/$totalHabits',
+                    large,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(child: _metric(eventsLabel, eventsCount, large)),
+              ],
+            ),
+          ),
+          if (large && nextEventTitle.trim().isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Text(
+              nextEventTime.trim().isEmpty
+                  ? nextEventTitle
+                  : '$nextEventTime - $nextEventTitle',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AppTypography.caption1.copyWith(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: AppColors.secondaryLabel,
+                letterSpacing: 0,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _metric(String label, Object value, bool large) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        color: AppColors.cardBackgroundStrong.withValues(alpha: 0.7),
+        border: Border.all(color: AppColors.border.withValues(alpha: 0.7)),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            '$value',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AppTypography.title3.copyWith(
+              fontSize: large ? 23 : 18,
+              fontWeight: FontWeight.w900,
+              color: AppColors.accent,
+              letterSpacing: 0,
+              height: 1,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AppTypography.caption2.copyWith(
+              fontSize: large ? 10 : 9,
+              fontWeight: FontWeight.w800,
+              color: AppColors.secondaryLabel,
+              letterSpacing: 0,
+              height: 1,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CeoHabitsTodayCard extends StatelessWidget {
+  final String title;
+  final String subtitlePrefix;
+  final List<String> lines;
+  final int completedHabits;
+  final int totalHabits;
+  final bool large;
+
+  const _CeoHabitsTodayCard._({
+    required this.title,
+    required this.subtitlePrefix,
+    required this.lines,
+    required this.completedHabits,
+    required this.totalHabits,
+    required this.large,
+  });
+
+  factory _CeoHabitsTodayCard.small({
+    required String title,
+    required String subtitlePrefix,
+    required List<String> lines,
+    required int completedHabits,
+    required int totalHabits,
+  }) {
+    return _CeoHabitsTodayCard._(
+      title: title,
+      subtitlePrefix: subtitlePrefix,
+      lines: lines,
+      completedHabits: completedHabits,
+      totalHabits: totalHabits,
+      large: false,
+    );
+  }
+
+  factory _CeoHabitsTodayCard.large({
+    required String title,
+    required String subtitlePrefix,
+    required List<String> lines,
+    required int completedHabits,
+    required int totalHabits,
+  }) {
+    return _CeoHabitsTodayCard._(
+      title: title,
+      subtitlePrefix: subtitlePrefix,
+      lines: lines,
+      completedHabits: completedHabits,
+      totalHabits: totalHabits,
+      large: true,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _CeoWidgetCard(
+      title: title,
+      subtitle: '$subtitlePrefix $completedHabits/$totalHabits',
+      lines: lines,
+      large: large,
+    );
+  }
+}
+
+class _CeoHabitsTableCard extends StatelessWidget {
+  final String title;
+  final List<Habit> habits;
+  final List<DateTime> days;
+  final Map<String, Set<String>> completionsDone;
+  final Map<String, Set<String>> completionsFailed;
+  final bool large;
+
+  const _CeoHabitsTableCard._({
+    required this.title,
+    required this.habits,
+    required this.days,
+    required this.completionsDone,
+    required this.completionsFailed,
+    required this.large,
+  });
+
+  factory _CeoHabitsTableCard.large({
+    required String title,
+    required List<Habit> habits,
+    required List<DateTime> days,
+    required Map<String, Set<String>> completionsDone,
+    required Map<String, Set<String>> completionsFailed,
+  }) {
+    return _CeoHabitsTableCard._(
+      title: title,
+      habits: habits,
+      days: days,
+      completionsDone: completionsDone,
+      completionsFailed: completionsFailed,
+      large: true,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final shownHabits = habits.take(4).toList();
+    final shownDays = days.take(7).toList();
+    return _CeoWidgetCard(
+      title: title,
+      large: large,
+      childOverride: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AppTypography.headline.copyWith(
+              fontSize: 17,
+              fontWeight: FontWeight.w800,
+              color: AppColors.label,
+              letterSpacing: 0,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Expanded(
+            child: shownHabits.isEmpty
+                ? Center(
+                    child: Text(
+                      '-',
+                      style: AppTypography.title2.copyWith(
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.tertiaryLabel,
+                        letterSpacing: 0,
+                      ),
+                    ),
+                  )
+                : Column(
+                    children: [
+                      Row(
+                        children: [
+                          const SizedBox(width: 96),
+                          for (final day in shownDays)
+                            Expanded(
+                              child: Text(
+                                DateFormat('E').format(day).substring(0, 1),
+                                textAlign: TextAlign.center,
+                                style: AppTypography.caption2.copyWith(
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppColors.tertiaryLabel,
+                                  letterSpacing: 0,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      for (final habit in shownHabits) ...[
+                        Expanded(child: _habitRow(habit, shownDays)),
+                        const SizedBox(height: 4),
+                      ],
+                    ],
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _habitRow(Habit habit, List<DateTime> shownDays) {
+    return Row(
+      children: [
+        SizedBox(
+          width: 96,
+          child: Text(
+            habit.title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AppTypography.caption1.copyWith(
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+              color: AppColors.label,
+              letterSpacing: 0,
+            ),
+          ),
+        ),
+        for (final day in shownDays)
+          Expanded(
+            child: Center(
+              child: _habitDot(
+                done: _containsDay(completionsDone[habit.id], day),
+                failed: _containsDay(completionsFailed[habit.id], day),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _habitDot({required bool done, required bool failed}) {
+    final color = done
+        ? AppColors.success
+        : failed
+        ? AppColors.error
+        : AppColors.borderStrong.withValues(alpha: 0.65);
+    return Container(
+      width: 12,
+      height: 12,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: done || failed ? color : AppColors.cardBackgroundStrong,
+        border: Border.all(color: color, width: 1.4),
+      ),
+    );
+  }
+
+  bool _containsDay(Set<String>? values, DateTime day) {
+    if (values == null || values.isEmpty) return false;
+    final key =
+        '${day.year.toString().padLeft(4, '0')}-${day.month.toString().padLeft(2, '0')}-${day.day.toString().padLeft(2, '0')}';
+    return values.contains(key);
   }
 }
 
@@ -175,13 +770,21 @@ class CeoHomeWidgetService {
           pendingTasks.take(3).map((t) => t.title).toList(),
         ),
         HomeWidget.renderFlutterWidget(
-          TodoWidgetSquareView(language: language, pending: pendingTasks),
+          _CeoTodoCard.small(
+            title: language.t('widget_mode_todo'),
+            subtitle: language.t('today'),
+            lines: pendingTasks.map((task) => task.title).take(4).toList(),
+          ),
           key: _keyTodoSmall,
           logicalSize: const Size(170, 170),
           pixelRatio: 2,
         ),
         HomeWidget.renderFlutterWidget(
-          TodoWidgetSquareView(language: language, pending: pendingTasks),
+          _CeoTodoCard.large(
+            title: language.t('widget_mode_todo'),
+            subtitle: language.t('today'),
+            lines: pendingTasks.map((task) => task.title).take(7).toList(),
+          ),
           key: _keyTodoLarge,
           logicalSize: const Size(360, 180),
           pixelRatio: 2,
@@ -215,30 +818,33 @@ class CeoHomeWidgetService {
         HomeWidget.saveWidgetData<int>(keyDashboardProgress, progressPercent),
         HomeWidget.saveWidgetData<String>(keyDashboardMessage, nextTitle),
         HomeWidget.renderFlutterWidget(
-          DashboardWidgetSquareView(
-            language: language,
-            tasksDone: doneTasks,
-            tasksTotal: totalTasks,
-            habitsDone: doneHabits,
-            habitsTotal: totalHabits,
+          _CeoDashboardCard.small(
+            title: language.t('widget_mode_dashboard'),
+            tasksLabel: language.t('tasks'),
+            habitsLabel: language.t('habits'),
+            eventsLabel: language.t('events'),
+            pendingTasks: pendingTasks.length,
+            completedHabits: doneHabits,
+            totalHabits: totalHabits,
             eventsCount: eventsCount,
-            progressPercent: progressPercent,
           ),
           key: _keyDashboardSmall,
           logicalSize: const Size(170, 170),
           pixelRatio: 2,
         ),
         HomeWidget.renderFlutterWidget(
-          DashboardWidgetRectangularView(
-            language: language,
-            dateLabel: dateLabel,
-            tasksDone: doneTasks,
-            tasksTotal: totalTasks,
-            habitsDone: doneHabits,
-            habitsTotal: totalHabits,
+          _CeoDashboardCard.large(
+            title: language.t('widget_mode_dashboard'),
+            tasksLabel: language.t('tasks'),
+            habitsLabel: language.t('habits'),
+            eventsLabel: language.t('events'),
+            pendingTasks: pendingTasks.length,
+            completedTasks: doneTasks,
+            completedHabits: doneHabits,
+            totalHabits: totalHabits,
             eventsCount: eventsCount,
-            progressPercent: progressPercent,
-            nextTitle: nextTitle,
+            nextEventTitle: nextEventTitle,
+            nextEventTime: nextEventTime,
           ),
           key: _keyDashboardLarge,
           logicalSize: const Size(360, 180),
@@ -261,19 +867,25 @@ class CeoHomeWidgetService {
           todayHabits.take(3).map((h) => h.title).toList(),
         ),
         HomeWidget.renderFlutterWidget(
-          HabitsTodayWidgetSquareView(
-            language: language,
-            habits: todayHabits,
-            completed: doneHabits,
-            total: totalHabits,
+          _CeoHabitsTodayCard.small(
+            title: language.t('widget_mode_habits_today'),
+            subtitlePrefix: language.t('widget_completed'),
+            lines: todayHabits
+                .map(
+                  (habit) =>
+                      '${habits.isHabitCompletedToday(habit.id) ? 'Done' : 'Open'} ${habit.title}',
+                )
+                .toList(),
+            completedHabits: doneHabits,
+            totalHabits: totalHabits,
           ),
           key: _keyHabitsSmall,
           logicalSize: const Size(170, 170),
           pixelRatio: 2,
         ),
         HomeWidget.renderFlutterWidget(
-          HabitsTableWidgetRectangularView(
-            language: language,
+          _CeoHabitsTableCard.large(
+            title: language.t('widget_mode_habits'),
             habits: todayHabits,
             days: habits.widgetLast7Days,
             completionsDone: habits.widgetCompletionMapLast7Days,
