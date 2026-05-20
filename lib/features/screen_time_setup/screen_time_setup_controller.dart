@@ -5,18 +5,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/services/focus_service.dart';
 
-enum ScreenTimeSetupStep {
-  intro,
-  value,
-  overview,
-  permission,
-  success,
-}
+enum ScreenTimeSetupStep { intro, value, overview, permission, success }
 
 class ScreenTimeSetupController extends ChangeNotifier {
   static const _prefSetupComplete = 'ios_screen_time_setup_complete';
   static const _prefSetupHasRun = 'ios_screen_time_setup_has_run';
   static const _prefSetupStep = 'ios_screen_time_setup_step';
+  static const _prefValueSelection = 'ios_screen_time_setup_value_selection';
 
   final FocusService _focusService;
   SharedPreferences? _prefs;
@@ -24,6 +19,7 @@ class ScreenTimeSetupController extends ChangeNotifier {
   bool _isLoading = true;
   bool _setupComplete = false;
   bool _setupHasRun = false;
+  String? _valueSelection;
   ScreenTimeSetupStep _currentStep = ScreenTimeSetupStep.intro;
   FocusProtectionStatus _protectionStatus = FocusProtectionStatus.unknown;
 
@@ -33,6 +29,7 @@ class ScreenTimeSetupController extends ChangeNotifier {
   bool get isLoading => _isLoading;
   bool get isSetupComplete => _setupComplete;
   bool get hasRunBefore => _setupHasRun;
+  String? get valueSelection => _valueSelection;
   ScreenTimeSetupStep get currentStep => _currentStep;
   FocusProtectionStatus get protectionStatus => _protectionStatus;
 
@@ -60,6 +57,7 @@ class ScreenTimeSetupController extends ChangeNotifier {
     _prefs = await SharedPreferences.getInstance();
     _setupComplete = _prefs?.getBool(_prefSetupComplete) ?? false;
     _setupHasRun = _prefs?.getBool(_prefSetupHasRun) ?? false;
+    _valueSelection = _prefs?.getString(_prefValueSelection);
     _currentStep =
         _stepFromName(_prefs?.getString(_prefSetupStep)) ??
         ScreenTimeSetupStep.intro;
@@ -87,7 +85,6 @@ class ScreenTimeSetupController extends ChangeNotifier {
     notifyListeners();
   }
 
-
   Future<void> markSetupComplete() async {
     _setupComplete = true;
     await _prefs?.setBool(_prefSetupComplete, true);
@@ -113,6 +110,12 @@ class ScreenTimeSetupController extends ChangeNotifier {
   Future<void> jumpTo(ScreenTimeSetupStep step) async {
     _currentStep = step;
     await _persistStep(step);
+    notifyListeners();
+  }
+
+  Future<void> setValueSelection(String selection) async {
+    _valueSelection = selection;
+    await _prefs?.setString(_prefValueSelection, selection);
     notifyListeners();
   }
 
@@ -168,9 +171,6 @@ class ScreenTimeSetupController extends ChangeNotifier {
 
   ScreenTimeSetupStep? _stepFromName(String? raw) {
     if (raw == null || raw.isEmpty) return null;
-    if (raw == 'value' || raw == 'overview') {
-      return ScreenTimeSetupStep.intro;
-    }
     for (final step in ScreenTimeSetupStep.values) {
       if (step.name == raw) return step;
     }
@@ -179,6 +179,8 @@ class ScreenTimeSetupController extends ChangeNotifier {
 
   List<ScreenTimeSetupStep> get _orderedSteps => const [
     ScreenTimeSetupStep.intro,
+    ScreenTimeSetupStep.value,
+    ScreenTimeSetupStep.overview,
     ScreenTimeSetupStep.permission,
     ScreenTimeSetupStep.success,
   ];

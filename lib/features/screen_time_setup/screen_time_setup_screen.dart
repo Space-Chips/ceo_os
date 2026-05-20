@@ -101,9 +101,7 @@ class _ScreenTimeSetupScreenState extends State<ScreenTimeSetupScreen>
   ) {
     switch (step) {
       case ScreenTimeSetupStep.intro:
-        return _IntroStep(
-          onContinue: controller.advance,
-        );
+        return _IntroStep(onContinue: controller.advance);
       case ScreenTimeSetupStep.value:
         return _ValueStep(
           selection: controller.valueSelection,
@@ -172,14 +170,12 @@ class _SetupStepScaffold extends StatelessWidget {
   final bool showBack;
   final VoidCallback? onBack;
   final String? progressLabel;
-  final String? progressLabel;
 
   const _SetupStepScaffold({
     required this.child,
     this.footer,
     this.showBack = false,
     this.onBack,
-    this.progressLabel,
     this.progressLabel,
   });
 
@@ -206,7 +202,9 @@ class _SetupStepScaffold extends StatelessWidget {
               else
                 const SizedBox(width: 32),
               const Spacer(),
-              _ProgressPill(label: progressLabel ?? t('ios_setup_progress_label')),
+              _ProgressPill(
+                label: progressLabel ?? t('ios_setup_progress_label'),
+              ),
             ],
           ),
           const SizedBox(height: 12),
@@ -216,10 +214,7 @@ class _SetupStepScaffold extends StatelessWidget {
               child: child,
             ),
           ),
-          if (footer != null) ...[
-            const SizedBox(height: 16),
-            footer!,
-          ],
+          if (footer != null) ...[const SizedBox(height: 16), footer!],
         ],
       ),
     );
@@ -238,9 +233,7 @@ class _ProgressPill extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.glassSurfaceSoft,
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(
-          color: AppColors.border.withValues(alpha: 0.65),
-        ),
+        border: Border.all(color: AppColors.border.withValues(alpha: 0.65)),
       ),
       child: Text(
         label,
@@ -289,10 +282,7 @@ class _IntroStep extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  "What you'll unlock",
-                  style: AppTypography.title3,
-                ),
+                Text("What you'll unlock", style: AppTypography.title3),
                 const SizedBox(height: 10),
                 _BenefitRow(
                   title: 'Instant blocking',
@@ -331,8 +321,8 @@ class _ValueStep extends StatelessWidget {
     return _SetupStepScaffold(
       showBack: true,
       onBack: () => context.read<ScreenTimeSetupController>().jumpTo(
-            ScreenTimeSetupStep.intro,
-          ),
+        ScreenTimeSetupStep.intro,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -365,10 +355,7 @@ class _ValueStep extends StatelessWidget {
           ),
         ],
       ),
-      footer: LiquidButton(
-        label: 'Continue',
-        onPressed: onContinue,
-      ),
+      footer: LiquidButton(label: 'Continue', onPressed: onContinue),
     );
   }
 }
@@ -377,26 +364,20 @@ class _OverviewStep extends StatelessWidget {
   final bool isAuthorized;
   final VoidCallback onContinue;
 
-  const _OverviewStep({
-    required this.isAuthorized,
-    required this.onContinue,
-  });
+  const _OverviewStep({required this.isAuthorized, required this.onContinue});
 
   @override
   Widget build(BuildContext context) {
     return _SetupStepScaffold(
       showBack: true,
       onBack: () => context.read<ScreenTimeSetupController>().jumpTo(
-            ScreenTimeSetupStep.value,
-          ),
+        ScreenTimeSetupStep.value,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 6),
-          Text(
-            'Setup checklist',
-            style: AppTypography.title1,
-          ),
+          Text('Setup checklist', style: AppTypography.title1),
           const SizedBox(height: 10),
           Text(
             "We'll ask for one permission to enable Screen Time protections.",
@@ -494,16 +475,13 @@ class _PermissionStep extends StatelessWidget {
     return _SetupStepScaffold(
       showBack: true,
       onBack: () => context.read<ScreenTimeSetupController>().jumpTo(
-            ScreenTimeSetupStep.overview,
-          ),
+        ScreenTimeSetupStep.overview,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 6),
-          Text(
-            title,
-            style: AppTypography.title1,
-          ),
+          Text(title, style: AppTypography.title1),
           const SizedBox(height: 10),
           Text(
             subtitle,
@@ -539,10 +517,7 @@ class _PermissionStep extends StatelessWidget {
                   text: 'Enable Screen Time access.',
                 ),
                 const SizedBox(height: 8),
-                const _InstructionRow(
-                  index: 4,
-                  text: 'Return to WakeApp.',
-                ),
+                const _InstructionRow(index: 4, text: 'Return to WakeApp.'),
                 const SizedBox(height: 12),
                 if (!isSupported)
                   Text(
@@ -555,10 +530,7 @@ class _PermissionStep extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 18),
-          _PermissionStatusPill(
-            status: status,
-            showSuccess: showSuccess,
-          ),
+          _PermissionStatusPill(status: status, showSuccess: showSuccess),
         ],
       ),
       footer: LiquidButton(label: actionLabel, onPressed: action),
@@ -708,11 +680,10 @@ class _SelectionChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final background = isSelected
-        ? AppColors.primaryAccent.withValues(alpha: 0.22)
-        : AppColors.glassSurface;
-    final border = isSelected ? AppColors.primaryAccent : AppColors.border;
-    final textColor =
-        isSelected ? AppColors.primaryAccent : AppColors.label;
+        ? AppColors.primaryOrange.withValues(alpha: 0.22)
+        : AppColors.glassSurfaceSoft;
+    final border = isSelected ? AppColors.primaryOrange : AppColors.border;
+    final textColor = isSelected ? AppColors.primaryOrange : AppColors.label;
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -762,9 +733,7 @@ class _BenefitRow extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: AppTypography.body.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+                style: AppTypography.body.copyWith(fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 4),
               Text(
@@ -812,10 +781,7 @@ class _InstructionRow extends StatelessWidget {
         ),
         const SizedBox(width: 10),
         Expanded(
-          child: Text(
-            text,
-            style: AppTypography.body.copyWith(height: 1.4),
-          ),
+          child: Text(text, style: AppTypography.body.copyWith(height: 1.4)),
         ),
       ],
     );
