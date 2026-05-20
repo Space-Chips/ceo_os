@@ -69,13 +69,15 @@ class PremiumRepository {
 
   Future<PremiumCheckResult> canAccessAdvancedCalendar() async {
     final runtime = await getRuntime();
-    if (_hasOpenAccess(runtime)) return const PremiumCheckResult.allowed();
+    final hasPremiumAccess = _hasOpenAccess(runtime);
+    if (hasPremiumAccess) return const PremiumCheckResult.allowed();
     return const PremiumCheckResult.blocked(reason: 'calendar_advanced');
   }
 
   Future<PremiumCheckResult> canUseTheme(String presetId) async {
     final runtime = await getRuntime();
-    if (_hasOpenAccess(runtime)) return const PremiumCheckResult.allowed();
+    final hasPremiumAccess = _hasOpenAccess(runtime);
+    if (hasPremiumAccess) return const PremiumCheckResult.allowed();
     if (!runtime.config.premiumThemes.contains(presetId)) {
       return const PremiumCheckResult.allowed();
     }
@@ -84,7 +86,8 @@ class PremiumRepository {
 
   Future<PremiumCheckResult> canCreateTask([int currentCount = 0]) async {
     final runtime = await getRuntime();
-    if (_hasOpenAccess(runtime) || runtime.resolved.canCreateUnlimitedTasks) {
+    final hasPremiumAccess = _hasOpenAccess(runtime);
+    if (hasPremiumAccess || runtime.resolved.canCreateUnlimitedTasks) {
       return const PremiumCheckResult.allowed();
     }
     final activeCount = currentCount > 0
@@ -105,7 +108,8 @@ class PremiumRepository {
 
   Future<PremiumCheckResult> canCreateHabit([int currentCount = 0]) async {
     final runtime = await getRuntime();
-    if (_hasOpenAccess(runtime) || runtime.resolved.canCreateUnlimitedHabits) {
+    final hasPremiumAccess = _hasOpenAccess(runtime);
+    if (hasPremiumAccess || runtime.resolved.canCreateUnlimitedHabits) {
       return const PremiumCheckResult.allowed();
     }
     final activeCount = currentCount > 0
@@ -126,7 +130,8 @@ class PremiumRepository {
 
   Future<PremiumCheckResult> canCreateNote([int currentCount = 0]) async {
     final runtime = await getRuntime();
-    if (_hasOpenAccess(runtime)) return const PremiumCheckResult.allowed();
+    final hasPremiumAccess = _hasOpenAccess(runtime);
+    if (hasPremiumAccess) return const PremiumCheckResult.allowed();
     final activeCount = currentCount > 0
         ? currentCount
         : await _countRows(table: 'notes');
@@ -142,13 +147,36 @@ class PremiumRepository {
 
   Future<PremiumCheckResult> canAccessReports() async {
     final runtime = await getRuntime();
-    if (_hasOpenAccess(runtime)) return const PremiumCheckResult.allowed();
+    final hasPremiumAccess = _hasOpenAccess(runtime);
+    if (hasPremiumAccess) return const PremiumCheckResult.allowed();
     return const PremiumCheckResult.blocked(reason: 'reports');
+  }
+
+  Future<PremiumCheckResult> canAccessScreenTimeManager() async {
+    final runtime = await getRuntime();
+    final hasPremiumAccess = _hasOpenAccess(runtime);
+    if (hasPremiumAccess) return const PremiumCheckResult.allowed();
+    return const PremiumCheckResult.blocked(reason: 'screen_time_manager');
+  }
+
+  Future<PremiumCheckResult> canAccessLeaderboard() async {
+    final runtime = await getRuntime();
+    final hasPremiumAccess = _hasOpenAccess(runtime);
+    if (hasPremiumAccess) return const PremiumCheckResult.allowed();
+    return const PremiumCheckResult.blocked(reason: 'leaderboard');
+  }
+
+  Future<PremiumCheckResult> canConfigureHomeWidgets() async {
+    final runtime = await getRuntime();
+    final hasPremiumAccess = _hasOpenAccess(runtime);
+    if (hasPremiumAccess) return const PremiumCheckResult.allowed();
+    return const PremiumCheckResult.blocked(reason: 'home_widgets');
   }
 
   Future<PremiumCheckResult> canStartFocusSession(int minutes) async {
     final runtime = await getRuntime();
-    if (_hasOpenAccess(runtime) || runtime.resolved.canUseExtendedFocus) {
+    final hasPremiumAccess = _hasOpenAccess(runtime);
+    if (hasPremiumAccess || runtime.resolved.canUseExtendedFocus) {
       return const PremiumCheckResult.allowed();
     }
     if (minutes > runtime.config.focusFreeMinutesLimit) {
@@ -174,7 +202,8 @@ class PremiumRepository {
 
   Future<PremiumCheckResult> canStartCeoSession(int minutes) async {
     final runtime = await getRuntime();
-    if (_hasOpenAccess(runtime) || runtime.resolved.canUseExtendedCeoMode) {
+    final hasPremiumAccess = _hasOpenAccess(runtime);
+    if (hasPremiumAccess || runtime.resolved.canUseExtendedCeoMode) {
       return const PremiumCheckResult.allowed();
     }
     if (minutes > runtime.config.ceoModeFreeMinutesLimit) {

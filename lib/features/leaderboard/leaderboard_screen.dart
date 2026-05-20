@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../../components/components.dart';
 import '../../core/models/user_models.dart';
 import '../../core/providers/language_provider.dart';
+import '../../core/repositories/premium_repository.dart';
 import '../../core/repositories/user_repository.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
@@ -23,6 +24,7 @@ class LeaderboardScreen extends StatefulWidget {
 
 class _LeaderboardScreenState extends State<LeaderboardScreen> {
   final UserRepository _repository = UserRepository();
+  final PremiumRepository _premiumRepository = PremiumRepository();
 
   _BoardTab _tab = _BoardTab.friends;
   bool _loading = true;
@@ -64,6 +66,14 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
 
   Future<void> _load() async {
     if (mounted) setState(() => _loading = true);
+    final premiumCheck = await _premiumRepository.canAccessLeaderboard();
+    final hasPremiumAccess = premiumCheck.allowed;
+    if (!hasPremiumAccess) {
+      if (!mounted) return;
+      setState(() => _loading = false);
+      await showPremiumGateDialog(context, premiumCheck);
+      return;
+    }
     await _repository.refreshLeaderboardForMe();
     final me = await _repository.getProfile().then((v) => v?.id);
     final globalRaw = await _repository.getLeaderboard();
@@ -92,7 +102,10 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
 
   String _identity(LeaderboardEntry entry) {
     if (_myUserId != null && entry.createdBy == _myUserId) {
-      return context.read<LanguageProvider>().t('leaderboard_you').toUpperCase();
+      return context
+          .read<LanguageProvider>()
+          .t('leaderboard_you')
+          .toUpperCase();
     }
     final resolved = _identityLabels[entry.createdBy];
     if (resolved != null && resolved.trim().isNotEmpty) {
@@ -106,7 +119,10 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
     if (name.isNotEmpty) return name.toUpperCase();
     final email = (friend.friendEmail ?? '').trim();
     if (email.isNotEmpty) return email.split('@').first.toUpperCase();
-    return context.read<LanguageProvider>().t('leaderboard_friend').toUpperCase();
+    return context
+        .read<LanguageProvider>()
+        .t('leaderboard_friend')
+        .toUpperCase();
   }
 
   int? _myGlobalPosition() {
@@ -127,8 +143,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
   Future<void> _inviteFriends() async {
     final inviter = _myUserId ?? 'invite';
     final appStoreUrl = 'https://apps.apple.com/app/id123456789?ref=$inviter';
-    const text =
-        'Join me on CEO Compass to compare progress and win streaks: ';
+    const text = 'Join me on CEO Compass to compare progress and win streaks: ';
     await Clipboard.setData(ClipboardData(text: '$text$appStoreUrl'));
     if (!mounted) return;
     await showCupertinoDialog<void>(
@@ -155,7 +170,9 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
       child: AmbientBackdrop(
         child: _loading
             ? Center(
-                child: CupertinoActivityIndicator(color: AppColors.primaryOrange),
+                child: CupertinoActivityIndicator(
+                  color: AppColors.primaryOrange,
+                ),
               )
             : SafeArea(
                 child: Stack(
@@ -422,11 +439,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
     return [
       Row(
         children: [
-          Icon(
-            CupertinoIcons.person_2,
-            size: 24,
-            color: AppColors.accentIcon,
-          ),
+          Icon(CupertinoIcons.person_2, size: 24, color: AppColors.accentIcon),
           const SizedBox(width: 8),
           Text(
             _t(
@@ -516,10 +529,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
           );
         }),
       const SizedBox(height: 14),
-      _LeaderboardActionButton(
-        label: 'Invite Friends',
-        onTap: _inviteFriends,
-      ),
+      _LeaderboardActionButton(label: 'Invite Friends', onTap: _inviteFriends),
     ];
   }
 
@@ -527,11 +537,12 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
     return Container(
       width: 32,
       height: 32,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: AppColors.topBarControlBackground,
-          border: Border.all(
-          color: _positionBorderColor(index) ??
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: AppColors.topBarControlBackground,
+        border: Border.all(
+          color:
+              _positionBorderColor(index) ??
               AppColors.topBarControlBackground.withValues(alpha: 0),
           width: 1,
         ),
@@ -550,16 +561,25 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
 
   Color? _positionBorderColor(int index) {
     if (index == 1) {
-      return Color.lerp(AppColors.warning, AppColors.rankAccent, 0.3)!
-          .withValues(alpha: 0.35);
+      return Color.lerp(
+        AppColors.warning,
+        AppColors.rankAccent,
+        0.3,
+      )!.withValues(alpha: 0.35);
     }
     if (index == 2) {
-      return Color.lerp(AppColors.label, AppColors.secondaryLabel, 0.55)!
-          .withValues(alpha: 0.28);
+      return Color.lerp(
+        AppColors.label,
+        AppColors.secondaryLabel,
+        0.55,
+      )!.withValues(alpha: 0.28);
     }
     if (index == 3) {
-      return Color.lerp(AppColors.rankAccent, AppColors.warning, 0.62)!
-          .withValues(alpha: 0.35);
+      return Color.lerp(
+        AppColors.rankAccent,
+        AppColors.warning,
+        0.62,
+      )!.withValues(alpha: 0.35);
     }
     return null;
   }
@@ -590,10 +610,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
         colors: [AppColors.cardBackgroundAlt, AppColors.cardBase],
       ),
       borderRadius: BorderRadius.circular(16),
-      border: Border.all(
-        color: borderColor ?? AppColors.border,
-        width: 1,
-      ),
+      border: Border.all(color: borderColor ?? AppColors.border, width: 1),
       boxShadow: [
         BoxShadow(
           color: AppColors.black.withValues(alpha: 0.45),
@@ -617,10 +634,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
           colors: [AppColors.cardBackgroundAlt, AppColors.cardBase],
         ),
         border: Border(
-          top: BorderSide(
-            color: AppColors.borderStrong,
-            width: 1,
-          ),
+          top: BorderSide(color: AppColors.borderStrong, width: 1),
         ),
       ),
       child: SafeArea(
@@ -674,11 +688,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
   Widget _rankSummary(String rankName, int streak) {
     return Row(
       children: [
-        RankArt(
-          rankName: rankName,
-          size: RankArtSize.xs,
-          dimension: 16,
-        ),
+        RankArt(rankName: rankName, size: RankArtSize.xs, dimension: 16),
         const SizedBox(width: 6),
         Expanded(
           child: Text(
@@ -700,10 +710,7 @@ class _LeaderboardPressScale extends StatefulWidget {
   final Widget child;
   final VoidCallback onTap;
 
-  const _LeaderboardPressScale({
-    required this.child,
-    required this.onTap,
-  });
+  const _LeaderboardPressScale({required this.child, required this.onTap});
 
   @override
   State<_LeaderboardPressScale> createState() => _LeaderboardPressScaleState();
@@ -741,10 +748,7 @@ class _LeaderboardActionButton extends StatelessWidget {
   final String label;
   final VoidCallback onTap;
 
-  const _LeaderboardActionButton({
-    required this.label,
-    required this.onTap,
-  });
+  const _LeaderboardActionButton({required this.label, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -779,11 +783,7 @@ class _LeaderboardActionButton extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                CupertinoIcons.share,
-                color: AppColors.onAccent,
-                size: 18,
-              ),
+              Icon(CupertinoIcons.share, color: AppColors.onAccent, size: 18),
               const SizedBox(width: 8),
               Text(
                 label,

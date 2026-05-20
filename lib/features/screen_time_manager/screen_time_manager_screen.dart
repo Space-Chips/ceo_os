@@ -9,6 +9,7 @@ import '../../core/models/user_models.dart';
 import '../../core/providers/focus_provider.dart';
 import '../../core/providers/language_provider.dart';
 import '../../core/repositories/feature_repository.dart';
+import '../../core/repositories/premium_repository.dart';
 import '../../core/repositories/user_repository.dart';
 import '../../core/services/classic_blocking_coordinator.dart';
 import '../../core/theme/app_colors.dart';
@@ -36,6 +37,7 @@ class ScreenTimeManagerScreen extends StatefulWidget {
 
 class _ScreenTimeManagerScreenState extends State<ScreenTimeManagerScreen> {
   final FeatureRepository _featureRepository = FeatureRepository();
+  final PremiumRepository _premiumRepository = PremiumRepository();
   final UserRepository _userRepository = UserRepository();
   final ClassicBlockingCoordinator _classicBlockingCoordinator =
       ClassicBlockingCoordinator();
@@ -60,6 +62,15 @@ class _ScreenTimeManagerScreenState extends State<ScreenTimeManagerScreen> {
       setState(() => _loading = true);
     }
     try {
+      final premiumCheck = await _premiumRepository
+          .canAccessScreenTimeManager();
+      final hasPremiumAccess = premiumCheck.allowed;
+      if (!hasPremiumAccess) {
+        if (!mounted) return;
+        setState(() => _loading = false);
+        await showPremiumGateDialog(context, premiumCheck);
+        return;
+      }
       final focus = context.read<FocusProvider>();
       await focus.loadInitialData();
       await focus.refreshScreenTime();

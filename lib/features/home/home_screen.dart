@@ -11,11 +11,13 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../components/components.dart';
 import '../../core/config/apple_review_compliance.dart';
 import '../../core/models/insights_models.dart';
+import '../../core/models/premium_models.dart';
 import '../../core/providers/ceo_mode_provider.dart';
 import '../../core/providers/habit_provider.dart';
 import '../../core/providers/task_provider.dart';
 import '../../core/repositories/feature_repository.dart';
 import '../../core/repositories/insights_repository.dart';
+import '../../core/repositories/premium_repository.dart';
 import '../../core/repositories/user_repository.dart';
 import '../../core/services/stats_engine.dart';
 import '../../core/theme/app_colors.dart';
@@ -186,6 +188,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final InsightsRepository _insightsRepository = InsightsRepository();
   final UserRepository _userRepository = UserRepository();
   final FeatureRepository _featureRepository = FeatureRepository();
+  final PremiumRepository _premiumRepository = PremiumRepository();
   final StatsEngine _statsEngine = StatsEngine();
 
   static const Set<String> _defaultActiveApps = {
@@ -340,6 +343,25 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  Future<bool> _ensurePremiumAccessForRoute(String route) async {
+    final premiumCheck = switch (route) {
+      '/stats' => await _premiumRepository.canAccessReports(),
+      '/leaderboard' => await _premiumRepository.canAccessLeaderboard(),
+      '/screen-time-manager' =>
+        await _premiumRepository.canAccessScreenTimeManager(),
+      '/widget-configuration' =>
+        await _premiumRepository.canConfigureHomeWidgets(),
+      _ => const PremiumCheckResult.allowed(),
+    };
+    final hasPremiumAccess = premiumCheck.allowed;
+    if (!hasPremiumAccess) {
+      if (!mounted) return false;
+      await showPremiumGateDialog(context, premiumCheck);
+      return false;
+    }
+    return true;
+  }
+
   void _openScreenTimeEntry() {
     final controller = context.read<ScreenTimeSetupController>();
     unawaited(
@@ -349,6 +371,10 @@ class _HomeScreenState extends State<HomeScreen> {
         if (controller.isSetupRequired || !controller.isSetupComplete) {
           context.push('/screen-time-setup');
         } else {
+          final hasPremiumAccess = await _ensurePremiumAccessForRoute(
+            '/screen-time-manager',
+          );
+          if (!hasPremiumAccess) return;
           context.push('/screen-time-manager');
         }
       }),
@@ -482,12 +508,20 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _pushAndRefresh(String route) async {
+    final hasPremiumAccess = await _ensurePremiumAccessForRoute(route);
+    if (!hasPremiumAccess) return;
     await context.push(route);
     if (!mounted) return;
     _reloadSnapshot();
   }
 
   Future<bool> _togglePrimaryModule(String moduleId, bool enabled) async {
+    if (enabled && moduleId == 'ScreenTimeManager') {
+      final hasPremiumAccess = await _ensurePremiumAccessForRoute(
+        '/screen-time-manager',
+      );
+      if (!hasPremiumAccess) return false;
+    }
     final previous = Set<String>.from(_activeApps);
     final previousShortcuts = Set<String>.from(_enabledShortcuts);
     final next = Set<String>.from(_activeApps);
@@ -565,6 +599,18 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _toggleShortcut(String shortcutId, bool enabled) async {
+    if (enabled && shortcutId == 'leaderboard') {
+      final hasPremiumAccess = await _ensurePremiumAccessForRoute(
+        '/leaderboard',
+      );
+      if (!hasPremiumAccess) return;
+    }
+    if (enabled && shortcutId == 'family_time') {
+      final hasPremiumAccess = await _ensurePremiumAccessForRoute(
+        '/screen-time-manager',
+      );
+      if (!hasPremiumAccess) return;
+    }
     final previous = Set<String>.from(_enabledShortcuts);
     final next = Set<String>.from(_enabledShortcuts);
     if (enabled) {

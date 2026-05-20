@@ -9,6 +9,7 @@ import '../../components/components.dart';
 import '../../core/models/advanced_stats_models.dart';
 import '../../core/models/insights_models.dart';
 import '../../core/repositories/insights_repository.dart';
+import '../../core/repositories/premium_repository.dart';
 import '../../core/services/performance_score_service.dart';
 import '../../core/services/stats_engine.dart';
 import '../../core/theme/app_colors.dart';
@@ -56,6 +57,7 @@ class _StatsScreenState extends State<StatsScreen> {
   final StatsEngine _engine = StatsEngine();
   final InsightsRepository _insightsRepository = InsightsRepository();
   final HabitRepository _habitRepository = HabitRepository();
+  final PremiumRepository _premiumRepository = PremiumRepository();
   final PageController _pageController = PageController();
   HabitProvider? _habitProvider;
   TaskProvider? _taskProvider;
@@ -128,6 +130,14 @@ class _StatsScreenState extends State<StatsScreen> {
     });
 
     try {
+      final premiumCheck = await _premiumRepository.canAccessReports();
+      final hasPremiumAccess = premiumCheck.allowed;
+      if (!hasPremiumAccess) {
+        if (!mounted) return;
+        setState(() => _loading = false);
+        await showPremiumGateDialog(context, premiumCheck);
+        return;
+      }
       await _engine.hydrateHistoricalStats(days: 120);
       final snapshot = await _engine.buildSnapshot();
       if (!mounted) return;

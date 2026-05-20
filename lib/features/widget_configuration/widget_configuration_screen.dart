@@ -10,6 +10,7 @@ import '../../core/providers/focus_provider.dart';
 import '../../core/providers/habit_provider.dart';
 import '../../core/providers/language_provider.dart';
 import '../../core/providers/task_provider.dart';
+import '../../core/repositories/premium_repository.dart';
 import '../../core/services/home_widget_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
@@ -24,6 +25,8 @@ class WidgetConfigurationScreen extends StatefulWidget {
 }
 
 class _WidgetConfigurationScreenState extends State<WidgetConfigurationScreen> {
+  final PremiumRepository _premiumRepository = PremiumRepository();
+
   bool _loading = true;
   bool _saving = false;
   bool _enabledTodo = false;
@@ -50,6 +53,21 @@ class _WidgetConfigurationScreenState extends State<WidgetConfigurationScreen> {
     bool? habits,
   }) async {
     if (_saving) return;
+    final enablesPremiumWidget =
+        dashboard == true ||
+        habitsToday == true ||
+        focus == true ||
+        blackout == true ||
+        habits == true;
+    if (enablesPremiumWidget) {
+      final premiumCheck = await _premiumRepository.canConfigureHomeWidgets();
+      final hasPremiumAccess = premiumCheck.allowed;
+      if (!hasPremiumAccess) {
+        if (!mounted) return;
+        await showPremiumGateDialog(context, premiumCheck);
+        return;
+      }
+    }
     final tasks = context.read<TaskProvider>();
     final habitsProvider = context.read<HabitProvider>();
     final language = context.read<LanguageProvider>();
