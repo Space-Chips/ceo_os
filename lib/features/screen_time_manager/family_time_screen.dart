@@ -128,10 +128,8 @@ class _FamilyTimeScreenState extends State<FamilyTimeScreen> {
   Future<void> _openGroup(FamilyTimeGroupBundle bundle) async {
     await Navigator.of(context).push(
       CupertinoPageRoute<void>(
-        builder: (_) => _FamilyTimeGroupDetailScreen(
-          repo: _repo,
-          initialBundle: bundle,
-        ),
+        builder: (_) =>
+            _FamilyTimeGroupDetailScreen(repo: _repo, initialBundle: bundle),
       ),
     );
     if (mounted) {
@@ -530,9 +528,9 @@ class _FamilyTimeGroupDetailScreenState
         builder: (context, secs, _) {
           return CupertinoAlertDialog(
             title: Text(
-              context
-                  .read<LanguageProvider>()
-                  .t('family_time_exit_group_session_title'),
+              context.read<LanguageProvider>().t(
+                'family_time_exit_group_session_title',
+              ),
             ),
             content: Padding(
               padding: const EdgeInsets.only(top: 8),
@@ -548,9 +546,9 @@ class _FamilyTimeGroupDetailScreenState
                 isDefaultAction: true,
                 onPressed: () => Navigator.of(ctx).pop(false),
                 child: Text(
-                  context
-                      .read<LanguageProvider>()
-                      .t('family_time_stay_in_session'),
+                  context.read<LanguageProvider>().t(
+                    'family_time_stay_in_session',
+                  ),
                 ),
               ),
             ],
@@ -701,10 +699,11 @@ class _FamilyTimeGroupDetailScreenState
                                               .trim();
                                           if (email.isEmpty) return;
                                           _runSave(
-                                            () => widget.repo.inviteMemberByEmail(
-                                              groupId: _bundle.group.id,
-                                              email: email,
-                                            ),
+                                            () =>
+                                                widget.repo.inviteMemberByEmail(
+                                                  groupId: _bundle.group.id,
+                                                  email: email,
+                                                ),
                                           );
                                           _inviteEmailCtrl.clear();
                                         },
@@ -722,7 +721,9 @@ class _FamilyTimeGroupDetailScreenState
                                   vertical: 12,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: AppColors.white.withValues(alpha: 0.04),
+                                  color: AppColors.white.withValues(
+                                    alpha: 0.04,
+                                  ),
                                   borderRadius: BorderRadius.circular(14),
                                   border: Border.all(
                                     color: AppColors.white.withValues(
@@ -785,8 +786,7 @@ class _FamilyTimeGroupDetailScreenState
                     _sectionLabel('GROUP SETTINGS'),
                     _sectionCard(
                       title: 'Sanction rule',
-                      subtitle:
-                          'Define what happens if someone quits first.',
+                      subtitle: 'Define what happens if someone quits first.',
                       child: Column(
                         children: [
                           _inputField(
@@ -1103,7 +1103,7 @@ class _FamilyTimeGroupDetailScreenState
               final startedAt = session.startsAt;
               if (startedAt == null) return const SizedBox.shrink();
               return Text(
-                "Started ${DateFormat('MMM d HH:mm").format(startedAt.toLocal())}',
+                "Started ${DateFormat('MMM d HH:mm').format(startedAt.toLocal())}",
                 style: AppTypography.body.copyWith(
                   fontSize: 12,
                   color: AppColors.tertiaryLabel,
@@ -1205,43 +1205,49 @@ class _FamilyTimeGroupDetailScreenState
       );
     }
     return Column(
-      children: _events.take(12).map((event) {
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 10),
-          child: Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-            decoration: BoxDecoration(
-              color: AppColors.cardBackgroundAlt,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: AppColors.border,
+      children: _events
+          .take(12)
+          .map((event) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 12,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.cardBackgroundAlt,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.border),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      event.message,
+                      style: AppTypography.body.copyWith(
+                        fontSize: 13,
+                        color: AppColors.label,
+                        height: 1.35,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      DateFormat(
+                        'MMM d • HH:mm',
+                      ).format(event.createdAt.toLocal()),
+                      style: AppTypography.body.copyWith(
+                        fontSize: 12,
+                        color: AppColors.tertiaryLabel,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  event.message,
-                  style: AppTypography.body.copyWith(
-                    fontSize: 13,
-                    color: AppColors.label,
-                    height: 1.35,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  DateFormat('MMM d • HH:mm').format(event.createdAt.toLocal()),
-                  style: AppTypography.body.copyWith(
-                    fontSize: 12,
-                    color: AppColors.tertiaryLabel,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      }).toList(growable: false),
+            );
+          })
+          .toList(growable: false),
     );
   }
 
@@ -1255,9 +1261,7 @@ class _FamilyTimeGroupDetailScreenState
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(10),
         color: AppColors.pillBackground,
-        border: Border.all(
-          color: AppColors.pillBorder,
-        ),
+        border: Border.all(color: AppColors.pillBorder),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -1291,10 +1295,7 @@ BoxDecoration _cardDecoration() {
   return BoxDecoration(
     borderRadius: BorderRadius.circular(20),
     color: AppColors.cardBackgroundAlt,
-    border: Border.all(
-      color: AppColors.border,
-      width: 1,
-    ),
+    border: Border.all(color: AppColors.border, width: 1),
     boxShadow: [
       BoxShadow(
         color: AppColors.glassShadowSoft.withValues(alpha: 0.18),
@@ -1341,10 +1342,7 @@ Widget _inputField({
     keyboardType: keyboardType,
     textCapitalization: textCapitalization,
     maxLines: maxLines,
-    style: AppTypography.body.copyWith(
-      fontSize: 14,
-      color: AppColors.label,
-    ),
+    style: AppTypography.body.copyWith(fontSize: 14, color: AppColors.label),
     placeholderStyle: AppTypography.body.copyWith(
       fontSize: 14,
       color: AppColors.secondaryLabel.withValues(alpha: 0.7),
@@ -1353,9 +1351,7 @@ Widget _inputField({
     decoration: BoxDecoration(
       color: AppColors.inputBackground,
       borderRadius: BorderRadius.circular(12),
-      border: Border.all(
-        color: AppColors.inputBorder,
-      ),
+      border: Border.all(color: AppColors.inputBorder),
     ),
   );
 }
@@ -1373,11 +1369,9 @@ Widget _actionButton({
     child: Container(
       height: 44,
       padding: const EdgeInsets.symmetric(horizontal: 16),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          color: primary
-            ? resolvedPrimary
-            : AppColors.pillBackground,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        color: primary ? resolvedPrimary : AppColors.pillBackground,
         border: Border.all(
           color: primary
               ? resolvedPrimary.withValues(alpha: 0.35)
@@ -1407,9 +1401,9 @@ Widget _sectionButton({
     scale: 0.98,
     child: Container(
       height: 44,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          color: destructive
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        color: destructive
             ? AppColors.error.withValues(alpha: 0.14)
             : AppColors.pillBackground,
         border: Border.all(
