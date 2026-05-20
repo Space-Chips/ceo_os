@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/widgets.dart';
@@ -631,6 +632,7 @@ class CeoHomeWidgetService {
     'com.wakeapp.ceoos.widget.todo',
     'com.wakeapp.ceoos.widget.dashboard',
     'com.wakeapp.ceoos.widget.habits',
+    'com.wakeapp.ceoos.widget.habits.table',
     'com.wakeapp.ceoos.widget.focus',
     'com.wakeapp.ceoos.widget.blackout',
   ];
@@ -662,6 +664,12 @@ class CeoHomeWidgetService {
   static const String keyHabitsItems = 'ceo_widget_data_habits_items';
   static const String keyHabitsCompleted = 'ceo_widget_data_habits_completed';
   static const String keyHabitsTotal = 'ceo_widget_data_habits_total';
+  static const String keyHabitsTableHabits =
+      'ceo_widget_data_habits_table_habits';
+  static const String keyHabitsTableDays = 'ceo_widget_data_habits_table_days';
+  static const String keyHabitsTableStatesJson =
+      'ceo_widget_data_habits_table_states_json';
+  static const String keyHabitsTableMore = 'ceo_widget_data_habits_table_more';
   static const String keyDashboardTodoDone =
       'ceo_widget_data_dashboard_todo_done';
   static const String keyDashboardTodoTotal =
@@ -859,12 +867,36 @@ class CeoHomeWidgetService {
     }
 
     if (enabledHabits) {
+      final habitsTableHabits = todayHabits.take(4).toList();
+      final habitsTableDays = habits.widgetLast7Days.take(7).toList();
       futures.addAll([
         HomeWidget.saveWidgetData<int>(keyHabitsCompleted, doneHabits),
         HomeWidget.saveWidgetData<int>(keyHabitsTotal, totalHabits),
         HomeWidget.saveWidgetData<List<String>>(
           keyHabitsItems,
           todayHabits.take(3).map((h) => h.title).toList(),
+        ),
+        HomeWidget.saveWidgetData<List<String>>(
+          keyHabitsTableHabits,
+          habitsTableHabits.map((habit) => habit.title).toList(),
+        ),
+        HomeWidget.saveWidgetData<List<String>>(
+          keyHabitsTableDays,
+          habitsTableDays.map(_compactDayLabel).toList(),
+        ),
+        HomeWidget.saveWidgetData<String>(
+          keyHabitsTableStatesJson,
+          jsonEncode(
+            _habitsTableStates(
+              habits: habitsTableHabits,
+              days: habitsTableDays,
+              completionsDone: habits.widgetCompletionMapLast7Days,
+            ),
+          ),
+        ),
+        HomeWidget.saveWidgetData<int>(
+          keyHabitsTableMore,
+          (todayHabits.length - habitsTableHabits.length).clamp(0, 999),
         ),
         HomeWidget.renderFlutterWidget(
           _CeoHabitsTodayCard.small(
@@ -898,6 +930,16 @@ class CeoHomeWidgetService {
       ]);
     } else {
       futures.addAll([
+        HomeWidget.saveWidgetData<List<String>>(
+          keyHabitsTableHabits,
+          const <String>[],
+        ),
+        HomeWidget.saveWidgetData<List<String>>(
+          keyHabitsTableDays,
+          const <String>[],
+        ),
+        HomeWidget.saveWidgetData<String>(keyHabitsTableStatesJson, '[]'),
+        HomeWidget.saveWidgetData<int>(keyHabitsTableMore, 0),
         HomeWidget.saveWidgetData<String>(_keyHabitsSmall, null),
         HomeWidget.saveWidgetData<String>(_keyHabitsLarge, null),
       ]);
@@ -1059,5 +1101,28 @@ class CeoHomeWidgetService {
     };
     final order = task.sortOrder ?? 999;
     return (importance * 1000) - order;
+  }
+
+  static String _compactDayLabel(DateTime day) {
+    return DateFormat('E').format(day).substring(0, 1).toUpperCase();
+  }
+
+  static List<List<int>> _habitsTableStates({
+    required List<Habit> habits,
+    required List<DateTime> days,
+    required Map<String, Set<String>> completionsDone,
+  }) {
+    return habits
+        .map((habit) {
+          final completedDays = completionsDone[habit.id] ?? const <String>{};
+          return days
+              .map((day) => completedDays.contains(_dateKey(day)) ? 1 : 0)
+              .toList(growable: false);
+        })
+        .toList(growable: false);
+  }
+
+  static String _dateKey(DateTime day) {
+    return '${day.year.toString().padLeft(4, '0')}-${day.month.toString().padLeft(2, '0')}-${day.day.toString().padLeft(2, '0')}';
   }
 }
