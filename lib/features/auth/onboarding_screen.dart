@@ -205,8 +205,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     if (_didLoadInitialTheme) return;
     final themeProvider = context.read<ThemeProvider>();
     _selectedThemePresetId = themeProvider.onboardingCurrentThemeId;
-    themeProvider.previewTheme(_selectedThemePresetId);
     _didLoadInitialTheme = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      themeProvider.previewTheme(_selectedThemePresetId);
+    });
   }
 
   @override

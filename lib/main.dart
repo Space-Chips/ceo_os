@@ -89,10 +89,14 @@ class _CeoOsAppState extends State<CeoOsApp> {
   }
 
   Future<void> _initHomeWidgetLinks() async {
-    await CeoHomeWidgetService.ensureInitialized();
-    final initial = await HomeWidget.initiallyLaunchedFromHomeWidget();
-    _handleHomeWidgetUri(initial);
-    _homeWidgetClicks = HomeWidget.widgetClicked.listen(_handleHomeWidgetUri);
+    try {
+      await CeoHomeWidgetService.ensureInitialized();
+      final initial = await HomeWidget.initiallyLaunchedFromHomeWidget();
+      _handleHomeWidgetUri(initial);
+      _homeWidgetClicks = HomeWidget.widgetClicked.listen(_handleHomeWidgetUri);
+    } on MissingPluginException {
+      // Desktop targets do not provide the HomeWidget plugin.
+    }
   }
 
   void _handleHomeWidgetUri(Uri? uri) {
