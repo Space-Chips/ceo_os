@@ -18,8 +18,6 @@ import java.io.ByteArrayOutputStream
 import java.util.Locale
 
 open class MainActivity : FlutterActivity() {
-    private val channelName = "com.ceoos.app/focus"
-
     private enum class AndroidProtectionStep {
         OVERLAY,
         ACCESSIBILITY,
@@ -221,10 +219,32 @@ open class MainActivity : FlutterActivity() {
         }
     }
 
+    private fun launchExternalApp(packageName: String?): Boolean {
+        val targetPackage = packageName?.trim().orEmpty()
+        if (targetPackage.isEmpty() || targetPackage == this.packageName) {
+            return false
+        }
+        val intent = packageManager.getLaunchIntentForPackage(targetPackage)
+            ?.apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
+            }
+            ?: return false
+        startActivity(intent)
+        return true
+    }
+
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
 
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, channelName)
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.ceoos.app/app_env")
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "isTestFlight" -> result.success(false)
+                    else -> result.notImplemented()
+                }
+            }
+
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.ceoos.app/focus")
             .setMethodCallHandler { call, result ->
                 when (call.method) {
                     "requestPermissions" -> result.success(openNextProtectionSettings())
@@ -257,6 +277,9 @@ open class MainActivity : FlutterActivity() {
                         result.success(null)
                     }
                     "listLaunchableApps" -> listLaunchableApps(result)
+                    "launchExternalApp" -> {
+                        result.success(launchExternalApp(call.argument<String>("packageName")))
+                    }
                     "getBlockingDebugState" -> result.success(BlockingAccessibilityService.debugSnapshot())
                     "startShield" -> {
                         val packages = call.argument<List<String>>("packages") ?: emptyList()
