@@ -9,6 +9,7 @@ import 'package:home_widget/home_widget.dart';
 import 'package:provider/provider.dart';
 
 import '../../components/components.dart';
+import '../../core/models/block_list_model.dart';
 import '../../core/models/user_models.dart';
 import '../../core/providers/focus_provider.dart';
 import '../../core/providers/language_provider.dart';
@@ -18,8 +19,10 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/utils/android_protection_disclosure.dart';
 import '../calendar/add_event_sheet.dart';
+import 'block_list_sheet.dart';
 import 'focus_preparation/focus_preparation_flow_view.dart';
 import 'focus_preparation/focus_preparation_models.dart';
+import 'focus_starter_sheet.dart';
 import '../../components/ambient_backdrop.dart';
 import '../../components/glass_card.dart';
 import '../../components/liquid_button.dart';
@@ -154,6 +157,28 @@ class _FocusScreenState extends State<FocusScreen> {
         preset: AddEventPreset.focusPlan,
         presetDurationMinutes: provider.focusDurationMinutes,
       ),
+    );
+  }
+
+  void _openStarterSheet() {
+    showCupertinoModalPopup<void>(
+      context: context,
+      builder: (_) => const FocusStarterSheet(),
+    );
+  }
+
+  void _openBlockListSheet(FocusProvider provider) {
+    final activeId = provider.activeBlockListId;
+    BlockList? activeList;
+    for (final list in provider.blockLists) {
+      if (list.id == activeId) {
+        activeList = list;
+        break;
+      }
+    }
+    showCupertinoModalPopup<void>(
+      context: context,
+      builder: (_) => BlockListSheet(blockList: activeList),
     );
   }
 
@@ -716,8 +741,18 @@ class _FocusScreenState extends State<FocusScreen> {
         ),
         const SizedBox(height: 12),
         _FocusSecondaryButton(
+          label: language.t('focus_starter_enter_focus'),
+          onTap: _openStarterSheet,
+        ),
+        const SizedBox(height: 12),
+        _FocusSecondaryButton(
           label: language.t('focus_plan'),
           onTap: () => _openPlanSheet(provider),
+        ),
+        const SizedBox(height: 12),
+        _FocusSecondaryButton(
+          label: 'BLOCK LIST',
+          onTap: () => _openBlockListSheet(provider),
         ),
         if (!provider.isAuthorized) ...[
           const SizedBox(height: 8),

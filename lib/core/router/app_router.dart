@@ -23,6 +23,7 @@ import '../../features/auth/onboarding_screen.dart';
 import '../../features/control_center_setup/control_center_setup_screen.dart';
 import '../../features/home/home_screen.dart';
 import '../../features/home/stats_screen.dart';
+import '../../features/launcher/launcher_screen.dart';
 import '../../features/debug/database_debug_screen.dart';
 import '../../features/debug/blocking_debug_screen.dart';
 import '../../features/debug/theme_preview_screen.dart';
@@ -39,6 +40,7 @@ import '../../features/legacy/screen_time_screen.dart';
 import '../../features/widget_configuration/widget_configuration_screen.dart';
 import '../../features/premium/upgrade_screen.dart';
 import '../../features/screen_time_manager/screen_time_manager_screen.dart';
+import '../../features/screen_time_manager/blocking_screen.dart';
 import '../../features/screen_time_manager/family_time_screen.dart';
 import '../../features/screen_time_setup/screen_time_setup_screen.dart';
 import '../../features/legacy/event_types_screen.dart';
@@ -96,6 +98,21 @@ class AppRouter {
             final edit = state.uri.queryParameters['edit'] == 'true';
             return ControlCenterSetupScreen(isEditing: edit);
           },
+        ),
+        GoRoute(
+          path: '/launcher',
+          builder: (context, state) => const LauncherScreen(),
+        ),
+        GoRoute(
+          path: '/launcher/block',
+          builder: (context, state) {
+            final payload = state.extra as LauncherBlockPayload;
+            return LauncherBlockScreen(payload: payload);
+          },
+        ),
+        GoRoute(
+          path: '/screen-time-manager/blocking',
+          builder: (context, state) => const BlockingScreen(),
         ),
 
         // ── Habit Completion (Full Screen) ──

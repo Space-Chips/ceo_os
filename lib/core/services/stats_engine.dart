@@ -7,6 +7,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/advanced_stats_models.dart';
 import '../models/stats_event_models.dart';
 import '../repositories/advanced_stats_repository.dart';
+import 'stats_heatmap_generator.dart';
+import 'stats_insight_generator.dart';
 
 class StatsEngine {
   StatsEngine._internal();
@@ -16,6 +18,8 @@ class StatsEngine {
   factory StatsEngine() => instance;
 
   final AdvancedStatsRepository _repository = AdvancedStatsRepository();
+  final StatsHeatmapGenerator _heatmapGenerator = const StatsHeatmapGenerator();
+  final StatsInsightGenerator _insightGenerator = const StatsInsightGenerator();
 
   static const String _historyCacheKey = 'advanced_stats_history_events_v1';
   static const String _historyHydratedAtKey = 'advanced_stats_hydrated_at_v1';
@@ -284,15 +288,23 @@ class StatsEngine {
     final monthly =
         stored.monthly ?? MonthlyStats(createdBy: '', month: monthKey);
     final lifetime = stored.lifetime ?? LifetimeStats.empty(createdBy: '');
+    final fallbackDays = List.generate(
+      30,
+      (index) => index == 29
+          ? daily
+          : DailyStats.empty(
+              createdBy: daily.createdBy,
+              date: today.subtract(Duration(days: 29 - index)),
+            ),
+    );
     final heatmap = stored.heatmap.isNotEmpty
         ? stored.heatmap
-        : List.generate(
-            30,
-            (index) => HeatmapCell.fromScore(
-              today.subtract(Duration(days: 29 - index)),
-              index == 29 ? daily.attentionScore : 0,
-            ),
-          );
+        : _heatmapGenerator.build(fallbackDays);
+    final generatedHeatmapCard = _heatmapGenerator.buildCard(fallbackDays);
+    final generatedInsights = _insightGenerator.build(
+      weekly: weekly,
+      recentDaily: fallbackDays,
+    );
 
     return AdvancedStatsSnapshot(
       daily: daily,
@@ -339,17 +351,13 @@ class StatsEngine {
       ceoCard: stored.ceoCard ?? const CeoCompletionCard(),
       heatmapCard:
           stored.heatmapCard ??
-          HeatmapShareCard(
-            bestScore: heatmap.fold<int>(
-              0,
-              (best, cell) => cell.score > best ? cell.score : best,
-            ),
-            consistencyPercent: weekly.consistencyPercent,
-            cells: heatmap,
-          ),
+          generatedHeatmapCard ??
+          HeatmapShareCard(bestScore: 0, consistencyPercent: 0, cells: heatmap),
       milestoneCards: stored.milestoneCards,
       insights: stored.insights.isNotEmpty
           ? stored.insights
+          : generatedInsights.isNotEmpty
+          ? generatedInsights
           : const [
               WeeklyInsight(
                 title: 'Not enough data yet',

@@ -14,6 +14,7 @@ import 'core/providers/task_provider.dart';
 import 'core/providers/habit_provider.dart';
 import 'core/providers/focus_provider.dart';
 import 'core/providers/ceo_mode_provider.dart';
+import 'core/providers/launcher_provider.dart';
 import 'core/providers/language_provider.dart';
 import 'features/setup/setup_flow_controller.dart';
 import 'features/screen_time_setup/screen_time_setup_controller.dart';
@@ -57,6 +58,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => HabitProvider()),
         ChangeNotifierProvider(create: (_) => FocusProvider()),
         ChangeNotifierProvider(create: (_) => CeoModeProvider()),
+        ChangeNotifierProvider(create: (_) => LauncherProvider()),
         ChangeNotifierProvider(create: (_) => SetupFlowController()),
         ChangeNotifierProvider(create: (_) => ScreenTimeSetupController()),
       ],

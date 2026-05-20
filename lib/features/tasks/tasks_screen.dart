@@ -12,6 +12,7 @@ import '../../core/repositories/premium_repository.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import 'add_task_sheet.dart';
+import 'task_detail_sheet.dart';
 import 'task_importance_theme.dart';
 import '../../components/ambient_backdrop.dart';
 import '../../components/glass_card.dart';
@@ -83,6 +84,24 @@ class _TasksScreenState extends State<TasksScreen> {
     showCupertinoModalPopup(
       context: context,
       builder: (_) => const AddTaskSheet(),
+    );
+  }
+
+  Future<void> _showTaskDetail(ParetoTask task) async {
+    final provider = context.read<TaskProvider>();
+    await showCupertinoModalPopup<void>(
+      context: context,
+      builder: (_) => TaskDetailSheet(
+        task: task,
+        onToggleComplete: () async {
+          if (task.completed) {
+            await provider.uncompleteTask(task.id);
+          } else {
+            await provider.completeTask(task.id);
+          }
+        },
+        onDelete: () => provider.deleteTask(task.id),
+      ),
     );
   }
 
@@ -331,8 +350,7 @@ class _TasksScreenState extends State<TasksScreen> {
                                   topFive: topFive,
                                   others: others,
                                   onAdd: _showAddTask,
-                                  onComplete: (task) =>
-                                      prov.completeTask(task.id),
+                                  onOpenTask: _showTaskDetail,
                                 )
                               : _activeTab == _TaskTab.matrix
                               ? _buildMatrixTab(
@@ -342,8 +360,7 @@ class _TasksScreenState extends State<TasksScreen> {
                                   slowImportant: slowImportant.toList(),
                                   quickNotImportant: quickNotImportant.toList(),
                                   slowNotImportant: slowNotImportant.toList(),
-                                  onComplete: (task) =>
-                                      prov.completeTask(task.id),
+                                  onOpenTask: _showTaskDetail,
                                 )
                               : _buildHistoryTab(
                                   key: const ValueKey('history'),
@@ -450,7 +467,7 @@ class _TasksScreenState extends State<TasksScreen> {
     required List<ParetoTask> topFive,
     required List<ParetoTask> others,
     required Future<void> Function() onAdd,
-    required Future<void> Function(ParetoTask task) onComplete,
+    required Future<void> Function(ParetoTask task) onOpenTask,
   }) {
     return ListView(
       key: key,
@@ -521,7 +538,7 @@ class _TasksScreenState extends State<TasksScreen> {
                 language: language,
                 task: task,
                 widthFactor: widthFactor,
-                onTap: () => onComplete(task),
+                onTap: () => onOpenTask(task),
               ),
             );
           }),
@@ -552,7 +569,7 @@ class _TasksScreenState extends State<TasksScreen> {
                 rank: idx + 6,
                 language: language,
                 task: task,
-                onTap: () => onComplete(task),
+                onTap: () => onOpenTask(task),
               ),
             );
           }),
@@ -850,7 +867,7 @@ class _TasksScreenState extends State<TasksScreen> {
     required List<ParetoTask> slowImportant,
     required List<ParetoTask> quickNotImportant,
     required List<ParetoTask> slowNotImportant,
-    required Future<void> Function(ParetoTask task) onComplete,
+    required Future<void> Function(ParetoTask task) onOpenTask,
   }) {
     return ListView(
       key: key,
@@ -881,7 +898,7 @@ class _TasksScreenState extends State<TasksScreen> {
                 accent: AppColors.error.withValues(alpha: 0.35),
                 overlay: AppColors.error.withValues(alpha: 0.08),
                 tasks: quickImportant,
-                onTapTask: onComplete,
+                onTapTask: onOpenTask,
               ),
             ),
             const SizedBox(width: 14),
@@ -893,7 +910,7 @@ class _TasksScreenState extends State<TasksScreen> {
                 accent: AppColors.activeBorder,
                 overlay: AppColors.accentSurfaceSoft.withValues(alpha: 0.5),
                 tasks: slowImportant,
-                onTapTask: onComplete,
+                onTapTask: onOpenTask,
               ),
             ),
           ],
@@ -909,7 +926,7 @@ class _TasksScreenState extends State<TasksScreen> {
                 accent: AppColors.warning.withValues(alpha: 0.35),
                 overlay: AppColors.warning.withValues(alpha: 0.08),
                 tasks: quickNotImportant,
-                onTapTask: onComplete,
+                onTapTask: onOpenTask,
               ),
             ),
             const SizedBox(width: 14),
@@ -921,7 +938,7 @@ class _TasksScreenState extends State<TasksScreen> {
                 accent: AppColors.borderStrong,
                 overlay: AppColors.label.withValues(alpha: 0.04),
                 tasks: slowNotImportant,
-                onTapTask: onComplete,
+                onTapTask: onOpenTask,
               ),
             ),
           ],
