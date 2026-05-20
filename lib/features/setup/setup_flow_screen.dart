@@ -12,7 +12,6 @@ import '../../core/providers/language_provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import 'setup_flow_controller.dart';
-import '../control_center_setup/control_center_setup_models.dart';
 
 class SetupFlowScreen extends StatefulWidget {
   const SetupFlowScreen({super.key});
@@ -34,6 +33,10 @@ class _SetupFlowScreenState extends State<SetupFlowScreen>
 
   static const List<SetupStep> _stepOrder = [
     SetupStep.welcome,
+    SetupStep.reflection,
+    SetupStep.loading,
+    SetupStep.insight,
+    SetupStep.overview,
     SetupStep.accessibility,
     SetupStep.usageAccess,
     SetupStep.overlay,
@@ -99,10 +102,9 @@ class _SetupFlowScreenState extends State<SetupFlowScreen>
         if (controller.isLoading) {
           return const _SetupLoadingScreen();
         }
-        final stepIndex = _stepOrder.indexOf(controller.currentStep).clamp(
-          0,
-          _stepOrder.length - 1,
-        );
+        final stepIndex = _stepOrder
+            .indexOf(controller.currentStep)
+            .clamp(0, _stepOrder.length - 1);
         if (_lastStep != controller.currentStep) {
           _transitionDirection = stepIndex >= _lastStepIndex ? 1 : -1;
           _lastStep = controller.currentStep;
@@ -164,17 +166,18 @@ class _SetupFlowScreenState extends State<SetupFlowScreen>
                                             _t('setup_back_in_wakeapp'),
                                             style: AppTypography.footnote
                                                 .copyWith(
-                                              color: AppColors.label,
-                                              fontWeight: FontWeight.w600,
-                                            ),
+                                                  color: AppColors.label,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
                                           ),
                                           const SizedBox(height: 2),
                                           Text(
                                             _t('setup_syncing_permission'),
                                             style: AppTypography.caption1
                                                 .copyWith(
-                                              color: AppColors.secondaryLabel,
-                                            ),
+                                                  color:
+                                                      AppColors.secondaryLabel,
+                                                ),
                                           ),
                                         ],
                                       ),
@@ -282,6 +285,8 @@ class _SetupFlowScreenState extends State<SetupFlowScreen>
           title: 'Show the block screen instantly',
           subtitle:
               'Screen Time uses the overlay permission so blocked apps are stopped the moment they open.',
+          icon: CupertinoIcons.rectangle_on_rectangle_angled,
+          accent: AppColors.primaryOrange,
           instructions: const [
             'Tap "Open settings".',
             'Find Screen Time in the list.',
@@ -300,6 +305,8 @@ class _SetupFlowScreenState extends State<SetupFlowScreen>
           title: 'Measure usage accurately',
           subtitle:
               'Usage access lets Screen Time read app activity so daily limits and focus rules stay accurate.',
+          icon: CupertinoIcons.chart_bar_alt_fill,
+          accent: AppColors.accentIcon,
           instructions: const [
             'Tap "Open settings".',
             'Find Screen Time in the list.',
@@ -318,6 +325,8 @@ class _SetupFlowScreenState extends State<SetupFlowScreen>
           title: 'Block apps without delay',
           subtitle:
               'Accessibility helps Screen Time detect the active app so blocking can happen instantly.',
+          icon: CupertinoIcons.hand_raised_fill,
+          accent: AppColors.warning,
           reassurance:
               'Screen Time does not read your messages or capture your screen. It only uses this access to enforce focus protections on-device.',
           instructions: const [
@@ -431,10 +440,7 @@ class _GlowBlob extends StatelessWidget {
       height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        gradient: RadialGradient(
-          colors: colors,
-          stops: const [0.0, 1.0],
-        ),
+        gradient: RadialGradient(colors: colors, stops: const [0.0, 1.0]),
       ),
     );
   }
@@ -460,10 +466,7 @@ class _SetupStepScaffold extends StatelessWidget {
       child: Column(
         children: [
           if (progressStep != null) ...[
-            _SetupProgressBar(
-              step: progressStep!,
-              total: progressTotal,
-            ),
+            _SetupProgressBar(step: progressStep!, total: progressTotal),
             const SizedBox(height: 14),
           ],
           Expanded(
@@ -499,9 +502,7 @@ class _WelcomeStep extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             "We'll help you set up focus protections so distractions are blocked the moment they appear.",
-            style: AppTypography.body.copyWith(
-              color: AppColors.secondaryLabel,
-            ),
+            style: AppTypography.body.copyWith(color: AppColors.secondaryLabel),
           ),
           const SizedBox(height: 24),
           GlassCard(
@@ -565,9 +566,7 @@ class _ReflectionStep extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             'Roughly how much time do you spend on your phone each day?',
-            style: AppTypography.body.copyWith(
-              color: AppColors.secondaryLabel,
-            ),
+            style: AppTypography.body.copyWith(color: AppColors.secondaryLabel),
           ),
           const SizedBox(height: 20),
           Wrap(
@@ -637,9 +636,7 @@ class _LoadingInsightStepState extends State<_LoadingInsightStep> {
           const SizedBox(height: 10),
           Text(
             "We're setting up your Screen Time baseline.",
-            style: AppTypography.body.copyWith(
-              color: AppColors.secondaryLabel,
-            ),
+            style: AppTypography.body.copyWith(color: AppColors.secondaryLabel),
           ),
           const SizedBox(height: 28),
           ClipRRect(
@@ -670,8 +667,7 @@ class _InsightStep extends StatelessWidget {
         "Great baseline. We'll help you keep your focus sessions clean.",
       '2–4 hours' =>
         'Small adjustments can free up big chunks of focused time.',
-      '4–6 hours' =>
-        "You're close to reclaiming a full work block every day.",
+      '4–6 hours' => "You're close to reclaiming a full work block every day.",
       '6+ hours' =>
         'You can win back hours a week with a few focused sessions.',
       _ => "Let's build a calmer focus routine together.",
@@ -685,9 +681,7 @@ class _InsightStep extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             message,
-            style: AppTypography.body.copyWith(
-              color: AppColors.secondaryLabel,
-            ),
+            style: AppTypography.body.copyWith(color: AppColors.secondaryLabel),
           ),
           const SizedBox(height: 22),
           GlassCard(
@@ -735,6 +729,7 @@ class _OverviewStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.read<LanguageProvider>().t;
     return _SetupStepScaffold(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -743,9 +738,7 @@ class _OverviewStep extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             'A few quick permissions are required so blocking is instant and reliable.',
-            style: AppTypography.body.copyWith(
-              color: AppColors.secondaryLabel,
-            ),
+            style: AppTypography.body.copyWith(color: AppColors.secondaryLabel),
           ),
           const SizedBox(height: 22),
           GlassCard(
@@ -759,10 +752,7 @@ class _OverviewStep extends StatelessWidget {
                     label: 'Display over other apps',
                     done: overlayGranted,
                   ),
-                  _ChecklistRow(
-                    label: 'Usage access',
-                    done: usageGranted,
-                  ),
+                  _ChecklistRow(label: 'Usage access', done: usageGranted),
                   _ChecklistRow(
                     label: 'Accessibility service',
                     done: accessibilityGranted,
@@ -813,6 +803,7 @@ class _PermissionStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.read<LanguageProvider>().t;
     return _SetupStepScaffold(
       progressStep: stepIndex,
       child: Column(
@@ -851,7 +842,9 @@ class _PermissionStep extends StatelessWidget {
                 Align(
                   alignment: Alignment.centerRight,
                   child: _StatusPill(
-                    text: isGranted ? t('setup_enabled') : t('setup_not_enabled'),
+                    text: isGranted
+                        ? t('setup_enabled')
+                        : t('setup_not_enabled'),
                     color: isGranted ? AppColors.success : AppColors.warning,
                   ),
                 ),
@@ -899,8 +892,7 @@ class _PermissionStep extends StatelessWidget {
                 children: [
                   Text(t('setup_switch_locked'), style: AppTypography.headline),
                   const SizedBox(height: 8),
-                  for (final line in troubleshoot)
-                    _BulletLine(text: line),
+                  for (final line in troubleshoot) _BulletLine(text: line),
                 ],
               ),
             ),
@@ -1019,9 +1011,7 @@ class _SuccessHero extends StatelessWidget {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: AppColors.success.withValues(alpha: 0.18),
-            border: Border.all(
-              color: AppColors.success.withValues(alpha: 0.5),
-            ),
+            border: Border.all(color: AppColors.success.withValues(alpha: 0.5)),
           ),
           child: Icon(
             CupertinoIcons.checkmark_seal_fill,
@@ -1055,9 +1045,7 @@ class _StepProgressPill extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: AppTypography.caption1.copyWith(
-          color: AppColors.secondaryLabel,
-        ),
+        style: AppTypography.caption1.copyWith(color: AppColors.secondaryLabel),
       ),
     );
   }
@@ -1152,10 +1140,7 @@ class _IconOrb extends StatelessWidget {
             AppColors.glassHighlightSoft.withValues(alpha: 0.12),
           ],
         ),
-        border: Border.all(
-          color: accent.withValues(alpha: 0.35),
-          width: 1,
-        ),
+        border: Border.all(color: accent.withValues(alpha: 0.35), width: 1),
         boxShadow: [
           BoxShadow(
             color: accent.withValues(alpha: 0.18),

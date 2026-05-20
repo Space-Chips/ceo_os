@@ -7,6 +7,10 @@ import '../../core/services/focus_service.dart';
 
 enum SetupStep {
   welcome,
+  reflection,
+  loading,
+  insight,
+  overview,
   usageAccess,
   accessibility,
   overlay,
@@ -17,12 +21,14 @@ class SetupFlowController extends ChangeNotifier {
   static const _prefSetupComplete = 'screen_time_setup_complete';
   static const _prefSetupHasRun = 'screen_time_setup_has_run';
   static const _prefSetupStep = 'screen_time_setup_step';
+  static const _prefReflectionSelection = 'screen_time_reflection_selection';
   final FocusService _focusService;
   SharedPreferences? _prefs;
   bool _initialized = false;
   bool _isLoading = true;
   bool _setupComplete = false;
   bool _setupHasRun = false;
+  String? _reflectionSelection;
   SetupStep _currentStep = SetupStep.welcome;
   FocusPermissionState _overlayState = FocusPermissionState.unknown;
   FocusPermissionState _usageState = FocusPermissionState.unknown;
@@ -35,6 +41,7 @@ class SetupFlowController extends ChangeNotifier {
   bool get isSetupComplete => _setupComplete;
   bool get isSetupRequired => _requiresAndroidSetup && !allPermissionsGranted;
   bool get hasRunBefore => _setupHasRun;
+  String? get reflectionSelection => _reflectionSelection;
   SetupStep get currentStep => _currentStep;
   bool get overlayGranted => _overlayState == FocusPermissionState.approved;
   bool get usageGranted => _usageState == FocusPermissionState.approved;
@@ -60,6 +67,7 @@ class SetupFlowController extends ChangeNotifier {
     _prefs = await SharedPreferences.getInstance();
     _setupComplete = _prefs?.getBool(_prefSetupComplete) ?? false;
     _setupHasRun = _prefs?.getBool(_prefSetupHasRun) ?? false;
+    _reflectionSelection = _prefs?.getString(_prefReflectionSelection);
     await refreshPermissionStates();
 
     if (allPermissionsGranted) {
@@ -80,17 +88,23 @@ class SetupFlowController extends ChangeNotifier {
   }
 
   Future<void> openOverlaySettings() async {
-    await _focusService.setPendingPermissionReturn(AndroidProtectionStep.overlay);
+    await _focusService.setPendingPermissionReturn(
+      AndroidProtectionStep.overlay,
+    );
     await _focusService.openOverlaySettings();
   }
 
   Future<void> openUsageAccessSettings() async {
-    await _focusService.setPendingPermissionReturn(AndroidProtectionStep.usageAccess);
+    await _focusService.setPendingPermissionReturn(
+      AndroidProtectionStep.usageAccess,
+    );
     await _focusService.openUsageAccessSettings();
   }
 
   Future<void> openAccessibilitySettings() async {
-    await _focusService.setPendingPermissionReturn(AndroidProtectionStep.accessibility);
+    await _focusService.setPendingPermissionReturn(
+      AndroidProtectionStep.accessibility,
+    );
     await _focusService.openAccessibilitySettings();
   }
 
@@ -121,6 +135,12 @@ class SetupFlowController extends ChangeNotifier {
   Future<void> jumpTo(SetupStep step) async {
     _currentStep = step;
     await _persistStep();
+    notifyListeners();
+  }
+
+  Future<void> setReflectionSelection(String selection) async {
+    _reflectionSelection = selection;
+    await _prefs?.setString(_prefReflectionSelection, selection);
     notifyListeners();
   }
 
@@ -161,6 +181,11 @@ class SetupFlowController extends ChangeNotifier {
     if (!_setupHasRun) return SetupStep.welcome;
     if (allPermissionsGranted) return SetupStep.success;
     if (savedStep != null &&
+        _orderedSteps.contains(savedStep) &&
+        !isPermissionStep(savedStep)) {
+      return savedStep;
+    }
+    if (savedStep != null &&
         isPermissionStep(savedStep) &&
         !isPermissionGrantedFor(savedStep)) {
       return savedStep;
@@ -189,13 +214,6 @@ class SetupFlowController extends ChangeNotifier {
 
   SetupStep? _stepFromName(String? raw) {
     if (raw == null || raw.isEmpty) return null;
-    switch (raw) {
-      case 'reflection':
-      case 'loading':
-      case 'insight':
-      case 'overview':
-        return SetupStep.welcome;
-    }
     for (final step in SetupStep.values) {
       if (step.name == raw) return step;
     }
@@ -204,6 +222,10 @@ class SetupFlowController extends ChangeNotifier {
 
   List<SetupStep> get _orderedSteps => const [
     SetupStep.welcome,
+    SetupStep.reflection,
+    SetupStep.loading,
+    SetupStep.insight,
+    SetupStep.overview,
     SetupStep.accessibility,
     SetupStep.usageAccess,
     SetupStep.overlay,
