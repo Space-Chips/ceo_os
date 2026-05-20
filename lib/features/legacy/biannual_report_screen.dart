@@ -125,10 +125,7 @@ class _BiannualReportScreenState extends State<BiannualReportScreen> {
         leading: CupertinoButton(
           padding: EdgeInsets.zero,
           onPressed: () => context.go('/home'),
-          child: const Icon(
-            CupertinoIcons.back,
-            color: AppColors.primaryOrange,
-          ),
+          child: Icon(CupertinoIcons.back, color: AppColors.primaryOrange),
         ),
         middle: const NeoMonoText(
           'BIANNUAL_REPORT',
@@ -148,7 +145,7 @@ class _BiannualReportScreenState extends State<BiannualReportScreen> {
         border: null,
       ),
       child: _loading
-          ? const Center(
+          ? Center(
               child: CupertinoActivityIndicator(color: AppColors.primaryOrange),
             )
           : SafeArea(

@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
@@ -92,7 +91,9 @@ class _NotesScreenState extends State<NotesScreen> {
     final lines = normalized.split('\n');
     if (lines.isEmpty) return const _SplitNoteContent(tagLine: '', body: '');
 
-    final firstNonEmptyIndex = lines.indexWhere((line) => line.trim().isNotEmpty);
+    final firstNonEmptyIndex = lines.indexWhere(
+      (line) => line.trim().isNotEmpty,
+    );
     if (firstNonEmptyIndex == -1) {
       return const _SplitNoteContent(tagLine: '', body: '');
     }
@@ -107,10 +108,7 @@ class _NotesScreenState extends State<NotesScreen> {
       remaining.removeAt(0);
     }
 
-    return _SplitNoteContent(
-      tagLine: firstLine,
-      body: remaining.join('\n'),
-    );
+    return _SplitNoteContent(tagLine: firstLine, body: remaining.join('\n'));
   }
 
   String _normalizeTagLine(String raw) {
@@ -123,10 +121,9 @@ class _NotesScreenState extends State<NotesScreen> {
     final tagLine = _normalizeTagLine(_tagEditor.text);
     final body = _editor.text.trimRight();
     final photoPath = _notePhotoPath;
-    final photoLine =
-        (photoPath != null && photoPath.trim().isNotEmpty)
-            ? '$_photoTokenPrefix${photoPath.trim()}$_photoTokenSuffix'
-            : '';
+    final photoLine = (photoPath != null && photoPath.trim().isNotEmpty)
+        ? '$_photoTokenPrefix${photoPath.trim()}$_photoTokenSuffix'
+        : '';
 
     final segments = <String>[];
     if (tagLine.isNotEmpty) segments.add(tagLine);
@@ -152,9 +149,7 @@ class _NotesScreenState extends State<NotesScreen> {
 
     final notes = await _repo.getNotes();
     notes.sort(
-      (a, b) => _effectiveUpdateDate(
-        b,
-      ).compareTo(_effectiveUpdateDate(a)),
+      (a, b) => _effectiveUpdateDate(b).compareTo(_effectiveUpdateDate(a)),
     );
 
     if (!mounted) return;
@@ -240,9 +235,7 @@ class _NotesScreenState extends State<NotesScreen> {
 
       final updatedList = [..._notes.where((n) => n.id != updated.id), updated]
         ..sort(
-          (a, b) => _effectiveUpdateDate(
-            b,
-          ).compareTo(_effectiveUpdateDate(a)),
+          (a, b) => _effectiveUpdateDate(b).compareTo(_effectiveUpdateDate(a)),
         );
 
       if (!mounted) return;
@@ -304,8 +297,7 @@ class _NotesScreenState extends State<NotesScreen> {
     _setTagText(parts.tagLine);
     _setEditorText(parts.body);
     _lastSavedText = _composeNoteContent();
-    _lastSavedTitle =
-        _selected!.title ?? _deriveTitleFrom(_lastSavedText);
+    _lastSavedTitle = _selected!.title ?? _deriveTitleFrom(_lastSavedText);
   }
 
   Future<void> _newNoteDraft() async {
@@ -344,9 +336,7 @@ class _NotesScreenState extends State<NotesScreen> {
 
     final remaining = _notes.where((n) => n.id != note.id).toList()
       ..sort(
-        (a, b) => _effectiveUpdateDate(
-          b,
-        ).compareTo(_effectiveUpdateDate(a)),
+        (a, b) => _effectiveUpdateDate(b).compareTo(_effectiveUpdateDate(a)),
       );
 
     setState(() {
@@ -423,7 +413,8 @@ class _NotesScreenState extends State<NotesScreen> {
     _setEditorFromSelected();
   }
 
-  DateTime _effectiveUpdateDate(Note note) => note.updatedDate ?? note.createdAt;
+  DateTime _effectiveUpdateDate(Note note) =>
+      note.updatedDate ?? note.createdAt;
 
   String _deriveTitleFrom(String text) {
     final lines = text
@@ -434,7 +425,8 @@ class _NotesScreenState extends State<NotesScreen> {
     if (lines.isEmpty) return 'Untitled';
 
     for (final line in lines) {
-      if (line.startsWith(_photoTokenPrefix) && line.endsWith(_photoTokenSuffix)) {
+      if (line.startsWith(_photoTokenPrefix) &&
+          line.endsWith(_photoTokenSuffix)) {
         continue;
       }
       if (!line.startsWith('#')) {
@@ -455,7 +447,11 @@ class _NotesScreenState extends State<NotesScreen> {
 
     int firstNonEmpty = lines.indexWhere((l) => l.trim().isNotEmpty);
     if (firstNonEmpty == -1) {
-      return _ParsedNoteContent(tagLine: base.tagLine, body: '', photoPath: null);
+      return _ParsedNoteContent(
+        tagLine: base.tagLine,
+        body: '',
+        photoPath: null,
+      );
     }
 
     String? photoPath;
@@ -580,12 +576,9 @@ class _NotesScreenState extends State<NotesScreen> {
         break;
     }
 
-    return list.where(_matchesSearch).toList()
-      ..sort(
-        (a, b) => _effectiveUpdateDate(
-          b,
-        ).compareTo(_effectiveUpdateDate(a)),
-      );
+    return list.where(_matchesSearch).toList()..sort(
+      (a, b) => _effectiveUpdateDate(b).compareTo(_effectiveUpdateDate(a)),
+    );
   }
 
   List<Note> get _filteredNotes => _filteredNotesFrom(_notes);
@@ -593,9 +586,7 @@ class _NotesScreenState extends State<NotesScreen> {
   List<Note> get _recentNotes {
     final notes = [..._notes];
     notes.sort(
-      (a, b) => _effectiveUpdateDate(
-        b,
-      ).compareTo(_effectiveUpdateDate(a)),
+      (a, b) => _effectiveUpdateDate(b).compareTo(_effectiveUpdateDate(a)),
     );
     return notes.take(5).toList();
   }
@@ -668,12 +659,17 @@ class _NotesScreenState extends State<NotesScreen> {
                     _topBar(),
                     if (_searchOpen) _searchBar(),
                     Expanded(
-                        child: Row(
+                      child: Row(
                         children: [
                           _leftSidebar(tagTree, width: sidebarWidth),
                           Expanded(
                             child: Padding(
-                              padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
+                              padding: const EdgeInsets.fromLTRB(
+                                10,
+                                10,
+                                10,
+                                10,
+                              ),
                               child: Stack(
                                 children: [
                                   GlassCard(
@@ -699,21 +695,25 @@ class _NotesScreenState extends State<NotesScreen> {
                                             Text(
                                               selected == null
                                                   ? 'NEW NOTE'
-                                                  : "LAST EDIT: ${DateFormat('MMM d").format(_effectiveUpdateDate(selected))}',
-                                              style: AppTypography.mono.copyWith(
-                                                fontSize: 10,
-                                                color: AppColors.tertiaryLabel,
-                                                letterSpacing: 1.2,
-                                              ),
+                                                  : "LAST EDIT: ${DateFormat('MMM d').format(_effectiveUpdateDate(selected))}",
+                                              style: AppTypography.mono
+                                                  .copyWith(
+                                                    fontSize: 10,
+                                                    color:
+                                                        AppColors.tertiaryLabel,
+                                                    letterSpacing: 1.2,
+                                                  ),
                                             ),
                                             const Spacer(),
                                             if (_saving)
                                               Text(
                                                 'Saving...',
-                                                style: AppTypography.mono.copyWith(
-                                                  fontSize: 10,
-                                                  color: AppColors.primaryOrange,
-                                                ),
+                                                style: AppTypography.mono
+                                                    .copyWith(
+                                                      fontSize: 10,
+                                                      color: AppColors
+                                                          .primaryOrange,
+                                                    ),
                                               ),
                                           ],
                                         ),
@@ -851,12 +851,7 @@ class _NotesScreenState extends State<NotesScreen> {
       width: width,
       decoration: BoxDecoration(
         color: AppColors.sectionBackground.withValues(alpha: 0.5),
-        border: Border(
-          right: BorderSide(
-            color: AppColors.border,
-            width: 1,
-          ),
-        ),
+        border: Border(right: BorderSide(color: AppColors.border, width: 1)),
       ),
       child: ListView(
         padding: const EdgeInsets.fromLTRB(6, 8, 6, 10),
@@ -881,13 +876,9 @@ class _NotesScreenState extends State<NotesScreen> {
                     padding: const EdgeInsets.fromLTRB(8, 8, 8, 7),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(12),
-                      color: active
-                          ? _selectionBg
-                          : AppColors.pillBackground,
+                      color: active ? _selectionBg : AppColors.pillBackground,
                       border: Border.all(
-                        color: active
-                            ? _selectionBorder
-                            : AppColors.pillBorder,
+                        color: active ? _selectionBorder : AppColors.pillBorder,
                         width: 1,
                       ),
                     ),
@@ -903,13 +894,16 @@ class _NotesScreenState extends State<NotesScreen> {
                             fontWeight: FontWeight.w800,
                             color: active
                                 ? _selectionText
-                                : AppColors.secondaryLabel
-                                      .withValues(alpha: 0.86),
+                                : AppColors.secondaryLabel.withValues(
+                                    alpha: 0.86,
+                                  ),
                           ),
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          DateFormat('MMM d').format(_effectiveUpdateDate(note)),
+                          DateFormat(
+                            'MMM d',
+                          ).format(_effectiveUpdateDate(note)),
                           style: AppTypography.mono.copyWith(
                             fontSize: 10,
                             color: AppColors.tertiaryLabel,
@@ -923,10 +917,7 @@ class _NotesScreenState extends State<NotesScreen> {
             }),
             const SizedBox(height: 6),
           ],
-          Container(
-            height: 1,
-            color: AppColors.border,
-          ),
+          Container(height: 1, color: AppColors.border),
           const SizedBox(height: 8),
           _folderRow(
             label: _t('notes_all_notes'),
@@ -934,14 +925,11 @@ class _NotesScreenState extends State<NotesScreen> {
             onTap: _selectAllNotes,
           ),
           const SizedBox(height: 4),
-          ..._topLevelTagPaths(tagTree).map(
-            (tagPath) => _tagTreeItem(tagTree, tagPath, depth: 0),
-          ),
+          ..._topLevelTagPaths(
+            tagTree,
+          ).map((tagPath) => _tagTreeItem(tagTree, tagPath, depth: 0)),
           const SizedBox(height: 8),
-          Container(
-            height: 1,
-            color: AppColors.border,
-          ),
+          Container(height: 1, color: AppColors.border),
           const SizedBox(height: 8),
           _folderRow(
             label: _t('notes_no_tag'),
@@ -965,10 +953,10 @@ class _NotesScreenState extends State<NotesScreen> {
         _filterKind == _NotesFilterKind.tag && _selectedTagPath == tagPath;
     final children = List<String>.from(
       data.childrenByParent[tagPath] ?? const <String>[],
-    )
-      ..sort((a, b) => _tagLabel(a).compareTo(_tagLabel(b)));
+    )..sort((a, b) => _tagLabel(a).compareTo(_tagLabel(b)));
     final hasChildren = children.isNotEmpty;
     final expanded = _expandedTagPaths.contains(tagPath);
+    final count = data.pathToNoteIds[tagPath]?.length ?? 0;
     return Padding(
       padding: EdgeInsets.only(left: 2.0 * depth, bottom: 4),
       child: Column(
@@ -1018,7 +1006,9 @@ class _NotesScreenState extends State<NotesScreen> {
                         color: selected
                             ? AppColors.white
                             : AppColors.secondaryLabel,
-                        fontWeight: selected ? FontWeight.w800 : FontWeight.w700,
+                        fontWeight: selected
+                            ? FontWeight.w800
+                            : FontWeight.w700,
                       ),
                     ),
                   ),
@@ -1035,7 +1025,9 @@ class _NotesScreenState extends State<NotesScreen> {
             ),
           ),
           if (expanded)
-            ...children.map((child) => _tagTreeItem(data, child, depth: depth + 1)),
+            ...children.map(
+              (child) => _tagTreeItem(data, child, depth: depth + 1),
+            ),
         ],
       ),
     );
@@ -1069,7 +1061,9 @@ class _NotesScreenState extends State<NotesScreen> {
           ),
           const Spacer(),
           Icon(
-            expanded ? CupertinoIcons.chevron_down : CupertinoIcons.chevron_right,
+            expanded
+                ? CupertinoIcons.chevron_down
+                : CupertinoIcons.chevron_right,
             size: 12,
             color: AppColors.tertiaryLabel,
           ),
@@ -1136,10 +1130,7 @@ class _NotesScreenState extends State<NotesScreen> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(14),
           color: AppColors.topBarControlBackground,
-          border: Border.all(
-            color: AppColors.topBarControlBorder,
-            width: 1,
-          ),
+          border: Border.all(color: AppColors.topBarControlBorder, width: 1),
         ),
         child: Icon(icon, color: AppColors.secondaryLabel, size: 20),
       ),
@@ -1269,10 +1260,7 @@ class _NotePhotoViewer extends StatelessWidget {
         leading: CupertinoButton(
           padding: EdgeInsets.zero,
           onPressed: () => Navigator.of(context).maybePop(),
-          child: const Icon(
-            CupertinoIcons.xmark,
-            color: CupertinoColors.white,
-          ),
+          child: const Icon(CupertinoIcons.xmark, color: CupertinoColors.white),
         ),
       ),
       child: SafeArea(

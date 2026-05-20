@@ -88,11 +88,13 @@ class AndroidLaunchableApp {
   final String name;
   final String packageName;
   final Uint8List? iconBytes;
+  final bool isBlocked;
 
   const AndroidLaunchableApp({
     required this.name,
     required this.packageName,
     this.iconBytes,
+    this.isBlocked = false,
   });
 
   factory AndroidLaunchableApp.fromJson(Map<Object?, Object?> json) {
@@ -103,6 +105,7 @@ class AndroidLaunchableApp {
           : ((json['packageName'] as String?)?.trim() ?? 'App'),
       packageName: (json['packageName'] as String?)?.trim() ?? '',
       iconBytes: rawIcon is Uint8List ? rawIcon : null,
+      isBlocked: json['isBlocked'] == true || json['blocked'] == true,
     );
   }
 }

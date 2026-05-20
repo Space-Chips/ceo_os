@@ -11,6 +11,8 @@ class PremiumConfig {
   final String? revenuecatOfferingId;
   final String? revenuecatIosApiKey;
   final String? revenuecatAndroidApiKey;
+  final Set<String> premiumThemes;
+  final bool launchPremiumLabelsEnabled;
 
   const PremiumConfig({
     this.paywallEnabled = false,
@@ -22,6 +24,8 @@ class PremiumConfig {
     this.revenuecatOfferingId,
     this.revenuecatIosApiKey,
     this.revenuecatAndroidApiKey,
+    this.premiumThemes = const {},
+    this.launchPremiumLabelsEnabled = false,
   });
 }
 
@@ -43,6 +47,7 @@ class PremiumResolvedAccess {
   bool get canCreateUnlimitedTasks => isPremiumUser;
   bool get canUseExtendedFocus => isPremiumUser;
   bool get canUseExtendedCeoMode => isPremiumUser;
+  bool get launchPremiumActive => isPremiumUser;
 }
 
 @immutable
@@ -66,10 +71,10 @@ class PremiumCheckResult {
   final int? current;
 
   const PremiumCheckResult.allowed()
-      : allowed = true,
-        reason = null,
-        limit = null,
-        current = null;
+    : allowed = true,
+      reason = null,
+      limit = null,
+      current = null;
 
   const PremiumCheckResult.blocked({
     required this.reason,
@@ -83,10 +88,7 @@ class PremiumMessage {
   final String title;
   final String description;
 
-  const PremiumMessage({
-    required this.title,
-    required this.description,
-  });
+  const PremiumMessage({required this.title, required this.description});
 }
 
 PremiumMessage premiumMessageForReason(

@@ -31,6 +31,14 @@ class PremiumRepository {
     );
   }
 
+  Future<PremiumCheckResult> canCreateNote([int currentCount = 0]) async {
+    return const PremiumCheckResult.allowed();
+  }
+
+  Future<PremiumCheckResult> canAccessReports() async {
+    return const PremiumCheckResult.allowed();
+  }
+
   Future<PremiumCheckResult> canStartFocusSession(int minutes) async {
     final runtime = await getRuntime();
     if (runtime.resolved.canUseExtendedFocus ||

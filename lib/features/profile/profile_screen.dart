@@ -15,7 +15,6 @@ import '../../core/providers/language_provider.dart';
 import '../../core/providers/auth_provider.dart';
 import '../../core/providers/ceo_mode_provider.dart';
 import '../../core/providers/focus_provider.dart';
-import '../../core/providers/language_provider.dart';
 import '../../core/repositories/premium_repository.dart';
 import '../../core/providers/theme_provider.dart';
 import '../../core/repositories/settings_repository.dart';
@@ -27,6 +26,7 @@ import '../../core/widgets/rank_art.dart';
 import '../ceo_mode/blackout_preparation/blackout_preparation_flow_view.dart';
 import '../ceo_mode/blackout_preparation/blackout_preparation_models.dart';
 import '../../components/glass_card.dart';
+import '../../components/legal_document_sheet.dart';
 import '../../components/neo_mono_text.dart';
 
 String _localizedRankDisplay(LanguageProvider language, String rawRankName) {
@@ -97,11 +97,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       nativeLabel: 'Bahasa Indonesia',
     ),
     _LanguageOption(code: 'ru', label: 'Russian', nativeLabel: 'Русский'),
-    _LanguageOption(
-      code: 'pt',
-      label: 'Portuguese',
-      nativeLabel: 'Português',
-    ),
+    _LanguageOption(code: 'pt', label: 'Portuguese', nativeLabel: 'Português'),
   ];
 
   final UserRepository _userRepository = UserRepository();
@@ -161,15 +157,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final themeProvider = context.read<ThemeProvider>();
     final runtime = await _premiumRepository.getRuntime();
     final premiumThemeIds = runtime.config.premiumThemes;
-    final orderedPresets = [...themeProvider.presets]..sort((a, b) {
-      final aPremium = premiumThemeIds.contains(a.id);
-      final bPremium = premiumThemeIds.contains(b.id);
-      if (aPremium == bPremium) {
-        return themeProvider.presets.indexOf(a) -
-            themeProvider.presets.indexOf(b);
-      }
-      return aPremium ? 1 : -1;
-    });
+    final orderedPresets = [...themeProvider.presets]
+      ..sort((a, b) {
+        final aPremium = premiumThemeIds.contains(a.id);
+        final bPremium = premiumThemeIds.contains(b.id);
+        if (aPremium == bPremium) {
+          return themeProvider.presets.indexOf(a) -
+              themeProvider.presets.indexOf(b);
+        }
+        return aPremium ? 1 : -1;
+      });
     final selected = await _showSelectionSheet(
       title: _t('interface_appearance'),
       subtitle: _t('profile_theme_picker_subtitle'),
@@ -282,7 +279,116 @@ class _ProfileScreenState extends State<ProfileScreen> {
             onPressed: () => Navigator.of(context).pop(),
             child: Text(
               'OK',
-              style: AppTypography.mono.copyWith(color: AppColors.primaryOrange),
+              style: AppTypography.mono.copyWith(
+                color: AppColors.primaryOrange,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _languageLabel(String code) {
+    final normalized = code.toLowerCase();
+    for (final option in _languages) {
+      if (option.code == normalized) return option.nativeLabel;
+    }
+    return 'English';
+  }
+
+  Future<void> _showLanguagePicker() async {
+    final languageProvider = context.read<LanguageProvider>();
+    final current = languageProvider.languageCode.toLowerCase();
+    final selected = await _showSelectionSheet(
+      title: _t('language'),
+      subtitle: _t('language_picker_subtitle'),
+      options: [
+        for (final option in _languages)
+          _SelectionOption(
+            id: option.code,
+            title: option.nativeLabel,
+            subtitle: option.label,
+            selected: option.code == current,
+            disabled: !_availableLanguageCodes.contains(option.code),
+          ),
+      ],
+    );
+    if (selected == null || selected == current) return;
+    setState(() => _isSettingsSaving = true);
+    try {
+      await languageProvider.setLanguage(selected, persistToCloud: true);
+      await _settingsRepository.updateLanguageCode(selected);
+      await _load();
+    } finally {
+      if (mounted) setState(() => _isSettingsSaving = false);
+    }
+  }
+
+  void _showNotificationChannels() {
+    _showNotificationsInfo();
+  }
+
+  Future<void> _openPrivacyPolicy() {
+    final isFr = context.read<LanguageProvider>().languageCode.startsWith('fr');
+    return LegalDocumentSheet.showPrivacyPolicy(context, isFr: isFr);
+  }
+
+  Future<void> _openTermsOfUse() {
+    final isFr = context.read<LanguageProvider>().languageCode.startsWith('fr');
+    return LegalDocumentSheet.showTermsOfUse(context, isFr: isFr);
+  }
+
+  Future<void> _openPermissionsPolicy() {
+    return _showInfoDialog(
+      title: _t('permissions'),
+      message:
+          'WakeApp uses Screen Time, notifications, calendar, and photo access only for the features you enable.',
+    );
+  }
+
+  Future<void> _openContactSupport() {
+    return _showInfoDialog(
+      title: _t('contact_support'),
+      message:
+          'Contact support from the App Store listing or your account email.',
+    );
+  }
+
+  Future<void> _openDataDeletionFlow() {
+    return _showInfoDialog(
+      title: _t('data_deletion'),
+      message:
+          'To request deletion, contact support from the email linked to this account.',
+    );
+  }
+
+  Future<void> _showInfoDialog({
+    required String title,
+    required String message,
+  }) {
+    return showCupertinoDialog<void>(
+      context: context,
+      builder: (context) => CupertinoAlertDialog(
+        title: Text(title, style: AppTypography.mono),
+        content: Padding(
+          padding: const EdgeInsets.only(top: 8),
+          child: Text(
+            message,
+            style: AppTypography.mono.copyWith(
+              fontSize: 12,
+              color: AppColors.secondaryLabel,
+            ),
+          ),
+        ),
+        actions: [
+          CupertinoDialogAction(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(
+              _t('ok'),
+              style: AppTypography.mono.copyWith(
+                color: AppColors.primaryOrange,
+              ),
             ),
           ),
         ],
@@ -320,10 +426,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         leading: CupertinoButton(
           padding: EdgeInsets.zero,
           onPressed: () => context.go('/home'),
-          child: Icon(
-            CupertinoIcons.back,
-            color: AppColors.primaryOrange,
-          ),
+          child: Icon(CupertinoIcons.back, color: AppColors.primaryOrange),
         ),
         middle: NeoMonoText(
           language.t('profile'),
@@ -361,10 +464,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       AppColors.cardBackgroundAlt,
                       AppColors.cardBase,
                     ],
-                    border: Border.all(
-                      color: AppColors.border,
-                      width: 1,
-                    ),
+                    border: Border.all(color: AppColors.border, width: 1),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -373,7 +473,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           style: AppTypography.overline.copyWith(
                             fontSize: 11,
                             letterSpacing: 1.5,
-                            color: AppColors.secondaryLabel.withValues(alpha: 0.55),
+                            color: AppColors.secondaryLabel.withValues(
+                              alpha: 0.55,
+                            ),
                           ),
                         ),
                         const SizedBox(height: 10),
@@ -400,7 +502,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             placeholderStyle: AppTypography.body.copyWith(
                               fontSize: 16,
                               fontWeight: FontWeight.w500,
-                              color: AppColors.secondaryLabel.withValues(alpha: 0.5),
+                              color: AppColors.secondaryLabel.withValues(
+                                alpha: 0.5,
+                              ),
                             ),
                           ),
                         ),
@@ -409,7 +513,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           _profile?.email ?? '-',
                           style: AppTypography.subhead.copyWith(
                             fontSize: 13,
-                            color: AppColors.secondaryLabel.withValues(alpha: 0.6),
+                            color: AppColors.secondaryLabel.withValues(
+                              alpha: 0.6,
+                            ),
                           ),
                         ),
                       ],
@@ -424,10 +530,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       AppColors.cardBackgroundAlt,
                       AppColors.cardBase,
                     ],
-                    border: Border.all(
-                      color: AppColors.border,
-                      width: 1,
-                    ),
+                    border: Border.all(color: AppColors.border, width: 1),
                     child: Column(
                       children: [
                         Padding(
@@ -436,10 +539,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             children: [
                               _metric(
                                 'RANK',
-                                RankArt.displayName(_rank?.rankName ?? 'Asleep'),
+                                RankArt.displayName(
+                                  _rank?.rankName ?? 'Asleep',
+                                ),
                               ),
                               _metric('LEVEL', '${_rank?.rankLevel ?? 1}'),
-                              _metric('POINTS', '${_rank?.totalRankPoints ?? 0}'),
+                              _metric(
+                                'POINTS',
+                                '${_rank?.totalRankPoints ?? 0}',
+                              ),
                             ],
                           ),
                         ),
@@ -514,7 +622,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         _settingRow(
                           label: language.t('prepare_home_screen_blackout'),
                           onTap: () async {
-                            final ceoModeProvider = context.read<CeoModeProvider>();
+                            final ceoModeProvider = context
+                                .read<CeoModeProvider>();
                             final outcome = await showBlackoutPreparationFlow(
                               context: context,
                               launchContext:
@@ -541,23 +650,33 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         label: language.t('interface_appearance'),
                         onTap: _isThemeSaving ? null : _showThemePicker,
                         trailing: _isThemeSaving
-                            ? CupertinoActivityIndicator(color: AppColors.primaryOrange)
-                            : _rowValueChevron(theme.currentPreset.name.toUpperCase()),
+                            ? CupertinoActivityIndicator(
+                                color: AppColors.primaryOrange,
+                              )
+                            : _rowValueChevron(
+                                theme.currentPreset.name.toUpperCase(),
+                              ),
                       ),
                       const SizedBox(height: 12),
                       _settingRow(
                         label: language.t('language'),
                         onTap: _isSettingsSaving ? null : _showLanguagePicker,
                         trailing: _isSettingsSaving
-                            ? CupertinoActivityIndicator(color: AppColors.primaryOrange)
+                            ? CupertinoActivityIndicator(
+                                color: AppColors.primaryOrange,
+                              )
                             : _rowValueChevron(_languageLabel(languageCode)),
                       ),
                       const SizedBox(height: 12),
                       _settingRow(
                         label: language.t('notification_channels'),
-                        onTap: _isSettingsSaving ? null : _showNotificationChannels,
+                        onTap: _isSettingsSaving
+                            ? null
+                            : _showNotificationChannels,
                         trailing: _rowValueChevron(
-                          notificationsEnabled ? '$enabledChannels/3 ON' : 'OFF',
+                          notificationsEnabled
+                              ? '$enabledChannels/3 ON'
+                              : 'OFF',
                           valueColor: notificationsEnabled
                               ? AppColors.secondaryLabel
                               : AppColors.error,
@@ -727,7 +846,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Icon(
               leadingIcon,
               size: 16,
-              color: leadingColor ??
+              color:
+                  leadingColor ??
                   AppColors.secondaryLabel.withValues(alpha: 0.6),
             ),
             const SizedBox(width: 10),
@@ -761,10 +881,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     return _PressScale(
       pressedScale: 0.98,
-      child: GestureDetector(
-        onTap: onTap,
-        child: row,
-      ),
+      child: GestureDetector(onTap: onTap, child: row),
     );
   }
 
@@ -780,10 +897,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     ),
   );
 
-  Widget _divider() => Container(
-    height: 1,
-    color: AppColors.border,
-  );
+  Widget _divider() => Container(height: 1, color: AppColors.border);
 
   Widget _metric(
     String label,
@@ -823,14 +937,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       padding: const EdgeInsets.all(0),
       borderRadius: 18,
       showEdgeGlow: false,
-      gradientColors: [
-        AppColors.cardBackgroundAlt,
-        AppColors.cardBase,
-      ],
-      border: Border.all(
-        color: AppColors.border,
-        width: 1,
-      ),
+      gradientColors: [AppColors.cardBackgroundAlt, AppColors.cardBase],
+      border: Border.all(color: AppColors.border, width: 1),
       child: child,
     );
   }
@@ -977,7 +1085,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         vertical: 2,
                                       ),
                                       decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(999),
+                                        borderRadius: BorderRadius.circular(
+                                          999,
+                                        ),
                                         color: AppColors.accentSurfaceSoft,
                                         border: Border.all(
                                           color: AppColors.activeBorder,
@@ -1041,10 +1151,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         decoration: BoxDecoration(
           color: AppColors.backgroundElevated.withValues(alpha: 0.98),
           borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-          border: Border.all(
-            color: AppColors.borderStrong,
-            width: 0.8,
-          ),
+          border: Border.all(color: AppColors.borderStrong, width: 0.8),
           boxShadow: [
             BoxShadow(
               color: AppColors.glassShadow,
@@ -1083,7 +1190,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         subtitle,
                         style: AppTypography.subhead.copyWith(
                           fontSize: 12,
-                          color: AppColors.secondaryLabel.withValues(alpha: 0.75),
+                          color: AppColors.secondaryLabel.withValues(
+                            alpha: 0.75,
+                          ),
                         ),
                       ),
                     ],
@@ -1199,10 +1308,7 @@ class _DashedBorderPainter extends CustomPainter {
 
     final rect = Path()
       ..addRRect(
-        RRect.fromRectAndRadius(
-          Offset.zero & size,
-          Radius.circular(radius),
-        ),
+        RRect.fromRectAndRadius(Offset.zero & size, Radius.circular(radius)),
       );
 
     for (final metric in rect.computeMetrics()) {
