@@ -50,16 +50,6 @@ private func decodeFamilyActivitySelectionPayload(_ payload: String) -> FamilyAc
         return decoded
     }
 
-    appEnvChannel.setMethodCallHandler({ (call: FlutterMethodCall, result: @escaping FlutterResult) -> Void in
-        switch call.method {
-        case "isTestFlight":
-            let isTestFlight = AppDelegate.isRunningInTestFlight()
-            result(isTestFlight)
-        default:
-            result(FlutterMethodNotImplemented)
-        }
-    })
-
     var legacyBase64 = trimmed
         .replacingOccurrences(of: "-", with: "+")
         .replacingOccurrences(of: "_", with: "/")
@@ -84,21 +74,6 @@ private struct NativeBlockedWebsiteTokenIconView: View {
             .labelStyle(.iconOnly)
             .imageScale(.large)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-    }
-}
-
-@available(iOS 16.0, *)
-private final class BlockedWebsiteTokenIconPlatformViewFactory: NSObject, FlutterPlatformViewFactory {
-    func createArgsCodec() -> FlutterMessageCodec & NSObjectProtocol {
-        FlutterStandardMessageCodec.sharedInstance()
-    }
-
-    func create(
-        withFrame frame: CGRect,
-        viewIdentifier viewId: Int64,
-        arguments args: Any?
-    ) -> FlutterPlatformView {
-        BlockedWebsiteTokenLabelPlatformView(frame: frame, viewId: viewId, args: args)
     }
 }
 
@@ -1382,14 +1357,17 @@ public class FocusEngine: NSObject {
 @available(iOS 16.0, *)
 private struct NativeBlockedWebsiteTokenLabelView: View {
     let token: WebDomainToken
+    let textColor: UIColor?
+    let isDarkTheme: Bool
 
     var body: some View {
         Label(token)
             .labelStyle(.titleAndIcon)
             .font(.system(size: 16, weight: .semibold))
-            .foregroundColor(.primary)
+            .foregroundColor(textColor.map { Color(uiColor: $0) } ?? .primary)
             .lineLimit(1)
             .frame(maxWidth: .infinity, alignment: .leading)
+            .environment(\.colorScheme, isDarkTheme ? .dark : .light)
     }
 }
 
@@ -1662,14 +1640,17 @@ private final class BlockedAppTokenLabelPlatformView: NSObject, FlutterPlatformV
 @available(iOS 16.0, *)
 private struct NativeBlockedAppTokenLabelView: View {
     let token: ApplicationToken
+    let textColor: UIColor?
+    let isDarkTheme: Bool
 
     var body: some View {
         Label(token)
             .labelStyle(.titleAndIcon)
             .font(.system(size: 16, weight: .semibold))
-            .foregroundColor(.primary)
+            .foregroundColor(textColor.map { Color(uiColor: $0) } ?? .primary)
             .lineLimit(1)
-        .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .environment(\.colorScheme, isDarkTheme ? .dark : .light)
     }
 }
 

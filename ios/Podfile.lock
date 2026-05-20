@@ -58,8 +58,6 @@ PODS:
   - PurchasesHybridCommon (17.55.1):
     - RevenueCat (= 5.67.1)
   - RevenueCat (5.67.1)
-  - screen_time (0.0.1):
-    - Flutter
   - shared_preferences_foundation (0.0.1):
     - Flutter
     - FlutterMacOS
@@ -78,7 +76,6 @@ DEPENDENCIES:
   - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
   - purchases_flutter (from `.symlinks/plugins/purchases_flutter/ios`)
-  - screen_time (from `.symlinks/plugins/screen_time/ios`)
   - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)
   - url_launcher_ios (from `.symlinks/plugins/url_launcher_ios/ios`)
   - workmanager_apple (from `.symlinks/plugins/workmanager_apple/ios`)
@@ -114,8 +111,6 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/path_provider_foundation/darwin"
   purchases_flutter:
     :path: ".symlinks/plugins/purchases_flutter/ios"
-  screen_time:
-    :path: ".symlinks/plugins/screen_time/ios"
   shared_preferences_foundation:
     :path: ".symlinks/plugins/shared_preferences_foundation/darwin"
   url_launcher_ios:
@@ -142,7 +137,6 @@ SPEC CHECKSUMS:
   purchases_flutter: b44fcb4ff5e68a4dfe53fd0c339683803b04dd2c
   PurchasesHybridCommon: ecd9d7c586287625f1225b8de5e24c1021502270
   RevenueCat: 9357239a9f0978285e68983637b8a602e65c94f0
-  screen_time: 55c53d06e198d137d0129cf7e5ffae0b8a72bdb7
   shared_preferences_foundation: 9e1978ff2562383bd5676f64ec4e9aa8fa06a6f7
   url_launcher_ios: 7a95fa5b60cc718a708b8f2966718e93db0cef1b
   workmanager_apple: 904529ae31e97fc5be632cf628507652294a0778

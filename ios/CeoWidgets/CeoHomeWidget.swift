@@ -58,34 +58,6 @@ struct CeoHabitsTableWidget: Widget {
   }
 }
 
-@available(iOSApplicationExtension 16.0, *)
-struct CeoFocusWidget: Widget {
-  let kind: String = "com.wakeapp.ceoos.widget.focus"
-
-  var body: some WidgetConfiguration {
-    StaticConfiguration(kind: kind, provider: CeoFixedProvider(mode: .focus)) { entry in
-      CeoFixedWidgetView(entry: entry)
-    }
-    .configurationDisplayName("WakeApp - Focus")
-    .description("Start a Focus session quickly.")
-    .supportedFamilies([.systemSmall])
-  }
-}
-
-@available(iOSApplicationExtension 16.0, *)
-struct CeoBlackoutWidget: Widget {
-  let kind: String = "com.wakeapp.ceoos.widget.blackout"
-
-  var body: some WidgetConfiguration {
-    StaticConfiguration(kind: kind, provider: CeoFixedProvider(mode: .blackout)) { entry in
-      CeoFixedWidgetView(entry: entry)
-    }
-    .configurationDisplayName("WakeApp - Blackout")
-    .description("Start a Blackout session quickly.")
-    .supportedFamilies([.systemSmall])
-  }
-}
-
 // MARK: - Native widget design system
 
 private struct WidgetPalette {
@@ -153,22 +125,6 @@ private struct WidgetBackground: View {
     }
   }
 
-  private var emptyView: some View {
-    ZStack {
-      Color.black.opacity(0.78)
-      VStack(spacing: 8) {
-        Text(displayNameFor(entry.mode))
-          .font(.headline)
-          .foregroundStyle(.white)
-          .multilineTextAlignment(.center)
-        Text("Open WakeApp to refresh.")
-          .font(.caption)
-          .foregroundStyle(.white.opacity(0.7))
-          .multilineTextAlignment(.center)
-          .padding(.horizontal, 10)
-      }
-    }
-  }
 }
 
 // MARK: - Compact layout tuning (priority: never cut)
@@ -420,6 +376,57 @@ private struct HabitsSmallNativeView: View {
   }
 }
 
+private struct HabitsTableNativeView: View {
+  let habits: [String]
+  let days: [String]
+  let states: [[Int]]
+  let more: Int
+
+  var body: some View {
+    WidgetBackground(padding: WidgetLayout.paddingSmall) {
+      VStack(alignment: .leading, spacing: WidgetLayout.gapM) {
+        HStack {
+          Text("Habits")
+            .widgetText(18, .heavy, color: WidgetPalette.textPrimary, minScale: 0.82)
+          Spacer(minLength: 4)
+          if more > 0 {
+            Text("+\(more)")
+              .widgetText(11, .bold, color: WidgetPalette.textSecondary, minScale: 0.8)
+          }
+        }
+
+        HStack(spacing: 4) {
+          Text("")
+            .frame(width: 54)
+          ForEach(Array(days.prefix(7)), id: \.self) { day in
+            Text(day)
+              .widgetText(9, .semibold, color: WidgetPalette.textSecondary, minScale: 0.75)
+              .frame(maxWidth: .infinity)
+          }
+        }
+
+        VStack(spacing: 4) {
+          ForEach(Array(habits.prefix(4).enumerated()), id: \.offset) { row, habit in
+            HStack(spacing: 4) {
+              Text(habit.isEmpty ? "Habit" : habit)
+                .widgetText(10.5, .semibold, color: WidgetPalette.textPrimary, minScale: 0.65)
+                .frame(width: 54, alignment: .leading)
+              ForEach(0..<min(days.count, 7), id: \.self) { col in
+                let completed = row < states.count && col < states[row].count && states[row][col] > 0
+                Circle()
+                  .fill(completed ? WidgetPalette.green : WidgetPalette.cardFill)
+                  .overlay(Circle().stroke(WidgetPalette.borderSubtle2, lineWidth: 0.5))
+                  .frame(width: 10, height: 10)
+                  .frame(maxWidth: .infinity)
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
 private struct TodoSmallNativeView: View {
   let remaining: Int
   let items: [String]
@@ -638,6 +645,8 @@ struct CeoFixedProvider: TimelineProvider {
       return defaults.object(forKey: keyEnabledDashboard) as? Bool ?? false
     case .habits:
       return defaults.object(forKey: keyEnabledHabitsToday) as? Bool ?? false
+    case .habitsTable:
+      return defaults.object(forKey: keyEnabledHabitsToday) as? Bool ?? false
     case .focus:
       return defaults.object(forKey: keyEnabledFocus) as? Bool ?? false
     case .blackout:
@@ -706,6 +715,13 @@ struct CeoFixedWidgetView: View {
         total: max(0, defaults.integer(forKey: keyHabitsTotal)),
         items: (defaults.array(forKey: keyHabitsItems) as? [String]) ?? [],
       )
+    case .habitsTable:
+      HabitsTableNativeView(
+        habits: (defaults.array(forKey: keyHabitsTableHabits) as? [String]) ?? [],
+        days: (defaults.array(forKey: keyHabitsTableDays) as? [String]) ?? [],
+        states: Self.decodeHabitTableStates(defaults.string(forKey: keyHabitsTableStatesJson)),
+        more: max(0, defaults.integer(forKey: keyHabitsTableMore)),
+      )
     case .todo:
       TodoSmallNativeView(
         remaining: max(0, defaults.integer(forKey: keyTodoRemaining)),
@@ -745,6 +761,7 @@ struct CeoFixedWidgetView: View {
     switch mode {
     case .todo: return "ceoos:///tasks"
     case .habits: return "ceoos:///habits"
+    case .habitsTable: return "ceoos:///habits"
     case .dashboard: return "ceoos:///home"
     case .focus: return "ceoos:///focus?start=1&duration=25"
     case .blackout: return "ceoos:///ceo-mode?start=1&duration=120"
@@ -760,6 +777,17 @@ struct CeoFixedWidgetView: View {
     case .focus: return "Focus"
     case .blackout: return "Blackout"
     }
+  }
+
+  private static func decodeHabitTableStates(_ raw: String?) -> [[Int]] {
+    guard
+      let raw,
+      let data = raw.data(using: .utf8),
+      let decoded = try? JSONSerialization.jsonObject(with: data) as? [[Int]]
+    else {
+      return []
+    }
+    return decoded
   }
 }
 
