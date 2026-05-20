@@ -1,8 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
-import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart' show TimeOfDay;
@@ -23,7 +21,6 @@ import '../calendar/add_event_sheet.dart';
 import 'focus_preparation/focus_preparation_flow_view.dart';
 import 'focus_preparation/focus_preparation_models.dart';
 import '../../components/ambient_backdrop.dart';
-import '../../components/glass_card.dart';
 import '../../components/glass_card.dart';
 import '../../components/liquid_button.dart';
 
@@ -72,6 +69,25 @@ class _FocusProgressRingPainter extends CustomPainter {
     );
   }
 
+  @override
+  bool shouldRepaint(covariant _FocusProgressRingPainter oldDelegate) {
+    return oldDelegate.progress != progress ||
+        oldDelegate.progressColor != progressColor;
+  }
+}
+
+class _FocusScreenState extends State<FocusScreen> {
+  final FeatureRepository _repo = FeatureRepository();
+  final TextEditingController _customDurationCtrl = TextEditingController();
+
+  WinStreak? _streak;
+  bool _loading = true;
+  bool _didPresentPreparationOnEntry = false;
+  bool _appliedDeepLinkParams = false;
+
+  bool get _isAndroid =>
+      !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
+
   Future<void> _presentPreparationIfNeeded(FocusProvider provider) async {
     if (_didPresentPreparationOnEntry) return;
     if (!provider.shouldShowPreparationFlowBeforeFocus) return;
@@ -85,26 +101,6 @@ class _FocusProgressRingPainter extends CustomPainter {
       outcome ?? FocusPreparationFlowOutcome.skipped,
     );
   }
-
-  @override
-  bool shouldRepaint(covariant _FocusProgressRingPainter oldDelegate) {
-    return oldDelegate.progress != progress ||
-        oldDelegate.progressColor != progressColor;
-  }
-}
-
-class _FocusScreenState extends State<FocusScreen> {
-  final FeatureRepository _repo = FeatureRepository();
-  final TextEditingController _customDurationCtrl = TextEditingController();
-  bool get _isAndroid => Platform.isAndroid;
-
-  WinStreak? _streak;
-  bool _loading = true;
-  bool _didPresentPreparationOnEntry = false;
-  bool _appliedDeepLinkParams = false;
-
-  bool get _isAndroid =>
-      !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
 
   @override
   void initState() {
@@ -456,7 +452,10 @@ class _FocusScreenState extends State<FocusScreen> {
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 10, 20, 22),
       children: [
-        _header(title: _isAndroid ? 'Focus Protection' : 'Screen Time', showHome: true),
+        _header(
+          title: _isAndroid ? 'Focus Protection' : 'Screen Time',
+          showHome: true,
+        ),
         const SizedBox(height: 10),
         SizedBox(
           width: double.infinity,
@@ -513,12 +512,12 @@ class _FocusScreenState extends State<FocusScreen> {
                                 )
                               : LinearGradient(
                                   colors: [
-                                    const Color(0xFF0D1B3A).withValues(
-                                      alpha: 0.96,
-                                    ),
-                                    const Color(0xFF0B1A35).withValues(
-                                      alpha: 0.92,
-                                    ),
+                                    const Color(
+                                      0xFF0D1B3A,
+                                    ).withValues(alpha: 0.96),
+                                    const Color(
+                                      0xFF0B1A35,
+                                    ).withValues(alpha: 0.92),
                                   ],
                                 ),
                           border: Border.all(
@@ -529,10 +528,11 @@ class _FocusScreenState extends State<FocusScreen> {
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: (provider.focusDurationMinutes == preset
-                                      ? const Color(0xFF9D45F4)
-                                      : AppColors.glassShadow)
-                                  .withValues(alpha: 0.24),
+                              color:
+                                  (provider.focusDurationMinutes == preset
+                                          ? const Color(0xFF9D45F4)
+                                          : AppColors.glassShadow)
+                                      .withValues(alpha: 0.24),
                               blurRadius: 16,
                               offset: const Offset(0, 8),
                               spreadRadius: -8,
@@ -612,7 +612,8 @@ class _FocusScreenState extends State<FocusScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   GestureDetector(
-                    onTap: () => _setDuration(provider.focusDurationMinutes + 5),
+                    onTap: () =>
+                        _setDuration(provider.focusDurationMinutes + 5),
                     child: Icon(
                       CupertinoIcons.chevron_up,
                       color: AppColors.secondaryLabel,
@@ -620,7 +621,8 @@ class _FocusScreenState extends State<FocusScreen> {
                   ),
                   const SizedBox(height: 2),
                   GestureDetector(
-                    onTap: () => _setDuration(provider.focusDurationMinutes - 5),
+                    onTap: () =>
+                        _setDuration(provider.focusDurationMinutes - 5),
                     child: Icon(
                       CupertinoIcons.chevron_down,
                       color: AppColors.secondaryLabel,
@@ -743,7 +745,9 @@ class _FocusScreenState extends State<FocusScreen> {
               ),
             ),
           ],
-        ] else if ((provider.lastBlockingSyncError ?? '').trim().isNotEmpty) ...[
+        ] else if ((provider.lastBlockingSyncError ?? '')
+            .trim()
+            .isNotEmpty) ...[
           const SizedBox(height: 8),
           Text(
             provider.lastBlockingSyncError!,
@@ -846,6 +850,7 @@ class _FocusScreenState extends State<FocusScreen> {
       FocusState.longBreak => 'Long Break',
       FocusState.requestingBreak => 'Break Request Pending',
       FocusState.breakOptionsMenu => 'Break Selection',
+      FocusState.exitPending => 'Exit Pending',
       FocusState.idle => 'Focus Session',
     };
 
@@ -853,9 +858,7 @@ class _FocusScreenState extends State<FocusScreen> {
       padding: const EdgeInsets.fromLTRB(20, 10, 20, 22),
       child: Column(
         children: [
-          _header(
-            title: 'Focus',
-          ),
+          _header(title: 'Focus'),
           const SizedBox(height: 18),
           Text(
             provider.stateLabel,
@@ -952,7 +955,11 @@ class _FocusScreenState extends State<FocusScreen> {
               ],
             )
           else
-            LiquidButton(label: 'Skip break', fullWidth: true, onPressed: provider.skip),
+            LiquidButton(
+              label: 'Skip break',
+              fullWidth: true,
+              onPressed: provider.skip,
+            ),
         ],
       ),
     );
@@ -1068,13 +1075,13 @@ class _FocusPrimaryButton extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [AppColors.buttonGradientEnd, AppColors.buttonGradientStart],
+            colors: [
+              AppColors.buttonGradientEnd,
+              AppColors.buttonGradientStart,
+            ],
           ),
           borderRadius: BorderRadius.circular(18),
-          border: Border.all(
-            color: AppColors.borderStrong,
-            width: 1,
-          ),
+          border: Border.all(color: AppColors.borderStrong, width: 1),
         ),
         child: Text(
           label,
@@ -1106,10 +1113,7 @@ class _FocusSecondaryButton extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppColors.cardBackgroundAlt.withValues(alpha: 0.92),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: AppColors.borderStrong,
-            width: 1,
-          ),
+          border: Border.all(color: AppColors.borderStrong, width: 1),
         ),
         child: Text(
           label,

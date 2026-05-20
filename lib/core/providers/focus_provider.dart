@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/block_list_model.dart';
 import '../models/premium_models.dart';
 import '../models/task_models.dart';
@@ -66,8 +67,10 @@ class FocusProvider extends ChangeNotifier {
   Timer? _timer;
   DateTime? _sessionStartTime;
   DateTime? _focusExitReadyAt;
+  DateTime? _breakRequestReadyAt;
   bool _focusShieldOverrideActive = false;
   bool _endingSession = false;
+  String _focusPreparationStatus = 'not_seen';
 
   // ── Focus Mode ──
   bool _isFocusModeActive = false;
@@ -90,6 +93,7 @@ class FocusProvider extends ChangeNotifier {
   PremiumCheckResult? _lastPremiumCheck;
   int _configuredBlockedAppCount = 0;
   int _configuredBlockedWebsiteCount = 0;
+  String? _lastBlockingSyncError;
 
   // ── Getters ──
   FocusState get state => _state;
@@ -109,6 +113,19 @@ class FocusProvider extends ChangeNotifier {
   int get configuredBlockedWebsiteCount => _configuredBlockedWebsiteCount;
   bool get hasConfiguredBlockingTargets =>
       configuredBlockedAppCount > 0 || configuredBlockedWebsiteCount > 0;
+  String? get lastBlockingSyncError => _lastBlockingSyncError;
+  bool get shouldShowPreparationFlowBeforeFocus =>
+      _focusPreparationStatus == 'not_seen';
+  String get waitTimerDisplay {
+    final seconds = _breakRequestReadyAt == null
+        ? 0
+        : _breakRequestReadyAt!
+              .difference(DateTime.now())
+              .inSeconds
+              .clamp(0, 999);
+    return '${seconds.toString().padLeft(2, '0')}s';
+  }
+
   int get exitCountdownRemainingSeconds {
     if (_state != FocusState.exitPending || _focusExitReadyAt == null) return 0;
     return _focusExitReadyAt!
@@ -116,6 +133,7 @@ class FocusProvider extends ChangeNotifier {
         .inSeconds
         .clamp(0, _focusExitCountdownSeconds);
   }
+
   bool get canFinalizeEarlyExit =>
       _state == FocusState.exitPending && exitCountdownRemainingSeconds == 0;
   String get exitCountdownLabel {
@@ -178,6 +196,11 @@ class FocusProvider extends ChangeNotifier {
 
   Future<void> loadInitialData() async {
     _blockLists = await _repository.getBlockLists();
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      _focusPreparationStatus =
+          prefs.getString('focus_preparation_status_v1') ?? 'not_seen';
+    } catch (_) {}
     await _refreshProtectionStatus();
     await _syncClassicBaselineFromBlockedAppsSites();
     await _refreshBlockingSummary();
@@ -264,6 +287,47 @@ class FocusProvider extends ChangeNotifier {
     if (_state != FocusState.exitPending) return;
     _state = FocusState.focusing;
     _focusExitReadyAt = null;
+    notifyListeners();
+  }
+
+  void requestBreak() {
+    if (_state != FocusState.focusing) return;
+    _state = FocusState.requestingBreak;
+    _breakRequestReadyAt = DateTime.now().add(const Duration(seconds: 10));
+    notifyListeners();
+  }
+
+  void cancelBreakRequest() {
+    if (_state != FocusState.requestingBreak) return;
+    _state = FocusState.focusing;
+    _breakRequestReadyAt = null;
+    notifyListeners();
+  }
+
+  void takeCustomBreak(int minutes) {
+    if (_state != FocusState.requestingBreak &&
+        _state != FocusState.breakOptionsMenu) {
+      return;
+    }
+    _breakRequestReadyAt = null;
+    _state = minutes >= longBreakMinutes
+        ? FocusState.longBreak
+        : FocusState.shortBreak;
+    _remainingSeconds = minutes.clamp(1, 180) * 60;
+    _startTimer();
+    notifyListeners();
+  }
+
+  Future<void> persistPreparationOutcome(Object outcome) async {
+    final serialized = outcome.toString().endsWith('.completed')
+        ? 'completed'
+        : 'skipped';
+    if (_focusPreparationStatus == serialized) return;
+    _focusPreparationStatus = serialized;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('focus_preparation_status_v1', serialized);
+    } catch (_) {}
     notifyListeners();
   }
 
