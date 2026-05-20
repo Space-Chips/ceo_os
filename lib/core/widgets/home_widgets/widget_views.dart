@@ -1103,6 +1103,78 @@ class FocusWidgetSquareView extends StatelessWidget {
   }
 }
 
+class FocusWidgetRectangularView extends StatelessWidget {
+  final LanguageProvider language;
+  final int durationMinutes;
+
+  const FocusWidgetRectangularView({
+    super.key,
+    required this.language,
+    required this.durationMinutes,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return WidgetRoot(
+      padding: WidgetDesignTokens.padRect,
+      decorationOverride: BoxDecoration(
+        borderRadius: BorderRadius.circular(WidgetDesignTokens.radiusOuter),
+        gradient: WidgetDesignTokens.focusGradient,
+        border: Border.all(
+          color: AppColors.borderStrong.withValues(alpha: 0.85),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Focus',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: WidgetDesignTokens.title.copyWith(fontSize: 28),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  language.t('widget_focus_subtitle'),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: WidgetDesignTokens.subtitle.copyWith(fontSize: 15),
+                ),
+                const Spacer(),
+                Text(
+                  '$durationMinutes min',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTypography.largeTitle.copyWith(
+                    fontSize: 30,
+                    fontWeight: FontWeight.w800,
+                    color: WidgetDesignTokens.primaryText,
+                    height: 1,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 18),
+          SizedBox(
+            width: 138,
+            child: WidgetActionButton(
+              icon: CupertinoIcons.play_fill,
+              title: 'Start',
+              subtitle: '$durationMinutes min',
+              variant: WidgetActionVariant.focus,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class BlackoutWidgetSquareView extends StatelessWidget {
   final LanguageProvider language;
   final int durationMinutes;
@@ -1149,6 +1221,83 @@ class BlackoutWidgetSquareView extends StatelessWidget {
             ),
           ),
           const Spacer(),
+        ],
+      ),
+    );
+  }
+}
+
+class BlackoutWidgetRectangularView extends StatelessWidget {
+  final LanguageProvider language;
+  final int durationMinutes;
+  final bool isActive;
+
+  const BlackoutWidgetRectangularView({
+    super.key,
+    required this.language,
+    required this.durationMinutes,
+    required this.isActive,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final hours = durationMinutes ~/ 60;
+    final label = hours >= 1 ? '$hours h' : '$durationMinutes min';
+    final status = isActive ? 'Active' : 'Ready';
+    return WidgetRoot(
+      padding: WidgetDesignTokens.padRect,
+      decorationOverride: BoxDecoration(
+        borderRadius: BorderRadius.circular(WidgetDesignTokens.radiusOuter),
+        gradient: WidgetDesignTokens.blackoutGradient,
+        border: Border.all(
+          color: AppColors.borderStrong.withValues(alpha: 0.85),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Blackout',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: WidgetDesignTokens.title.copyWith(fontSize: 28),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  status,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: WidgetDesignTokens.subtitle.copyWith(fontSize: 15),
+                ),
+                const Spacer(),
+                Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTypography.largeTitle.copyWith(
+                    fontSize: 30,
+                    fontWeight: FontWeight.w800,
+                    color: WidgetDesignTokens.primaryText,
+                    height: 1,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 18),
+          SizedBox(
+            width: 138,
+            child: WidgetActionButton(
+              icon: CupertinoIcons.lock_fill,
+              title: isActive ? 'Locked' : 'Start',
+              subtitle: label,
+              variant: WidgetActionVariant.blackout,
+            ),
+          ),
         ],
       ),
     );

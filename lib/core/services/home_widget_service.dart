@@ -130,6 +130,8 @@ class CeoHomeWidgetService {
         ) ??
         false;
 
+    await habits.loadWidgetCompletionsForLast7Days();
+
     final pendingTasks = tasks.tasks.where((t) => !t.completed).toList()
       ..sort((a, b) {
         final aScore = _taskPriorityScore(a);
@@ -269,7 +271,18 @@ class CeoHomeWidgetService {
           logicalSize: const Size(170, 170),
           pixelRatio: 2,
         ),
-        HomeWidget.saveWidgetData<String>(_keyHabitsLarge, null),
+        HomeWidget.renderFlutterWidget(
+          HabitsTableWidgetRectangularView(
+            language: language,
+            habits: todayHabits,
+            days: habits.widgetLast7Days,
+            completionsDone: habits.widgetCompletionMapLast7Days,
+            completionsFailed: habits.widgetFailedMapLast7Days,
+          ),
+          key: _keyHabitsLarge,
+          logicalSize: const Size(360, 180),
+          pixelRatio: 2,
+        ),
       ]);
     } else {
       futures.addAll([
@@ -300,7 +313,15 @@ class CeoHomeWidgetService {
           logicalSize: const Size(170, 170),
           pixelRatio: 2,
         ),
-        HomeWidget.saveWidgetData<String>(_keyFocusLarge, null),
+        HomeWidget.renderFlutterWidget(
+          FocusWidgetRectangularView(
+            language: language,
+            durationMinutes: clampedDuration,
+          ),
+          key: _keyFocusLarge,
+          logicalSize: const Size(360, 180),
+          pixelRatio: 2,
+        ),
       ]);
     } else {
       futures.addAll([
@@ -362,7 +383,16 @@ class CeoHomeWidgetService {
           logicalSize: const Size(170, 170),
           pixelRatio: 2,
         ),
-        HomeWidget.saveWidgetData<String>(_keyBlackoutLarge, null),
+        HomeWidget.renderFlutterWidget(
+          BlackoutWidgetRectangularView(
+            language: language,
+            durationMinutes: clampedDuration,
+            isActive: isOn,
+          ),
+          key: _keyBlackoutLarge,
+          logicalSize: const Size(360, 180),
+          pixelRatio: 2,
+        ),
       ]);
     } else {
       futures.addAll([
