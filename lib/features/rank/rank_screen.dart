@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -11,7 +13,6 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/widgets/rank_art.dart';
 import '../../components/ambient_backdrop.dart';
-import '../../components/glass_card.dart';
 import '../../components/glass_card.dart';
 
 class RankScreen extends StatefulWidget {
@@ -50,18 +51,13 @@ class _RankScreenState extends State<RankScreen> {
       name: 'Platinum',
       requirements: ['90 day streak', '60h Focus'],
     ),
-    _RankTierData(
-      name: 'Gold',
-      requirements: ['50 day streak'],
-    ),
+    _RankTierData(name: 'Gold', requirements: ['50 day streak']),
     _RankTierData(
       name: 'Silver',
       requirements: ['15 days in app', '10 day streak'],
     ),
-    _RankTierData(
-      name: 'Bronze',
-      requirements: ['Starting rank'],
-    ),
+    _RankTierData(name: 'Bronze', requirements: ['Starting rank']),
+    _RankTierData(name: 'Sleeping', requirements: ['Start your first streak']),
   ];
 
   @override
@@ -76,8 +72,8 @@ class _RankScreenState extends State<RankScreen> {
     final rank = await _repository.getUserRank();
     final streak = await _repository.getWinStreak();
     final profile = await _repository.getProfile();
-    final focusSessionsCompleted =
-        await _focusRepository.getCompletedSessionCount();
+    final focusSessionsCompleted = await _focusRepository
+        .getCompletedSessionCount();
     final createdAt = profile?.createdAt;
     final daysInApp = createdAt == null
         ? 0
@@ -96,7 +92,9 @@ class _RankScreenState extends State<RankScreen> {
   _RankTierData _currentTier() {
     final serverTier = _serverTier();
     final localTier = _localFallbackTier();
-    final serverIndex = _tiers.indexWhere((tier) => tier.name == serverTier.name);
+    final serverIndex = _tiers.indexWhere(
+      (tier) => tier.name == serverTier.name,
+    );
     final localIndex = _tiers.indexWhere((tier) => tier.name == localTier.name);
     return localIndex < serverIndex ? localTier : serverTier;
   }
@@ -127,7 +125,9 @@ class _RankScreenState extends State<RankScreen> {
   bool _serverRankIsBehind(_RankTierData current) {
     final serverTier = _serverTier();
     final currentIndex = _tiers.indexWhere((tier) => tier.name == current.name);
-    final serverIndex = _tiers.indexWhere((tier) => tier.name == serverTier.name);
+    final serverIndex = _tiers.indexWhere(
+      (tier) => tier.name == serverTier.name,
+    );
     return currentIndex < serverIndex;
   }
 
@@ -144,14 +144,20 @@ class _RankScreenState extends State<RankScreen> {
     for (final requirement in next.requirements) {
       final normalized = requirement.toLowerCase().trim();
       if (normalized.contains('day streak')) {
-        final target = int.tryParse(RegExp(r'(\d+)').firstMatch(normalized)?.group(1) ?? '');
+        final target = int.tryParse(
+          RegExp(r'(\d+)').firstMatch(normalized)?.group(1) ?? '',
+        );
         if (target != null && target > 0) {
-          progress.add(((_streak?.currentStreak ?? 0) / target).clamp(0, 1).toDouble());
+          progress.add(
+            ((_streak?.currentStreak ?? 0) / target).clamp(0, 1).toDouble(),
+          );
           continue;
         }
       }
       if (normalized.contains('days in app')) {
-        final target = int.tryParse(RegExp(r'(\d+)').firstMatch(normalized)?.group(1) ?? '');
+        final target = int.tryParse(
+          RegExp(r'(\d+)').firstMatch(normalized)?.group(1) ?? '',
+        );
         if (target != null && target > 0) {
           progress.add((_daysInApp / target).clamp(0, 1).toDouble());
           continue;
@@ -179,7 +185,9 @@ class _RankScreenState extends State<RankScreen> {
       child: AmbientBackdrop(
         child: _loading
             ? Center(
-                child: CupertinoActivityIndicator(color: AppColors.primaryOrange),
+                child: CupertinoActivityIndicator(
+                  color: AppColors.primaryOrange,
+                ),
               )
             : SafeArea(
                 child: ListView(
@@ -283,10 +291,7 @@ class _RankScreenState extends State<RankScreen> {
           ],
         ),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: AppColors.activeBorder,
-          width: 1,
-        ),
+        border: Border.all(color: AppColors.activeBorder, width: 1),
         boxShadow: [
           BoxShadow(
             color: AppColors.black.withValues(alpha: 0.6),
@@ -339,10 +344,9 @@ class _RankScreenState extends State<RankScreen> {
               Text(
                 next == null
                     ? _t('rank_top_reached')
-                    : _t('rank_path_to').replaceAll(
-                        '{rank}',
-                        _localizedTierName(next.name),
-                      ),
+                    : _t(
+                        'rank_path_to',
+                      ).replaceAll('{rank}', _localizedTierName(next.name)),
                 style: AppTypography.callout.copyWith(
                   fontSize: 16,
                   color: AppColors.label,
@@ -437,8 +441,7 @@ class _RankScreenState extends State<RankScreen> {
               ),
             ),
             const SizedBox(height: 12),
-          ]
-          else
+          ] else
             ...next.requirements.map(
               (req) => Padding(
                 padding: const EdgeInsets.only(bottom: 10),
@@ -466,7 +469,9 @@ class _RankScreenState extends State<RankScreen> {
                           req,
                           style: AppTypography.callout.copyWith(
                             fontSize: 14,
-                            color: AppColors.secondaryLabel.withValues(alpha: 0.85),
+                            color: AppColors.secondaryLabel.withValues(
+                              alpha: 0.85,
+                            ),
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -479,6 +484,53 @@ class _RankScreenState extends State<RankScreen> {
         ],
       ),
     );
+  }
+
+  String _localizedTierName(String rawRankName) {
+    final language = context.read<LanguageProvider>();
+    switch (RankArt.canonicalKey(rawRankName)) {
+      case 'awakened':
+        return language.t('rank_awakened');
+      case 'immortal':
+        return language.t('rank_immortal');
+      case 'diamond':
+        return language.t('rank_diamond');
+      case 'platinum':
+        return language.t('rank_platinum');
+      case 'gold':
+        return language.t('rank_gold');
+      case 'silver':
+        return language.t('rank_silver');
+      case 'bronze':
+        return language.t('rank_bronze');
+      case 'sleeping':
+      default:
+        return language.t('rank_asleep');
+    }
+  }
+
+  BoxDecoration _rankCardDecoration({required double radius}) {
+    return BoxDecoration(
+      borderRadius: BorderRadius.circular(radius),
+      gradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [AppColors.cardBackgroundStrong, AppColors.cardBase],
+      ),
+      border: Border.all(color: AppColors.glassBorder, width: 0.8),
+      boxShadow: [
+        BoxShadow(
+          color: AppColors.black.withValues(alpha: 0.24),
+          blurRadius: 24,
+          offset: const Offset(0, 10),
+          spreadRadius: -14,
+        ),
+      ],
+    );
+  }
+
+  Widget _rankIconContainer(_RankTierData tier, {required double iconSize}) {
+    return _tierBadge(tier, size: iconSize);
   }
 
   Widget _statsSection() {
@@ -543,7 +595,9 @@ class _RankScreenState extends State<RankScreen> {
             value,
             style: AppTypography.mono.copyWith(
               fontSize: 17,
-              color: label == 'Streak' ? const Color(0xFFFF9D43) : AppColors.label,
+              color: label == 'Streak'
+                  ? const Color(0xFFFF9D43)
+                  : AppColors.label,
               fontWeight: FontWeight.w900,
             ),
           ),
@@ -605,7 +659,11 @@ class _RankScreenState extends State<RankScreen> {
               ),
             ),
             if (isCurrent)
-              Icon(CupertinoIcons.rosette, color: const Color(0xFFFACC15), size: 24)
+              Icon(
+                CupertinoIcons.rosette,
+                color: const Color(0xFFFACC15),
+                size: 24,
+              )
             else
               Text(
                 unlocked ? 'Unlocked' : 'Locked',
@@ -643,13 +701,14 @@ class _RankScreenState extends State<RankScreen> {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(size * 0.2),
             color: const Color(0xFF060B15),
-            border: Border.all(color: AppColors.glassBorder.withValues(alpha: 0.65)),
+            border: Border.all(
+              color: AppColors.glassBorder.withValues(alpha: 0.65),
+            ),
           ),
         ),
       ),
     );
   }
-
 }
 
 class _RankPressScale extends StatefulWidget {
@@ -768,17 +827,22 @@ class _IrisPainter extends CustomPainter {
       final angle = t * math.pi * 2;
       final inner = pupil + 1 + (math.sin(i * 0.91) + 1) * 4.0;
       final outer = r - (math.cos(i * 1.27) + 1) * 3.8;
-      final p1 = Offset(c.dx + math.cos(angle) * inner, c.dy + math.sin(angle) * inner);
-      final p2 = Offset(c.dx + math.cos(angle) * outer, c.dy + math.sin(angle) * outer);
+      final p1 = Offset(
+        c.dx + math.cos(angle) * inner,
+        c.dy + math.sin(angle) * inner,
+      );
+      final p2 = Offset(
+        c.dx + math.cos(angle) * outer,
+        c.dy + math.sin(angle) * outer,
+      );
       final rayPaint = Paint()
         ..strokeWidth = 1.05
         ..strokeCap = StrokeCap.round
         ..color = Color.lerp(
-              primary,
-              secondary,
-              (math.sin(i * 0.33) + 1) / 2,
-            )!
-            .withValues(alpha: 0.58);
+          primary,
+          secondary,
+          (math.sin(i * 0.33) + 1) / 2,
+        )!.withValues(alpha: 0.58);
       canvas.drawLine(p1, p2, rayPaint);
     }
 
@@ -801,8 +865,29 @@ class _RankTierData {
   final String name;
   final List<String> requirements;
 
-  const _RankTierData({
-    required this.name,
-    required this.requirements,
-  });
+  const _RankTierData({required this.name, required this.requirements});
+
+  List<Color> get ring {
+    switch (RankArt.canonicalKey(name)) {
+      case 'awakened':
+        return const [Color(0xFFE9D5FF), Color(0xFF8B5CF6), Color(0xFF22D3EE)];
+      case 'immortal':
+        return const [Color(0xFFFDE68A), Color(0xFFF59E0B), Color(0xFFB45309)];
+      case 'diamond':
+        return const [Color(0xFFE0F2FE), Color(0xFF38BDF8), Color(0xFF2563EB)];
+      case 'platinum':
+        return const [Color(0xFFE5E7EB), Color(0xFF94A3B8), Color(0xFF475569)];
+      case 'gold':
+        return const [Color(0xFFFEF3C7), Color(0xFFFACC15), Color(0xFFB45309)];
+      case 'silver':
+        return const [Color(0xFFF8FAFC), Color(0xFFCBD5E1), Color(0xFF64748B)];
+      case 'bronze':
+        return const [Color(0xFFFED7AA), Color(0xFFFB923C), Color(0xFF92400E)];
+      case 'sleeping':
+      default:
+        return const [Color(0xFF334155), Color(0xFF1E293B), Color(0xFF020617)];
+    }
+  }
+
+  Color get glow => ring[1].withValues(alpha: 0.32);
 }

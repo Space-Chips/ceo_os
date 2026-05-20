@@ -50,6 +50,7 @@ class _EventTypesScreenState extends State<EventTypesScreen> {
   List<EventType> _types = const [];
   bool _loading = true;
   bool _creating = false;
+  bool _showForm = false;
   PremiumCheckResult? _premiumBlock;
   String _selectedColor = 'blue';
 
@@ -319,7 +320,9 @@ class _EventTypesScreenState extends State<EventTypesScreen> {
         child: SafeArea(
           child: _loading
               ? Center(
-                  child: CupertinoActivityIndicator(color: AppColors.primaryOrange),
+                  child: CupertinoActivityIndicator(
+                    color: AppColors.primaryOrange,
+                  ),
                 )
               : _premiumBlock != null
               ? ListView(
@@ -353,7 +356,11 @@ class _EventTypesScreenState extends State<EventTypesScreen> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(CupertinoIcons.arrow_left, color: AppColors.secondaryLabel, size: 18),
+                  Icon(
+                    CupertinoIcons.arrow_left,
+                    color: AppColors.secondaryLabel,
+                    size: 18,
+                  ),
                   const SizedBox(width: 6),
                   Text(
                     _t('back'),
@@ -392,7 +399,10 @@ class _EventTypesScreenState extends State<EventTypesScreen> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(30),
           color: Colors.white.withValues(alpha: 0.92),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.95), width: 1.1),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.95),
+            width: 1.1,
+          ),
           boxShadow: [
             BoxShadow(
               color: Colors.white.withValues(alpha: 0.22),
@@ -483,7 +493,9 @@ class _EventTypesScreenState extends State<EventTypesScreen> {
                       height: 54,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(14),
-                        color: option.color.withValues(alpha: selected ? 0.95 : 0.62),
+                        color: option.color.withValues(
+                          alpha: selected ? 0.95 : 0.62,
+                        ),
                       ),
                     ),
                   ),
@@ -608,13 +620,20 @@ class _EventTypesScreenState extends State<EventTypesScreen> {
     return GlassCard(
       padding: const EdgeInsets.all(16),
       borderRadius: 16,
-      border: Border.all(color: AppColors.primaryOrange.withValues(alpha: 0.28), width: 0.7),
+      border: Border.all(
+        color: AppColors.primaryOrange.withValues(alpha: 0.28),
+        width: 0.7,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(CupertinoIcons.lock_shield_fill, size: 16, color: AppColors.primaryOrange),
+              Icon(
+                CupertinoIcons.lock_shield_fill,
+                size: 16,
+                color: AppColors.primaryOrange,
+              ),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(

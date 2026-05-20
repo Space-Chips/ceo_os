@@ -7,6 +7,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../components/components.dart';
 import '../../components/premium_surface_card.dart';
 import '../../core/models/premium_models.dart';
+import '../../core/config/tester_config.dart';
 import '../../core/providers/language_provider.dart';
 import '../../core/providers/theme_provider.dart';
 import '../../core/repositories/premium_repository.dart';
@@ -31,7 +32,8 @@ class UpgradeScreen extends StatelessWidget {
     return <String, String>{
       'build_channel': isTestFlight ? 'TestFlight' : 'Store/Dev',
       'testflight_enabled': '${TesterConfig.testFlightPremiumEnabled}',
-      'beta_key_present': TesterConfig.testFlightBetaPremiumKey.trim().isNotEmpty
+      'beta_key_present':
+          TesterConfig.testFlightBetaPremiumKey.trim().isNotEmpty
           ? 'true'
           : 'false',
       'server_override_last_sync': lastSync ?? 'never',
@@ -115,8 +117,9 @@ class UpgradeScreen extends StatelessWidget {
                               child: Text(
                                 lines.join('\n'),
                                 style: AppTypography.caption1.copyWith(
-                                  color: AppColors.secondaryLabel
-                                      .withValues(alpha: 0.78),
+                                  color: AppColors.secondaryLabel.withValues(
+                                    alpha: 0.78,
+                                  ),
                                   height: 1.25,
                                 ),
                               ),
@@ -135,9 +138,7 @@ class UpgradeScreen extends StatelessWidget {
                           onPressed: () async {
                             final text = await BillingDiagnosticsService()
                                 .exportText();
-                            await Clipboard.setData(
-                              ClipboardData(text: text),
-                            );
+                            await Clipboard.setData(ClipboardData(text: text));
                             if (context.mounted) {
                               await showCupertinoDialog<void>(
                                 context: context,
@@ -155,8 +156,7 @@ class UpgradeScreen extends StatelessWidget {
                                   actions: [
                                     CupertinoDialogAction(
                                       child: Text(isFr ? 'OK' : 'OK'),
-                                      onPressed: () =>
-                                          Navigator.of(ctx).pop(),
+                                      onPressed: () => Navigator.of(ctx).pop(),
                                     ),
                                   ],
                                 ),
