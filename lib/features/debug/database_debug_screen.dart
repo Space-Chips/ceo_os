@@ -152,7 +152,7 @@ class _DatabaseDebugScreenState extends State<DatabaseDebugScreen> {
                   if (_startedAt != null) ...[
                     const SizedBox(height: 14),
                     Text(
-                      "Last run: ${_finishedAt?.toLocal().toString().substring(0, 19) ?? 'in progress"}',
+                      "Last run: ${_finishedAt?.toLocal().toString().substring(0, 19) ?? 'in progress'}",
                       style: AppTypography.footnote.copyWith(
                         color: AppColors.tertiaryLabel,
                       ),
@@ -172,9 +172,10 @@ class _DatabaseDebugScreenState extends State<DatabaseDebugScreen> {
               padding: const EdgeInsets.symmetric(vertical: 14),
               color: AppColors.glassBase.withValues(alpha: 0.8),
               borderRadius: BorderRadius.circular(18),
-              onPressed: _results.every(
-                (item) => item.status == DatabaseDebugTestStatus.pending,
-              )
+              onPressed:
+                  _results.every(
+                    (item) => item.status == DatabaseDebugTestStatus.pending,
+                  )
                   ? null
                   : _copyReport,
               child: Text(

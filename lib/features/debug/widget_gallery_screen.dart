@@ -65,9 +65,11 @@ class WidgetGalleryScreen extends StatelessWidget {
     final now = DateTime.now();
     final days = List.generate(
       7,
-      (i) => DateTime(now.year, now.month, now.day).subtract(
-        Duration(days: 6 - i),
-      ),
+      (i) => DateTime(
+        now.year,
+        now.month,
+        now.day,
+      ).subtract(Duration(days: 6 - i)),
     );
 
     return Scaffold(
@@ -87,11 +89,17 @@ class WidgetGalleryScreen extends StatelessWidget {
             children: [
               _PreviewBox(
                 title: 'To‑Do (Filled)',
-                child: TodoWidgetSquareView(language: language, pending: sampleTasks),
+                child: TodoWidgetSquareView(
+                  language: language,
+                  pending: sampleTasks,
+                ),
               ),
               _PreviewBox(
                 title: 'To‑Do (Empty)',
-                child: TodoWidgetSquareView(language: language, pending: const []),
+                child: TodoWidgetSquareView(
+                  language: language,
+                  pending: const [],
+                ),
               ),
               _PreviewBox(
                 title: 'Habits Today (Filled)',
@@ -100,7 +108,6 @@ class WidgetGalleryScreen extends StatelessWidget {
                   habits: sampleHabits,
                   completed: 0,
                   total: 3,
-                  completedHabitIds: const {},
                 ),
               ),
               _PreviewBox(
@@ -110,7 +117,6 @@ class WidgetGalleryScreen extends StatelessWidget {
                   habits: const [],
                   completed: 0,
                   total: 0,
-                  completedHabitIds: const {},
                 ),
               ),
               _PreviewBox(
@@ -127,11 +133,17 @@ class WidgetGalleryScreen extends StatelessWidget {
               ),
               _PreviewBox(
                 title: 'Focus',
-                child: FocusWidgetSquareView(language: language, durationMinutes: 25),
+                child: FocusWidgetSquareView(
+                  language: language,
+                  durationMinutes: 25,
+                ),
               ),
               _PreviewBox(
                 title: 'Blackout',
-                child: BlackoutWidgetSquareView(language: language, durationMinutes: 120),
+                child: BlackoutWidgetSquareView(
+                  language: language,
+                  durationMinutes: 120,
+                ),
               ),
             ],
           ),
@@ -186,7 +198,12 @@ class _PreviewBox extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title, style: AppTypography.caption1.copyWith(color: AppColors.secondaryLabel)),
+        Text(
+          title,
+          style: AppTypography.caption1.copyWith(
+            color: AppColors.secondaryLabel,
+          ),
+        ),
         const SizedBox(height: 8),
         ClipRRect(
           borderRadius: BorderRadius.circular(28),
@@ -208,7 +225,12 @@ class _PreviewBoxMedium extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title, style: AppTypography.caption1.copyWith(color: AppColors.secondaryLabel)),
+        Text(
+          title,
+          style: AppTypography.caption1.copyWith(
+            color: AppColors.secondaryLabel,
+          ),
+        ),
         const SizedBox(height: 8),
         ClipRRect(
           borderRadius: BorderRadius.circular(28),

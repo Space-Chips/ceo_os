@@ -454,6 +454,24 @@ class FocusService {
     }
   }
 
+  Future<Map<String, dynamic>> getBlockingDebugState() async {
+    const method = 'getBlockingDebugState';
+    if (_shouldSkipMissingMethod(method)) {
+      return {'nativeMethodAvailable': false};
+    }
+    try {
+      final result = await _channel.invokeMethod<Map<Object?, Object?>>(method);
+      if (result == null) return const {};
+      return result.map((key, value) => MapEntry('$key', value));
+    } on PlatformException catch (e) {
+      AppLogger.error("Failed to load blocking debug state: '${e.message}'.");
+      return {'error': e.message ?? e.code};
+    } on MissingPluginException {
+      _markMissingMethod(method);
+      return {'nativeMethodAvailable': false};
+    }
+  }
+
   // Start a strict CEO shield profile (platform specific).
   Future<bool> startCeoShield() async {
     const method = 'startCeoShield';
