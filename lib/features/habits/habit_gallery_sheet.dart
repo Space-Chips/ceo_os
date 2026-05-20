@@ -366,7 +366,9 @@ class HabitGallerySheet extends StatelessWidget {
                           entry.key,
                           style: AppTypography.overline.copyWith(
                             fontSize: 12,
-                            color: AppColors.secondaryLabel.withValues(alpha: 0.7),
+                            color: AppColors.secondaryLabel.withValues(
+                              alpha: 0.7,
+                            ),
                             fontWeight: FontWeight.w600,
                             letterSpacing: 1.4,
                           ),
@@ -384,11 +386,16 @@ class HabitGallerySheet extends StatelessWidget {
                                 gradient: const LinearGradient(
                                   begin: Alignment.topCenter,
                                   end: Alignment.bottomCenter,
-                                  colors: [Color(0xFF1A1A1A), Color(0xFF111111)],
+                                  colors: [
+                                    Color(0xFF1A1A1A),
+                                    Color(0xFF111111),
+                                  ],
                                 ),
                                 borderRadius: BorderRadius.circular(16),
                                 border: Border.all(
-                                  color: AppColors.white.withValues(alpha: 0.06),
+                                  color: AppColors.white.withValues(
+                                    alpha: 0.06,
+                                  ),
                                   width: 1,
                                 ),
                               ),
@@ -398,10 +405,14 @@ class HabitGallerySheet extends StatelessWidget {
                                     width: 48,
                                     height: 48,
                                     decoration: BoxDecoration(
-                                      color: AppColors.white.withValues(alpha: 0.04),
+                                      color: AppColors.white.withValues(
+                                        alpha: 0.04,
+                                      ),
                                       borderRadius: BorderRadius.circular(12),
                                       border: Border.all(
-                                        color: AppColors.white.withValues(alpha: 0.06),
+                                        color: AppColors.white.withValues(
+                                          alpha: 0.06,
+                                        ),
                                         width: 1,
                                       ),
                                     ),
@@ -419,25 +430,28 @@ class HabitGallerySheet extends StatelessWidget {
                                       children: [
                                         Text(
                                           item['title']!,
-                                          style: AppTypography.headline.copyWith(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w600,
-                                          ),
+                                          style: AppTypography.headline
+                                              .copyWith(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w600,
+                                              ),
                                         ),
                                         const SizedBox(height: 4),
                                         Text(
                                           item['quote']!,
-                                          style: AppTypography.caption1.copyWith(
-                                            fontSize: 11,
-                                            color: AppColors.secondaryLabel.withValues(alpha: 0.7),
-                                          ),
+                                          style: AppTypography.caption1
+                                              .copyWith(
+                                                fontSize: 11,
+                                                color: AppColors.secondaryLabel
+                                                    .withValues(alpha: 0.7),
+                                              ),
                                           maxLines: 2,
                                           overflow: TextOverflow.ellipsis,
                                         ),
                                       ],
                                     ),
                                   ),
-                                  const Icon(
+                                  Icon(
                                     CupertinoIcons.chevron_right,
                                     color: AppColors.tertiaryLabel,
                                     size: 16,
