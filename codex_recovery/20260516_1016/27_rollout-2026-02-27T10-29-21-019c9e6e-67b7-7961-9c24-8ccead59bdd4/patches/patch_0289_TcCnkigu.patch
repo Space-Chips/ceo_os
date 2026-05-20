@@ -7,7 +7,7 @@
      <true/>
 +    <key>com.apple.security.application-groups</key>
 +    <array>
-+        <string>group.com.example.ceocompass.timo</string>
++        <string>group.com.wakeapp.ceoos</string>
 +    </array>
  </dict>
  </plist>

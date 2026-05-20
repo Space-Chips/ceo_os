@@ -3,10 +3,12 @@ package com.wakeapp.ceoos
 sealed class BlockDecision {
     object Allow : BlockDecision()
     data class BlockApp(val packageName: String, val reason: String) : BlockDecision()
+    data class BlockUrl(val target: String, val reason: String) : BlockDecision()
     object IgnoreTransient : BlockDecision()
 }
 
 class AppBlockEngine(
+    private val browserBlockCoordinator: BrowserBlockCoordinator = BrowserBlockCoordinator(),
 ) {
     fun evaluate(
         snapshot: ForegroundSnapshot,
@@ -20,6 +22,27 @@ class AppBlockEngine(
         }
         if (ModeResolver.isSystemExemptPackage(packageName, state)) {
             return BlockDecision.Allow
+        }
+
+        if (snapshot.isBrowser) {
+            val domain = snapshot.detectedBrowserUrl
+                ?.let(BrowserBlockCoordinator::normalizeDomainToken)
+            if (domain != null) {
+                val matchedBlockedDomain = browserBlockCoordinator.matchDomain(
+                    domain = domain,
+                    configuredDomains = state.blockedDomains,
+                )
+                if (matchedBlockedDomain != null) {
+                    return BlockDecision.BlockUrl(matchedBlockedDomain, "blocked_website")
+                }
+                val matchedExceededDomain = browserBlockCoordinator.matchDomain(
+                    domain = domain,
+                    configuredDomains = state.exceededDomains,
+                )
+                if (matchedExceededDomain != null) {
+                    return BlockDecision.BlockUrl(matchedExceededDomain, "daily_limit")
+                }
+            }
         }
 
         if (state.blackoutEnabled && !state.blackoutAllowedPackages.contains(packageName)) {

@@ -8,7 +8,7 @@
 +    private let classicSelectionStorageKey = "classic_selection_payloads_v1"
 +    private let classicEnabledStorageKey = "classic_shield_enabled_v1"
 +    private let ceoEnabledStorageKey = "ceo_shield_enabled_v1"
-     private let appGroupId = "group.com.example.ceocompass.timo"
+     private let appGroupId = "group.com.wakeapp.ceoos"
 @@
 -    private func startShield(result: FlutterResult) {
 -        // Apply shield from current selection

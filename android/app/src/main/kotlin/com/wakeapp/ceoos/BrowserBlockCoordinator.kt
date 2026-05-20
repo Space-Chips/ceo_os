@@ -29,4 +29,13 @@ class BrowserBlockCoordinator {
             return normalized
         }
     }
+
+    fun matchDomain(domain: String, configuredDomains: Set<String>): String? {
+        val normalizedDomain = normalizeDomainToken(domain) ?: return null
+        return configuredDomains.firstOrNull { configured ->
+            val normalizedConfigured = normalizeDomainToken(configured) ?: return@firstOrNull false
+            normalizedDomain == normalizedConfigured ||
+                normalizedDomain.endsWith(".$normalizedConfigured")
+        }
+    }
 }

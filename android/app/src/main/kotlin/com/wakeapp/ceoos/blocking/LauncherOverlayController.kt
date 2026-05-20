@@ -92,16 +92,6 @@ class LauncherOverlayController(
         }
     }
 
-    private fun maybeMoveOverlay(entry: OverlayEntry, newBounds: Rect) {
-        if (entry.bounds == newBounds) return
-        val params = buildLayoutParams(newBounds)
-        try {
-            windowManager?.updateViewLayout(entry.view, params)
-            entry.bounds = Rect(newBounds)
-        } catch (_: Exception) {
-        }
-    }
-
     private fun buildLayoutParams(bounds: Rect): WindowManager.LayoutParams {
         return WindowManager.LayoutParams().apply {
             type = WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY

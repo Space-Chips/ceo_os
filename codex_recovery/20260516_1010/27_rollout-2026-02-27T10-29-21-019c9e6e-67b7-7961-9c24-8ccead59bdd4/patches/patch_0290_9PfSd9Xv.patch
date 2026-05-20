@@ -10,7 +10,7 @@
      private let notificationCenter = UNUserNotificationCenter.current()
      private let plansStorageKey = "planned_focus_sessions_v1"
 +    private let selectionStorageKey = "focus_selection_json_v1"
-+    private let appGroupId = "group.com.example.ceocompass.timo"
++    private let appGroupId = "group.com.wakeapp.ceoos"
      private let planPrefixWarn = "focus_plan_warn_"
      private let planPrefixStart = "focus_plan_start_"
 +    private let planActivityPrefix = "focus_plan_activity_"

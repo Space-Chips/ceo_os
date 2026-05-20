@@ -17,6 +17,8 @@ class AndroidBlockedAppNavigator(
             BlockReason.BLACKOUT_SESSION -> "blackout"
             BlockReason.FOCUS_SESSION -> "focus"
             BlockReason.CLASSIC_LIMIT_REACHED -> "daily_limit"
+            BlockReason.CLASSIC_BLOCKED -> "blocked_app"
+            BlockReason.CLASSIC_PAUSE_BLOCKED -> "scheduled_pause"
             null -> "blocked_app"
         }
         gateLauncher.launch(

@@ -42,18 +42,18 @@
 +            kind: "com.wakeapp.ceoos.ceowidgets.control",
 *** Update File: /Users/timo/ceo_os/ios/Runner/AppDelegate.swift
 @@
--    private let appGroupId = "group.com.example.ceocompass.timo"
+-    private let appGroupId = "group.com.wakeapp.ceoos"
 +    private let appGroupId = "group.com.wakeapp.ceoos"
 *** Update File: /Users/timo/ceo_os/ios/Runner/Runner.entitlements
 @@
--        <string>group.com.example.ceocompass.timo</string>
+-        <string>group.com.wakeapp.ceoos</string>
 +        <string>group.com.wakeapp.ceoos</string>
 *** Update File: /Users/timo/ceo_os/ios/FocusActivityMonitor/FocusActivityMonitor.entitlements
 @@
--		<string>group.com.example.ceocompass.timo</string>
+-		<string>group.com.wakeapp.ceoos</string>
 +		<string>group.com.wakeapp.ceoos</string>
 *** Update File: /Users/timo/ceo_os/ios/FocusActivityMonitor/FocusActivityMonitorExtension.swift
 @@
--    static let appGroupId = "group.com.example.ceocompass.timo"
+-    static let appGroupId = "group.com.wakeapp.ceoos"
 +    static let appGroupId = "group.com.wakeapp.ceoos"
 *** End Patch

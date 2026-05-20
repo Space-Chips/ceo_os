@@ -13,7 +13,7 @@
 +    private let classicPauseEnabledStorageKey = "classic_pause_enabled_v1"
 +    private let classicRestPeriodsStorageKey = "classic_rest_periods_v1"
      private let ceoEnabledStorageKey = "ceo_shield_enabled_v1"
-     private let appGroupId = "group.com.example.ceocompass.timo"
+     private let appGroupId = "group.com.wakeapp.ceoos"
      private let planPrefixWarn = "focus_plan_warn_"
      private let planPrefixStart = "focus_plan_start_"
      private let planActivityPrefix = "focus_plan_activity_"
