@@ -5,7 +5,10 @@ class PremiumConfig {
   final bool paywallEnabled;
   final int habitsFreeLimit;
   final int tasksFreeLimit;
+  final int notesFreeLimit;
+  final int focusFreeDailyLimit;
   final int focusFreeMinutesLimit;
+  final int ceoModeFreeWeeklyLimit;
   final int ceoModeFreeMinutesLimit;
   final String revenuecatEntitlementId;
   final String? revenuecatOfferingId;
@@ -18,7 +21,10 @@ class PremiumConfig {
     this.paywallEnabled = false,
     this.habitsFreeLimit = 3,
     this.tasksFreeLimit = 12,
+    this.notesFreeLimit = 50,
+    this.focusFreeDailyLimit = 1,
     this.focusFreeMinutesLimit = 25,
+    this.ceoModeFreeWeeklyLimit = 1,
     this.ceoModeFreeMinutesLimit = 30,
     this.revenuecatEntitlementId = 'premium',
     this.revenuecatOfferingId,
