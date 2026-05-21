@@ -49,75 +49,94 @@ class _DashboardIntroScreenState extends State<DashboardIntroScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Tout reste à portée de main',
-            style: AppTypography.largeTitle.copyWith(
-              fontSize: 30,
-              fontWeight: FontWeight.w800,
-              letterSpacing: -0.9,
-              color: AppColors.label,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Ton centre affiche aussi tes notes, ton élan et tes raccourcis intégrés.',
-            style: AppTypography.subhead.copyWith(
-              color: AppColors.secondaryLabel.withValues(alpha: 0.72),
-              height: 1.35,
-            ),
-          ),
-          const SizedBox(height: 16),
-          AnimatedBuilder(
-            animation: _controller,
-            builder: (context, _) {
-              final g = _controller.value;
-              final slideUp = Tween<double>(begin: 0.0, end: -8.0)
-                  .transform(Curves.easeOutCubic.transform(g));
-              return Transform.translate(
-                offset: Offset(0, slideUp),
-                child: GlassCard(
-                  level: GlassCardLevel.elevated,
-                  padding: const EdgeInsets.all(14),
-                  borderRadius: 24,
-                  border: Border.all(color: AppColors.borderStrong, width: 1),
-                  gradientColors: [
-                    AppColors.sectionBackground,
-                    AppColors.background,
-                  ],
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Centre',
-                        style: AppTypography.overline.copyWith(
-                          fontSize: 11,
-                          letterSpacing: 2,
-                          color: AppColors.secondaryLabel.withValues(alpha: 0.55),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      ControlCenterSlotGrid(slots: slots),
-                      const SizedBox(height: 14),
-                      Text(
-                        'Dashboard intégré',
-                        style: AppTypography.overline.copyWith(
-                          fontSize: 11,
-                          letterSpacing: 2,
-                          color: AppColors.secondaryLabel.withValues(alpha: 0.55),
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      _IntroWidgets(
-                        globalProgress: g,
-                        stagger: _stagger,
-                      ),
-                    ],
+          Expanded(
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.only(bottom: 18),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Tout reste à portée de main',
+                    style: AppTypography.largeTitle.copyWith(
+                      fontSize: 30,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.9,
+                      color: AppColors.label,
+                    ),
                   ),
-                ),
-              );
-            },
+                  const SizedBox(height: 8),
+                  Text(
+                    'Ton centre affiche aussi tes notes, ton élan et tes raccourcis intégrés.',
+                    style: AppTypography.subhead.copyWith(
+                      color: AppColors.secondaryLabel.withValues(alpha: 0.72),
+                      height: 1.35,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  AnimatedBuilder(
+                    animation: _controller,
+                    builder: (context, _) {
+                      final g = _controller.value;
+                      final slideUp = Tween<double>(
+                        begin: 0.0,
+                        end: -8.0,
+                      ).transform(Curves.easeOutCubic.transform(g));
+                      return Transform.translate(
+                        offset: Offset(0, slideUp),
+                        child: GlassCard(
+                          level: GlassCardLevel.elevated,
+                          padding: const EdgeInsets.all(14),
+                          borderRadius: 24,
+                          border: Border.all(
+                            color: AppColors.borderStrong,
+                            width: 1,
+                          ),
+                          gradientColors: [
+                            AppColors.sectionBackground,
+                            AppColors.background,
+                          ],
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Centre',
+                                style: AppTypography.overline.copyWith(
+                                  fontSize: 11,
+                                  letterSpacing: 2,
+                                  color: AppColors.secondaryLabel.withValues(
+                                    alpha: 0.55,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              ControlCenterSlotGrid(slots: slots),
+                              const SizedBox(height: 14),
+                              Text(
+                                'Dashboard intégré',
+                                style: AppTypography.overline.copyWith(
+                                  fontSize: 11,
+                                  letterSpacing: 2,
+                                  color: AppColors.secondaryLabel.withValues(
+                                    alpha: 0.55,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              _IntroWidgets(
+                                globalProgress: g,
+                                stagger: _stagger,
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
           ),
-          const Spacer(),
           LiquidButton(label: 'Continuer', onPressed: widget.onContinue),
         ],
       ),
@@ -160,8 +179,10 @@ class _IntroWidgets extends StatelessWidget {
     required double progress,
   }) {
     final opacity = progress.clamp(0.0, 1.0).toDouble();
-    final translate = Tween<double>(begin: 12.0, end: 0.0)
-        .transform(Curves.easeOutCubic.transform(progress));
+    final translate = Tween<double>(
+      begin: 12.0,
+      end: 0.0,
+    ).transform(Curves.easeOutCubic.transform(progress));
     return Opacity(
       opacity: opacity,
       child: Transform.translate(
