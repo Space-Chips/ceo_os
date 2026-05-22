@@ -1071,11 +1071,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
       children: [
         Expanded(
           child: Text(
-            title.toUpperCase(),
-            style: AppTypography.overline.copyWith(
-              fontSize: 14,
-              letterSpacing: 1.2,
-              color: AppColors.label.withValues(alpha: 0.7),
+            title,
+            style: AppTypography.headline.copyWith(
+              fontSize: 18,
+              color: AppColors.label,
               fontWeight: FontWeight.w700,
             ),
           ),

@@ -581,12 +581,11 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'DURATION',
-                  style: AppTypography.mono.copyWith(
-                    fontSize: 11,
-                    color: AppColors.warning,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 1.6,
+                  'Duration',
+                  style: AppTypography.headline.copyWith(
+                    fontSize: 16,
+                    color: AppColors.label,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -666,12 +665,11 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'ESSENTIAL APPS (3)',
-                style: AppTypography.mono.copyWith(
-                  fontSize: 11,
-                  color: AppColors.tertiaryLabel,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.4,
+                'Essential apps',
+                style: AppTypography.headline.copyWith(
+                  fontSize: 16,
+                  color: AppColors.label,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
               const SizedBox(height: 10),
