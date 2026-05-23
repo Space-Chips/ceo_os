@@ -550,24 +550,14 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
           overflow: TextOverflow.ellipsis,
           style: TextStyle(
             fontFamily: '.SF Pro Display',
-            fontSize: 46,
+            fontSize: 39,
             fontWeight: FontWeight.w800,
             height: 1,
             letterSpacing: 0,
             color: AppColors.label,
           ),
         ),
-        const SizedBox(height: 12),
-        Text(
-          _t('blackout_description'),
-          style: AppTypography.body.copyWith(
-            fontSize: 17,
-            fontWeight: FontWeight.w600,
-            height: 1.34,
-            color: AppColors.secondaryLabel,
-          ),
-        ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 24),
         GlassCard(
           padding: const EdgeInsets.fromLTRB(22, 22, 22, 24),
           borderRadius: 24,

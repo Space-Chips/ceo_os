@@ -2186,7 +2186,7 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
               )
             : SafeArea(
                 child: ListView(
-                  padding: const EdgeInsets.fromLTRB(22, 20, 22, 28),
+                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
                   children: [
                     _modernSectionTitle(
                       key: _appsSectionKey,
@@ -2316,16 +2316,16 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
       padding: EdgeInsets.zero,
       onPressed: _saving ? null : _addBlockedApp,
       child: Container(
-        padding: const EdgeInsets.fromLTRB(40, 24, 24, 24),
+        padding: const EdgeInsets.fromLTRB(26, 24, 22, 24),
         decoration: _modernPanelDecoration(radius: 28),
         child: Row(
           children: [
             Icon(
               CupertinoIcons.add_circled,
-              size: 26,
+              size: 24,
               color: AppColors.secondaryLabel,
             ),
-            const SizedBox(width: 42),
+            const SizedBox(width: 28),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -2333,8 +2333,8 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
                   Text(
                     'Choose apps to\nblock',
                     style: AppTypography.title3.copyWith(
-                      fontSize: 24,
-                      height: 1.18,
+                      fontSize: 21,
+                      height: 1.12,
                       fontWeight: FontWeight.w800,
                       color: AppColors.label,
                     ),
@@ -2343,8 +2343,8 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
                   Text(
                     'Open the Apple app\npicker and select one\nor multiple apps.',
                     style: AppTypography.callout.copyWith(
-                      fontSize: 19,
-                      height: 1.27,
+                      fontSize: 17,
+                      height: 1.28,
                       fontWeight: FontWeight.w700,
                       color: AppColors.secondaryLabel.withValues(alpha: 0.78),
                     ),
@@ -2352,13 +2352,14 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
                 ],
               ),
             ),
+            const SizedBox(width: 18),
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   'Choose apps',
                   style: AppTypography.callout.copyWith(
-                    fontSize: 17,
+                    fontSize: 16,
                     fontWeight: FontWeight.w700,
                     color: AppColors.secondaryLabel.withValues(alpha: 0.86),
                   ),
@@ -2379,7 +2380,7 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
 
   Widget _adultShieldCard() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
+      padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 22),
       decoration: _modernPanelDecoration(
         radius: 24,
         borderColor: AppColors.error.withValues(alpha: 0.28),
@@ -2388,20 +2389,23 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
         children: [
           Icon(
             CupertinoIcons.exclamationmark_shield,
-            size: 20,
+            size: 18,
             color: AppColors.error,
           ),
-          const SizedBox(width: 18),
+          const SizedBox(width: 14),
           Expanded(
             child: Text(
               'Global NSFW shield',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: AppTypography.title3.copyWith(
-                fontSize: 21,
+                fontSize: 18,
                 fontWeight: FontWeight.w800,
                 color: AppColors.label,
               ),
             ),
           ),
+          const SizedBox(width: 14),
           CupertinoSwitch(
             value: _adultContentShieldEnabled,
             onChanged: _saving ? null : _setAdultContentShieldEnabled,

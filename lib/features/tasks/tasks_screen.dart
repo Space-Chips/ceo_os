@@ -624,39 +624,40 @@ class _TasksScreenState extends State<TasksScreen> {
         child: GestureDetector(
           onTap: onTap,
           child: Stack(
+            clipBehavior: Clip.none,
             children: [
-              Positioned.fill(
+              Positioned(
+                left: -1,
+                right: -1,
+                top: -8,
+                bottom: -18,
                 child: IgnorePointer(
                   child: Container(
-                    margin: const EdgeInsets.symmetric(
-                      horizontal: 3,
-                      vertical: 9,
-                    ),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(24),
                       boxShadow: [
                         BoxShadow(
-                          color: glowColor.withValues(alpha: 0.34),
-                          blurRadius: 24,
-                          spreadRadius: 8,
+                          color: glowColor.withValues(alpha: 0.46),
+                          blurRadius: 34,
+                          spreadRadius: 9,
                         ),
                         BoxShadow(
-                          color: glowColor.withValues(alpha: 0.24),
-                          blurRadius: 42,
-                          spreadRadius: -2,
-                          offset: const Offset(0, 12),
+                          color: glowColor.withValues(alpha: 0.3),
+                          blurRadius: 52,
+                          spreadRadius: 3,
+                          offset: const Offset(0, 14),
                         ),
                         BoxShadow(
-                          color: glowColor.withValues(alpha: 0.2),
-                          blurRadius: 28,
-                          spreadRadius: 4,
-                          offset: const Offset(-24, 0),
+                          color: glowColor.withValues(alpha: 0.28),
+                          blurRadius: 38,
+                          spreadRadius: 5,
+                          offset: const Offset(-30, 0),
                         ),
                         BoxShadow(
-                          color: glowColor.withValues(alpha: 0.2),
-                          blurRadius: 28,
-                          spreadRadius: 4,
-                          offset: const Offset(24, 0),
+                          color: glowColor.withValues(alpha: 0.28),
+                          blurRadius: 38,
+                          spreadRadius: 5,
+                          offset: const Offset(30, 0),
                         ),
                       ],
                     ),
