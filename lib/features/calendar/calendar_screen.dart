@@ -923,6 +923,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
       ),
       itemBuilder: (context, index) {
         final monthDate = DateTime(_currentDate.year, index + 1, 1);
+        final now = DateTime.now();
+        final isCurrentMonth =
+            monthDate.year == now.year && monthDate.month == now.month;
         final count = _eventCountForMonth(monthDate, events);
         return GestureDetector(
           onTap: () {
@@ -940,13 +943,31 @@ class _CalendarScreenState extends State<CalendarScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
-                  _safeDateFormat('MMM', monthDate),
-                  style: AppTypography.mono.copyWith(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w900,
-                    color: AppColors.label,
-                  ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      _safeDateFormat('MMM', monthDate),
+                      style: AppTypography.mono.copyWith(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w900,
+                        color: AppColors.label,
+                      ),
+                    ),
+                    if (isCurrentMonth) ...[
+                      const SizedBox(width: 5),
+                      Container(
+                        width: 5,
+                        height: 5,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: AppColors.secondaryLabel.withValues(
+                            alpha: 0.72,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
                 const SizedBox(height: 6),
                 if (count > 0)
