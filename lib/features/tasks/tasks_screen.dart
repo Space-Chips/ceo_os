@@ -1186,6 +1186,10 @@ class _TasksScreenState extends State<TasksScreen> {
                         decoration: task.completed
                             ? TextDecoration.lineThrough
                             : TextDecoration.none,
+                        decorationColor: AppColors.secondaryLabel.withValues(
+                          alpha: 0.85,
+                        ),
+                        decorationThickness: task.completed ? 1.6 : null,
                       ),
                     ),
                     const SizedBox(height: 6),
