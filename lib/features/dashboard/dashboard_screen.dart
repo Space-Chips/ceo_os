@@ -824,8 +824,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
       level: GlassCardLevel.standard,
       showEdgeGlow: false,
       border: Border.all(
-        color: AppColors.glassBorder.withValues(alpha: 0.8),
-        width: 0.7,
+        color: AppColors.glassBorder.withValues(alpha: 0.52),
+        width: 0.55,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -906,8 +906,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
       level: GlassCardLevel.standard,
       showEdgeGlow: false,
       border: Border.all(
-        color: AppColors.glassBorder.withValues(alpha: 0.8),
-        width: 0.7,
+        color: AppColors.glassBorder.withValues(alpha: 0.52),
+        width: 0.55,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1053,8 +1053,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ],
       ),
       border: Border.all(
-        color: AppColors.border.withValues(alpha: 0.72),
-        width: 0.8,
+        color: AppColors.border.withValues(alpha: 0.46),
+        width: 0.55,
       ),
       boxShadow: [
         BoxShadow(
