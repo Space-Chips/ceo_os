@@ -640,7 +640,7 @@ class _RankScreenState extends State<RankScreen> {
           children: [
             RankArt(
               rankName: tier.name,
-              size: RankArtSize.sm,
+              size: RankArtSize.hero,
               dimension: 68,
               fit: BoxFit.contain,
             ),
