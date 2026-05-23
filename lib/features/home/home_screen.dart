@@ -1261,10 +1261,22 @@ class _TopShortcutsBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(0, 6, 0, 6),
+      height: 58,
+      padding: const EdgeInsets.fromLTRB(6, 7, 6, 7),
       decoration: BoxDecoration(
-        color: AppColors.background.withValues(alpha: 0.16),
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(22),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppColors.surface.withValues(alpha: 0.2),
+            AppColors.backgroundLight.withValues(alpha: 0.12),
+          ],
+        ),
+        border: Border.all(
+          color: AppColors.glassBorder.withValues(alpha: 0.4),
+          width: 0.55,
+        ),
       ),
       child: Row(
         children: [
@@ -1273,18 +1285,21 @@ class _TopShortcutsBar extends StatelessWidget {
             borderRadius: 24,
             glowColor: AppColors.edgeGlowSoft,
             child: Container(
-              width: 44,
-              height: 44,
+              width: 44.5,
+              height: 44.5,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: AppColors.floatingGlassGradient,
+                  colors: [
+                    AppColors.backgroundLight.withValues(alpha: 0.82),
+                    AppColors.surfaceMuted.withValues(alpha: 0.76),
+                  ],
                 ),
                 border: Border.all(
-                  color: AppColors.glassBorder.withValues(alpha: 0.68),
-                  width: 0.85,
+                  color: AppColors.glassBorder.withValues(alpha: 0.66),
+                  width: 0.65,
                 ),
               ),
               child: Icon(
@@ -1352,20 +1367,23 @@ class _ShortcutPill extends StatelessWidget {
   Widget build(BuildContext context) {
     return _InteractiveLift(
       onTap: onTap,
-      borderRadius: 18,
-      glowColor: labelColor.withValues(alpha: 0.18),
+      borderRadius: 17,
+      glowColor: labelColor.withValues(alpha: 0.14),
       child: Container(
-        height: 44,
+        height: 42,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(17),
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: AppColors.floatingGlassGradient,
+            colors: [
+              AppColors.backgroundLight.withValues(alpha: 0.74),
+              AppColors.surfaceMuted.withValues(alpha: 0.68),
+            ],
           ),
           border: Border.all(
-            color: AppColors.glassBorder.withValues(alpha: 0.68),
-            width: 0.85,
+            color: AppColors.glassBorder.withValues(alpha: 0.62),
+            width: 0.6,
           ),
         ),
         child: Stack(
@@ -1383,20 +1401,20 @@ class _ShortcutPill extends StatelessWidget {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+              padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 9),
               child: Row(
                 children: [
-                  leading ?? Icon(icon, color: iconColor, size: 13),
-                  const SizedBox(width: 8),
+                  leading ?? Icon(icon, color: iconColor, size: 13.5),
+                  const SizedBox(width: 7),
                   Expanded(
                     child: Text(
                       label,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: AppTypography.footnote.copyWith(
-                        fontSize: 12,
+                        fontSize: 32 / 3,
                         fontWeight: FontWeight.w600,
-                        color: labelColor,
+                        color: labelColor.withValues(alpha: 0.96),
                       ),
                     ),
                   ),
@@ -1425,21 +1443,24 @@ class _ShortcutCircle extends StatelessWidget {
   Widget build(BuildContext context) {
     return _InteractiveLift(
       onTap: onTap,
-      borderRadius: 16,
-      glowColor: AppColors.edgeGlowSoft.withValues(alpha: 0.65),
+      borderRadius: 17,
+      glowColor: AppColors.edgeGlowSoft.withValues(alpha: 0.52),
       child: Container(
-        width: 44,
-        height: 44,
+        width: 42,
+        height: 42,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(17),
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: AppColors.floatingGlassGradient,
+            colors: [
+              AppColors.backgroundLight.withValues(alpha: 0.74),
+              AppColors.surfaceMuted.withValues(alpha: 0.68),
+            ],
           ),
           border: Border.all(
-            color: AppColors.glassBorder.withValues(alpha: 0.68),
-            width: 0.85,
+            color: AppColors.glassBorder.withValues(alpha: 0.62),
+            width: 0.6,
           ),
         ),
         child: Stack(
@@ -1456,7 +1477,7 @@ class _ShortcutCircle extends StatelessWidget {
                 ),
               ),
             ),
-            Center(child: Icon(icon, color: iconColor, size: 21)),
+            Center(child: Icon(icon, color: iconColor, size: 20)),
           ],
         ),
       ),
@@ -1474,34 +1495,37 @@ class _StreakPill extends StatelessWidget {
   Widget build(BuildContext context) {
     return _InteractiveLift(
       onTap: onTap,
-      borderRadius: 18,
-      glowColor: AppColors.warning.withValues(alpha: 0.18),
+      borderRadius: 17,
+      glowColor: AppColors.warning.withValues(alpha: 0.14),
       child: Container(
-        constraints: const BoxConstraints(minWidth: 72, minHeight: 44),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+        constraints: const BoxConstraints(minWidth: 78, minHeight: 42),
+        padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 9),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(17),
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: AppColors.floatingGlassGradient,
+            colors: [
+              AppColors.backgroundLight.withValues(alpha: 0.74),
+              AppColors.surfaceMuted.withValues(alpha: 0.68),
+            ],
           ),
           border: Border.all(
-            color: AppColors.glassBorder.withValues(alpha: 0.68),
-            width: 0.85,
+            color: AppColors.glassBorder.withValues(alpha: 0.62),
+            width: 0.6,
           ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('🔥', style: AppTypography.callout.copyWith(fontSize: 13)),
-            const SizedBox(width: 6),
+            Text('🔥', style: AppTypography.callout.copyWith(fontSize: 14)),
+            const SizedBox(width: 7),
             Text(
               '$streak',
               style: AppTypography.footnote.copyWith(
-                fontSize: 31,
-                height: 0.92,
-                fontWeight: FontWeight.w500,
+                fontSize: 16,
+                height: 1.0,
+                fontWeight: FontWeight.w700,
                 color: AppColors.warning,
               ),
             ),
