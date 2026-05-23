@@ -1260,88 +1260,67 @@ class _TopShortcutsBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 58,
-      padding: const EdgeInsets.fromLTRB(6, 7, 6, 7),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(22),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            AppColors.surface.withValues(alpha: 0.2),
-            AppColors.backgroundLight.withValues(alpha: 0.12),
-          ],
-        ),
-        border: Border.all(
-          color: AppColors.glassBorder.withValues(alpha: 0.4),
-          width: 0.55,
-        ),
-      ),
-      child: Row(
-        children: [
-          _InteractiveLift(
-            onTap: onOpenMenu,
-            borderRadius: 24,
-            glowColor: AppColors.edgeGlowSoft,
-            child: Container(
-              width: 44.5,
-              height: 44.5,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    AppColors.backgroundLight.withValues(alpha: 0.82),
-                    AppColors.surfaceMuted.withValues(alpha: 0.76),
-                  ],
-                ),
-                border: Border.all(
-                  color: AppColors.glassBorder.withValues(alpha: 0.66),
-                  width: 0.65,
-                ),
+    return Row(
+      children: [
+        _InteractiveLift(
+          onTap: onOpenMenu,
+          borderRadius: 24,
+          glowColor: AppColors.edgeGlowSoft,
+          child: Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: AppColors.floatingGlassGradient,
               ),
-              child: Icon(
-                CupertinoIcons.person_fill,
-                color: AppColors.secondaryLabel,
-                size: 18,
+              border: Border.all(
+                color: AppColors.glassBorder.withValues(alpha: 0.66),
+                width: 0.9,
               ),
+            ),
+            child: Icon(
+              CupertinoIcons.person_fill,
+              color: AppColors.secondaryLabel,
+              size: 18,
             ),
           ),
-          const SizedBox(width: 10),
-          if (enabledShortcuts.contains('rank')) ...[
-            Expanded(
-              child: _ShortcutPill(
-                label: 'WakeApp Pro',
-                icon: CupertinoIcons.arrow_up_circle_fill,
-                iconColor: AppColors.secondaryLabel,
-                labelColor: AppColors.secondaryLabel,
-                onTap: onOpenRank,
-              ),
-            ),
-            const SizedBox(width: 8),
-          ],
-          if (enabledShortcuts.contains('focus')) ...[
-            _ShortcutCircle(
-              icon: CupertinoIcons.bolt_fill,
+        ),
+        const SizedBox(width: 10),
+        if (enabledShortcuts.contains('rank')) ...[
+          SizedBox(
+            width: 176,
+            child: _ShortcutPill(
+              label: 'WakeApp Pro',
+              icon: CupertinoIcons.arrow_up_circle_fill,
               iconColor: AppColors.secondaryLabel,
-              onTap: onOpenFocus,
+              labelColor: AppColors.secondaryLabel,
+              onTap: onOpenRank,
             ),
-            const SizedBox(width: 8),
-          ],
-          if (enabledShortcuts.contains('notes')) ...[
-            _ShortcutCircle(
-              icon: CupertinoIcons.doc_text_fill,
-              iconColor: AppColors.secondaryLabel,
-              onTap: onOpenNotes,
-            ),
-            const SizedBox(width: 8),
-          ],
-          if (enabledShortcuts.contains('streak'))
-            _StreakPill(streak: winStreak, onTap: onOpenStreak),
+          ),
+          const SizedBox(width: 7),
         ],
-      ),
+        if (enabledShortcuts.contains('focus')) ...[
+          _ShortcutCircle(
+            icon: CupertinoIcons.bolt_fill,
+            iconColor: AppColors.secondaryLabel,
+            onTap: onOpenFocus,
+          ),
+          const SizedBox(width: 7),
+        ],
+        if (enabledShortcuts.contains('notes')) ...[
+          _ShortcutCircle(
+            icon: CupertinoIcons.doc_text_fill,
+            iconColor: AppColors.secondaryLabel,
+            onTap: onOpenNotes,
+          ),
+          const SizedBox(width: 7),
+        ],
+        if (enabledShortcuts.contains('streak'))
+          _StreakPill(streak: winStreak, onTap: onOpenStreak),
+      ],
     );
   }
 }
@@ -1367,23 +1346,20 @@ class _ShortcutPill extends StatelessWidget {
   Widget build(BuildContext context) {
     return _InteractiveLift(
       onTap: onTap,
-      borderRadius: 17,
-      glowColor: labelColor.withValues(alpha: 0.14),
+      borderRadius: 18,
+      glowColor: labelColor.withValues(alpha: 0.18),
       child: Container(
-        height: 42,
+        height: 44,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(17),
+          borderRadius: BorderRadius.circular(18),
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              AppColors.backgroundLight.withValues(alpha: 0.74),
-              AppColors.surfaceMuted.withValues(alpha: 0.68),
-            ],
+            colors: AppColors.floatingGlassGradient,
           ),
           border: Border.all(
-            color: AppColors.glassBorder.withValues(alpha: 0.62),
-            width: 0.6,
+            color: AppColors.glassBorder.withValues(alpha: 0.66),
+            width: 0.9,
           ),
         ),
         child: Stack(
@@ -1401,20 +1377,20 @@ class _ShortcutPill extends StatelessWidget {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 9),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
               child: Row(
                 children: [
-                  leading ?? Icon(icon, color: iconColor, size: 13.5),
-                  const SizedBox(width: 7),
+                  leading ?? Icon(icon, color: iconColor, size: 12),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       label,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: AppTypography.footnote.copyWith(
-                        fontSize: 32 / 3,
+                        fontSize: 35 / 3,
                         fontWeight: FontWeight.w600,
-                        color: labelColor.withValues(alpha: 0.96),
+                        color: labelColor,
                       ),
                     ),
                   ),
@@ -1443,24 +1419,21 @@ class _ShortcutCircle extends StatelessWidget {
   Widget build(BuildContext context) {
     return _InteractiveLift(
       onTap: onTap,
-      borderRadius: 17,
-      glowColor: AppColors.edgeGlowSoft.withValues(alpha: 0.52),
+      borderRadius: 16,
+      glowColor: AppColors.edgeGlowSoft.withValues(alpha: 0.62),
       child: Container(
-        width: 42,
-        height: 42,
+        width: 44,
+        height: 44,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(17),
+          borderRadius: BorderRadius.circular(16),
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              AppColors.backgroundLight.withValues(alpha: 0.74),
-              AppColors.surfaceMuted.withValues(alpha: 0.68),
-            ],
+            colors: AppColors.floatingGlassGradient,
           ),
           border: Border.all(
-            color: AppColors.glassBorder.withValues(alpha: 0.62),
-            width: 0.6,
+            color: AppColors.glassBorder.withValues(alpha: 0.66),
+            width: 0.9,
           ),
         ),
         child: Stack(
@@ -1477,7 +1450,7 @@ class _ShortcutCircle extends StatelessWidget {
                 ),
               ),
             ),
-            Center(child: Icon(icon, color: iconColor, size: 20)),
+            Center(child: Icon(icon, color: iconColor, size: 19)),
           ],
         ),
       ),
@@ -1495,36 +1468,32 @@ class _StreakPill extends StatelessWidget {
   Widget build(BuildContext context) {
     return _InteractiveLift(
       onTap: onTap,
-      borderRadius: 17,
-      glowColor: AppColors.warning.withValues(alpha: 0.14),
+      borderRadius: 18,
+      glowColor: AppColors.warning.withValues(alpha: 0.18),
       child: Container(
-        constraints: const BoxConstraints(minWidth: 78, minHeight: 42),
-        padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 9),
+        constraints: const BoxConstraints(minWidth: 74, minHeight: 44),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(17),
+          borderRadius: BorderRadius.circular(18),
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              AppColors.backgroundLight.withValues(alpha: 0.74),
-              AppColors.surfaceMuted.withValues(alpha: 0.68),
-            ],
+            colors: AppColors.floatingGlassGradient,
           ),
           border: Border.all(
-            color: AppColors.glassBorder.withValues(alpha: 0.62),
-            width: 0.6,
+            color: AppColors.glassBorder.withValues(alpha: 0.66),
+            width: 0.9,
           ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('🔥', style: AppTypography.callout.copyWith(fontSize: 14)),
-            const SizedBox(width: 7),
+            Text('🔥', style: AppTypography.callout.copyWith(fontSize: 13)),
+            const SizedBox(width: 6),
             Text(
               '$streak',
               style: AppTypography.footnote.copyWith(
-                fontSize: 16,
-                height: 1.0,
+                fontSize: 12,
                 fontWeight: FontWeight.w700,
                 color: AppColors.warning,
               ),
