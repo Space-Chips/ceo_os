@@ -378,6 +378,13 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
     });
   }
 
+  bool get _usesModernBlockingLayout => true;
+
+  Future<void> _setAdultContentShieldEnabled(bool enabled) {
+    if (_saving) return Future.value();
+    return _runMutation(() => _repo.setAdultContentShieldEnabled(enabled));
+  }
+
   void _jumpToInitialSectionIfNeeded() {
     if (_didJumpToInitialSection) return;
     final key = _sectionKeyFor(widget.initialSection);
@@ -1478,6 +1485,10 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
   @override
   Widget build(BuildContext context) {
     context.watch<LanguageProvider>().languageCode;
+    if (_usesModernBlockingLayout) {
+      return _modernBlockingScaffold();
+    }
+
     final activeRest = _activeRestPeriod();
     final scheduledRests = _scheduledRestPeriods();
     final now = DateTime.now();
@@ -2120,6 +2131,419 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
           if (trailing != null) trailing,
         ],
       ),
+    );
+  }
+
+  Widget _modernBlockingScaffold() {
+    return CupertinoPageScaffold(
+      backgroundColor: AppColors.background,
+      navigationBar: CupertinoNavigationBar(
+        leading: CupertinoButton(
+          padding: EdgeInsets.zero,
+          onPressed: () => context.go('/screen-time-manager'),
+          child: Icon(
+            CupertinoIcons.chevron_left,
+            color: AppColors.secondaryLabel,
+            size: 22,
+          ),
+        ),
+        middle: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 285),
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              _isAndroid
+                  ? _t('focus_protection')
+                  : _t('screen_time_control_title'),
+              maxLines: 1,
+              style: AppTypography.mono.copyWith(
+                fontSize: 22,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 1.2,
+                color: AppColors.label,
+              ),
+            ),
+          ),
+        ),
+        trailing: CupertinoButton(
+          padding: EdgeInsets.zero,
+          onPressed: _saving ? null : _load,
+          child: Icon(
+            CupertinoIcons.refresh,
+            color: _saving ? AppColors.tertiaryLabel : AppColors.secondaryLabel,
+            size: 22,
+          ),
+        ),
+        backgroundColor: AppColors.background.withValues(alpha: 0.82),
+        border: null,
+      ),
+      child: AmbientBackdrop(
+        child: _loading
+            ? Center(
+                child: CupertinoActivityIndicator(
+                  color: AppColors.secondaryLabel,
+                ),
+              )
+            : SafeArea(
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(22, 20, 22, 28),
+                  children: [
+                    _modernSectionTitle(
+                      key: _appsSectionKey,
+                      title: 'Blocked apps',
+                      onAdd: _saving ? null : _addBlockedApp,
+                    ),
+                    const SizedBox(height: 12),
+                    _chooseAppsCard(),
+                    if (_blockedApps.isNotEmpty) ...[
+                      const SizedBox(height: 12),
+                      ..._blockedApps.map(
+                        (app) => Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: _modernBlockedItemCard(
+                            title: app.appName ?? 'Unknown app',
+                            onDelete: _saving
+                                ? null
+                                : () => _runMutation(() async {
+                                    await _repo.deleteBlockedApp(app.id);
+                                    await _classicLocalStore.removeAppBinding(
+                                      app.id,
+                                    );
+                                  }),
+                          ),
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 44),
+                    _modernSectionTitle(
+                      key: _sitesSectionKey,
+                      title: 'Blocked websites',
+                      onAdd: _saving
+                          ? null
+                          : () => Platform.isIOS
+                                ? _addBlockedIosWebsitesFromPicker()
+                                : setState(
+                                    () => _showAddWebsite = !_showAddWebsite,
+                                  ),
+                    ),
+                    const SizedBox(height: 14),
+                    _adultShieldCard(),
+                    if (_showAddWebsite && !Platform.isIOS) ...[
+                      const SizedBox(height: 12),
+                      _websiteInputCard(),
+                    ],
+                    if (_blockedWebsites.isNotEmpty) ...[
+                      const SizedBox(height: 12),
+                      ..._blockedWebsites.map(
+                        (site) => Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: _modernBlockedItemCard(
+                            title: site.urlDomain ?? 'Unknown website',
+                            onDelete: _saving
+                                ? null
+                                : () => _runMutation(() async {
+                                    await _repo.deleteBlockedWebsite(site.id);
+                                    await _classicLocalStore
+                                        .removeWebsiteBinding(site.id);
+                                  }),
+                          ),
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 44),
+                    _modernSectionTitle(key: _pausesSectionKey, title: 'Pause'),
+                    const SizedBox(height: 14),
+                    _planPauseCard(),
+                  ],
+                ),
+              ),
+      ),
+    );
+  }
+
+  Widget _modernSectionTitle({
+    Key? key,
+    required String title,
+    VoidCallback? onAdd,
+  }) {
+    return Row(
+      key: key,
+      children: [
+        Expanded(
+          child: Text(
+            title,
+            style: AppTypography.title1.copyWith(
+              fontSize: 30,
+              fontWeight: FontWeight.w800,
+              color: AppColors.label,
+              letterSpacing: 0,
+            ),
+          ),
+        ),
+        if (onAdd != null) _modernAddButton(onAdd),
+      ],
+    );
+  }
+
+  Widget _modernAddButton(VoidCallback? onTap) {
+    return CupertinoButton(
+      padding: EdgeInsets.zero,
+      minimumSize: const Size(56, 56),
+      onPressed: onTap,
+      child: Container(
+        width: 56,
+        height: 56,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          color: AppColors.backgroundLight.withValues(alpha: 0.46),
+          border: Border.all(
+            color: AppColors.glassBorder.withValues(alpha: 0.78),
+            width: 0.9,
+          ),
+        ),
+        alignment: Alignment.center,
+        child: Icon(
+          CupertinoIcons.add,
+          color: AppColors.secondaryLabel,
+          size: 26,
+        ),
+      ),
+    );
+  }
+
+  Widget _chooseAppsCard() {
+    return CupertinoButton(
+      padding: EdgeInsets.zero,
+      onPressed: _saving ? null : _addBlockedApp,
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(40, 24, 24, 24),
+        decoration: _modernPanelDecoration(radius: 28),
+        child: Row(
+          children: [
+            Icon(
+              CupertinoIcons.add_circled,
+              size: 26,
+              color: AppColors.secondaryLabel,
+            ),
+            const SizedBox(width: 42),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Choose apps to\nblock',
+                    style: AppTypography.title3.copyWith(
+                      fontSize: 24,
+                      height: 1.18,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.label,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Open the Apple app\npicker and select one\nor multiple apps.',
+                    style: AppTypography.callout.copyWith(
+                      fontSize: 19,
+                      height: 1.27,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.secondaryLabel.withValues(alpha: 0.78),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Choose apps',
+                  style: AppTypography.callout.copyWith(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.secondaryLabel.withValues(alpha: 0.86),
+                  ),
+                ),
+                const SizedBox(width: 7),
+                Icon(
+                  CupertinoIcons.chevron_right,
+                  size: 18,
+                  color: AppColors.secondaryLabel.withValues(alpha: 0.74),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _adultShieldCard() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
+      decoration: _modernPanelDecoration(
+        radius: 24,
+        borderColor: AppColors.error.withValues(alpha: 0.28),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            CupertinoIcons.exclamationmark_shield,
+            size: 20,
+            color: AppColors.error,
+          ),
+          const SizedBox(width: 18),
+          Expanded(
+            child: Text(
+              'Global NSFW shield',
+              style: AppTypography.title3.copyWith(
+                fontSize: 21,
+                fontWeight: FontWeight.w800,
+                color: AppColors.label,
+              ),
+            ),
+          ),
+          CupertinoSwitch(
+            value: _adultContentShieldEnabled,
+            onChanged: _saving ? null : _setAdultContentShieldEnabled,
+            activeTrackColor: AppColors.error.withValues(alpha: 0.72),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _planPauseCard() {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: _modernPanelDecoration(radius: 24),
+      child: CupertinoButton(
+        padding: const EdgeInsets.symmetric(vertical: 17),
+        borderRadius: BorderRadius.circular(22),
+        onPressed: _saving
+            ? null
+            : () => _scheduleRestPeriod(
+                startsInMinutes: 120,
+                durationMinutes: 30,
+              ),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 17),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(
+              color: AppColors.glassBorder.withValues(alpha: 0.86),
+              width: 0.95,
+            ),
+          ),
+          alignment: Alignment.center,
+          child: Text(
+            'Plan pause',
+            style: AppTypography.title3.copyWith(
+              fontSize: 21,
+              fontWeight: FontWeight.w800,
+              color: AppColors.label,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _websiteInputCard() {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: _modernPanelDecoration(radius: 18),
+      child: Row(
+        children: [
+          Expanded(
+            child: CupertinoTextField(
+              controller: _siteCtrl,
+              placeholder: 'Domain',
+              style: AppTypography.callout.copyWith(
+                fontSize: 16,
+                color: AppColors.label,
+              ),
+              decoration: BoxDecoration(
+                color: AppColors.black.withValues(alpha: 0.16),
+                borderRadius: BorderRadius.circular(14),
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          CupertinoButton(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            onPressed: _saving || !_canSubmitWebsiteInput()
+                ? null
+                : () => _addBlockedWebsite(),
+            child: Text(
+              'Add',
+              style: AppTypography.callout.copyWith(
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: AppColors.label,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _modernBlockedItemCard({
+    required String title,
+    required VoidCallback? onDelete,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+      decoration: _modernPanelDecoration(radius: 18),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AppTypography.callout.copyWith(
+                fontSize: 17,
+                fontWeight: FontWeight.w700,
+                color: AppColors.label,
+              ),
+            ),
+          ),
+          CupertinoButton(
+            padding: EdgeInsets.zero,
+            minimumSize: const Size(32, 32),
+            onPressed: onDelete,
+            child: Icon(
+              CupertinoIcons.xmark_circle,
+              size: 22,
+              color: AppColors.secondaryLabel,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  BoxDecoration _modernPanelDecoration({
+    required double radius,
+    Color? borderColor,
+  }) {
+    return BoxDecoration(
+      borderRadius: BorderRadius.circular(radius),
+      color: AppColors.backgroundLight.withValues(alpha: 0.52),
+      border: Border.all(
+        color: borderColor ?? AppColors.glassBorder.withValues(alpha: 0.58),
+        width: 0.9,
+      ),
+      boxShadow: [
+        BoxShadow(
+          color: AppColors.black.withValues(alpha: 0.22),
+          blurRadius: 18,
+          offset: const Offset(0, 8),
+          spreadRadius: -14,
+        ),
+      ],
     );
   }
 
