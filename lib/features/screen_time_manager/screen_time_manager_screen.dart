@@ -3,13 +3,11 @@ import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-import '../../components/components.dart';
 import '../../core/models/settings_models.dart';
 import '../../core/models/user_models.dart';
 import '../../core/providers/focus_provider.dart';
 import '../../core/providers/language_provider.dart';
 import '../../core/repositories/feature_repository.dart';
-import '../../core/repositories/premium_repository.dart';
 import '../../core/repositories/user_repository.dart';
 import '../../core/services/classic_blocking_coordinator.dart';
 import '../../core/theme/app_colors.dart';
@@ -28,7 +26,6 @@ class ScreenTimeManagerScreen extends StatefulWidget {
 
 class _ScreenTimeManagerScreenState extends State<ScreenTimeManagerScreen> {
   final FeatureRepository _featureRepository = FeatureRepository();
-  final PremiumRepository _premiumRepository = PremiumRepository();
   final UserRepository _userRepository = UserRepository();
   final ClassicBlockingCoordinator _classicBlockingCoordinator =
       ClassicBlockingCoordinator();
@@ -53,15 +50,6 @@ class _ScreenTimeManagerScreenState extends State<ScreenTimeManagerScreen> {
       setState(() => _loading = true);
     }
     try {
-      final premiumCheck = await _premiumRepository
-          .canAccessScreenTimeManager();
-      final hasPremiumAccess = premiumCheck.allowed;
-      if (!hasPremiumAccess) {
-        if (!mounted) return;
-        setState(() => _loading = false);
-        await showPremiumGateDialog(context, premiumCheck);
-        return;
-      }
       final focus = context.read<FocusProvider>();
       await focus.loadInitialData();
       await focus.refreshScreenTime();
@@ -221,6 +209,8 @@ class _ScreenTimeManagerScreenState extends State<ScreenTimeManagerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<LanguageProvider>().languageCode;
+
     return CupertinoPageScaffold(
       backgroundColor: AppColors.background,
       child: AmbientBackdrop(
@@ -263,19 +253,18 @@ class _ScreenTimeManagerScreenState extends State<ScreenTimeManagerScreen> {
                         ),
                         const SizedBox(height: 12),
                         _actionCard(
-                          icon: CupertinoIcons.moon_zzz_fill,
-                          iconColor: AppColors.primaryOrange,
+                          icon: CupertinoIcons.briefcase_fill,
+                          iconColor: AppColors.secondaryLabel,
                           title: 'Blackout Mode',
-                          subtitle: 'Maximum focus sessions',
+                          subtitle: 'Protected sprint with stricter controls',
                           onTap: () => context.push('/ceo-mode'),
                         ),
                         const SizedBox(height: 8),
                         _actionCard(
                           icon: CupertinoIcons.nosign,
-                          iconColor: AppColors.accentDeep,
-                          title: 'Block Apps and Sites',
-                          subtitle:
-                              '$blockedTargets blocked • apps, sites, pauses',
+                          iconColor: AppColors.secondaryLabel,
+                          title: 'Block Apps And Sites',
+                          subtitle: '$blockedTargets protected on this device',
                           onTap: () => context.push('/screen-time'),
                         ),
                       ],
@@ -450,34 +439,31 @@ class _ScreenTimeManagerScreenState extends State<ScreenTimeManagerScreen> {
     required String privateRankLabel,
   }) {
     return GlassCard(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(12),
       borderRadius: 24,
       border: Border.all(
-        color: AppColors.glassBorder.withValues(alpha: 0.8),
-        width: 0.7,
+        color: AppColors.glassBorder.withValues(alpha: 0.62),
+        width: 0.55,
       ),
       child: Column(
         children: [
           Row(
             children: [
               Expanded(
-                child: _statLargeTile(
+                child: _statMetricTile(
                   label: _t('today'),
-                  value: _minutesValue(todayMinutes),
-                  unit: _minutesUnit(todayMinutes),
-                  accent: AppColors.scoreValue,
+                  value: _durationLabel(todayMinutes),
+                  subtitle: 'private on-device',
                   highlighted: true,
-                  borderColor: AppColors.screenTimeDailyAccentBorder,
                   onTap: () => context.push('/screen-time?section=logs'),
                 ),
               ),
               const SizedBox(width: 10),
               Expanded(
-                child: _statLargeTile(
-                  label: _t('avg_7d'),
-                  value: _minutesValue(avg7dMinutes),
-                  unit: _minutesUnit(avg7dMinutes),
-                  accent: AppColors.secondaryLabel,
+                child: _statMetricTile(
+                  label: '7D AVG',
+                  value: _durationLabel(avg7dMinutes),
+                  subtitle: 'last 7 days',
                   onTap: () => context.push('/screen-time?section=logs'),
                 ),
               ),
@@ -492,8 +478,8 @@ class _ScreenTimeManagerScreenState extends State<ScreenTimeManagerScreen> {
                   iconColor: isAuthorized
                       ? AppColors.success
                       : AppColors.primaryOrange,
-                  label: 'ACCESS',
-                  value: isAuthorized ? 'APPROVED' : 'ALLOW',
+                  label: 'Access',
+                  value: isAuthorized ? 'Approved' : 'Allow',
                   valueColor: isAuthorized
                       ? AppColors.success
                       : AppColors.primaryOrange,
@@ -523,35 +509,32 @@ class _ScreenTimeManagerScreenState extends State<ScreenTimeManagerScreen> {
     );
   }
 
-  String _minutesValue(int minutes) {
-    if (minutes < 60) return '$minutes';
-    final hours = minutes / 60;
-    return hours >= 10 ? hours.toStringAsFixed(0) : hours.toStringAsFixed(1);
+  String _durationLabel(int minutes) {
+    if (minutes < 60) return '${minutes}m';
+    final hours = minutes ~/ 60;
+    final remaining = minutes % 60;
+    if (remaining == 0) return '${hours}h';
+    return '${hours}h ${remaining}m';
   }
 
-  String _minutesUnit(int minutes) => minutes < 60 ? 'MIN' : 'HOURS';
-
-  Widget _statLargeTile({
+  Widget _statMetricTile({
     required String label,
     required String value,
-    required String unit,
-    required Color accent,
+    required String subtitle,
     bool highlighted = false,
-    Color? borderColor,
     VoidCallback? onTap,
   }) {
     final tile = Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      constraints: const BoxConstraints(minHeight: 112),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 15),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        color: AppColors.backgroundLight.withValues(
-          alpha: highlighted ? 0.82 : 0.64,
-        ),
+        borderRadius: BorderRadius.circular(18),
+        color: AppColors.backgroundLight.withValues(alpha: 0.5),
         border: Border.all(
           color: highlighted
-              ? const Color(0xFF2563EB).withValues(alpha: 0.92)
-              : AppColors.glassBorder.withValues(alpha: 0.6),
-          width: highlighted ? 1.35 : 0.7,
+              ? AppColors.glassBorder.withValues(alpha: 0.58)
+              : AppColors.glassBorder.withValues(alpha: 0.42),
+          width: 0.55,
         ),
       ),
       child: Column(
@@ -563,25 +546,28 @@ class _ScreenTimeManagerScreenState extends State<ScreenTimeManagerScreen> {
               fontSize: 10,
               color: AppColors.secondaryLabel,
               fontWeight: FontWeight.w800,
-              letterSpacing: 1.5,
+              letterSpacing: 1.8,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 14),
           Text(
             value,
+            maxLines: 1,
+            overflow: TextOverflow.visible,
             style: AppTypography.mono.copyWith(
-              fontSize: 54,
-              color: accent,
+              fontSize: 30,
+              color: AppColors.label,
               fontWeight: FontWeight.w900,
-              height: 0.85,
+              height: 0.95,
             ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 12),
           Text(
-            unit,
+            subtitle,
             style: AppTypography.mono.copyWith(
               fontSize: 12,
               color: AppColors.tertiaryLabel,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ],
@@ -603,13 +589,14 @@ class _ScreenTimeManagerScreenState extends State<ScreenTimeManagerScreen> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        constraints: const BoxConstraints(minHeight: 88),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(18),
-          color: AppColors.backgroundLight.withValues(alpha: 0.62),
+          color: AppColors.backgroundLight.withValues(alpha: 0.42),
           border: Border.all(
-            color: AppColors.glassBorder.withValues(alpha: 0.56),
-            width: 0.7,
+            color: AppColors.glassBorder.withValues(alpha: 0.4),
+            width: 0.55,
           ),
         ),
         child: Row(
@@ -626,19 +613,19 @@ class _ScreenTimeManagerScreenState extends State<ScreenTimeManagerScreen> {
                       fontSize: 9,
                       color: AppColors.tertiaryLabel,
                       fontWeight: FontWeight.w800,
-                      letterSpacing: 1.4,
+                      letterSpacing: 1.8,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 6),
                   Text(
                     value,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: AppTypography.mono.copyWith(
-                      fontSize: 24,
+                      fontSize: 22,
                       color: valueColor,
                       fontWeight: FontWeight.w900,
-                      height: 0.85,
+                      height: 0.95,
                     ),
                   ),
                 ],
@@ -662,17 +649,17 @@ class _ScreenTimeManagerScreenState extends State<ScreenTimeManagerScreen> {
       padding: EdgeInsets.zero,
       onPressed: onTap,
       child: GlassCard(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 20),
         borderRadius: 20,
         border: Border.all(
-          color: AppColors.glassBorder.withValues(alpha: 0.72),
-          width: 0.7,
+          color: AppColors.glassBorder.withValues(alpha: 0.5),
+          width: 0.55,
         ),
         child: Row(
           children: [
             Container(
-              width: 48,
-              height: 48,
+              width: 64,
+              height: 64,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(14),
                 color: AppColors.backgroundLight.withValues(alpha: 0.7),
@@ -680,7 +667,7 @@ class _ScreenTimeManagerScreenState extends State<ScreenTimeManagerScreen> {
                   color: locked
                       ? AppColors.glassBorder.withValues(alpha: 0.72)
                       : AppColors.glassBorder.withValues(alpha: 0.55),
-                  width: 0.7,
+                  width: 0.55,
                 ),
               ),
               child: Icon(
@@ -689,7 +676,7 @@ class _ScreenTimeManagerScreenState extends State<ScreenTimeManagerScreen> {
                 size: locked ? 20 : 25,
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 18),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -706,11 +693,11 @@ class _ScreenTimeManagerScreenState extends State<ScreenTimeManagerScreen> {
                   Text(
                     subtitle,
                     style: AppTypography.mono.copyWith(
-                      fontSize: 12,
+                      fontSize: 13,
                       color: locked
                           ? AppColors.primaryOrange
                           : AppColors.secondaryLabel,
-                      fontWeight: locked ? FontWeight.w800 : FontWeight.w400,
+                      fontWeight: locked ? FontWeight.w800 : FontWeight.w700,
                       letterSpacing: locked ? 1.2 : 0,
                     ),
                   ),
