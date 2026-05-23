@@ -489,11 +489,12 @@ class _FocusScreenState extends State<FocusScreen> {
             child: Text(
               language.t('focus_enter_zone'),
               textAlign: TextAlign.center,
-              style: AppTypography.mono.copyWith(
-                fontSize: 62,
+              style: AppTypography.largeTitle.copyWith(
+                fontSize: 50,
                 color: AppColors.label,
-                fontWeight: FontWeight.w900,
-                height: 0.94,
+                fontWeight: FontWeight.w800,
+                height: 1,
+                letterSpacing: 0,
               ),
             ),
           ),
@@ -519,41 +520,45 @@ class _FocusScreenState extends State<FocusScreen> {
                       onTap: () => _setDuration(preset),
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 160),
-                        height: 160,
+                        height: 132,
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(18),
                           gradient: LinearGradient(
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                             colors: provider.focusDurationMinutes == preset
                                 ? [
                                     AppColors.cardBackgroundStrong.withValues(
-                                      alpha: 0.96,
+                                      alpha: 0.68,
                                     ),
-                                    AppColors.surface.withValues(alpha: 0.9),
+                                    AppColors.cardBackgroundAlt.withValues(
+                                      alpha: 0.62,
+                                    ),
                                   ]
                                 : [
-                                    AppColors.cardBase.withValues(alpha: 0.94),
-                                    AppColors.backgroundLight.withValues(
-                                      alpha: 0.78,
+                                    AppColors.cardBackgroundStrong.withValues(
+                                      alpha: 0.54,
+                                    ),
+                                    AppColors.cardBackgroundAlt.withValues(
+                                      alpha: 0.44,
                                     ),
                                   ],
                           ),
                           border: Border.all(
                             color: provider.focusDurationMinutes == preset
-                                ? AppColors.label.withValues(alpha: 0.72)
-                                : AppColors.glassBorder.withValues(alpha: 0.7),
-                            width: 0.8,
+                                ? AppColors.label.withValues(alpha: 0.5)
+                                : AppColors.glassBorder.withValues(alpha: 0.42),
+                            width: 0.55,
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color:
-                                  (provider.focusDurationMinutes == preset
-                                          ? AppColors.edgeGlowSoft
-                                          : AppColors.glassShadow)
-                                      .withValues(alpha: 0.24),
-                              blurRadius: 16,
-                              offset: const Offset(0, 8),
+                              color: AppColors.glassShadow.withValues(
+                                alpha: provider.focusDurationMinutes == preset
+                                    ? 0.2
+                                    : 0.12,
+                              ),
+                              blurRadius: 14,
+                              offset: const Offset(0, 7),
                               spreadRadius: -8,
                             ),
                           ],
@@ -564,8 +569,8 @@ class _FocusScreenState extends State<FocusScreen> {
                             Text(
                               '$preset',
                               style: AppTypography.mono.copyWith(
-                                fontSize: 56,
-                                fontWeight: FontWeight.w900,
+                                fontSize: 48,
+                                fontWeight: FontWeight.w800,
                                 color: AppColors.label,
                                 height: 0.95,
                               ),
@@ -574,9 +579,7 @@ class _FocusScreenState extends State<FocusScreen> {
                               language.t('focus_min'),
                               style: AppTypography.mono.copyWith(
                                 fontSize: 16,
-                                color: provider.focusDurationMinutes == preset
-                                    ? AppColors.label
-                                    : AppColors.secondaryLabel,
+                                color: AppColors.secondaryLabel,
                               ),
                             ),
                           ],
@@ -602,10 +605,10 @@ class _FocusScreenState extends State<FocusScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           borderRadius: 16,
           level: GlassCardLevel.standard,
-          showEdgeGlow: true,
+          showEdgeGlow: false,
           border: Border.all(
-            color: AppColors.glassBorder.withValues(alpha: 0.7),
-            width: 0.8,
+            color: AppColors.glassBorder.withValues(alpha: 0.5),
+            width: 0.55,
           ),
           child: Row(
             children: [
@@ -660,7 +663,7 @@ class _FocusScreenState extends State<FocusScreen> {
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: AppColors.error.withValues(alpha: 0.35),
-              width: 1,
+              width: 0.55,
             ),
           ),
           child: Row(
