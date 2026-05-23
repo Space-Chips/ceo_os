@@ -777,16 +777,14 @@ class _HomeScreenState extends State<HomeScreen> {
         title: language.t('tasks'),
         icon: CupertinoIcons.check_mark_circled,
         active: _activeApps.contains('Pareto'),
-        badgeValue: pendingTasks,
         onTap: () => unawaited(_pushAndRefresh('/tasks')),
         onQuickAdd: _openQuickAddTask,
       ),
       _PrimaryAppCardData(
         moduleId: 'Habits',
         title: language.t('habits'),
-        icon: CupertinoIcons.checkmark_circle,
+        icon: CupertinoIcons.flame_fill,
         active: _activeApps.contains('Habits'),
-        badgeValue: habitsCount,
         onTap: () => unawaited(_pushAndRefresh('/habits')),
         onQuickAdd: _openQuickAddHabit,
       ),
@@ -1265,8 +1263,8 @@ class _TopShortcutsBar extends StatelessWidget {
           borderRadius: 24,
           glowColor: AppColors.edgeGlow,
           child: Container(
-            width: 48,
-            height: 48,
+            width: 44,
+            height: 44,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               gradient: LinearGradient(
@@ -1291,7 +1289,7 @@ class _TopShortcutsBar extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: 10),
         if (enabledShortcuts.contains('rank')) ...[
           _ShortcutPill(
             label: 'WakeApp Pro',
@@ -1300,7 +1298,7 @@ class _TopShortcutsBar extends StatelessWidget {
             labelColor: AppColors.secondaryLabel,
             onTap: onOpenRank,
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 7),
         ],
         if (enabledShortcuts.contains('focus')) ...[
           _ShortcutCircle(
@@ -1308,7 +1306,7 @@ class _TopShortcutsBar extends StatelessWidget {
             iconColor: AppColors.secondaryLabel,
             onTap: onOpenFocus,
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 7),
         ],
         if (enabledShortcuts.contains('notes')) ...[
           _ShortcutCircle(
@@ -1316,7 +1314,7 @@ class _TopShortcutsBar extends StatelessWidget {
             iconColor: AppColors.secondaryLabel,
             onTap: onOpenNotes,
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 7),
         ],
         if (enabledShortcuts.contains('streak'))
           _StreakPill(streak: winStreak, onTap: onOpenStreak),
@@ -1349,6 +1347,7 @@ class _ShortcutPill extends StatelessWidget {
       borderRadius: 18,
       glowColor: labelColor.withValues(alpha: 0.3),
       child: Container(
+        constraints: const BoxConstraints(maxWidth: 132, minHeight: 44),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(18),
           gradient: LinearGradient(
@@ -1381,7 +1380,7 @@ class _ShortcutPill extends StatelessWidget {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -1389,8 +1388,10 @@ class _ShortcutPill extends StatelessWidget {
                   const SizedBox(width: 5),
                   Text(
                     label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: AppTypography.footnote.copyWith(
-                      fontSize: 12,
+                      fontSize: 12.5,
                       fontWeight: FontWeight.w600,
                       color: labelColor,
                     ),
@@ -1423,8 +1424,8 @@ class _ShortcutCircle extends StatelessWidget {
       borderRadius: 16,
       glowColor: AppColors.edgeGlowSoft,
       child: Container(
-        width: 48,
-        height: 48,
+        width: 44,
+        height: 44,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
           gradient: LinearGradient(
@@ -1477,7 +1478,8 @@ class _StreakPill extends StatelessWidget {
       borderRadius: 18,
       glowColor: AppColors.warning.withValues(alpha: 0.3),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 9),
+        constraints: const BoxConstraints(minWidth: 52, minHeight: 44),
+        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 9),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(18),
           gradient: LinearGradient(
@@ -1572,11 +1574,12 @@ class _DashboardMainCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 14),
                     Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         _DashboardMetric(value: tasksCount, label: 'Tasks'),
-                        const SizedBox(width: 16),
+                        const SizedBox(width: 22),
                         _DashboardMetric(value: habitsCount, label: 'Habits'),
-                        const SizedBox(width: 16),
+                        const SizedBox(width: 22),
                         _DashboardMetric(value: eventsCount, label: 'Events'),
                       ],
                     ),
@@ -1636,31 +1639,29 @@ class _DashboardMetric extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Flexible(
-      child: Text.rich(
-        TextSpan(
-          children: [
-            TextSpan(
-              text: '$value ',
-              style: AppTypography.mono.copyWith(
-                fontSize: 15,
-                color: AppColors.label,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-            TextSpan(
-              text: label,
-              style: AppTypography.caption1.copyWith(
-                fontSize: 11,
-                color: AppColors.secondaryLabel,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ],
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '$value',
+          style: AppTypography.mono.copyWith(
+            fontSize: 24,
+            height: 0.95,
+            color: AppColors.label,
+            fontWeight: FontWeight.w800,
+          ),
         ),
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-      ),
+        const SizedBox(height: 8),
+        Text(
+          label,
+          style: AppTypography.caption1.copyWith(
+            fontSize: 12,
+            letterSpacing: 0.7,
+            color: AppColors.secondaryLabel,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ],
     );
   }
 }
@@ -1911,17 +1912,18 @@ class _PrimaryAppCard extends StatelessWidget {
                   height: compact ? 54 : 62,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(18),
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        AppColors.backgroundLight.withValues(alpha: 0.92),
-                        AppColors.background.withValues(alpha: 0.9),
-                      ],
-                    ),
+                    color: AppColors.background.withValues(alpha: 0.46),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.black.withValues(alpha: 0.16),
+                        blurRadius: 14,
+                        offset: const Offset(0, 8),
+                        spreadRadius: -12,
+                      ),
+                    ],
                     border: Border.all(
-                      color: AppColors.glassBorder.withValues(alpha: 0.65),
-                      width: 0.92,
+                      color: AppColors.white.withValues(alpha: 0.04),
+                      width: 0.8,
                     ),
                   ),
                   child: Icon(
@@ -1941,9 +1943,7 @@ class _PrimaryAppCard extends StatelessWidget {
                         height: 36,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(12),
-                          color: AppColors.backgroundLight.withValues(
-                            alpha: 0.78,
-                          ),
+                          color: AppColors.background.withValues(alpha: 0.38),
                           border: Border.all(
                             color: AppColors.glassBorder.withValues(alpha: 0.6),
                             width: 0.82,
@@ -2133,12 +2133,12 @@ class _CeoModeCard extends StatelessWidget {
     return GestureDetector(
       onTap: onOpenCeoMode,
       child: Container(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(28),
           border: Border.all(
-            color: AppColors.white.withValues(alpha: 0.9),
-            width: 1.4,
+            color: AppColors.white.withValues(alpha: 0.72),
+            width: 1.15,
           ),
           gradient: LinearGradient(
             begin: Alignment.topLeft,
@@ -2177,41 +2177,48 @@ class _CeoModeCard extends StatelessWidget {
             ),
             const SizedBox(width: 14),
             Expanded(
-              child: Text(
-                title,
-                maxLines: 1,
-                softWrap: false,
-                overflow: TextOverflow.visible,
-                style: AppTypography.mono.copyWith(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w900,
-                  color: AppColors.secondaryLabel,
-                ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    maxLines: 1,
+                    softWrap: false,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTypography.mono.copyWith(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w900,
+                      color: AppColors.label,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(
+                        color: AppColors.white.withValues(alpha: 0.78),
+                        width: 1,
+                      ),
+                      color: AppColors.surface.withValues(alpha: 0.24),
+                    ),
+                    child: Text(
+                      maxFocusLabel,
+                      style: AppTypography.overline.copyWith(
+                        fontSize: 11,
+                        letterSpacing: 1.1,
+                        color: AppColors.secondaryLabel,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
             const SizedBox(width: 8),
-            GestureDetector(
-              onTap: onOpenCeoMode,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 13,
-                ),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.borderStrong, width: 1),
-                  color: AppColors.surface.withValues(alpha: 0.58),
-                ),
-                child: Text(
-                  maxFocusLabel,
-                  style: AppTypography.overline.copyWith(
-                    fontSize: 11,
-                    color: AppColors.secondaryLabel,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 10),
             Icon(
               CupertinoIcons.chevron_right,
               size: 18,
