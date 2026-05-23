@@ -519,16 +519,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
       );
     }
 
+    final needsYesterdayValidation = _yesterdayHabits.isNotEmpty;
     return ListView(
       padding: const EdgeInsets.only(bottom: 120),
       children: [
-        _wakeScoreCard(),
-        const SizedBox(height: 18),
-        if (_yesterdayHabits.isNotEmpty) ...[
+        if (needsYesterdayValidation) ...[
+          _wakeScoreCard(),
+          const SizedBox(height: 18),
           _yesterdayValidationCard(),
           const SizedBox(height: 18),
         ],
-        _prioritiesCard(),
+        _prioritiesCard(showHeader: needsYesterdayValidation),
         const SizedBox(height: 18),
         _todayHabitsCard(),
         const SizedBox(height: 18),
@@ -580,27 +581,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _attentionScoreCard() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 22),
-      decoration: _panelDecoration(
-        accentColor: AppColors.accent.withValues(alpha: 0.22),
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 26),
+      decoration: _panelDecoration(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Text(
-            'Attention Score',
-            style: AppTypography.title3.copyWith(
-              color: AppColors.secondaryLabel,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 12),
           Text(
             '$_attentionScore',
             style: AppTypography.heroNumber.copyWith(
               fontSize: 64,
               fontWeight: FontWeight.w700,
               color: AppColors.label,
+              height: 1.0,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            _t('dashboard_wake_score'),
+            style: AppTypography.title3.copyWith(
+              color: AppColors.secondaryLabel,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],
@@ -614,34 +614,33 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _yesterdayValidationCard() {
     return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: _panelDecoration(
-        accentColor: AppColors.primaryOrange.withValues(alpha: 0.18),
-      ),
+      padding: const EdgeInsets.fromLTRB(18, 18, 18, 20),
+      decoration: _panelDecoration(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Habits from yesterday',
-            style: AppTypography.title2.copyWith(
-              fontSize: 25,
-              color: const Color(0xFFFFE0BC),
-              fontWeight: FontWeight.w700,
+            _t('dashboard_habits_from_yesterday'),
+            style: AppTypography.overline.copyWith(
+              fontSize: 15,
+              letterSpacing: 1.8,
+              color: AppColors.secondaryLabel,
+              fontWeight: FontWeight.w800,
             ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 12),
           Text(
             _t('dashboard_complete_validation_to_continue'),
             style: AppTypography.callout.copyWith(
               fontSize: 14,
-              color: AppColors.primaryOrange.withValues(alpha: 0.84),
+              color: AppColors.secondaryLabel,
               fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 22),
           ..._yesterdayHabits.map(
             (habit) => Padding(
-              padding: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.only(bottom: 16),
               child: GestureDetector(
                 onTap: _isConfirmingYesterday
                     ? null
@@ -649,48 +648,34 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         _yesterdayStates[habit.id] =
                             !(_yesterdayStates[habit.id] ?? false);
                       }),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 14,
-                  ),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                    color: const Color(0xFF161616),
-                    border: Border.all(
-                      color: AppColors.white.withValues(alpha: 0.07),
-                      width: 1,
+                child: Row(
+                  children: [
+                    Icon(
+                      (_yesterdayStates[habit.id] ?? false)
+                          ? CupertinoIcons.check_mark_circled_solid
+                          : CupertinoIcons.circle,
+                      size: 24,
+                      color: (_yesterdayStates[habit.id] ?? false)
+                          ? const Color(0xFF3B82F6)
+                          : AppColors.tertiaryLabel,
                     ),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        (_yesterdayStates[habit.id] ?? false)
-                            ? CupertinoIcons.check_mark_circled_solid
-                            : CupertinoIcons.circle,
-                        size: 24,
-                        color: (_yesterdayStates[habit.id] ?? false)
-                            ? const Color(0xFF3B82F6)
-                            : AppColors.tertiaryLabel,
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          habit.title,
-                          style: AppTypography.headline.copyWith(
-                            fontSize: 17,
-                            color: AppColors.label,
-                            fontWeight: FontWeight.w600,
-                          ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Text(
+                        habit.title,
+                        style: AppTypography.headline.copyWith(
+                          fontSize: 17,
+                          color: AppColors.label,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 4),
           LiquidButton(
             label: _isConfirmingYesterday
                 ? _t('dashboard_confirming')
@@ -706,23 +691,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _prioritiesCard() {
+  Widget _prioritiesCard({required bool showHeader}) {
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.fromLTRB(18, 18, 18, 20),
       decoration: _panelDecoration(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _sectionHeader(
-            title: _t('tasks_your_priorities'),
-            onViewAll: () => context.push('/tasks'),
-          ),
-          const SizedBox(height: 10),
+          if (showHeader) ...[
+            _sectionHeader(
+              title: _t('dashboard_priorities'),
+              onViewAll: () => context.push('/tasks'),
+            ),
+            const SizedBox(height: 16),
+          ],
           if (_topTasks.isEmpty)
             Text(
-              'No open tasks.',
+              _t('dashboard_no_priorities'),
               style: AppTypography.subhead.copyWith(
-                fontSize: 12,
+                fontSize: 14,
                 color: AppColors.tertiaryLabel,
               ),
             )
@@ -730,114 +717,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ..._topTasks.asMap().entries.map((entry) {
               final rank = entry.key + 1;
               final task = entry.value;
-              final levelColor = _importanceColor(task.importanceLevel);
               return Padding(
-                padding: const EdgeInsets.only(bottom: 9),
+                padding: EdgeInsets.only(
+                  bottom: entry.key == _topTasks.length - 1 ? 0 : 18,
+                ),
                 child: GestureDetector(
                   onTap: () => _completeTask(task),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 11,
-                    ),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(14),
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          AppColors.floatingGlassGradient.first.withValues(
-                            alpha: 0.88,
-                          ),
-                          AppColors.floatingGlassGradient.last.withValues(
-                            alpha: 0.78,
-                          ),
-                        ],
-                      ),
-                      border: Border.all(
-                        color: AppColors.glassBorder.withValues(alpha: 0.76),
-                        width: 0.74,
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 34,
-                          height: 34,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(11),
-                            color: AppColors.background.withValues(alpha: 0.55),
-                          ),
-                          child: Center(
-                            child: Text(
-                              '$rank',
-                              style: AppTypography.mono.copyWith(
-                                fontSize: 20,
-                                color: AppColors.tertiaryLabel,
-                                fontWeight: FontWeight.w900,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                task.title,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: AppTypography.mono.copyWith(
-                                  fontSize: 16,
-                                  color: AppColors.label,
-                                  fontWeight: FontWeight.w900,
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              Row(
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 9,
-                                      vertical: 4,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(9),
-                                      color: levelColor.withValues(alpha: 0.2),
-                                      border: Border.all(
-                                        color: levelColor.withValues(
-                                          alpha: 0.8,
-                                        ),
-                                        width: 0.7,
-                                      ),
-                                    ),
-                                    child: Text(
-                                      _importanceLabel(task.importanceLevel),
-                                      style: AppTypography.mono.copyWith(
-                                        fontSize: 11,
-                                        color: levelColor,
-                                        fontWeight: FontWeight.w900,
-                                        letterSpacing: 0.8,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    _durationLabel(task.timeDuration),
-                                    style: AppTypography.mono.copyWith(
-                                      fontSize: 11,
-                                      color: AppColors.tertiaryLabel,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  child: _priorityRow(task: task, rank: rank),
                 ),
               );
             }),
@@ -846,12 +732,97 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  Widget _priorityRow({required ParetoTask task, required int rank}) {
+    final levelColor = _importanceColor(task.importanceLevel);
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Container(
+          width: 34,
+          height: 34,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: AppColors.surfaceMuted.withValues(alpha: 0.7),
+            border: Border.all(
+              color: AppColors.white.withValues(alpha: 0.06),
+              width: 0.8,
+            ),
+          ),
+          alignment: Alignment.center,
+          child: Text(
+            '$rank',
+            style: AppTypography.mono.copyWith(
+              fontSize: 16,
+              color: AppColors.secondaryLabel,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+        const SizedBox(width: 18),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                task.title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppTypography.title3.copyWith(
+                  fontSize: 19,
+                  color: AppColors.label,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      color: levelColor.withValues(alpha: 0.16),
+                      border: Border.all(
+                        color: levelColor.withValues(alpha: 0.65),
+                        width: 0.8,
+                      ),
+                    ),
+                    child: Text(
+                      _importanceLabel(task.importanceLevel).toUpperCase(),
+                      style: AppTypography.caption1.copyWith(
+                        fontSize: 11,
+                        color: levelColor,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.8,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    _durationLabel(task.timeDuration),
+                    style: AppTypography.subhead.copyWith(
+                      fontSize: 14,
+                      color: AppColors.tertiaryLabel,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _todayHabitsCard() {
     return GlassCard(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(18, 18, 18, 20),
       borderRadius: 24,
       level: GlassCardLevel.standard,
-      showEdgeGlow: true,
+      showEdgeGlow: false,
       border: Border.all(
         color: AppColors.glassBorder.withValues(alpha: 0.8),
         width: 0.7,
@@ -860,16 +831,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _sectionHeader(
-            title: 'Habits for today',
+            title: _t('dashboard_habits_for_today'),
             trailingIcon: CupertinoIcons.add,
             onTrailingTap: () => context.push('/habits'),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 18),
           if (_todayHabits.isEmpty)
             Text(
-              'No habits scheduled today.',
+              _t('dashboard_no_habits_today'),
               style: AppTypography.subhead.copyWith(
-                fontSize: 12,
+                fontSize: 14,
                 color: AppColors.tertiaryLabel,
               ),
             )
@@ -879,81 +850,46 @@ class _DashboardScreenState extends State<DashboardScreen> {
               final index = entry.key + 1;
               final marked = _todayHabitMarks.contains(habit.id);
               return Padding(
-                padding: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.only(bottom: 16),
                 child: GestureDetector(
                   onTap: () => _toggleTodayHabitMark(habit.id),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 180),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 12,
-                    ),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(14),
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: marked
-                            ? [
-                                AppColors.floatingGlassGradient.first
-                                    .withValues(alpha: 0.52),
-                                AppColors.floatingGlassGradient.last.withValues(
-                                  alpha: 0.44,
-                                ),
-                              ]
-                            : [
-                                AppColors.floatingGlassGradient.first
-                                    .withValues(alpha: 0.9),
-                                AppColors.floatingGlassGradient.last.withValues(
-                                  alpha: 0.78,
-                                ),
-                              ],
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          habit.title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTypography.headline.copyWith(
+                            fontSize: 17,
+                            color: marked
+                                ? AppColors.tertiaryLabel
+                                : AppColors.label,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ),
-                      border: Border.all(
-                        color: marked
-                            ? AppColors.glassBorder.withValues(alpha: 0.42)
-                            : AppColors.glassBorder.withValues(alpha: 0.75),
-                        width: 0.7,
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
+                      Container(
+                        width: 34,
+                        height: 34,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          color: AppColors.white.withValues(alpha: 0.05),
+                        ),
+                        child: Center(
                           child: Text(
-                            habit.title,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: AppTypography.headline.copyWith(
-                              fontSize: 17,
+                            '$index',
+                            style: AppTypography.footnote.copyWith(
+                              fontSize: 15,
                               color: marked
                                   ? AppColors.tertiaryLabel
-                                  : AppColors.label,
-                              fontWeight: FontWeight.w600,
+                                  : AppColors.secondaryLabel,
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
                         ),
-                        Container(
-                          width: 34,
-                          height: 34,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
-                            color: AppColors.white.withValues(alpha: 0.05),
-                          ),
-                          child: Center(
-                            child: Text(
-                              '$index',
-                              style: AppTypography.footnote.copyWith(
-                                fontSize: 15,
-                                color: marked
-                                    ? AppColors.tertiaryLabel
-                                    : AppColors.secondaryLabel,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               );
@@ -965,10 +901,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _todayScheduleCard() {
     return GlassCard(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(18, 18, 18, 20),
       borderRadius: 24,
       level: GlassCardLevel.standard,
-      showEdgeGlow: true,
+      showEdgeGlow: false,
       border: Border.all(
         color: AppColors.glassBorder.withValues(alpha: 0.8),
         width: 0.7,
@@ -977,15 +913,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _sectionHeader(
-            title: 'Schedule',
+            title: _t('dashboard_schedule'),
             onViewAll: () => context.push('/calendar'),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 18),
           if (_todayEvents.isEmpty)
             Text(
-              'No events scheduled today.',
-              style: AppTypography.mono.copyWith(
-                fontSize: 12,
+              _t('dashboard_no_events_today'),
+              style: AppTypography.subhead.copyWith(
+                fontSize: 14,
                 color: AppColors.tertiaryLabel,
               ),
             )
@@ -1071,11 +1007,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
       children: [
         Expanded(
           child: Text(
-            title,
-            style: AppTypography.headline.copyWith(
-              fontSize: 18,
-              color: AppColors.label,
-              fontWeight: FontWeight.w700,
+            title.toUpperCase(),
+            style: AppTypography.overline.copyWith(
+              fontSize: 15,
+              letterSpacing: 1.9,
+              color: AppColors.secondaryLabel,
+              fontWeight: FontWeight.w800,
             ),
           ),
         ),
@@ -1085,11 +1022,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
             minimumSize: Size.zero,
             onPressed: onViewAll,
             child: Text(
-              '${_t('dashboard_view_all')} >',
+              '${_t('dashboard_view_all')} →',
               style: AppTypography.callout.copyWith(
-                fontSize: 13,
+                fontSize: 15,
                 color: AppColors.secondaryLabel.withValues(alpha: 0.6),
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),
@@ -1106,18 +1043,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   BoxDecoration _panelDecoration({Color? accentColor}) {
     return BoxDecoration(
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(22),
       gradient: LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        colors: [AppColors.cardBackgroundStrong, AppColors.cardBase],
+        colors: [
+          AppColors.cardBackgroundStrong.withValues(alpha: 0.74),
+          AppColors.cardBase.withValues(alpha: 0.66),
+        ],
       ),
-      border: Border.all(color: AppColors.border, width: 1),
+      border: Border.all(
+        color: AppColors.border.withValues(alpha: 0.72),
+        width: 0.8,
+      ),
       boxShadow: [
         BoxShadow(
-          color: AppColors.glassShadow.withValues(alpha: 0.3),
-          blurRadius: 30,
-          offset: const Offset(0, 10),
+          color: AppColors.glassShadow.withValues(alpha: 0.18),
+          blurRadius: 18,
+          offset: const Offset(0, 8),
+          spreadRadius: -14,
         ),
         if (accentColor != null)
           BoxShadow(
