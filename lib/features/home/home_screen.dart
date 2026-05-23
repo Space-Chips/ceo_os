@@ -1287,7 +1287,7 @@ class _TopShortcutsBar extends StatelessWidget {
         const SizedBox(width: 10),
         if (enabledShortcuts.contains('rank')) ...[
           SizedBox(
-            width: 176,
+            width: 126,
             child: _ShortcutPill(
               label: 'WakeApp Pro',
               icon: CupertinoIcons.arrow_up_circle_fill,
@@ -1351,11 +1351,14 @@ class _ShortcutPill extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: AppColors.floatingGlassGradient,
+            colors: [
+              AppColors.backgroundLight.withValues(alpha: 0.44),
+              AppColors.surface.withValues(alpha: 0.34),
+            ],
           ),
           border: Border.all(
             color: AppColors.glassBorder.withValues(alpha: 0.66),
-            width: 0.9,
+            width: 0.75,
           ),
         ),
         child: Stack(
@@ -1425,11 +1428,14 @@ class _ShortcutCircle extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: AppColors.floatingGlassGradient,
+            colors: [
+              AppColors.backgroundLight.withValues(alpha: 0.44),
+              AppColors.surface.withValues(alpha: 0.34),
+            ],
           ),
           border: Border.all(
             color: AppColors.glassBorder.withValues(alpha: 0.66),
-            width: 0.9,
+            width: 0.75,
           ),
         ),
         child: Stack(
@@ -1467,18 +1473,21 @@ class _StreakPill extends StatelessWidget {
       borderRadius: 18,
       glowColor: AppColors.warning.withValues(alpha: 0.18),
       child: Container(
-        constraints: const BoxConstraints(minWidth: 74, minHeight: 44),
+        constraints: const BoxConstraints(minWidth: 52, minHeight: 44),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(18),
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: AppColors.floatingGlassGradient,
+            colors: [
+              AppColors.backgroundLight.withValues(alpha: 0.44),
+              AppColors.surface.withValues(alpha: 0.34),
+            ],
           ),
           border: Border.all(
             color: AppColors.glassBorder.withValues(alpha: 0.66),
-            width: 0.9,
+            width: 0.75,
           ),
         ),
         child: Row(
