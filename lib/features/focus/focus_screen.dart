@@ -522,32 +522,26 @@ class _FocusScreenState extends State<FocusScreen> {
                         height: 160,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(20),
-                          gradient: provider.focusDurationMinutes == preset
-                              ? LinearGradient(
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                  colors: [
-                                    AppColors.accentSecondary.withValues(
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: provider.focusDurationMinutes == preset
+                                ? [
+                                    AppColors.cardBackgroundStrong.withValues(
                                       alpha: 0.96,
                                     ),
-                                    AppColors.primaryOrange.withValues(
-                                      alpha: 0.9,
+                                    AppColors.surface.withValues(alpha: 0.9),
+                                  ]
+                                : [
+                                    AppColors.cardBase.withValues(alpha: 0.94),
+                                    AppColors.backgroundLight.withValues(
+                                      alpha: 0.78,
                                     ),
                                   ],
-                                )
-                              : LinearGradient(
-                                  colors: [
-                                    const Color(
-                                      0xFF0D1B3A,
-                                    ).withValues(alpha: 0.96),
-                                    const Color(
-                                      0xFF0B1A35,
-                                    ).withValues(alpha: 0.92),
-                                  ],
-                                ),
+                          ),
                           border: Border.all(
                             color: provider.focusDurationMinutes == preset
-                                ? const Color(0xFFBC8CFF)
+                                ? AppColors.label.withValues(alpha: 0.72)
                                 : AppColors.glassBorder.withValues(alpha: 0.7),
                             width: 0.8,
                           ),
@@ -555,7 +549,7 @@ class _FocusScreenState extends State<FocusScreen> {
                             BoxShadow(
                               color:
                                   (provider.focusDurationMinutes == preset
-                                          ? const Color(0xFF9D45F4)
+                                          ? AppColors.edgeGlowSoft
                                           : AppColors.glassShadow)
                                       .withValues(alpha: 0.24),
                               blurRadius: 16,
@@ -581,7 +575,7 @@ class _FocusScreenState extends State<FocusScreen> {
                               style: AppTypography.mono.copyWith(
                                 fontSize: 16,
                                 color: provider.focusDurationMinutes == preset
-                                    ? const Color(0xFFA8C789)
+                                    ? AppColors.label
                                     : AppColors.secondaryLabel,
                               ),
                             ),

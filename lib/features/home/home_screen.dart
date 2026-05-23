@@ -203,13 +203,17 @@ class _HomeScreenState extends State<HomeScreen> {
     'Calendar',
     'ScreenTimeManager',
   };
-  static const Set<String> _defaultEnabledShortcuts = {};
+  static const Set<String> _defaultEnabledShortcuts = {
+    'rank',
+    'focus',
+    'notes',
+    'streak',
+  };
   static const List<String> _shortcutOrder = [
     'rank',
     'leaderboard',
     'focus',
     'family_time',
-    'block_apps',
     'streak',
     'notes',
   ];
@@ -347,8 +351,6 @@ class _HomeScreenState extends State<HomeScreen> {
     final premiumCheck = switch (route) {
       '/stats' => await _premiumRepository.canAccessReports(),
       '/leaderboard' => await _premiumRepository.canAccessLeaderboard(),
-      '/screen-time-manager' =>
-        await _premiumRepository.canAccessScreenTimeManager(),
       '/widget-configuration' =>
         await _premiumRepository.canConfigureHomeWidgets(),
       _ => const PremiumCheckResult.allowed(),
@@ -371,23 +373,16 @@ class _HomeScreenState extends State<HomeScreen> {
         if (controller.isSetupRequired || !controller.isSetupComplete) {
           context.push('/screen-time-setup');
         } else {
-          final hasPremiumAccess = await _ensurePremiumAccessForRoute(
-            '/screen-time-manager',
-          );
-          if (!hasPremiumAccess) return;
           context.push('/screen-time-manager');
         }
       }),
     );
   }
 
-  int _shortcutCapacityFor(Set<String> activeApps) => 4 - activeApps.length;
-
   Set<String> _normalizeEnabledShortcuts(
     Set<String> shortcuts,
     Set<String> activeApps,
   ) {
-    final capacity = _shortcutCapacityFor(activeApps).clamp(0, 4);
     final ordered = _shortcutOrder
         .where(
           (shortcutId) =>
@@ -395,7 +390,6 @@ class _HomeScreenState extends State<HomeScreen> {
               (_showSocialScreenTimeSurfaces ||
                   !_socialShortcutIds.contains(shortcutId)),
         )
-        .take(capacity)
         .toSet();
     return ordered;
   }
@@ -516,12 +510,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<bool> _togglePrimaryModule(String moduleId, bool enabled) async {
-    if (enabled && moduleId == 'ScreenTimeManager') {
-      final hasPremiumAccess = await _ensurePremiumAccessForRoute(
-        '/screen-time-manager',
-      );
-      if (!hasPremiumAccess) return false;
-    }
     final previous = Set<String>.from(_activeApps);
     final previousShortcuts = Set<String>.from(_enabledShortcuts);
     final next = Set<String>.from(_activeApps);
@@ -598,42 +586,47 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  Future<void> _toggleShortcut(String shortcutId, bool enabled) async {
+  Future<bool> _toggleShortcut(String shortcutId, bool enabled) async {
     if (enabled && shortcutId == 'leaderboard') {
       final hasPremiumAccess = await _ensurePremiumAccessForRoute(
         '/leaderboard',
       );
-      if (!hasPremiumAccess) return;
+      if (!hasPremiumAccess) return false;
     }
     if (enabled && shortcutId == 'family_time') {
       final hasPremiumAccess = await _ensurePremiumAccessForRoute(
         '/screen-time-manager',
       );
-      if (!hasPremiumAccess) return;
+      if (!hasPremiumAccess) return false;
     }
     final previous = Set<String>.from(_enabledShortcuts);
     final next = Set<String>.from(_enabledShortcuts);
     if (enabled) {
-      final capacity = _shortcutCapacityFor(_activeApps);
-      if (_enabledShortcuts.length >= capacity) {
-        return;
-      }
       next.add(shortcutId);
     } else {
       next.remove(shortcutId);
     }
+    final normalized = _normalizeEnabledShortcuts(next, _activeApps);
 
-    setState(() => _enabledShortcuts = next);
+    setState(() => _enabledShortcuts = normalized);
+    await _handleNoModulesStateTransition(
+      previousApps: _activeApps,
+      previousShortcuts: previous,
+      nextApps: _activeApps,
+      nextShortcuts: normalized,
+    );
 
     final prefs = await SharedPreferences.getInstance();
     try {
       await prefs.setStringList(
         _prefsKey('enabled_shortcuts_v2'),
-        next.toList(growable: false),
+        normalized.toList(growable: false),
       );
+      return true;
     } catch (_) {
-      if (!mounted) return;
+      if (!mounted) return false;
       setState(() => _enabledShortcuts = previous);
+      return false;
     }
   }
 
@@ -812,6 +805,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   _TopShortcutsBar(
                     rankName: rankName,
                     winStreak: _winStreak,
+                    enabledShortcuts: _enabledShortcuts,
                     onOpenMenu: _openSecondaryMenu,
                     onOpenRank: () => context.push('/rank'),
                     onOpenFocus: () => context.push('/focus'),
@@ -843,10 +837,23 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     )
                   else
-                    _PrimaryAppsGrid(cards: visibleCards),
+                    _PrimaryAppsGrid(
+                      cards: visibleCards,
+                      blackoutCard:
+                          _enabledDashboardWidgets.contains(
+                            DashboardWidget.blackoutButton,
+                          )
+                          ? _BlackoutGridCard(
+                              title: language.t('blackout_mode'),
+                              statusLabel: language.t('max_focus'),
+                              onOpenCeoMode: () => context.push('/ceo-mode'),
+                            )
+                          : null,
+                    ),
                   if (_enabledDashboardWidgets.contains(
-                    DashboardWidget.blackoutButton,
-                  )) ...[
+                        DashboardWidget.blackoutButton,
+                      ) &&
+                      visibleCards.length != 1) ...[
                     const SizedBox(height: 16),
                     _CeoModeCard(
                       statusLabel: ceoProvider.homeCardLabel,
@@ -1177,6 +1184,7 @@ class _InteractiveLiftState extends State<_InteractiveLift> {
 class _TopShortcutsBar extends StatelessWidget {
   final String rankName;
   final int winStreak;
+  final Set<String> enabledShortcuts;
   final VoidCallback onOpenMenu;
   final VoidCallback onOpenRank;
   final VoidCallback onOpenFocus;
@@ -1186,6 +1194,7 @@ class _TopShortcutsBar extends StatelessWidget {
   const _TopShortcutsBar({
     required this.rankName,
     required this.winStreak,
+    required this.enabledShortcuts,
     required this.onOpenMenu,
     required this.onOpenRank,
     required this.onOpenFocus,
@@ -1229,27 +1238,40 @@ class _TopShortcutsBar extends StatelessWidget {
           ),
         ),
         const Spacer(),
-        _ShortcutPill(
-          label: rankName,
-          icon: CupertinoIcons.star_fill,
-          iconColor: AppColors.warning,
-          labelColor: AppColors.warning,
-          onTap: onOpenRank,
-        ),
-        const SizedBox(width: 8),
-        _ShortcutCircle(
-          icon: CupertinoIcons.bolt_fill,
-          gradient: [const Color(0xFFFF934D), AppColors.primaryOrange],
-          onTap: onOpenFocus,
-        ),
-        const SizedBox(width: 8),
-        _ShortcutCircle(
-          icon: CupertinoIcons.doc_text_fill,
-          gradient: const [Color(0xFFA26BFF), Color(0xFF7F50F2)],
-          onTap: onOpenNotes,
-        ),
-        const SizedBox(width: 8),
-        _StreakPill(streak: winStreak, onTap: onOpenStreak),
+        if (enabledShortcuts.contains('rank')) ...[
+          _ShortcutPill(
+            label: rankName,
+            icon: CupertinoIcons.star_fill,
+            iconColor: AppColors.warning,
+            labelColor: AppColors.warning,
+            leading: RankArt(
+              rankName: rankName,
+              size: RankArtSize.xs,
+              dimension: 18,
+              fit: BoxFit.contain,
+            ),
+            onTap: onOpenRank,
+          ),
+          const SizedBox(width: 8),
+        ],
+        if (enabledShortcuts.contains('focus')) ...[
+          _ShortcutCircle(
+            icon: CupertinoIcons.bolt_fill,
+            gradient: [const Color(0xFFFF934D), AppColors.primaryOrange],
+            onTap: onOpenFocus,
+          ),
+          const SizedBox(width: 8),
+        ],
+        if (enabledShortcuts.contains('notes')) ...[
+          _ShortcutCircle(
+            icon: CupertinoIcons.doc_text_fill,
+            gradient: const [Color(0xFFA26BFF), Color(0xFF7F50F2)],
+            onTap: onOpenNotes,
+          ),
+          const SizedBox(width: 8),
+        ],
+        if (enabledShortcuts.contains('streak'))
+          _StreakPill(streak: winStreak, onTap: onOpenStreak),
       ],
     );
   }
@@ -1261,6 +1283,7 @@ class _ShortcutPill extends StatelessWidget {
   final Color iconColor;
   final Color labelColor;
   final VoidCallback onTap;
+  final Widget? leading;
 
   const _ShortcutPill({
     required this.label,
@@ -1268,6 +1291,7 @@ class _ShortcutPill extends StatelessWidget {
     required this.iconColor,
     required this.labelColor,
     required this.onTap,
+    this.leading,
   });
 
   @override
@@ -1313,7 +1337,7 @@ class _ShortcutPill extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(icon, color: iconColor, size: 12),
+                  leading ?? Icon(icon, color: iconColor, size: 12),
                   const SizedBox(width: 5),
                   Text(
                     label,
@@ -1465,113 +1489,54 @@ class _DashboardMainCard extends StatelessWidget {
       pressedScale: 1.028,
       glowColor: AppColors.edgeGlow,
       child: GlassCard(
-        padding: const EdgeInsets.all(16),
-        borderRadius: 30,
-        level: GlassCardLevel.elevated,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        borderRadius: 28,
+        level: GlassCardLevel.standard,
         showEdgeGlow: false,
-        gradientColors: [AppColors.cardRaised, AppColors.cardBase],
-        border: Border.all(color: AppColors.borderStrong, width: 1),
+        gradientColors: [
+          AppColors.cardBackgroundStrong.withValues(alpha: 0.72),
+          AppColors.cardBase.withValues(alpha: 0.68),
+        ],
+        border: Border.all(color: AppColors.border, width: 0.8),
         child: SizedBox(
-          height: 150,
+          height: 112,
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Container(
-                width: 78,
-                height: 78,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [AppColors.surfaceMuted, AppColors.surface],
-                  ),
-                  border: Border.all(color: AppColors.border, width: 0.9),
-                ),
-                child: Icon(
-                  CupertinoIcons.chart_bar_alt_fill,
-                  color: AppColors.accent,
-                  size: 30,
-                ),
-              ),
-              const SizedBox(width: 14),
               Expanded(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'DAILY CONTROL CENTER',
+                      'Dashboard',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: AppTypography.title1.copyWith(fontSize: 48 / 2),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      'Your daily control center',
-                      style: AppTypography.callout.copyWith(
-                        color: AppColors.secondaryLabel,
+                      style: AppTypography.largeTitle.copyWith(
+                        fontSize: 34,
+                        height: 0.95,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.label,
                       ),
                     ),
-                    const SizedBox(height: 6),
-                    Row(
-                      children: [
-                        Text(
-                          '$wakeScore',
-                          style: AppTypography.caption1.copyWith(
-                            color: AppColors.accent,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        Text(
-                          ' WAKE SCORE',
-                          style: AppTypography.caption1.copyWith(
-                            color: AppColors.tertiaryLabel,
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Text(
-                          '$tasksCount TASKS',
-                          style: AppTypography.caption1.copyWith(
-                            color: AppColors.tertiaryLabel,
-                          ),
-                        ),
-                      ],
+                    const SizedBox(height: 10),
+                    Text(
+                      '$wakeScore/$tasksCount/$habitsCount',
+                      style: AppTypography.mono.copyWith(
+                        fontSize: 16,
+                        color: AppColors.secondaryLabel,
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(width: 6),
-              Container(
-                width: 74,
-                height: 74,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  color: AppColors.accentSoft.withValues(alpha: 0.15),
-                  border: Border.all(
-                    color: AppColors.accent.withValues(alpha: 0.65),
-                    width: 1.1,
-                  ),
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      '$habitsCount',
-                      style: AppTypography.timer.copyWith(
-                        fontSize: 30,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.accent,
-                      ),
-                    ),
-                    Text(
-                      'HABITS',
-                      style: AppTypography.overline.copyWith(
-                        fontSize: 9,
-                        color: AppColors.secondaryLabel,
-                      ),
-                    ),
-                  ],
+              Text(
+                '${DateTime.now().day}',
+                style: AppTypography.timer.copyWith(
+                  fontSize: 62,
+                  height: 0.95,
+                  color: AppColors.label,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ],
@@ -1606,8 +1571,9 @@ class _PrimaryAppCardData {
 
 class _PrimaryAppsGrid extends StatelessWidget {
   final List<_PrimaryAppCardData> cards;
+  final Widget? blackoutCard;
 
-  const _PrimaryAppsGrid({required this.cards});
+  const _PrimaryAppsGrid({required this.cards, this.blackoutCard});
 
   Widget _squareCard(_PrimaryAppCardData data) {
     return AspectRatio(
@@ -1618,6 +1584,16 @@ class _PrimaryAppsGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (cards.length == 1 && blackoutCard != null) {
+      return Row(
+        children: [
+          Expanded(child: _squareCard(cards.first)),
+          const SizedBox(width: 14),
+          Expanded(child: blackoutCard!),
+        ],
+      );
+    }
+
     if (cards.length == 1) {
       return _PrimaryAppCard(data: cards.first, compact: false);
     }
@@ -1642,15 +1618,9 @@ class _PrimaryAppsGrid extends StatelessWidget {
       final enabled = row.whereType<_PrimaryAppCardData>().toList();
       if (enabled.isEmpty) return const SizedBox.shrink();
       if (enabled.length == 1) {
-        return Align(
-          alignment: Alignment.centerLeft,
-          child: SizedBox(
-            width: MediaQuery.sizeOf(context).width * 0.44,
-            child: AspectRatio(
-              aspectRatio: 1,
-              child: _PrimaryAppCard(data: enabled.first, compact: true),
-            ),
-          ),
+        return SizedBox(
+          height: (MediaQuery.sizeOf(context).width - 40 - 14) / 2,
+          child: _PrimaryAppCard(data: enabled.first, compact: false),
         );
       }
       return Row(
@@ -1730,7 +1700,7 @@ class _PrimaryAppCard extends StatelessWidget {
     final glowColor = _moduleGlow(data.moduleId);
     if (data.isPlaceholder) {
       final placeholder = GlassCard(
-        padding: EdgeInsets.all(compact ? 12 : 14),
+        padding: EdgeInsets.all(compact ? 8 : 10),
         borderRadius: 24,
         level: GlassCardLevel.subtle,
         showEdgeGlow: false,
@@ -1819,8 +1789,8 @@ class _PrimaryAppCard extends StatelessWidget {
             Row(
               children: [
                 Container(
-                  width: compact ? 58 : 66,
-                  height: compact ? 58 : 66,
+                  width: compact ? 54 : 62,
+                  height: compact ? 54 : 62,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(20),
                     gradient: LinearGradient(
@@ -1849,8 +1819,8 @@ class _PrimaryAppCard extends StatelessWidget {
                     child: Opacity(
                       opacity: data.active ? 1 : 0.35,
                       child: Container(
-                        width: 40,
-                        height: 40,
+                        width: 36,
+                        height: 36,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(12),
                           color: AppColors.backgroundLight.withValues(
@@ -1916,16 +1886,6 @@ class _PrimaryAppCard extends StatelessWidget {
                   ),
               ],
             ),
-            const SizedBox(height: 3),
-            Text(
-              data.active ? 'ACTIVE' : 'DISABLED',
-              style: AppTypography.mono.copyWith(
-                fontSize: 8,
-                color: data.active ? AppColors.tertiaryLabel : AppColors.error,
-                letterSpacing: 1.1,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
           ],
         ),
       ),
@@ -1939,6 +1899,97 @@ class _PrimaryAppCard extends StatelessWidget {
     }
 
     return GestureDetector(onTap: data.onTap, child: base);
+  }
+}
+
+class _BlackoutGridCard extends StatelessWidget {
+  final String title;
+  final String statusLabel;
+  final VoidCallback onOpenCeoMode;
+
+  const _BlackoutGridCard({
+    required this.title,
+    required this.statusLabel,
+    required this.onOpenCeoMode,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AspectRatio(
+      aspectRatio: 1,
+      child: GestureDetector(
+        onTap: onOpenCeoMode,
+        child: Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: AppColors.white.withValues(alpha: 0.86),
+              width: 1.35,
+            ),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                AppColors.backgroundLight.withValues(alpha: 0.45),
+                AppColors.background.withValues(alpha: 0.72),
+              ],
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 58,
+                height: 58,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(
+                    color: AppColors.white.withValues(alpha: 0.95),
+                    width: 1.8,
+                  ),
+                ),
+                child: Center(
+                  child: Container(
+                    width: 18,
+                    height: 18,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: AppColors.secondaryLabel.withValues(alpha: 0.62),
+                        width: 1.55,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const Spacer(),
+              Text(
+                title,
+                maxLines: 1,
+                softWrap: false,
+                overflow: TextOverflow.ellipsis,
+                style: AppTypography.mono.copyWith(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.secondaryLabel,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                statusLabel,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppTypography.overline.copyWith(
+                  fontSize: 9,
+                  color: AppColors.secondaryLabel,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 
@@ -2010,6 +2061,9 @@ class _CeoModeCard extends StatelessWidget {
             Expanded(
               child: Text(
                 title,
+                maxLines: 1,
+                softWrap: false,
+                overflow: TextOverflow.ellipsis,
                 style: AppTypography.mono.copyWith(
                   fontSize: 36 / 2,
                   fontWeight: FontWeight.w900,
@@ -2031,7 +2085,7 @@ class _CeoModeCard extends StatelessWidget {
                   color: AppColors.surface.withValues(alpha: 0.58),
                 ),
                 child: Text(
-                  statusLabel,
+                  maxFocusLabel,
                   style: AppTypography.overline.copyWith(
                     fontSize: 11,
                     color: AppColors.secondaryLabel,
@@ -2050,7 +2104,7 @@ class _SecondaryMenuSheet extends StatefulWidget {
   final Set<String> initialActiveApps;
   final Set<String> initialEnabledShortcuts;
   final Future<bool> Function(String moduleId, bool enabled) onToggleModule;
-  final Future<void> Function(String shortcutId, bool enabled) onToggleShortcut;
+  final Future<bool> Function(String shortcutId, bool enabled) onToggleShortcut;
   final VoidCallback onCustomizeControlCenter;
   final VoidCallback onOpenProfileAndSettings;
   final VoidCallback onOpenAdvancedStats;
@@ -2116,11 +2170,6 @@ class _SecondaryMenuSheetState extends State<_SecondaryMenuSheet> {
       icon: CupertinoIcons.bolt_fill,
     ),
     _ModuleToggleOption(
-      moduleId: 'block_apps',
-      titleKey: 'block_apps_sites',
-      icon: CupertinoIcons.shield_fill,
-    ),
-    _ModuleToggleOption(
       moduleId: 'streak',
       titleKey: 'streak',
       icon: CupertinoIcons.flame_fill,
@@ -2164,6 +2213,7 @@ class _SecondaryMenuSheetState extends State<_SecondaryMenuSheet> {
   }
 
   Future<void> _onToggleShortcut(_ModuleToggleOption option, bool value) async {
+    final previous = Set<String>.from(_shortcuts);
     setState(() {
       if (value) {
         _shortcuts.add(option.moduleId);
@@ -2173,9 +2223,12 @@ class _SecondaryMenuSheetState extends State<_SecondaryMenuSheet> {
       _saving.add(option.moduleId);
     });
 
-    await widget.onToggleShortcut(option.moduleId, value);
+    final success = await widget.onToggleShortcut(option.moduleId, value);
     if (!mounted) return;
     setState(() {
+      if (!success) {
+        _shortcuts = previous;
+      }
       _saving.remove(option.moduleId);
     });
   }
@@ -2260,69 +2313,55 @@ class _SecondaryMenuSheetState extends State<_SecondaryMenuSheet> {
                   icon: CupertinoIcons.chart_bar_alt_fill,
                   onTap: widget.onOpenAdvancedStats,
                 ),
-                const SizedBox(height: 16),
-                Text(
-                  'Home modules',
-                  style: AppTypography.overline.copyWith(
-                    fontSize: 11,
-                    color: AppColors.secondaryLabel,
-                  ),
-                ),
-                const SizedBox(height: 8),
                 Expanded(
-                  child: ListView.separated(
-                    itemCount: _moduleOptions.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 8),
-                    itemBuilder: (context, index) {
-                      final option = _moduleOptions[index];
-                      final enabled = _active.contains(option.moduleId);
-                      final saving = _saving.contains(option.moduleId);
-                      return GlassCard(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 10,
+                  child: ListView(
+                    padding: const EdgeInsets.only(top: 16, bottom: 24),
+                    children: [
+                      Text(
+                        'Home modules',
+                        style: AppTypography.overline.copyWith(
+                          fontSize: 11,
+                          color: AppColors.secondaryLabel,
                         ),
-                        borderRadius: 14,
-                        border: Border.all(
-                          color: enabled
-                              ? AppColors.accent.withValues(alpha: 0.44)
-                              : AppColors.border,
-                          width: 0.9,
+                      ),
+                      const SizedBox(height: 8),
+                      ..._moduleOptions.map((option) {
+                        final enabled = _active.contains(option.moduleId);
+                        final saving = _saving.contains(option.moduleId);
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: _ModuleToggleCard(
+                            option: option,
+                            enabled: enabled,
+                            saving: saving,
+                            onChanged: (value) => _onToggle(option, value),
+                          ),
+                        );
+                      }),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Shortcuts',
+                        style: AppTypography.overline.copyWith(
+                          fontSize: 11,
+                          color: AppColors.secondaryLabel,
                         ),
-                        child: Row(
-                          children: [
-                            Icon(
-                              option.icon,
-                              size: 18,
-                              color: enabled
-                                  ? AppColors.accent
-                                  : AppColors.tertiaryLabel,
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Text(
-                                language.t(option.titleKey),
-                                style: AppTypography.callout.copyWith(
-                                  fontSize: 13,
-                                  color: AppColors.label,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                            if (saving)
-                              CupertinoActivityIndicator(
-                                color: AppColors.accent,
-                              )
-                            else
-                              CupertinoSwitch(
-                                value: enabled,
-                                onChanged: (value) => _onToggle(option, value),
-                                activeTrackColor: AppColors.accent,
-                              ),
-                          ],
-                        ),
-                      );
-                    },
+                      ),
+                      const SizedBox(height: 8),
+                      ..._shortcutOptions.map((option) {
+                        final enabled = _shortcuts.contains(option.moduleId);
+                        final saving = _saving.contains(option.moduleId);
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: _ModuleToggleCard(
+                            option: option,
+                            enabled: enabled,
+                            saving: saving,
+                            onChanged: (value) =>
+                                _onToggleShortcut(option, value),
+                          ),
+                        );
+                      }),
+                    ],
                   ),
                 ),
               ],
@@ -2372,6 +2411,67 @@ class _SheetActionButton extends StatelessWidget {
               size: 14,
               color: AppColors.tertiaryLabel,
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ModuleToggleCard extends StatelessWidget {
+  final _ModuleToggleOption option;
+  final bool enabled;
+  final bool saving;
+  final ValueChanged<bool> onChanged;
+
+  const _ModuleToggleCard({
+    required this.option,
+    required this.enabled,
+    required this.saving,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final language = context.watch<LanguageProvider>();
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: saving ? null : () => onChanged(!enabled),
+      child: GlassCard(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        borderRadius: 14,
+        border: Border.all(
+          color: enabled
+              ? AppColors.accent.withValues(alpha: 0.44)
+              : AppColors.border,
+          width: 0.9,
+        ),
+        child: Row(
+          children: [
+            Icon(
+              option.icon,
+              size: 18,
+              color: enabled ? AppColors.accent : AppColors.tertiaryLabel,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                language.t(option.titleKey),
+                style: AppTypography.callout.copyWith(
+                  fontSize: 13,
+                  color: AppColors.label,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            if (saving)
+              CupertinoActivityIndicator(color: AppColors.accent)
+            else
+              CupertinoSwitch(
+                value: enabled,
+                onChanged: onChanged,
+                activeTrackColor: AppColors.accent,
+              ),
           ],
         ),
       ),

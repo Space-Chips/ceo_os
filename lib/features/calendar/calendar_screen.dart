@@ -225,7 +225,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
       return '${_currentDate.year}';
     }
     if (_displayMode == _CalendarDisplayMode.monthly) {
-      return _safeDateFormat('MMMM yyyy', _currentDate);
+      return '${_safeDateFormat('MMMM yyyy', _currentDate)} *';
     }
     return _safeDateFormat(
       'MMMM d, yyyy',
@@ -807,13 +807,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
     final isMonthly = _displayMode == _CalendarDisplayMode.monthly;
     return Row(
       children: [
-        if (_displayMode != _CalendarDisplayMode.yearly) ...[
-          _squareControlButton(
-            icon: CupertinoIcons.arrow_left,
-            onTap: _stepBackView,
-          ),
-          const SizedBox(width: 8),
-        ],
         _squareControlButton(
           icon: CupertinoIcons.chevron_left,
           onTap: () {
@@ -948,7 +941,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  DateFormat('MMM', _localeCode()).format(monthDate),
+                  _safeDateFormat('MMM', monthDate),
                   style: AppTypography.mono.copyWith(
                     fontSize: 18,
                     fontWeight: FontWeight.w900,
@@ -1117,10 +1110,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
   }
 
   Widget _buildDailyView(List<CalendarEvent> events) {
-    final dayLabel = DateFormat(
-      'EEEE, MMM d',
-      _localeCode(),
-    ).format(_currentDate);
+    final dayLabel = _safeDateFormat('EEEE, MMM d', _currentDate);
     final now = DateTime.now();
 
     return GlassCard(

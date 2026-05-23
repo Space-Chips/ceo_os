@@ -1,26 +1,26 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart' show LinearProgressIndicator;
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-
+import 'package:intl/intl.dart';
 import '../../components/components.dart';
 import '../../core/models/habit_models.dart';
 import '../../core/providers/habit_provider.dart';
+import '../../core/repositories/feature_repository.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import 'habit_gallery_sheet.dart';
-import '../../components/ambient_backdrop.dart';
-import '../../components/glass_card.dart';
-import '../../components/liquid_button.dart';
-import '../../components/neo_mono_text.dart';
 
 class HabitsScreen extends StatefulWidget {
   const HabitsScreen({super.key});
-
   @override
   State<HabitsScreen> createState() => _HabitsScreenState();
 }
 
 class _HabitsScreenState extends State<HabitsScreen> {
+  int _activeTab = 0; // 0 = grid, 1 = goals
+  final PageController _pageController = PageController();
+
   @override
   void initState() {
     super.initState();
@@ -29,8 +29,14 @@ class _HabitsScreenState extends State<HabitsScreen> {
     });
   }
 
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
   void _showAddHabit() {
-    showCupertinoModalPopup<void>(
+    showCupertinoModalPopup(
       context: context,
       builder: (_) => const HabitGallerySheet(),
     );
@@ -50,155 +56,906 @@ class _HabitsScreenState extends State<HabitsScreen> {
           onPressed: () => context.go('/home'),
           child: Icon(CupertinoIcons.back, color: AppColors.primaryOrange),
         ),
-        middle: NeoMonoText(
+        middle: const NeoMonoText(
           'HABITS',
           fontSize: 18,
           fontWeight: FontWeight.bold,
         ),
         trailing: CupertinoButton(
-          padding: EdgeInsets.zero,
+          padding: const EdgeInsets.symmetric(horizontal: 4),
           onPressed: _showAddHabit,
-          child: Icon(CupertinoIcons.plus, color: AppColors.primaryOrange),
+          child: Text(
+            _activeTab == 0 ? '+ Habit' : '+ Goal',
+            style: AppTypography.callout.copyWith(
+              fontSize: 14,
+              color: AppColors.primaryOrange,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
         ),
-        backgroundColor: AppColors.background.withValues(alpha: 0.86),
+        backgroundColor: AppColors.background.withValues(alpha: 0.8),
         border: null,
       ),
-      child: AmbientBackdrop(
-        child: SafeArea(
-          child: Consumer<HabitProvider>(
-            builder: (context, provider, _) {
-              if (provider.isLoading) {
-                return Center(
-                  child: CupertinoActivityIndicator(
-                    color: AppColors.primaryOrange,
-                  ),
-                );
-              }
-
-              final habits = provider.habitsWithCompletedBottom;
-              if (habits.isEmpty) {
-                return Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: GlassCard(
-                      padding: const EdgeInsets.all(20),
-                      borderRadius: 20,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            CupertinoIcons.checkmark_seal,
-                            size: 34,
-                            color: AppColors.primaryOrange,
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            'No habits yet',
-                            style: AppTypography.headline,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Create your first habit to start tracking consistency.',
-                            textAlign: TextAlign.center,
-                            style: AppTypography.subhead.copyWith(
-                              color: AppColors.secondaryLabel,
-                            ),
-                          ),
-                          const SizedBox(height: 18),
-                          LiquidButton(
-                            label: 'Add habit',
-                            icon: CupertinoIcons.plus,
-                            onPressed: _showAddHabit,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              }
-
-              return ListView.separated(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-                itemCount: habits.length,
-                separatorBuilder: (_, _) => const SizedBox(height: 10),
-                itemBuilder: (context, index) {
-                  final habit = habits[index];
-                  return _HabitRow(
-                    habit: habit,
-                    onTap: () => _openCompletionPage(habit),
-                  );
-                },
-              );
-            },
-          ),
+      child: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: PageView(
+                controller: _pageController,
+                onPageChanged: (i) => setState(() => _activeTab = i),
+                children: [
+                  _GridTab(onOpenHabit: _openCompletionPage),
+                  const _GoalsTab(),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 4, 20, 10),
+              child: Text(
+                _activeTab == 0
+                    ? 'Swipe right for Goals & Contract →'
+                    : '← Swipe left for Habits Grid',
+                textAlign: TextAlign.center,
+                style: AppTypography.mono.copyWith(
+                  fontSize: 10,
+                  color: AppColors.tertiaryLabel,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 }
 
-class _HabitRow extends StatelessWidget {
-  final Habit habit;
-  final VoidCallback onTap;
+// ══════════════════════════════════════════════════════════════════
+// TAB 1: GRID — Weekly habit grid + score (V1-style)
+// ══════════════════════════════════════════════════════════════════
 
-  const _HabitRow({required this.habit, required this.onTap});
+class _GridTab extends StatefulWidget {
+  final Function(Habit) onOpenHabit;
+  const _GridTab({required this.onOpenHabit});
+
+  @override
+  State<_GridTab> createState() => _GridTabState();
+}
+
+class _GridTabState extends State<_GridTab> {
+  Map<String, Map<String, HabitCompletion>> _weeklyCompletions = {};
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _loadWeeklyData());
+  }
+
+  Future<void> _loadWeeklyData() async {
+    final prov = context.read<HabitProvider>();
+    final now = DateTime.now();
+    final weekStart = now.subtract(Duration(days: now.weekday - 1));
+    final weekEnd = weekStart.add(const Duration(days: 6));
+
+    final completions = await prov.getCompletionsForRange(weekStart, weekEnd);
+
+    final Map<String, Map<String, HabitCompletion>> mapped = {};
+    for (final c in completions) {
+      mapped.putIfAbsent(c.habitId, () => {})[c.date] = c;
+    }
+
+    if (mounted) setState(() => _weeklyCompletions = mapped);
+  }
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: GlassCard(
-        padding: const EdgeInsets.all(14),
-        borderRadius: 16,
-        child: Row(
-          children: [
-            Container(
-              width: 42,
-              height: 42,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppColors.primaryOrange.withValues(alpha: 0.14),
-                border: Border.all(
-                  color: AppColors.primaryOrange.withValues(alpha: 0.28),
+    return Consumer<HabitProvider>(
+      builder: (context, prov, _) {
+        if (prov.isLoading && prov.habits.isEmpty) {
+          return Center(
+            child: CupertinoActivityIndicator(color: AppColors.primaryOrange),
+          );
+        }
+
+        if (prov.habits.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  CupertinoIcons.flame,
+                  size: 48,
+                  color: AppColors.tertiaryLabel,
                 ),
-              ),
-              alignment: Alignment.center,
-              child: Text(
-                (habit.icon?.trim().isNotEmpty ?? false) ? habit.icon! : '✓',
-                style: AppTypography.title3,
-              ),
+                const SizedBox(height: 16),
+                NeoMonoText(
+                  'NO_HABITS',
+                  fontSize: 14,
+                  color: AppColors.secondaryLabel,
+                ),
+              ],
             ),
-            const SizedBox(width: 12),
-            Expanded(
+          );
+        }
+
+        final now = DateTime.now();
+        final weekStart = now.subtract(Duration(days: now.weekday - 1));
+        const dayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+
+        // Calculate weekly score
+        int totalExpected = 0;
+        int totalCompleted = 0;
+        for (final habit in prov.habits) {
+          for (int d = 0; d < 7; d++) {
+            final day = weekStart.add(Duration(days: d));
+            final dayNum = day.weekday % 7; // 0=Sun, 1=Mon...
+            final isScheduled =
+                habit.isDaily ||
+                (habit.specificDays != null &&
+                    habit.specificDays!.contains(dayNum));
+            if (!isScheduled) continue;
+
+            final dayStr = DateFormat('yyyy-MM-dd').format(day);
+            final isPast = day.isBefore(DateTime(now.year, now.month, now.day));
+            final isToday =
+                day.day == now.day &&
+                day.month == now.month &&
+                day.year == now.year;
+
+            if (isPast || isToday) {
+              totalExpected++;
+              final comp = _weeklyCompletions[habit.id]?[dayStr];
+              if (comp != null && comp.completed) totalCompleted++;
+            }
+          }
+        }
+        final scorePercent = totalExpected > 0
+            ? ((totalCompleted / totalExpected) * 100).round()
+            : 0;
+        final isOnTrack = scorePercent >= 90;
+        final isAtRisk = scorePercent >= 70 && !isOnTrack;
+
+        return ListView(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 20,
+          ).copyWith(bottom: 100),
+          children: [
+            // ── Weekly Grid ──
+            GlassCard(
+              padding: const EdgeInsets.all(12),
+              borderRadius: 18,
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    habit.title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppTypography.headline,
+                  // Header row
+                  Row(
+                    children: [
+                      Expanded(
+                        flex: 3,
+                        child: Text(
+                          'HABIT',
+                          style: AppTypography.mono.copyWith(
+                            fontSize: 8,
+                            color: AppColors.tertiaryLabel,
+                            letterSpacing: 1.5,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      ...dayLabels.map(
+                        (l) => SizedBox(
+                          width: 32,
+                          child: Center(
+                            child: Text(
+                              l,
+                              style: AppTypography.mono.copyWith(
+                                fontSize: 9,
+                                color: AppColors.tertiaryLabel,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    habit.category ?? (habit.isDaily ? 'Daily' : 'Scheduled'),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppTypography.caption1.copyWith(
-                      color: AppColors.secondaryLabel,
+                  const SizedBox(height: 8),
+                  // Grid rows
+                  ...prov.habitsWithCompletedBottom.map(
+                    (habit) => _HabitGridRow(
+                      habit: habit,
+                      weekStart: weekStart,
+                      weeklyCompletions: _weeklyCompletions[habit.id] ?? {},
+                      onTap: () => widget.onOpenHabit(habit),
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(width: 10),
-            Icon(
-              CupertinoIcons.chevron_right,
-              size: 18,
-              color: AppColors.tertiaryLabel,
+
+            const SizedBox(height: 20),
+
+            // ── Weekly Score Card ──
+            GlassCard(
+              padding: const EdgeInsets.all(16),
+              borderRadius: 18,
+              border: Border.all(
+                color: isOnTrack
+                    ? AppColors.success.withValues(alpha: 0.4)
+                    : isAtRisk
+                    ? AppColors.primaryOrange.withValues(alpha: 0.3)
+                    : AppColors.error.withValues(alpha: 0.3),
+                width: 0.5,
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '${DateFormat('MMM d').format(weekStart)} — ${DateFormat('MMM d').format(weekStart.add(const Duration(days: 6)))}',
+                            style: AppTypography.mono.copyWith(
+                              fontSize: 8,
+                              color: AppColors.tertiaryLabel,
+                              letterSpacing: 1,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'WEEK SCORE',
+                            style: AppTypography.mono.copyWith(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Text(
+                        '$scorePercent%',
+                        style: AppTypography.mono.copyWith(
+                          fontSize: 32,
+                          fontWeight: FontWeight.w700,
+                          color: isOnTrack
+                              ? AppColors.success
+                              : isAtRisk
+                              ? AppColors.primaryOrange
+                              : AppColors.error,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(3),
+                    child: SizedBox(
+                      height: 5,
+                      child: LinearProgressIndicator(
+                        value: scorePercent / 100,
+                        backgroundColor: AppColors.surface,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          isOnTrack
+                              ? AppColors.success
+                              : isAtRisk
+                              ? AppColors.primaryOrange
+                              : AppColors.error,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '$totalCompleted / $totalExpected',
+                        style: AppTypography.mono.copyWith(
+                          fontSize: 9,
+                          color: AppColors.tertiaryLabel,
+                        ),
+                      ),
+                      Text(
+                        'TARGET 90%',
+                        style: AppTypography.mono.copyWith(
+                          fontSize: 9,
+                          color: AppColors.tertiaryLabel,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            // ── Habit List ──
+            ...prov.habitsWithCompletedBottom.map(
+              (habit) => Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: GestureDetector(
+                  onTap: () => widget.onOpenHabit(habit),
+                  child: _HabitTile(
+                    habit: habit,
+                    onToggle: () => prov.toggleHabit(habit.id),
+                  ),
+                ),
+              ),
             ),
           ],
+        );
+      },
+    );
+  }
+}
+
+// ── Habit Grid Row ──
+
+class _HabitGridRow extends StatelessWidget {
+  final Habit habit;
+  final DateTime weekStart;
+  final Map<String, HabitCompletion> weeklyCompletions;
+  final VoidCallback onTap;
+
+  const _HabitGridRow({
+    required this.habit,
+    required this.weekStart,
+    required this.weeklyCompletions,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Row(
+          children: [
+            Expanded(
+              flex: 3,
+              child: Text(
+                habit.title,
+                style: AppTypography.mono.copyWith(
+                  fontSize: 11,
+                  color: AppColors.secondaryLabel,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            ...List.generate(7, (d) {
+              final day = weekStart.add(Duration(days: d));
+              final dayStr = DateFormat('yyyy-MM-dd').format(day);
+              final dayNum = day.weekday % 7;
+
+              final isScheduled =
+                  habit.isDaily ||
+                  (habit.specificDays != null &&
+                      habit.specificDays!.contains(dayNum));
+              final isPast = day.isBefore(today);
+              final isToday = day.isAtSameMomentAs(today);
+
+              if (!isScheduled) {
+                return SizedBox(
+                  width: 32,
+                  child: Center(
+                    child: Text(
+                      '·',
+                      style: AppTypography.mono.copyWith(
+                        fontSize: 10,
+                        color: AppColors.quaternaryLabel,
+                      ),
+                    ),
+                  ),
+                );
+              }
+
+              final comp = weeklyCompletions[dayStr];
+              final isCompleted = comp != null && comp.completed;
+
+              return SizedBox(
+                width: 32,
+                child: Center(
+                  child: _DayCell(
+                    isCompleted: isCompleted,
+                    isMissed: isPast && !isCompleted && !isToday,
+                    isToday: isToday,
+                    isFuture: !isPast && !isToday,
+                  ),
+                ),
+              );
+            }),
+          ],
         ),
+      ),
+    );
+  }
+}
+
+// ── Day Cell ──
+
+class _DayCell extends StatelessWidget {
+  final bool isCompleted;
+  final bool isMissed;
+  final bool isToday;
+  final bool isFuture;
+
+  const _DayCell({
+    required this.isCompleted,
+    required this.isMissed,
+    required this.isToday,
+    required this.isFuture,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (isCompleted) {
+      return Container(
+        width: 20,
+        height: 20,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: AppColors.success.withValues(alpha: 0.2),
+        ),
+        child: const Icon(
+          CupertinoIcons.checkmark,
+          size: 12,
+          color: AppColors.success,
+        ),
+      );
+    }
+
+    if (isMissed) {
+      return Container(
+        width: 20,
+        height: 20,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: AppColors.error.withValues(alpha: 0.15),
+        ),
+        child: const Icon(
+          CupertinoIcons.xmark,
+          size: 10,
+          color: AppColors.error,
+        ),
+      );
+    }
+
+    if (isToday) {
+      return Container(
+        width: 20,
+        height: 20,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: AppColors.primaryOrange.withValues(alpha: 0.6),
+            width: 1.5,
+          ),
+        ),
+      );
+    }
+
+    // Future
+    return Container(
+      width: 16,
+      height: 16,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(color: AppColors.glassBorder, width: 1),
+      ),
+    );
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// TAB 2: GOALS (objectives + weekly contract)
+// ══════════════════════════════════════════════════════════════════
+
+class _GoalsTab extends StatefulWidget {
+  const _GoalsTab();
+
+  @override
+  State<_GoalsTab> createState() => _GoalsTabState();
+}
+
+class _GoalsTabState extends State<_GoalsTab> {
+  final FeatureRepository _repo = FeatureRepository();
+  final TextEditingController _rewardController = TextEditingController();
+  final TextEditingController _sanctionController = TextEditingController();
+  WeeklyContract? _contract;
+  WeeklyHabitScore? _weeklyScore;
+  bool _loading = true;
+  bool _saving = false;
+  int _threshold = 90;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    final contract = await _repo.getCurrentWeeklyContract();
+    final scores = await _repo.getWeeklyHabitScores(limit: 1);
+    final score = scores.isNotEmpty ? scores.first : null;
+    if (!mounted) return;
+    setState(() {
+      _contract = contract;
+      _weeklyScore = score;
+      _rewardController.text = contract?.rewardText ?? '';
+      _sanctionController.text = contract?.sanctionText ?? '';
+      _threshold = contract?.successThresholdPercentage ?? 90;
+      _loading = false;
+    });
+  }
+
+  Future<void> _commitContract() async {
+    if (_saving) return;
+    setState(() => _saving = true);
+    try {
+      await _repo.upsertCurrentWeeklyContract(
+        reward: _rewardController.text.trim(),
+        sanction: _sanctionController.text.trim(),
+        threshold: _threshold,
+        committed: true,
+      );
+      await _load();
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  @override
+  void dispose() {
+    _rewardController.dispose();
+    _sanctionController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<HabitProvider>(
+      builder: (context, prov, _) {
+        final categories = <String, List<Habit>>{};
+        for (final habit in prov.habitsWithCompletedBottom) {
+          final cat = habit.category ?? 'General';
+          categories.putIfAbsent(cat, () => []).add(habit);
+        }
+
+        return ListView(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 20,
+          ).copyWith(bottom: 100),
+          children: [
+            if (categories.isEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 40),
+                child: Center(
+                  child: Column(
+                    children: [
+                      Icon(
+                        CupertinoIcons.star,
+                        size: 48,
+                        color: AppColors.tertiaryLabel,
+                      ),
+                      const SizedBox(height: 16),
+                      NeoMonoText(
+                        'NO_GOALS',
+                        fontSize: 14,
+                        color: AppColors.secondaryLabel,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Add habits with categories to see goals here',
+                        style: AppTypography.mono.copyWith(
+                          fontSize: 10,
+                          color: AppColors.tertiaryLabel,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            else
+              ...categories.entries.map(
+                (entry) => Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: GlassCard(
+                    padding: const EdgeInsets.all(16),
+                    borderRadius: 18,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              CupertinoIcons.scope,
+                              size: 16,
+                              color: AppColors.primaryOrange,
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    entry.key.toUpperCase(),
+                                    style: AppTypography.mono.copyWith(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  Text(
+                                    '${entry.value.length} habits',
+                                    style: AppTypography.mono.copyWith(
+                                      fontSize: 9,
+                                      color: AppColors.tertiaryLabel,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Container(height: 0.5, color: AppColors.glassBorder),
+                        const SizedBox(height: 8),
+                        ...entry.value.map(
+                          (habit) => Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  prov.isHabitCompletedToday(habit.id)
+                                      ? CupertinoIcons.checkmark_circle_fill
+                                      : CupertinoIcons.circle,
+                                  size: 16,
+                                  color: prov.isHabitCompletedToday(habit.id)
+                                      ? AppColors.success
+                                      : AppColors.tertiaryLabel,
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Text(
+                                    habit.title,
+                                    style: AppTypography.mono.copyWith(
+                                      fontSize: 11,
+                                      color: AppColors.secondaryLabel,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            const SizedBox(height: 20),
+            _weekContractCard(),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _weekContractCard() {
+    final committed = _contract?.committed ?? false;
+    return GlassCard(
+      padding: const EdgeInsets.all(16),
+      borderRadius: 18,
+      border: Border.all(
+        color: AppColors.glassBorder.withValues(alpha: 0.8),
+        width: 0.7,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                CupertinoIcons.star_fill,
+                size: 16,
+                color: AppColors.primaryOrange,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Week Contract',
+                style: AppTypography.headline.copyWith(
+                  fontSize: 16,
+                  color: AppColors.label,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                committed ? 'Committed' : 'Draft',
+                style: AppTypography.mono.copyWith(
+                  fontSize: 10,
+                  color: committed ? AppColors.success : AppColors.warning,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          if (_loading)
+            CupertinoActivityIndicator(color: AppColors.primaryOrange)
+          else ...[
+            GlassInputField(
+              controller: _rewardController,
+              placeholder: 'Reward if successful',
+            ),
+            const SizedBox(height: 10),
+            GlassInputField(
+              controller: _sanctionController,
+              placeholder: 'Sanction if failed',
+            ),
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                Text(
+                  'Threshold $_threshold%',
+                  style: AppTypography.callout.copyWith(
+                    fontSize: 13,
+                    color: AppColors.secondaryLabel,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const Spacer(),
+                Text(
+                  'Current ${_weeklyScore?.successPercentage ?? 0}%',
+                  style: AppTypography.mono.copyWith(
+                    fontSize: 10,
+                    color: AppColors.tertiaryLabel,
+                  ),
+                ),
+              ],
+            ),
+            CupertinoSlider(
+              value: _threshold.toDouble(),
+              min: 60,
+              max: 100,
+              divisions: 8,
+              activeColor: AppColors.primaryOrange,
+              onChanged: committed
+                  ? null
+                  : (value) => setState(() => _threshold = value.round()),
+            ),
+            const SizedBox(height: 8),
+            CupertinoButton(
+              padding: EdgeInsets.zero,
+              onPressed: committed || _saving ? null : _commitContract,
+              child: Container(
+                width: double.infinity,
+                height: 48,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  gradient: LinearGradient(
+                    colors: committed
+                        ? [
+                            AppColors.surface.withValues(alpha: 0.72),
+                            AppColors.surfaceMuted.withValues(alpha: 0.72),
+                          ]
+                        : const [Color(0xFFFF934D), Color(0xFFFFC36A)],
+                  ),
+                ),
+                child: _saving
+                    ? CupertinoActivityIndicator(color: AppColors.onAccent)
+                    : Text(
+                        committed ? 'Contract committed' : 'Commit Contract',
+                        style: AppTypography.callout.copyWith(
+                          fontSize: 15,
+                          color: committed
+                              ? AppColors.secondaryLabel
+                              : AppColors.onAccent,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _contractPill({
+    required String label,
+    required String value,
+    required bool positive,
+  }) {
+    final color = positive ? AppColors.success : AppColors.error;
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: color.withValues(alpha: 0.2), width: 0.5),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label.toUpperCase(),
+            style: AppTypography.mono.copyWith(
+              fontSize: 8,
+              color: color,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: AppTypography.mono.copyWith(
+              fontSize: 10,
+              color: AppColors.secondaryLabel,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Habit Tile ──
+
+class _HabitTile extends StatelessWidget {
+  final Habit habit;
+  final VoidCallback onToggle;
+  const _HabitTile({required this.habit, required this.onToggle});
+
+  @override
+  Widget build(BuildContext context) {
+    final prov = context.watch<HabitProvider>();
+    final isComplete = prov.isHabitCompletedToday(habit.id);
+
+    return GlassCard(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      borderRadius: 16,
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: onToggle,
+            child: Icon(
+              isComplete
+                  ? CupertinoIcons.checkmark_circle_fill
+                  : CupertinoIcons.circle,
+              size: 22,
+              color: isComplete ? AppColors.success : AppColors.tertiaryLabel,
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Text(
+              habit.title.toUpperCase(),
+              style: AppTypography.mono.copyWith(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: isComplete ? AppColors.tertiaryLabel : AppColors.label,
+                decoration: isComplete ? TextDecoration.lineThrough : null,
+              ),
+            ),
+          ),
+          Text(
+            habit.isDaily ? 'DAILY' : 'WEEKLY',
+            style: AppTypography.mono.copyWith(
+              fontSize: 8,
+              color: AppColors.tertiaryLabel,
+              letterSpacing: 1,
+            ),
+          ),
+        ],
       ),
     );
   }

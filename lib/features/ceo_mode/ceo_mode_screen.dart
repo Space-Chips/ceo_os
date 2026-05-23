@@ -544,17 +544,20 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 6),
       children: [
         Text(
-          'Blackout Mode',
+          _t('blackout_mode'),
+          maxLines: 1,
+          softWrap: false,
+          overflow: TextOverflow.ellipsis,
           style: AppTypography.mono.copyWith(
-            fontSize: 56,
+            fontSize: 44,
             fontWeight: FontWeight.w900,
             color: AppColors.label,
-            height: 0.88,
+            height: 0.95,
           ),
         ),
         const SizedBox(height: 10),
         Text(
-          'Maximum Focus. Once activated, normal mode is unavailable until session ends or delayed exit unlocks.',
+          _t('blackout_description'),
           style: AppTypography.mono.copyWith(
             fontSize: 14,
             color: AppColors.secondaryLabel,
@@ -562,19 +565,19 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
         ),
         const SizedBox(height: 16),
         _glowSurface(
-          glowColor: AppColors.primaryOrange.withValues(alpha: 0.22),
+          glowColor: AppColors.edgeGlowSoft.withValues(alpha: 0.16),
           borderRadius: 28,
           child: GlassCard(
             padding: const EdgeInsets.all(18),
             borderRadius: 28,
             level: GlassCardLevel.elevated,
-            showEdgeGlow: true,
+            showEdgeGlow: false,
             border: Border.all(
-              color: AppColors.primaryOrange.withValues(alpha: 0.5),
+              color: AppColors.glassBorder.withValues(alpha: 0.78),
               width: 0.85,
             ),
             gradientColors: [
-              AppColors.primaryOrange.withValues(alpha: 0.2),
+              AppColors.cardBackgroundStrong.withValues(alpha: 0.84),
               AppColors.backgroundLight.withValues(alpha: 0.95),
             ],
             child: Column(
@@ -627,10 +630,10 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: AppColors.primaryOrange.withValues(alpha: 0.5),
+                          color: AppColors.label.withValues(alpha: 0.48),
                           width: 0.7,
                         ),
-                        color: AppColors.primaryOrange.withValues(alpha: 0.14),
+                        color: AppColors.white.withValues(alpha: 0.06),
                       ),
                     ),
                     children: _durationOptions
@@ -746,28 +749,18 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
                 height: 58,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(20),
-                  gradient: const LinearGradient(
-                    begin: Alignment.centerLeft,
-                    end: Alignment.centerRight,
-                    colors: [Color(0xFFFFB04E), Color(0xFFFFD48A)],
-                  ),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Color(0x59FFB04E),
-                      blurRadius: 24,
-                      offset: Offset(0, 8),
-                    ),
-                  ],
+                  color: AppColors.surface.withValues(alpha: 0.82),
+                  border: Border.all(color: AppColors.borderStrong, width: 1),
                 ),
                 alignment: Alignment.center,
                 child: ceo.isBusy
-                    ? CupertinoActivityIndicator(color: AppColors.onAccent)
+                    ? CupertinoActivityIndicator(color: AppColors.label)
                     : Text(
-                        'Start CEO Session',
+                        _t('blackout_confirm_start'),
                         style: AppTypography.callout.copyWith(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
-                          color: AppColors.onAccent,
+                          color: AppColors.label,
                         ),
                       ),
               ),
