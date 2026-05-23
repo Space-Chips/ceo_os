@@ -10,6 +10,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../components/components.dart';
 import '../../core/config/apple_review_compliance.dart';
+import '../../core/models/habit_models.dart';
 import '../../core/models/insights_models.dart';
 import '../../core/models/premium_models.dart';
 import '../../core/providers/ceo_mode_provider.dart';
@@ -309,13 +310,19 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _loadHomePreferences() async {
     final prefs = await SharedPreferences.getInstance();
-    final shortcuts = prefs
+    final storedShortcuts = prefs
         .getStringList(_prefsKey('enabled_shortcuts_v2'))
         ?.toSet();
+    // Fall back to defaults if nothing stored OR if stored list is empty
+    // (an empty list usually means a stale write — never an intentional
+    // "no shortcuts" choice).
+    final shortcuts = (storedShortcuts == null || storedShortcuts.isEmpty)
+        ? _defaultEnabledShortcuts
+        : storedShortcuts;
     var hideNoModules =
         prefs.getBool(_prefsKey('hide_no_modules_message_v1')) ?? false;
     final normalizedShortcuts = _normalizeEnabledShortcuts(
-      shortcuts ?? _defaultEnabledShortcuts,
+      shortcuts,
       _activeApps,
     );
 
@@ -492,7 +499,38 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<bool> _hasPendingYesterdayHabits() async {
-    return false;
+    final habitProvider = context.read<HabitProvider>();
+    final yesterday = _dateOnly(
+      DateTime.now().subtract(const Duration(days: 1)),
+    );
+    final habits = habitProvider.habits;
+    if (habits.isEmpty) return false;
+
+    final completions = await habitProvider.getCompletionsForRange(
+      yesterday,
+      yesterday,
+    );
+    final completionMap = {for (final item in completions) item.habitId: item};
+
+    return habits.any((habit) {
+      final created = _dateOnly(habit.createdAt);
+      if (created.isAfter(yesterday)) return false;
+      if (!_isHabitScheduled(habit, yesterday)) return false;
+      return completionMap[habit.id] == null;
+    });
+  }
+
+  DateTime _dateOnly(DateTime value) =>
+      DateTime(value.year, value.month, value.day);
+
+  int _habitWeekday(DateTime value) =>
+      value.weekday == DateTime.sunday ? 7 : value.weekday;
+
+  bool _isHabitScheduled(Habit habit, DateTime day) {
+    if (habit.isDaily) return true;
+    final specificDays = habit.specificDays;
+    if (specificDays == null || specificDays.isEmpty) return true;
+    return specificDays.contains(_habitWeekday(day));
   }
 
   Future<void> _openControlCenterCustomizer() async {
@@ -793,6 +831,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   : 'Bronze';
               final habitsCount =
                   data?.totalHabits ?? habitProvider.habits.length;
+              final today = _dateOnly(DateTime.now());
+              final eventsToday = taskProvider.events.where((event) {
+                final raw = event.eventDate;
+                if (raw == null || raw.isEmpty) return false;
+                final parsed = DateTime.tryParse(raw);
+                if (parsed == null) return false;
+                return _dateOnly(parsed) == today;
+              }).length;
               final visibleCards = _primaryCards(
                 language: language,
                 pendingTasks: pendingTasks,
@@ -813,11 +859,19 @@ class _HomeScreenState extends State<HomeScreen> {
                     onOpenStreak: () => context.push('/win-streak'),
                   ),
                   const SizedBox(height: 8),
-                  _DashboardMainCard(
-                    wakeScore: data?.productivityScore ?? 0,
-                    tasksCount: pendingTasks,
-                    habitsCount: habitsCount,
-                    onOpenDashboard: () => context.push('/dashboard'),
+                  FutureBuilder<bool>(
+                    future: _pendingYesterdayValidationFuture,
+                    builder: (context, pendingSnapshot) {
+                      return _DashboardMainCard(
+                        wakeScore: data?.productivityScore ?? 0,
+                        tasksCount: pendingTasks,
+                        habitsCount: habitsCount,
+                        eventsCount: eventsToday,
+                        hasPendingYesterdayHabits:
+                            pendingSnapshot.data ?? false,
+                        onOpenDashboard: () => context.push('/dashboard'),
+                      );
+                    },
                   ),
                   const SizedBox(height: 16),
                   if (visibleCards.isEmpty)
@@ -1237,19 +1291,13 @@ class _TopShortcutsBar extends StatelessWidget {
             ),
           ),
         ),
-        const Spacer(),
+        const SizedBox(width: 12),
         if (enabledShortcuts.contains('rank')) ...[
           _ShortcutPill(
-            label: rankName,
-            icon: CupertinoIcons.star_fill,
-            iconColor: AppColors.warning,
-            labelColor: AppColors.warning,
-            leading: RankArt(
-              rankName: rankName,
-              size: RankArtSize.xs,
-              dimension: 18,
-              fit: BoxFit.contain,
-            ),
+            label: 'WakeApp Pro',
+            icon: CupertinoIcons.arrow_up_circle_fill,
+            iconColor: AppColors.secondaryLabel,
+            labelColor: AppColors.secondaryLabel,
             onTap: onOpenRank,
           ),
           const SizedBox(width: 8),
@@ -1257,7 +1305,7 @@ class _TopShortcutsBar extends StatelessWidget {
         if (enabledShortcuts.contains('focus')) ...[
           _ShortcutCircle(
             icon: CupertinoIcons.bolt_fill,
-            gradient: [const Color(0xFFFF934D), AppColors.primaryOrange],
+            iconColor: AppColors.secondaryLabel,
             onTap: onOpenFocus,
           ),
           const SizedBox(width: 8),
@@ -1265,7 +1313,7 @@ class _TopShortcutsBar extends StatelessWidget {
         if (enabledShortcuts.contains('notes')) ...[
           _ShortcutCircle(
             icon: CupertinoIcons.doc_text_fill,
-            gradient: const [Color(0xFFA26BFF), Color(0xFF7F50F2)],
+            iconColor: AppColors.secondaryLabel,
             onTap: onOpenNotes,
           ),
           const SizedBox(width: 8),
@@ -1359,12 +1407,12 @@ class _ShortcutPill extends StatelessWidget {
 
 class _ShortcutCircle extends StatelessWidget {
   final IconData icon;
-  final List<Color> gradient;
+  final Color iconColor;
   final VoidCallback onTap;
 
   const _ShortcutCircle({
     required this.icon,
-    required this.gradient,
+    required this.iconColor,
     required this.onTap,
   });
 
@@ -1372,24 +1420,24 @@ class _ShortcutCircle extends StatelessWidget {
   Widget build(BuildContext context) {
     return _InteractiveLift(
       onTap: onTap,
-      borderRadius: 24,
-      glowColor: gradient.last.withValues(alpha: 0.32),
+      borderRadius: 16,
+      glowColor: AppColors.edgeGlowSoft,
       child: Container(
         width: 48,
         height: 48,
         decoration: BoxDecoration(
-          shape: BoxShape.circle,
+          borderRadius: BorderRadius.circular(16),
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: gradient,
+            colors: AppColors.floatingGlassGradient,
           ),
           border: Border.all(color: AppColors.borderStrong, width: 1),
           boxShadow: [
             BoxShadow(
-              color: gradient.last.withValues(alpha: 0.22),
-              blurRadius: 14,
-              offset: const Offset(0, 8),
+              color: AppColors.glassShadow.withValues(alpha: 0.18),
+              blurRadius: 10,
+              offset: const Offset(0, 6),
               spreadRadius: -10,
             ),
           ],
@@ -1408,7 +1456,7 @@ class _ShortcutCircle extends StatelessWidget {
                 ),
               ),
             ),
-            Center(child: Icon(icon, color: AppColors.onAccent, size: 20)),
+            Center(child: Icon(icon, color: iconColor, size: 20)),
           ],
         ),
       ),
@@ -1471,12 +1519,16 @@ class _DashboardMainCard extends StatelessWidget {
   final int wakeScore;
   final int tasksCount;
   final int habitsCount;
+  final int eventsCount;
+  final bool hasPendingYesterdayHabits;
   final VoidCallback onOpenDashboard;
 
   const _DashboardMainCard({
     required this.wakeScore,
     required this.tasksCount,
     required this.habitsCount,
+    required this.eventsCount,
+    required this.hasPendingYesterdayHabits,
     required this.onOpenDashboard,
   });
 
@@ -1499,49 +1551,115 @@ class _DashboardMainCard extends StatelessWidget {
         ],
         border: Border.all(color: AppColors.border, width: 0.8),
         child: SizedBox(
-          height: 112,
+          height: 164,
           child: Row(
             children: [
               Expanded(
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    const Spacer(),
                     Text(
                       'Dashboard',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: AppTypography.largeTitle.copyWith(
-                        fontSize: 34,
+                        fontSize: 36,
                         height: 0.95,
                         fontWeight: FontWeight.w800,
                         color: AppColors.label,
                       ),
                     ),
-                    const SizedBox(height: 10),
-                    Text(
-                      '$wakeScore/$tasksCount/$habitsCount',
-                      style: AppTypography.mono.copyWith(
-                        fontSize: 16,
-                        color: AppColors.secondaryLabel,
-                        fontWeight: FontWeight.w800,
-                      ),
+                    const SizedBox(height: 14),
+                    Row(
+                      children: [
+                        _DashboardMetric(value: tasksCount, label: 'Tasks'),
+                        const SizedBox(width: 16),
+                        _DashboardMetric(value: habitsCount, label: 'Habits'),
+                        const SizedBox(width: 16),
+                        _DashboardMetric(value: eventsCount, label: 'Events'),
+                      ],
                     ),
+                    const SizedBox(height: 12),
+                    if (hasPendingYesterdayHabits)
+                      Text(
+                        'Habits from yesterday not validated',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTypography.caption1.copyWith(
+                          fontSize: 11,
+                          color: AppColors.primaryOrange,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      )
+                    else
+                      const SizedBox(height: 14),
+                    const Spacer(),
                   ],
                 ),
               ),
-              Text(
-                '${DateTime.now().day}',
-                style: AppTypography.timer.copyWith(
-                  fontSize: 62,
-                  height: 0.95,
-                  color: AppColors.label,
-                  fontWeight: FontWeight.w700,
+              const SizedBox(width: 12),
+              Container(
+                width: 108,
+                height: 108,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: AppColors.white.withValues(alpha: 0.66),
+                    width: 1.2,
+                  ),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  '${DateTime.now().day}',
+                  style: AppTypography.timer.copyWith(
+                    fontSize: 62,
+                    height: 0.95,
+                    color: AppColors.label,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _DashboardMetric extends StatelessWidget {
+  final int value;
+  final String label;
+
+  const _DashboardMetric({required this.value, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Flexible(
+      child: Text.rich(
+        TextSpan(
+          children: [
+            TextSpan(
+              text: '$value ',
+              style: AppTypography.mono.copyWith(
+                fontSize: 15,
+                color: AppColors.label,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            TextSpan(
+              text: label,
+              style: AppTypography.caption1.copyWith(
+                fontSize: 11,
+                color: AppColors.secondaryLabel,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
       ),
     );
   }
@@ -1772,7 +1890,7 @@ class _PrimaryAppCard extends StatelessWidget {
     }
 
     final base = GlassCard(
-      padding: EdgeInsets.all(compact ? 12 : 14),
+      padding: EdgeInsets.all(compact ? 10 : 12),
       borderRadius: 24,
       level: data.active ? GlassCardLevel.elevated : GlassCardLevel.subtle,
       showEdgeGlow: false,
@@ -1792,7 +1910,7 @@ class _PrimaryAppCard extends StatelessWidget {
                   width: compact ? 54 : 62,
                   height: compact ? 54 : 62,
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(18),
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
@@ -1966,13 +2084,13 @@ class _BlackoutGridCard extends StatelessWidget {
               const Spacer(),
               Text(
                 title,
-                maxLines: 1,
-                softWrap: false,
-                overflow: TextOverflow.ellipsis,
+                maxLines: 2,
+                overflow: TextOverflow.visible,
                 style: AppTypography.mono.copyWith(
-                  fontSize: 18,
+                  fontSize: 16,
                   fontWeight: FontWeight.w900,
                   color: AppColors.secondaryLabel,
+                  height: 1.05,
                 ),
               ),
               const SizedBox(height: 8),
@@ -2063,15 +2181,15 @@ class _CeoModeCard extends StatelessWidget {
                 title,
                 maxLines: 1,
                 softWrap: false,
-                overflow: TextOverflow.ellipsis,
+                overflow: TextOverflow.visible,
                 style: AppTypography.mono.copyWith(
-                  fontSize: 36 / 2,
+                  fontSize: 16,
                   fontWeight: FontWeight.w900,
                   color: AppColors.secondaryLabel,
                 ),
               ),
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: 8),
             GestureDetector(
               onTap: onOpenCeoMode,
               child: Container(
@@ -2092,6 +2210,12 @@ class _CeoModeCard extends StatelessWidget {
                   ),
                 ),
               ),
+            ),
+            const SizedBox(width: 10),
+            Icon(
+              CupertinoIcons.chevron_right,
+              size: 18,
+              color: AppColors.secondaryLabel.withValues(alpha: 0.72),
             ),
           ],
         ),
