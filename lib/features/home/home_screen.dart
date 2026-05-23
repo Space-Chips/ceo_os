@@ -186,7 +186,6 @@ class _NoModulesMessageCard extends StatelessWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  static const int _maxVisibleHomeItems = 4;
   final InsightsRepository _insightsRepository = InsightsRepository();
   final UserRepository _userRepository = UserRepository();
   final FeatureRepository _featureRepository = FeatureRepository();
@@ -391,8 +390,6 @@ class _HomeScreenState extends State<HomeScreen> {
     Set<String> shortcuts,
     Set<String> activeApps,
   ) {
-    final availableShortcutSlots = (_maxVisibleHomeItems - activeApps.length)
-        .clamp(0, _shortcutOrder.length);
     final ordered = _shortcutOrder
         .where(
           (shortcutId) =>
@@ -400,7 +397,6 @@ class _HomeScreenState extends State<HomeScreen> {
               (_showSocialScreenTimeSurfaces ||
                   !_socialShortcutIds.contains(shortcutId)),
         )
-        .take(availableShortcutSlots)
         .toSet();
     return ordered;
   }
@@ -2244,7 +2240,6 @@ class _SecondaryMenuSheet extends StatefulWidget {
 }
 
 class _SecondaryMenuSheetState extends State<_SecondaryMenuSheet> {
-  static const int _maxVisibleHomeItems = 4;
   static const Set<String> _validPrimaryApps = {
     'Pareto',
     'Habits',
@@ -2310,13 +2305,8 @@ class _SecondaryMenuSheetState extends State<_SecondaryMenuSheet> {
   }
 
   Set<String> _normalizeLocalShortcuts(Set<String> source) {
-    final availableShortcutSlots = (_maxVisibleHomeItems - _active.length)
-        .clamp(0, _shortcutOptions.length);
     final orderedIds = _shortcutOptions.map((option) => option.moduleId);
-    return orderedIds
-        .where(source.contains)
-        .take(availableShortcutSlots)
-        .toSet();
+    return orderedIds.where(source.contains).toSet();
   }
 
   Future<void> _onToggle(_ModuleToggleOption option, bool value) async {
