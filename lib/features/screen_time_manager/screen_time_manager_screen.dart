@@ -235,7 +235,7 @@ class _ScreenTimeManagerScreenState extends State<ScreenTimeManagerScreen> {
 
                   return SafeArea(
                     child: ListView(
-                      padding: const EdgeInsets.fromLTRB(14, 8, 14, 12),
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 14),
                       children: [
                         _headerRow(),
                         const SizedBox(height: 10),
@@ -355,13 +355,13 @@ class _ScreenTimeManagerScreenState extends State<ScreenTimeManagerScreen> {
     return _ScreenTimePressScale(
       onTap: () => context.push('/focus'),
       child: Container(
-        padding: const EdgeInsets.all(22),
+        padding: const EdgeInsets.all(20),
         decoration: _moduleDecoration(
           radius: 22,
           borderColor: AppColors.isDark
               ? AppColors.activeBorder
               : AppColors.selectionOutline.withValues(alpha: 0.98),
-          borderWidth: AppColors.isDark ? 1.1 : 1.25,
+          borderWidth: AppColors.isDark ? 0.85 : 0.95,
           overlay: AppColors.ambientTint.withValues(
             alpha: AppColors.isDark ? 0.08 : 0.045,
           ),
@@ -425,17 +425,20 @@ class _ScreenTimeManagerScreenState extends State<ScreenTimeManagerScreen> {
                 ),
                 const SizedBox(width: 16),
                 Container(
-                  width: 72,
-                  height: 72,
+                  width: 70,
+                  height: 70,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: AppColors.accentSurfaceSoft,
-                    border: Border.all(color: AppColors.activeBorder, width: 1),
+                    border: Border.all(
+                      color: AppColors.activeBorder,
+                      width: 0.75,
+                    ),
                   ),
                   child: Icon(
                     CupertinoIcons.bolt,
                     color: AppColors.accentIcon,
-                    size: 28,
+                    size: 27,
                   ),
                 ),
               ],
@@ -457,10 +460,10 @@ class _ScreenTimeManagerScreenState extends State<ScreenTimeManagerScreen> {
     required String privateRankLabel,
   }) {
     return GlassCard(
-      padding: const EdgeInsets.all(12),
-      borderRadius: 24,
+      padding: const EdgeInsets.all(14),
+      borderRadius: 22,
       border: Border.all(
-        color: AppColors.glassBorder.withValues(alpha: 0.62),
+        color: AppColors.glassBorder.withValues(alpha: 0.54),
         width: 0.55,
       ),
       child: Column(
@@ -543,7 +546,7 @@ class _ScreenTimeManagerScreenState extends State<ScreenTimeManagerScreen> {
     VoidCallback? onTap,
   }) {
     final tile = Container(
-      constraints: const BoxConstraints(minHeight: 112),
+      constraints: const BoxConstraints(minHeight: 116),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 15),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(18),
@@ -573,7 +576,7 @@ class _ScreenTimeManagerScreenState extends State<ScreenTimeManagerScreen> {
             maxLines: 1,
             overflow: TextOverflow.visible,
             style: AppTypography.mono.copyWith(
-              fontSize: 30,
+              fontSize: 28,
               color: AppColors.label,
               fontWeight: FontWeight.w900,
               height: 0.95,
@@ -607,7 +610,7 @@ class _ScreenTimeManagerScreenState extends State<ScreenTimeManagerScreen> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        constraints: const BoxConstraints(minHeight: 88),
+        constraints: const BoxConstraints(minHeight: 92),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(18),
@@ -628,22 +631,31 @@ class _ScreenTimeManagerScreenState extends State<ScreenTimeManagerScreen> {
                   Text(
                     label,
                     style: AppTypography.mono.copyWith(
-                      fontSize: 9,
+                      fontSize: 10,
                       color: AppColors.tertiaryLabel,
                       fontWeight: FontWeight.w800,
-                      letterSpacing: 1.8,
+                      letterSpacing: 1.4,
                     ),
                   ),
                   const SizedBox(height: 6),
-                  Text(
-                    value,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppTypography.mono.copyWith(
-                      fontSize: 22,
-                      color: valueColor,
-                      fontWeight: FontWeight.w900,
-                      height: 0.95,
+                  SizedBox(
+                    height: 30,
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          value,
+                          maxLines: 1,
+                          style: AppTypography.mono.copyWith(
+                            fontSize: 20,
+                            color: valueColor,
+                            fontWeight: FontWeight.w800,
+                            height: 0.95,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -667,24 +679,24 @@ class _ScreenTimeManagerScreenState extends State<ScreenTimeManagerScreen> {
       padding: EdgeInsets.zero,
       onPressed: onTap,
       child: GlassCard(
-        padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 20),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
         borderRadius: 20,
         border: Border.all(
-          color: AppColors.glassBorder.withValues(alpha: 0.5),
+          color: AppColors.glassBorder.withValues(alpha: 0.46),
           width: 0.55,
         ),
         child: Row(
           children: [
             Container(
-              width: 64,
-              height: 64,
+              width: 60,
+              height: 60,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(16),
                 color: AppColors.backgroundLight.withValues(alpha: 0.7),
                 border: Border.all(
                   color: locked
-                      ? AppColors.glassBorder.withValues(alpha: 0.72)
-                      : AppColors.glassBorder.withValues(alpha: 0.55),
+                      ? AppColors.glassBorder.withValues(alpha: 0.62)
+                      : AppColors.glassBorder.withValues(alpha: 0.48),
                   width: 0.55,
                 ),
               ),
@@ -705,7 +717,7 @@ class _ScreenTimeManagerScreenState extends State<ScreenTimeManagerScreen> {
                     title,
                     style: AppTypography.mono.copyWith(
                       fontSize: 16,
-                      fontWeight: FontWeight.w900,
+                      fontWeight: FontWeight.w700,
                       color: AppColors.label,
                     ),
                   ),
@@ -714,11 +726,8 @@ class _ScreenTimeManagerScreenState extends State<ScreenTimeManagerScreen> {
                     subtitle,
                     style: AppTypography.mono.copyWith(
                       fontSize: 13,
-                      color: locked
-                          ? AppColors.primaryOrange
-                          : AppColors.secondaryLabel,
-                      fontWeight: locked ? FontWeight.w800 : FontWeight.w700,
-                      letterSpacing: locked ? 1.2 : 0,
+                      color: AppColors.secondaryLabel,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ],
