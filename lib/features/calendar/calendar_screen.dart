@@ -1066,17 +1066,17 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(2),
+                    borderRadius: BorderRadius.circular(13),
                     color: inMonth
-                        ? AppColors.backgroundLight.withValues(alpha: 0.58)
-                        : AppColors.background.withValues(alpha: 0.4),
+                        ? AppColors.backgroundLight.withValues(alpha: 0.42)
+                        : AppColors.background.withValues(alpha: 0.28),
                     border: Border.all(
                       color: isToday
                           ? const Color(0xFF2563EB).withValues(alpha: 0.75)
                           : AppColors.glassBorder.withValues(
-                              alpha: inMonth ? 0.65 : 0.25,
+                              alpha: inMonth ? 0.42 : 0.18,
                             ),
-                      width: isToday ? 1.2 : 0.5,
+                      width: isToday ? 0.75 : 0.55,
                     ),
                   ),
                   child: Column(
@@ -1139,8 +1139,11 @@ class _CalendarScreenState extends State<CalendarScreen> {
       padding: EdgeInsets.zero,
       borderRadius: 22,
       level: GlassCardLevel.standard,
-      showEdgeGlow: true,
-      border: Border.all(color: AppColors.glassBorder, width: 0.7),
+      showEdgeGlow: false,
+      border: Border.all(
+        color: AppColors.glassBorder.withValues(alpha: 0.68),
+        width: 0.55,
+      ),
       child: Column(
         children: [
           Padding(
