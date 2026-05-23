@@ -262,6 +262,7 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
   final GlobalKey _appsSectionKey = GlobalKey();
   final GlobalKey _sitesSectionKey = GlobalKey();
   final GlobalKey _pausesSectionKey = GlobalKey();
+  final GlobalKey _logsSectionKey = GlobalKey();
 
   List<BlockedApp> _blockedApps = [];
   List<BlockedWebsite> _blockedWebsites = [];
@@ -412,6 +413,9 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
         return _sitesSectionKey;
       case 'pauses':
         return _pausesSectionKey;
+      case 'logs':
+      case 'usage':
+        return _logsSectionKey;
       default:
         return null;
     }
@@ -467,6 +471,12 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
       case FocusPermissionState.unsupported:
         return _t('screen_time_unsupported_on_device');
     }
+  }
+
+  FocusPermissionState _protectionPermissionState() {
+    if (_protectionStatus.isAuthorized) return FocusPermissionState.approved;
+    if (!_protectionStatus.isSupported) return FocusPermissionState.unsupported;
+    return FocusPermissionState.notDetermined;
   }
 
   Future<void> _handleAccessibilityAccess() async {
@@ -1483,13 +1493,23 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
           onPressed: () => context.go('/screen-time-manager'),
           child: Icon(CupertinoIcons.back, color: AppColors.primaryOrange),
         ),
-        middle: Text(
-          _isAndroid ? _t('focus_protection') : _t('screen_time_control_title'),
-          style: AppTypography.title3.copyWith(
-            fontSize: 22,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 1,
-            color: AppColors.label,
+        middle: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 230),
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              _isAndroid
+                  ? _t('focus_protection')
+                  : _t('screen_time_control_title'),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AppTypography.title3.copyWith(
+                fontSize: 22,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 1,
+                color: AppColors.label,
+              ),
+            ),
           ),
         ),
         trailing: CupertinoButton(
@@ -1556,6 +1576,21 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
                       ),
                     ),
                     const SizedBox(height: 12),
+                    _permissionAccessCard(
+                      key: _accessSectionKey,
+                      icon: _isAndroid
+                          ? CupertinoIcons.shield_lefthalf_fill
+                          : CupertinoIcons.lock_shield_fill,
+                      title: _isAndroid
+                          ? _t('focus_protection')
+                          : _t('screen_time'),
+                      state: _protectionPermissionState(),
+                      description: _isAndroid
+                          ? _t('screen_time_android_access_approved_message')
+                          : _t('screen_time_ios_access_approved_message'),
+                      onTap: _saving ? null : _handleAccessAction,
+                    ),
+                    const SizedBox(height: 12),
                     GlassCard(
                       padding: const EdgeInsets.all(18),
                       borderRadius: 16,
@@ -1572,6 +1607,7 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
                     ),
                     const SizedBox(height: 14),
                     _sectionHeader(
+                      key: _appsSectionKey,
                       title: 'BLOCKED_APPS',
                       subtitle: '${_blockedApps.length} configured',
                       trailing: CupertinoButton(
@@ -1655,6 +1691,7 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
                       ),
                     const SizedBox(height: 14),
                     _sectionHeader(
+                      key: _sitesSectionKey,
                       title: 'BLOCKED_WEBSITES',
                       subtitle: '${_blockedWebsites.length} configured',
                       trailing: CupertinoButton(
@@ -1698,17 +1735,9 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
                                 label: 'ADD_WEBSITE',
                                 onPressed: _saving
                                     ? null
-                                    : () {
-                                        final domain = _siteCtrl.text.trim();
-                                        if (domain.isEmpty) return;
-                                        _runMutation(() {
-                                          return _repo.createBlockedWebsite(
-                                            domain,
-                                          );
-                                        });
-                                        _siteCtrl.clear();
-                                        setState(() => _showAddWebsite = false);
-                                      },
+                                    : () => Platform.isIOS
+                                          ? _addBlockedIosWebsitesFromPicker()
+                                          : _addBlockedWebsite(),
                               ),
                             ),
                           ],
@@ -1754,6 +1783,7 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
                       ),
                     const SizedBox(height: 14),
                     _sectionHeader(
+                      key: _pausesSectionKey,
                       title: 'REST_PERIODS',
                       subtitle: activeRest == null
                           ? 'No active rest period'
@@ -1993,6 +2023,7 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
                           ),
                     const SizedBox(height: 14),
                     _sectionHeader(
+                      key: _logsSectionKey,
                       title: 'USAGE_LOGS',
                       subtitle: 'Last 14 days raw usage',
                       trailing: null,
@@ -2152,6 +2183,7 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
   }
 
   Widget _permissionAccessCard({
+    Key? key,
     required IconData icon,
     required String title,
     required FocusPermissionState state,
@@ -2159,6 +2191,7 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
     required VoidCallback? onTap,
   }) {
     return Container(
+      key: key,
       padding: const EdgeInsets.all(16),
       decoration: _moduleDecoration(radius: 18),
       child: Row(

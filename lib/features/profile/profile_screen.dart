@@ -533,6 +533,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     border: Border.all(color: AppColors.border, width: 1),
                     child: Column(
                       children: [
+                        RankArt(
+                          rankName: _rank?.rankName ?? 'Asleep',
+                          size: RankArtSize.md,
+                          dimension: 84,
+                          fit: BoxFit.contain,
+                        ),
+                        const SizedBox(height: 10),
                         Padding(
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           child: Row(

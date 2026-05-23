@@ -14,7 +14,7 @@ class HabitProvider extends ChangeNotifier {
   final PremiumRepository _premiumRepository;
 
   List<Habit> _habits = [];
-  Map<String, List<HabitCompletion>> _completions =
+  final Map<String, List<HabitCompletion>> _completions =
       {}; // habitId -> completions
   bool _isLoading = false;
   Map<String, Set<String>> _widgetLast7DaysDoneByHabit = const {};

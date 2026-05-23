@@ -153,10 +153,7 @@ class PremiumRepository {
   }
 
   Future<PremiumCheckResult> canAccessScreenTimeManager() async {
-    final runtime = await getRuntime();
-    final hasPremiumAccess = _hasOpenAccess(runtime);
-    if (hasPremiumAccess) return const PremiumCheckResult.allowed();
-    return const PremiumCheckResult.blocked(reason: 'screen_time_manager');
+    return const PremiumCheckResult.allowed();
   }
 
   Future<PremiumCheckResult> canAccessLeaderboard() async {

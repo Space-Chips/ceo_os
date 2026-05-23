@@ -530,7 +530,12 @@ class _RankScreenState extends State<RankScreen> {
   }
 
   Widget _rankIconContainer(_RankTierData tier, {required double iconSize}) {
-    return _tierBadge(tier, size: iconSize);
+    return RankArt(
+      rankName: tier.name,
+      size: RankArtSize.hero,
+      dimension: iconSize,
+      fit: BoxFit.contain,
+    );
   }
 
   Widget _statsSection() {
@@ -633,7 +638,12 @@ class _RankScreenState extends State<RankScreen> {
             : null,
         child: Row(
           children: [
-            _tierBadge(tier, size: 68),
+            RankArt(
+              rankName: tier.name,
+              size: RankArtSize.sm,
+              dimension: 68,
+              fit: BoxFit.contain,
+            ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -674,37 +684,6 @@ class _RankScreenState extends State<RankScreen> {
                 ),
               ),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _tierBadge(_RankTierData tier, {required double size}) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(size * 0.28),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [tier.ring[0], tier.ring[1], tier.ring[2]],
-        ),
-        boxShadow: [
-          BoxShadow(color: tier.glow, blurRadius: size * 0.35, spreadRadius: 1),
-        ],
-      ),
-      child: Center(
-        child: Container(
-          width: size * 0.62,
-          height: size * 0.62,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(size * 0.2),
-            color: const Color(0xFF060B15),
-            border: Border.all(
-              color: AppColors.glassBorder.withValues(alpha: 0.65),
-            ),
-          ),
         ),
       ),
     );
