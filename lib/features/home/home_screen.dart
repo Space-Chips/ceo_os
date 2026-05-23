@@ -844,7 +844,7 @@ class _HomeScreenState extends State<HomeScreen> {
               );
 
               return ListView(
-                padding: const EdgeInsets.fromLTRB(20, 28, 20, 120),
+                padding: const EdgeInsets.fromLTRB(20, 18, 20, 96),
                 children: [
                   _TopShortcutsBar(
                     rankName: rankName,
@@ -856,7 +856,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     onOpenNotes: () => context.push('/notes'),
                     onOpenStreak: () => context.push('/win-streak'),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 18),
                   FutureBuilder<bool>(
                     future: _pendingYesterdayValidationFuture,
                     builder: (context, pendingSnapshot) {
@@ -871,7 +871,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       );
                     },
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 14),
                   if (visibleCards.isEmpty)
                     GlassCard(
                       padding: const EdgeInsets.all(14),
@@ -1347,7 +1347,7 @@ class _ShortcutPill extends StatelessWidget {
       borderRadius: 18,
       glowColor: labelColor.withValues(alpha: 0.3),
       child: Container(
-        constraints: const BoxConstraints(maxWidth: 132, minHeight: 44),
+        constraints: const BoxConstraints(maxWidth: 126, minHeight: 44),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(18),
           gradient: LinearGradient(
@@ -1380,18 +1380,18 @@ class _ShortcutPill extends StatelessWidget {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 9),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  leading ?? Icon(icon, color: iconColor, size: 12),
+                  leading ?? Icon(icon, color: iconColor, size: 11),
                   const SizedBox(width: 5),
                   Text(
                     label,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: AppTypography.footnote.copyWith(
-                      fontSize: 12.5,
+                      fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: labelColor,
                     ),
@@ -1543,7 +1543,7 @@ class _DashboardMainCard extends StatelessWidget {
       pressedScale: 1.028,
       glowColor: AppColors.edgeGlow,
       child: GlassCard(
-        padding: const EdgeInsets.fromLTRB(20, 22, 20, 20),
+        padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
         borderRadius: 28,
         level: GlassCardLevel.standard,
         showEdgeGlow: false,
@@ -1553,7 +1553,7 @@ class _DashboardMainCard extends StatelessWidget {
         ],
         border: Border.all(color: AppColors.border, width: 0.8),
         child: SizedBox(
-          height: 164,
+          height: 148,
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -1583,7 +1583,7 @@ class _DashboardMainCard extends StatelessWidget {
                         _DashboardMetric(value: eventsCount, label: 'Events'),
                       ],
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 18),
                     if (hasPendingYesterdayHabits)
                       Text(
                         'Habits from yesterday not validated',
@@ -1602,8 +1602,8 @@ class _DashboardMainCard extends StatelessWidget {
               ),
               const SizedBox(width: 12),
               Container(
-                width: 108,
-                height: 108,
+                width: 104,
+                height: 104,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
@@ -1615,7 +1615,7 @@ class _DashboardMainCard extends StatelessWidget {
                 child: Text(
                   '${DateTime.now().day}',
                   style: AppTypography.timer.copyWith(
-                    fontSize: 62,
+                    fontSize: 60,
                     height: 0.95,
                     color: AppColors.label,
                     fontWeight: FontWeight.w700,
