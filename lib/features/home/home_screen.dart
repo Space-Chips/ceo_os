@@ -2475,9 +2475,25 @@ class _SecondaryMenuSheetState extends State<_SecondaryMenuSheet> {
                   icon: CupertinoIcons.chart_bar_alt_fill,
                   onTap: widget.onOpenAdvancedStats,
                 ),
+                const SizedBox(height: 14),
+                Text(
+                  'Widgets',
+                  style: AppTypography.overline.copyWith(
+                    fontSize: 12,
+                    color: AppColors.secondaryLabel.withValues(alpha: 0.9),
+                    letterSpacing: 2.4,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                _SheetActionButton(
+                  label: 'Widget Configuration',
+                  icon: CupertinoIcons.square_grid_2x2_fill,
+                  onTap: widget.onCustomizeControlCenter,
+                ),
                 Expanded(
                   child: ListView(
-                    padding: const EdgeInsets.only(top: 18, bottom: 28),
+                    padding: const EdgeInsets.only(top: 16, bottom: 28),
                     children: [
                       Text(
                         'Home modules',
