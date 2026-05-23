@@ -2394,7 +2394,7 @@ class _SecondaryMenuSheetState extends State<_SecondaryMenuSheet> {
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>();
     final screen = MediaQuery.of(context).size;
-    final panelWidth = (screen.width * 0.82).clamp(286.0, 356.0);
+    final panelWidth = (screen.width * 0.81).clamp(286.0, 352.0);
     return SizedBox(
       width: panelWidth,
       height: screen.height,
@@ -2414,7 +2414,7 @@ class _SecondaryMenuSheetState extends State<_SecondaryMenuSheet> {
         child: SafeArea(
           top: true,
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
+            padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -2455,15 +2455,15 @@ class _SecondaryMenuSheetState extends State<_SecondaryMenuSheet> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 8),
                 Text(
                   'Settings, advanced stats, and mini-app visibility',
                   style: AppTypography.caption1.copyWith(
                     fontSize: 12,
-                    color: AppColors.tertiaryLabel.withValues(alpha: 0.9),
+                    color: AppColors.tertiaryLabel.withValues(alpha: 0.86),
                   ),
                 ),
-                const SizedBox(height: 18),
+                const SizedBox(height: 20),
                 _SheetActionButton(
                   label: language.t('profile_settings'),
                   icon: CupertinoIcons.person_fill,
@@ -2477,7 +2477,7 @@ class _SecondaryMenuSheetState extends State<_SecondaryMenuSheet> {
                 ),
                 Expanded(
                   child: ListView(
-                    padding: const EdgeInsets.only(top: 18, bottom: 24),
+                    padding: const EdgeInsets.only(top: 18, bottom: 28),
                     children: [
                       Text(
                         'Home modules',
@@ -2486,16 +2486,16 @@ class _SecondaryMenuSheetState extends State<_SecondaryMenuSheet> {
                           color: AppColors.secondaryLabel.withValues(
                             alpha: 0.9,
                           ),
-                          letterSpacing: 1.6,
+                          letterSpacing: 2.4,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 12),
                       ..._moduleOptions.map((option) {
                         final enabled = _active.contains(option.moduleId);
                         final saving = _saving.contains(option.moduleId);
                         return Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
+                          padding: const EdgeInsets.only(bottom: 12),
                           child: _ModuleToggleCard(
                             option: option,
                             enabled: enabled,
@@ -2504,7 +2504,7 @@ class _SecondaryMenuSheetState extends State<_SecondaryMenuSheet> {
                           ),
                         );
                       }),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 10),
                       Text(
                         'Shortcuts',
                         style: AppTypography.overline.copyWith(
@@ -2512,16 +2512,16 @@ class _SecondaryMenuSheetState extends State<_SecondaryMenuSheet> {
                           color: AppColors.secondaryLabel.withValues(
                             alpha: 0.9,
                           ),
-                          letterSpacing: 1.6,
+                          letterSpacing: 2.4,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 12),
                       ..._shortcutOptions.map((option) {
                         final enabled = _shortcuts.contains(option.moduleId);
                         final saving = _saving.contains(option.moduleId);
                         return Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
+                          padding: const EdgeInsets.only(bottom: 12),
                           child: _ModuleToggleCard(
                             option: option,
                             enabled: enabled,
@@ -2559,21 +2559,21 @@ class _SheetActionButton extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: GlassCard(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
-        borderRadius: 18,
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 17),
+        borderRadius: 24,
         border: Border.all(
           color: AppColors.glassBorder.withValues(alpha: 0.5),
           width: 0.55,
         ),
         child: Row(
           children: [
-            Icon(icon, size: 20, color: AppColors.secondaryLabel),
-            const SizedBox(width: 12),
+            Icon(icon, size: 19, color: AppColors.secondaryLabel),
+            const SizedBox(width: 14),
             Expanded(
               child: Text(
                 label,
                 style: AppTypography.callout.copyWith(
-                  fontSize: 16,
+                  fontSize: 17,
                   fontWeight: FontWeight.w600,
                   color: AppColors.label,
                 ),
@@ -2581,7 +2581,7 @@ class _SheetActionButton extends StatelessWidget {
             ),
             Icon(
               CupertinoIcons.chevron_right,
-              size: 18,
+              size: 20,
               color: AppColors.tertiaryLabel,
             ),
           ],
@@ -2611,8 +2611,8 @@ class _ModuleToggleCard extends StatelessWidget {
       behavior: HitTestBehavior.opaque,
       onTap: saving ? null : () => onChanged(!enabled),
       child: GlassCard(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        borderRadius: 18,
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+        borderRadius: 24,
         border: Border.all(
           color: AppColors.glassBorder.withValues(alpha: 0.5),
           width: 0.55,
@@ -2621,7 +2621,7 @@ class _ModuleToggleCard extends StatelessWidget {
           children: [
             Icon(
               option.icon,
-              size: 29 / 2,
+              size: 17,
               color: AppColors.secondaryLabel.withValues(alpha: 0.95),
             ),
             const SizedBox(width: 14),
@@ -2629,7 +2629,7 @@ class _ModuleToggleCard extends StatelessWidget {
               child: Text(
                 language.t(option.titleKey),
                 style: AppTypography.callout.copyWith(
-                  fontSize: 17 / 1.05,
+                  fontSize: 17,
                   color: AppColors.label,
                   fontWeight: FontWeight.w600,
                 ),
