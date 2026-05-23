@@ -844,7 +844,7 @@ class _HomeScreenState extends State<HomeScreen> {
               );
 
               return ListView(
-                padding: const EdgeInsets.fromLTRB(20, 10, 20, 120),
+                padding: const EdgeInsets.fromLTRB(20, 28, 20, 120),
                 children: [
                   _TopShortcutsBar(
                     rankName: rankName,
@@ -856,7 +856,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     onOpenNotes: () => context.push('/notes'),
                     onOpenStreak: () => context.push('/win-streak'),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 24),
                   FutureBuilder<bool>(
                     future: _pendingYesterdayValidationFuture,
                     builder: (context, pendingSnapshot) {
@@ -1543,7 +1543,7 @@ class _DashboardMainCard extends StatelessWidget {
       pressedScale: 1.028,
       glowColor: AppColors.edgeGlow,
       child: GlassCard(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        padding: const EdgeInsets.fromLTRB(20, 22, 20, 20),
         borderRadius: 28,
         level: GlassCardLevel.standard,
         showEdgeGlow: false,
@@ -1555,12 +1555,12 @@ class _DashboardMainCard extends StatelessWidget {
         child: SizedBox(
           height: 164,
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Spacer(),
                     Text(
                       'Dashboard',
                       maxLines: 1,
@@ -1572,7 +1572,7 @@ class _DashboardMainCard extends StatelessWidget {
                         color: AppColors.label,
                       ),
                     ),
-                    const SizedBox(height: 14),
+                    const Spacer(),
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -1583,7 +1583,7 @@ class _DashboardMainCard extends StatelessWidget {
                         _DashboardMetric(value: eventsCount, label: 'Events'),
                       ],
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 24),
                     if (hasPendingYesterdayHabits)
                       Text(
                         'Habits from yesterday not validated',
@@ -1596,8 +1596,7 @@ class _DashboardMainCard extends StatelessWidget {
                         ),
                       )
                     else
-                      const SizedBox(height: 14),
-                    const Spacer(),
+                      const SizedBox(height: 12),
                   ],
                 ),
               ),
