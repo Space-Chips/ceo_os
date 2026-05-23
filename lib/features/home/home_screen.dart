@@ -1256,67 +1256,75 @@ class _TopShortcutsBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        _InteractiveLift(
-          onTap: onOpenMenu,
-          borderRadius: 24,
-          glowColor: AppColors.edgeGlowSoft,
-          child: Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: AppColors.floatingGlassGradient,
+    return Container(
+      height: 56,
+      padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 6),
+      decoration: BoxDecoration(
+        color: AppColors.backgroundLight.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(2),
+      ),
+      child: Row(
+        children: [
+          _InteractiveLift(
+            onTap: onOpenMenu,
+            borderRadius: 24,
+            glowColor: AppColors.edgeGlowSoft,
+            child: Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: AppColors.floatingGlassGradient,
+                ),
+                border: Border.all(
+                  color: AppColors.glassBorder.withValues(alpha: 0.62),
+                  width: 0.8,
+                ),
               ),
-              border: Border.all(
-                color: AppColors.glassBorder.withValues(alpha: 0.66),
-                width: 0.9,
+              child: Icon(
+                CupertinoIcons.person_fill,
+                color: AppColors.secondaryLabel,
+                size: 18,
               ),
-            ),
-            child: Icon(
-              CupertinoIcons.person_fill,
-              color: AppColors.secondaryLabel,
-              size: 18,
             ),
           ),
-        ),
-        const SizedBox(width: 10),
-        if (enabledShortcuts.contains('rank')) ...[
-          SizedBox(
-            width: 126,
-            child: _ShortcutPill(
-              label: 'WakeApp Pro',
-              icon: CupertinoIcons.arrow_up_circle_fill,
+          const SizedBox(width: 9),
+          if (enabledShortcuts.contains('rank')) ...[
+            SizedBox(
+              width: 126,
+              child: _ShortcutPill(
+                label: 'WakeApp Pro',
+                icon: CupertinoIcons.arrow_up_circle_fill,
+                iconColor: AppColors.secondaryLabel,
+                labelColor: AppColors.secondaryLabel,
+                onTap: onOpenRank,
+              ),
+            ),
+            const SizedBox(width: 7),
+          ],
+          if (enabledShortcuts.contains('focus')) ...[
+            _ShortcutCircle(
+              icon: CupertinoIcons.bolt_fill,
               iconColor: AppColors.secondaryLabel,
-              labelColor: AppColors.secondaryLabel,
-              onTap: onOpenRank,
+              onTap: onOpenFocus,
             ),
-          ),
-          const SizedBox(width: 7),
+            const SizedBox(width: 7),
+          ],
+          if (enabledShortcuts.contains('notes')) ...[
+            _ShortcutCircle(
+              icon: CupertinoIcons.doc_text_fill,
+              iconColor: AppColors.secondaryLabel,
+              onTap: onOpenNotes,
+            ),
+            const SizedBox(width: 7),
+          ],
+          if (enabledShortcuts.contains('streak'))
+            _StreakPill(streak: winStreak, onTap: onOpenStreak),
         ],
-        if (enabledShortcuts.contains('focus')) ...[
-          _ShortcutCircle(
-            icon: CupertinoIcons.bolt_fill,
-            iconColor: AppColors.secondaryLabel,
-            onTap: onOpenFocus,
-          ),
-          const SizedBox(width: 7),
-        ],
-        if (enabledShortcuts.contains('notes')) ...[
-          _ShortcutCircle(
-            icon: CupertinoIcons.doc_text_fill,
-            iconColor: AppColors.secondaryLabel,
-            onTap: onOpenNotes,
-          ),
-          const SizedBox(width: 7),
-        ],
-        if (enabledShortcuts.contains('streak'))
-          _StreakPill(streak: winStreak, onTap: onOpenStreak),
-      ],
+      ),
     );
   }
 }
@@ -1600,18 +1608,32 @@ class _DashboardMainCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: AppColors.white.withValues(alpha: 0.66),
-                    width: 1.2,
+                    color: AppColors.white.withValues(alpha: 0.6),
+                    width: 1.1,
                   ),
                 ),
-                alignment: Alignment.center,
-                child: Text(
-                  '${DateTime.now().day}',
-                  style: AppTypography.timer.copyWith(
-                    fontSize: 60,
-                    height: 0.95,
-                    color: AppColors.label,
-                    fontWeight: FontWeight.w700,
+                child: Center(
+                  child: Container(
+                    width: 92,
+                    height: 92,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: AppColors.white.withValues(alpha: 0.1),
+                        width: 0.8,
+                      ),
+                    ),
+                    child: Center(
+                      child: Text(
+                        '$wakeScore',
+                        style: AppTypography.timer.copyWith(
+                          fontSize: 60,
+                          height: 0.95,
+                          color: AppColors.label,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ),
