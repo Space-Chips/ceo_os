@@ -548,12 +548,13 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
           maxLines: 1,
           softWrap: false,
           overflow: TextOverflow.ellipsis,
-          style: AppTypography.largeTitle.copyWith(
+          style: TextStyle(
+            fontFamily: '.SF Pro Display',
             fontSize: 46,
             fontWeight: FontWeight.w800,
-            color: AppColors.label,
             height: 1,
             letterSpacing: 0,
+            color: AppColors.label,
           ),
         ),
         const SizedBox(height: 12),
@@ -568,17 +569,17 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
         ),
         const SizedBox(height: 20),
         GlassCard(
-          padding: const EdgeInsets.fromLTRB(18, 17, 18, 19),
+          padding: const EdgeInsets.fromLTRB(22, 22, 22, 24),
           borderRadius: 24,
           level: GlassCardLevel.standard,
           showEdgeGlow: false,
           border: Border.all(
-            color: AppColors.glassBorder.withValues(alpha: 0.54),
-            width: 0.55,
+            color: AppColors.glassBorder.withValues(alpha: 0.82),
+            width: 0.75,
           ),
           gradientColors: [
-            AppColors.cardBackgroundStrong.withValues(alpha: 0.58),
-            AppColors.cardBackgroundAlt.withValues(alpha: 0.48),
+            AppColors.cardBackgroundStrong.withValues(alpha: 0.46),
+            AppColors.cardBackgroundAlt.withValues(alpha: 0.36),
           ],
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -589,10 +590,10 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
                 height: 136,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(15),
-                  color: AppColors.background.withValues(alpha: 0.44),
+                  color: AppColors.background.withValues(alpha: 0.5),
                   border: Border.all(
-                    color: AppColors.glassBorder.withValues(alpha: 0.38),
-                    width: 0.55,
+                    color: AppColors.glassBorder.withValues(alpha: 0.72),
+                    width: 0.7,
                   ),
                 ),
                 child: CupertinoPicker(
@@ -643,17 +644,17 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
         ),
         const SizedBox(height: 14),
         GlassCard(
-          padding: const EdgeInsets.fromLTRB(18, 17, 18, 18),
+          padding: const EdgeInsets.fromLTRB(22, 22, 22, 24),
           borderRadius: 24,
           level: GlassCardLevel.standard,
           showEdgeGlow: false,
           border: Border.all(
-            color: AppColors.glassBorder.withValues(alpha: 0.54),
-            width: 0.55,
+            color: AppColors.glassBorder.withValues(alpha: 0.82),
+            width: 0.75,
           ),
           gradientColors: [
-            AppColors.cardBackgroundStrong.withValues(alpha: 0.56),
-            AppColors.cardBackgroundAlt.withValues(alpha: 0.46),
+            AppColors.cardBackgroundStrong.withValues(alpha: 0.46),
+            AppColors.cardBackgroundAlt.withValues(alpha: 0.36),
           ],
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -675,8 +676,8 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
           level: GlassCardLevel.standard,
           showEdgeGlow: false,
           border: Border.all(
-            color: AppColors.glassBorder.withValues(alpha: 0.44),
-            width: 0.55,
+            color: AppColors.glassBorder.withValues(alpha: 0.72),
+            width: 0.75,
           ),
           child: Row(
             children: [

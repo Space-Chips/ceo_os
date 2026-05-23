@@ -9,6 +9,7 @@ import '../../core/providers/habit_provider.dart';
 import '../../core/repositories/feature_repository.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
+import '../../components/ambient_backdrop.dart';
 import 'habit_gallery_sheet.dart';
 
 class HabitsScreen extends StatefulWidget {
@@ -50,109 +51,113 @@ class _HabitsScreenState extends State<HabitsScreen> {
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
       backgroundColor: AppColors.background,
-      child: SafeArea(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(18, 6, 18, 0),
-              child: Row(
-                children: [
-                  CupertinoButton(
-                    padding: EdgeInsets.zero,
-                    minimumSize: Size.zero,
-                    onPressed: () => context.go('/home'),
-                    child: Row(
-                      children: [
-                        Icon(
-                          CupertinoIcons.back,
-                          size: 21,
-                          color: AppColors.secondaryLabel,
-                        ),
-                        const SizedBox(width: 5),
-                        Text(
-                          'Home',
-                          style: AppTypography.callout.copyWith(
-                            fontSize: 16,
+      child: AmbientBackdrop(
+        child: SafeArea(
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(18, 6, 18, 0),
+                child: Row(
+                  children: [
+                    CupertinoButton(
+                      padding: EdgeInsets.zero,
+                      minimumSize: Size.zero,
+                      onPressed: () => context.go('/home'),
+                      child: Row(
+                        children: [
+                          Icon(
+                            CupertinoIcons.back,
+                            size: 21,
                             color: AppColors.secondaryLabel,
-                            fontWeight: FontWeight.w600,
+                          ),
+                          const SizedBox(width: 5),
+                          Text(
+                            'Home',
+                            style: AppTypography.callout.copyWith(
+                              fontSize: 16,
+                              color: AppColors.secondaryLabel,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Spacer(),
+                    CupertinoButton(
+                      padding: EdgeInsets.zero,
+                      minimumSize: Size.zero,
+                      onPressed: _showAddHabit,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 18,
+                          vertical: 13,
+                        ),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(21),
+                          color: AppColors.cardBackgroundStrong.withValues(
+                            alpha: 0.54,
+                          ),
+                          border: Border.all(
+                            color: AppColors.glassBorder.withValues(
+                              alpha: 0.42,
+                            ),
+                            width: 0.55,
                           ),
                         ),
-                      ],
-                    ),
-                  ),
-                  const Spacer(),
-                  CupertinoButton(
-                    padding: EdgeInsets.zero,
-                    minimumSize: Size.zero,
-                    onPressed: _showAddHabit,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 18,
-                        vertical: 13,
-                      ),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(21),
-                        color: AppColors.cardBackgroundStrong.withValues(
-                          alpha: 0.54,
-                        ),
-                        border: Border.all(
-                          color: AppColors.glassBorder.withValues(alpha: 0.42),
-                          width: 0.55,
-                        ),
-                      ),
-                      child: Text(
-                        _activeTab == 0 ? '+ Habit' : '+ Goal',
-                        style: AppTypography.callout.copyWith(
-                          fontSize: 16,
-                          color: AppColors.label,
-                          fontWeight: FontWeight.w700,
+                        child: Text(
+                          _activeTab == 0 ? '+ Habit' : '+ Goal',
+                          style: AppTypography.callout.copyWith(
+                            fontSize: 16,
+                            color: AppColors.label,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(18, 4, 18, 8),
-              child: Align(
-                alignment: Alignment.centerLeft,
+              Padding(
+                padding: const EdgeInsets.fromLTRB(18, 4, 18, 8),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Habits',
+                    style: AppTypography.largeTitle.copyWith(
+                      fontSize: 56,
+                      height: 1,
+                      color: AppColors.label,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0,
+                    ),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: PageView(
+                  controller: _pageController,
+                  onPageChanged: (i) => setState(() => _activeTab = i),
+                  children: [
+                    _GridTab(onOpenHabit: _openCompletionPage),
+                    const _GoalsTab(),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 4, 20, 10),
                 child: Text(
-                  'Habits',
-                  style: AppTypography.largeTitle.copyWith(
-                    fontSize: 56,
-                    height: 1,
-                    color: AppColors.label,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 0,
+                  _activeTab == 0
+                      ? 'Swipe right for Goals & Contract →'
+                      : '← Swipe left for Habits Grid',
+                  textAlign: TextAlign.center,
+                  style: AppTypography.mono.copyWith(
+                    fontSize: 10,
+                    color: AppColors.tertiaryLabel,
                   ),
                 ),
               ),
-            ),
-            Expanded(
-              child: PageView(
-                controller: _pageController,
-                onPageChanged: (i) => setState(() => _activeTab = i),
-                children: [
-                  _GridTab(onOpenHabit: _openCompletionPage),
-                  const _GoalsTab(),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 4, 20, 10),
-              child: Text(
-                _activeTab == 0
-                    ? 'Swipe right for Goals & Contract →'
-                    : '← Swipe left for Habits Grid',
-                textAlign: TextAlign.center,
-                style: AppTypography.mono.copyWith(
-                  fontSize: 10,
-                  color: AppColors.tertiaryLabel,
-                ),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -686,8 +691,13 @@ class _GoalsTabState extends State<_GoalsTab> {
                 (entry) => Padding(
                   padding: const EdgeInsets.only(bottom: 12),
                   child: GlassCard(
-                    padding: const EdgeInsets.all(16),
-                    borderRadius: 18,
+                    padding: const EdgeInsets.fromLTRB(26, 24, 26, 26),
+                    borderRadius: 24,
+                    showEdgeGlow: false,
+                    border: Border.all(
+                      color: AppColors.glassBorder.withValues(alpha: 0.48),
+                      width: 0.55,
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -695,26 +705,29 @@ class _GoalsTabState extends State<_GoalsTab> {
                           children: [
                             Icon(
                               CupertinoIcons.scope,
-                              size: 16,
-                              color: AppColors.primaryOrange,
+                              size: 22,
+                              color: AppColors.secondaryLabel,
                             ),
-                            const SizedBox(width: 10),
+                            const SizedBox(width: 14),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
                                     entry.key.toUpperCase(),
-                                    style: AppTypography.mono.copyWith(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.bold,
+                                    style: AppTypography.callout.copyWith(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w800,
+                                      color: AppColors.label,
                                     ),
                                   ),
+                                  const SizedBox(height: 2),
                                   Text(
                                     '${entry.value.length} habits',
-                                    style: AppTypography.mono.copyWith(
-                                      fontSize: 9,
-                                      color: AppColors.tertiaryLabel,
+                                    style: AppTypography.footnote.copyWith(
+                                      fontSize: 12,
+                                      color: AppColors.secondaryLabel
+                                          .withValues(alpha: 0.62),
                                     ),
                                   ),
                                 ],
@@ -722,29 +735,33 @@ class _GoalsTabState extends State<_GoalsTab> {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 12),
-                        Container(height: 0.5, color: AppColors.glassBorder),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 20),
+                        Container(
+                          height: 0.55,
+                          color: AppColors.glassBorder.withValues(alpha: 0.38),
+                        ),
+                        const SizedBox(height: 14),
                         ...entry.value.map(
                           (habit) => Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 4),
+                            padding: const EdgeInsets.symmetric(vertical: 7),
                             child: Row(
                               children: [
                                 Icon(
                                   prov.isHabitCompletedToday(habit.id)
                                       ? CupertinoIcons.checkmark_circle_fill
                                       : CupertinoIcons.circle,
-                                  size: 16,
+                                  size: 22,
                                   color: prov.isHabitCompletedToday(habit.id)
                                       ? AppColors.success
                                       : AppColors.tertiaryLabel,
                                 ),
-                                const SizedBox(width: 10),
+                                const SizedBox(width: 18),
                                 Expanded(
                                   child: Text(
                                     habit.title,
-                                    style: AppTypography.mono.copyWith(
-                                      fontSize: 11,
+                                    style: AppTypography.callout.copyWith(
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.w600,
                                       color: AppColors.secondaryLabel,
                                     ),
                                   ),
@@ -769,11 +786,12 @@ class _GoalsTabState extends State<_GoalsTab> {
   Widget _weekContractCard() {
     final committed = _contract?.committed ?? false;
     return GlassCard(
-      padding: const EdgeInsets.all(16),
-      borderRadius: 18,
+      padding: const EdgeInsets.fromLTRB(26, 25, 26, 26),
+      borderRadius: 24,
+      showEdgeGlow: false,
       border: Border.all(
-        color: AppColors.glassBorder.withValues(alpha: 0.8),
-        width: 0.7,
+        color: AppColors.glassBorder.withValues(alpha: 0.86),
+        width: 0.8,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -782,23 +800,23 @@ class _GoalsTabState extends State<_GoalsTab> {
             children: [
               Icon(
                 CupertinoIcons.star_fill,
-                size: 16,
-                color: AppColors.primaryOrange,
+                size: 24,
+                color: AppColors.secondaryLabel,
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 10),
               Text(
                 'Week Contract',
                 style: AppTypography.headline.copyWith(
-                  fontSize: 16,
+                  fontSize: 20,
                   color: AppColors.label,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w800,
                 ),
               ),
               const Spacer(),
               Text(
                 committed ? 'Committed' : 'Draft',
                 style: AppTypography.mono.copyWith(
-                  fontSize: 10,
+                  fontSize: 13,
                   color: committed ? AppColors.success : AppColors.warning,
                   fontWeight: FontWeight.w800,
                 ),
@@ -809,31 +827,32 @@ class _GoalsTabState extends State<_GoalsTab> {
           if (_loading)
             CupertinoActivityIndicator(color: AppColors.primaryOrange)
           else ...[
-            GlassInputField(
+            const SizedBox(height: 4),
+            _contractInput(
               controller: _rewardController,
               placeholder: 'Reward if successful',
             ),
-            const SizedBox(height: 10),
-            GlassInputField(
+            const SizedBox(height: 16),
+            _contractInput(
               controller: _sanctionController,
               placeholder: 'Sanction if failed',
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 24),
             Row(
               children: [
                 Text(
                   'Threshold $_threshold%',
                   style: AppTypography.callout.copyWith(
-                    fontSize: 13,
+                    fontSize: 16,
                     color: AppColors.secondaryLabel,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w800,
                   ),
                 ),
                 const Spacer(),
                 Text(
                   'Current ${_weeklyScore?.successPercentage ?? 0}%',
                   style: AppTypography.mono.copyWith(
-                    fontSize: 10,
+                    fontSize: 13,
                     color: AppColors.tertiaryLabel,
                   ),
                 ),
@@ -845,11 +864,12 @@ class _GoalsTabState extends State<_GoalsTab> {
               max: 100,
               divisions: 8,
               activeColor: AppColors.primaryOrange,
+              thumbColor: AppColors.label,
               onChanged: committed
                   ? null
                   : (value) => setState(() => _threshold = value.round()),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 18),
             CupertinoButton(
               padding: EdgeInsets.zero,
               onPressed: committed || _saving ? null : _commitContract,
@@ -858,7 +878,7 @@ class _GoalsTabState extends State<_GoalsTab> {
                 height: 48,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(18),
                   gradient: LinearGradient(
                     colors: committed
                         ? [
@@ -873,7 +893,7 @@ class _GoalsTabState extends State<_GoalsTab> {
                     : Text(
                         committed ? 'Contract committed' : 'Commit Contract',
                         style: AppTypography.callout.copyWith(
-                          fontSize: 15,
+                          fontSize: 18,
                           color: committed
                               ? AppColors.secondaryLabel
                               : AppColors.onAccent,
@@ -884,6 +904,35 @@ class _GoalsTabState extends State<_GoalsTab> {
             ),
           ],
         ],
+      ),
+    );
+  }
+
+  Widget _contractInput({
+    required TextEditingController controller,
+    required String placeholder,
+  }) {
+    return CupertinoTextField(
+      controller: controller,
+      placeholder: placeholder,
+      padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 18),
+      style: AppTypography.callout.copyWith(
+        fontSize: 18,
+        color: AppColors.label,
+        fontWeight: FontWeight.w600,
+      ),
+      placeholderStyle: AppTypography.callout.copyWith(
+        fontSize: 18,
+        color: AppColors.secondaryLabel.withValues(alpha: 0.68),
+        fontWeight: FontWeight.w600,
+      ),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        color: AppColors.cardBackgroundStrong.withValues(alpha: 0.64),
+        border: Border.all(
+          color: AppColors.glassBorder.withValues(alpha: 0.86),
+          width: 0.9,
+        ),
       ),
     );
   }

@@ -253,11 +253,16 @@ class _ScreenTimeManagerScreenState extends State<ScreenTimeManagerScreen> {
                         ),
                         const SizedBox(height: 12),
                         _actionCard(
-                          icon: CupertinoIcons.briefcase_fill,
+                          icon: CupertinoIcons.person_2_fill,
                           iconColor: AppColors.secondaryLabel,
-                          title: 'Blackout Mode',
-                          subtitle: 'Protected sprint with stricter controls',
-                          onTap: () => context.push('/ceo-mode'),
+                          title: 'Offline Together',
+                          subtitle: 'Shared no-phone sessions',
+                          onTap: () => _showComingSoon(
+                            title: 'Offline Together',
+                            message:
+                                'Shared no-phone sessions will stay locked until Apple privacy and permission flows are production-ready.',
+                          ),
+                          locked: true,
                         ),
                         const SizedBox(height: 8),
                         _actionCard(
@@ -266,6 +271,19 @@ class _ScreenTimeManagerScreenState extends State<ScreenTimeManagerScreen> {
                           title: 'Block Apps And Sites',
                           subtitle: '$blockedTargets protected on this device',
                           onTap: () => context.push('/screen-time'),
+                        ),
+                        const SizedBox(height: 8),
+                        _actionCard(
+                          icon: CupertinoIcons.rosette,
+                          iconColor: AppColors.secondaryLabel,
+                          title: 'Friends & Leaderboard',
+                          subtitle: 'Global rankings',
+                          onTap: () => _showComingSoon(
+                            title: 'Friends & Leaderboard',
+                            message:
+                                'Social ranking will stay locked until friend privacy and consent flows are production-ready.',
+                          ),
+                          locked: true,
                         ),
                       ],
                     ),
@@ -671,9 +689,11 @@ class _ScreenTimeManagerScreenState extends State<ScreenTimeManagerScreen> {
                 ),
               ),
               child: Icon(
-                locked ? CupertinoIcons.lock_fill : icon,
-                color: locked ? AppColors.tertiaryLabel : iconColor,
-                size: locked ? 20 : 25,
+                icon,
+                color: locked
+                    ? AppColors.secondaryLabel.withValues(alpha: 0.78)
+                    : iconColor,
+                size: 25,
               ),
             ),
             const SizedBox(width: 18),

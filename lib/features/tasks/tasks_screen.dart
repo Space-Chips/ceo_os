@@ -616,6 +616,7 @@ class _TasksScreenState extends State<TasksScreen> {
     required Future<void> Function() onTap,
   }) {
     final palette = _paletteForImportance(task.importanceLevel);
+    final glowColor = palette.badgeText;
     return Align(
       alignment: Alignment.center,
       child: FractionallySizedBox(
@@ -627,46 +628,73 @@ class _TasksScreenState extends State<TasksScreen> {
               Positioned.fill(
                 child: IgnorePointer(
                   child: Container(
-                    margin: const EdgeInsets.all(6),
+                    margin: const EdgeInsets.symmetric(
+                      horizontal: 3,
+                      vertical: 9,
+                    ),
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(24),
                       boxShadow: [
                         BoxShadow(
-                          color: palette.glow.withValues(alpha: 0.84),
-                          blurRadius: 36,
-                          spreadRadius: 2,
+                          color: glowColor.withValues(alpha: 0.34),
+                          blurRadius: 24,
+                          spreadRadius: 8,
                         ),
                         BoxShadow(
-                          color: palette.border.withValues(alpha: 0.36),
-                          blurRadius: 24,
+                          color: glowColor.withValues(alpha: 0.24),
+                          blurRadius: 42,
                           spreadRadius: -2,
+                          offset: const Offset(0, 12),
+                        ),
+                        BoxShadow(
+                          color: glowColor.withValues(alpha: 0.2),
+                          blurRadius: 28,
+                          spreadRadius: 4,
+                          offset: const Offset(-24, 0),
+                        ),
+                        BoxShadow(
+                          color: glowColor.withValues(alpha: 0.2),
+                          blurRadius: 28,
+                          spreadRadius: 4,
+                          offset: const Offset(24, 0),
                         ),
                       ],
                     ),
                   ),
                 ),
               ),
-              GlassCard(
+              Container(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 12,
+                  horizontal: 20,
+                  vertical: 18,
                 ),
-                borderRadius: 20,
-                level: GlassCardLevel.elevated,
-                showEdgeGlow: true,
-                border: Border.all(color: palette.border, width: 0.95),
-                gradientColors: [palette.start, palette.end],
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(24),
+                  color: AppColors.cardBackgroundAlt.withValues(alpha: 0.92),
+                  border: Border.all(
+                    color: glowColor.withValues(alpha: 0.54),
+                    width: 0.9,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.black.withValues(alpha: 0.3),
+                      blurRadius: 18,
+                      offset: const Offset(0, 8),
+                      spreadRadius: -12,
+                    ),
+                  ],
+                ),
                 child: Row(
                   children: [
                     Container(
-                      width: 54,
-                      height: 54,
+                      width: 62,
+                      height: 62,
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(18),
                         color: Colors.white.withValues(alpha: 0.08),
                         border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.16),
-                          width: 0.8,
+                          color: Colors.white.withValues(alpha: 0.18),
+                          width: 0.95,
                         ),
                       ),
                       child: Center(
@@ -681,7 +709,7 @@ class _TasksScreenState extends State<TasksScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 18),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
