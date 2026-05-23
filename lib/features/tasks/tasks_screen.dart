@@ -1,5 +1,5 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart' show Colors, FontWeight;
+import 'package:flutter/material.dart' show FontWeight;
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -528,16 +528,12 @@ class _TasksScreenState extends State<TasksScreen> {
           ...topFive.asMap().entries.map((entry) {
             final index = entry.key;
             final task = entry.value;
-            final widthFactor = (1 - (index * 0.03))
-                .clamp(0.88, 1.0)
-                .toDouble();
             return Padding(
               padding: const EdgeInsets.only(bottom: 12),
               child: _priorityCard(
                 rank: index + 1,
                 language: language,
                 task: task,
-                widthFactor: widthFactor,
                 onTap: () => onOpenTask(task),
               ),
             );
@@ -612,146 +608,93 @@ class _TasksScreenState extends State<TasksScreen> {
     required int rank,
     required LanguageProvider language,
     required ParetoTask task,
-    required double widthFactor,
     required Future<void> Function() onTap,
   }) {
     final palette = _paletteForImportance(task.importanceLevel);
-    final glowColor = palette.badgeText;
-    return Align(
-      alignment: Alignment.center,
-      child: FractionallySizedBox(
-        widthFactor: widthFactor,
-        child: GestureDetector(
-          onTap: onTap,
-          child: Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Positioned(
-                left: -1,
-                right: -1,
-                top: -8,
-                bottom: -18,
-                child: IgnorePointer(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(24),
-                      boxShadow: [
-                        BoxShadow(
-                          color: glowColor.withValues(alpha: 0.46),
-                          blurRadius: 34,
-                          spreadRadius: 9,
-                        ),
-                        BoxShadow(
-                          color: glowColor.withValues(alpha: 0.3),
-                          blurRadius: 52,
-                          spreadRadius: 3,
-                          offset: const Offset(0, 14),
-                        ),
-                        BoxShadow(
-                          color: glowColor.withValues(alpha: 0.28),
-                          blurRadius: 38,
-                          spreadRadius: 5,
-                          offset: const Offset(-30, 0),
-                        ),
-                        BoxShadow(
-                          color: glowColor.withValues(alpha: 0.28),
-                          blurRadius: 38,
-                          spreadRadius: 5,
-                          offset: const Offset(30, 0),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 18,
-                ),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(24),
-                  color: AppColors.cardBackgroundAlt.withValues(alpha: 0.92),
-                  border: Border.all(
-                    color: glowColor.withValues(alpha: 0.54),
-                    width: 0.9,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.black.withValues(alpha: 0.3),
-                      blurRadius: 18,
-                      offset: const Offset(0, 8),
-                      spreadRadius: -12,
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 62,
-                      height: 62,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(18),
-                        color: Colors.white.withValues(alpha: 0.08),
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.18),
-                          width: 0.95,
-                        ),
-                      ),
-                      child: Center(
-                        child: Text(
-                          '$rank',
-                          style: AppTypography.mono.copyWith(
-                            fontSize: 42,
-                            fontWeight: FontWeight.w900,
-                            color: Colors.white.withValues(alpha: 0.9),
-                            height: 0.88,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 18),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            task.title,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: AppTypography.mono.copyWith(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w900,
-                              color: AppColors.label,
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          Row(
-                            children: [
-                              _importanceBadge(
-                                task,
-                                palette,
-                                language: language,
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                _durationLabel(task.timeDuration, language),
-                                style: AppTypography.mono.copyWith(
-                                  fontSize: 13,
-                                  color: AppColors.secondaryLabel,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+    return _PressScale(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(24),
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [AppColors.cardBackgroundAlt, AppColors.cardBase],
           ),
+          border: Border.all(
+            color: palette.border.withValues(alpha: 0.55),
+            width: _taskCardBorderWidth(task.importanceLevel),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.glassShadow.withValues(
+                alpha: AppColors.isDark ? 0.16 : 0.08,
+              ),
+              blurRadius: 12,
+              offset: const Offset(0, 6),
+              spreadRadius: -9,
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.topBarControlBackground,
+                border: Border.all(
+                  color: AppColors.topBarControlBorder,
+                  width: 1,
+                ),
+              ),
+              child: Center(
+                child: Text(
+                  '$rank',
+                  style: AppTypography.footnote.copyWith(
+                    fontSize: 20,
+                    color: AppColors.label.withValues(alpha: 0.92),
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 18),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    task.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTypography.mono.copyWith(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.label,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      _importanceBadge(task, palette, language: language),
+                      const SizedBox(width: 10),
+                      Text(
+                        _durationLabel(task.timeDuration, language),
+                        style: AppTypography.mono.copyWith(
+                          fontSize: 15,
+                          color: AppColors.secondaryLabel,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
