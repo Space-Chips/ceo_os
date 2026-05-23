@@ -50,35 +50,85 @@ class _HabitsScreenState extends State<HabitsScreen> {
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
       backgroundColor: AppColors.background,
-      navigationBar: CupertinoNavigationBar(
-        leading: CupertinoButton(
-          padding: EdgeInsets.zero,
-          onPressed: () => context.go('/home'),
-          child: Icon(CupertinoIcons.back, color: AppColors.primaryOrange),
-        ),
-        middle: const NeoMonoText(
-          'HABITS',
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-        ),
-        trailing: CupertinoButton(
-          padding: const EdgeInsets.symmetric(horizontal: 4),
-          onPressed: _showAddHabit,
-          child: Text(
-            _activeTab == 0 ? '+ Habit' : '+ Goal',
-            style: AppTypography.callout.copyWith(
-              fontSize: 14,
-              color: AppColors.primaryOrange,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ),
-        backgroundColor: AppColors.background.withValues(alpha: 0.8),
-        border: null,
-      ),
       child: SafeArea(
         child: Column(
           children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(18, 6, 18, 0),
+              child: Row(
+                children: [
+                  CupertinoButton(
+                    padding: EdgeInsets.zero,
+                    minimumSize: Size.zero,
+                    onPressed: () => context.go('/home'),
+                    child: Row(
+                      children: [
+                        Icon(
+                          CupertinoIcons.back,
+                          size: 21,
+                          color: AppColors.secondaryLabel,
+                        ),
+                        const SizedBox(width: 5),
+                        Text(
+                          'Home',
+                          style: AppTypography.callout.copyWith(
+                            fontSize: 16,
+                            color: AppColors.secondaryLabel,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Spacer(),
+                  CupertinoButton(
+                    padding: EdgeInsets.zero,
+                    minimumSize: Size.zero,
+                    onPressed: _showAddHabit,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 18,
+                        vertical: 13,
+                      ),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(21),
+                        color: AppColors.cardBackgroundStrong.withValues(
+                          alpha: 0.54,
+                        ),
+                        border: Border.all(
+                          color: AppColors.glassBorder.withValues(alpha: 0.42),
+                          width: 0.55,
+                        ),
+                      ),
+                      child: Text(
+                        _activeTab == 0 ? '+ Habit' : '+ Goal',
+                        style: AppTypography.callout.copyWith(
+                          fontSize: 16,
+                          color: AppColors.label,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(18, 4, 18, 8),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Habits',
+                  style: AppTypography.largeTitle.copyWith(
+                    fontSize: 56,
+                    height: 1,
+                    color: AppColors.label,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0,
+                  ),
+                ),
+              ),
+            ),
             Expanded(
               child: PageView(
                 controller: _pageController,
@@ -211,9 +261,6 @@ class _GridTabState extends State<_GridTab> {
         final scorePercent = totalExpected > 0
             ? ((totalCompleted / totalExpected) * 100).round()
             : 0;
-        final isOnTrack = scorePercent >= 90;
-        final isAtRisk = scorePercent >= 70 && !isOnTrack;
-
         return ListView(
           padding: const EdgeInsets.symmetric(
             horizontal: 20,
@@ -231,7 +278,7 @@ class _GridTabState extends State<_GridTab> {
                       Expanded(
                         flex: 3,
                         child: Text(
-                          'HABIT',
+                          'Habit',
                           style: AppTypography.mono.copyWith(
                             fontSize: 8,
                             color: AppColors.tertiaryLabel,
@@ -278,12 +325,8 @@ class _GridTabState extends State<_GridTab> {
               padding: const EdgeInsets.all(16),
               borderRadius: 18,
               border: Border.all(
-                color: isOnTrack
-                    ? AppColors.success.withValues(alpha: 0.4)
-                    : isAtRisk
-                    ? AppColors.primaryOrange.withValues(alpha: 0.3)
-                    : AppColors.error.withValues(alpha: 0.3),
-                width: 0.5,
+                color: AppColors.glassBorder.withValues(alpha: 0.5),
+                width: 0.55,
               ),
               child: Column(
                 children: [
@@ -303,10 +346,12 @@ class _GridTabState extends State<_GridTab> {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            'WEEK SCORE',
+                            'Week Score',
                             style: AppTypography.mono.copyWith(
                               fontSize: 13,
                               fontWeight: FontWeight.bold,
+                              letterSpacing: 1.9,
+                              color: AppColors.secondaryLabel,
                             ),
                           ),
                         ],
@@ -316,11 +361,7 @@ class _GridTabState extends State<_GridTab> {
                         style: AppTypography.mono.copyWith(
                           fontSize: 32,
                           fontWeight: FontWeight.w700,
-                          color: isOnTrack
-                              ? AppColors.success
-                              : isAtRisk
-                              ? AppColors.primaryOrange
-                              : AppColors.error,
+                          color: AppColors.success.withValues(alpha: 0.86),
                         ),
                       ),
                     ],
@@ -334,11 +375,7 @@ class _GridTabState extends State<_GridTab> {
                         value: scorePercent / 100,
                         backgroundColor: AppColors.surface,
                         valueColor: AlwaysStoppedAnimation<Color>(
-                          isOnTrack
-                              ? AppColors.success
-                              : isAtRisk
-                              ? AppColors.primaryOrange
-                              : AppColors.error,
+                          AppColors.success.withValues(alpha: 0.86),
                         ),
                       ),
                     ),
@@ -368,20 +405,6 @@ class _GridTabState extends State<_GridTab> {
             ),
 
             const SizedBox(height: 20),
-
-            // ── Habit List ──
-            ...prov.habitsWithCompletedBottom.map(
-              (habit) => Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: GestureDetector(
-                  onTap: () => widget.onOpenHabit(habit),
-                  child: _HabitTile(
-                    habit: habit,
-                    onToggle: () => prov.toggleHabit(habit.id),
-                  ),
-                ),
-              ),
-            ),
           ],
         );
       },
@@ -515,12 +538,10 @@ class _DayCell extends StatelessWidget {
         height: 20,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: AppColors.error.withValues(alpha: 0.15),
-        ),
-        child: const Icon(
-          CupertinoIcons.xmark,
-          size: 10,
-          color: AppColors.error,
+          border: Border.all(
+            color: AppColors.error.withValues(alpha: 0.78),
+            width: 1.1,
+          ),
         ),
       );
     }
