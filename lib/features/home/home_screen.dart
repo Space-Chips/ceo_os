@@ -186,6 +186,7 @@ class _NoModulesMessageCard extends StatelessWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  static const int _maxVisibleHomeItems = 4;
   final InsightsRepository _insightsRepository = InsightsRepository();
   final UserRepository _userRepository = UserRepository();
   final FeatureRepository _featureRepository = FeatureRepository();
@@ -390,6 +391,8 @@ class _HomeScreenState extends State<HomeScreen> {
     Set<String> shortcuts,
     Set<String> activeApps,
   ) {
+    final availableShortcutSlots = (_maxVisibleHomeItems - activeApps.length)
+        .clamp(0, _shortcutOrder.length);
     final ordered = _shortcutOrder
         .where(
           (shortcutId) =>
@@ -397,6 +400,7 @@ class _HomeScreenState extends State<HomeScreen> {
               (_showSocialScreenTimeSurfaces ||
                   !_socialShortcutIds.contains(shortcutId)),
         )
+        .take(availableShortcutSlots)
         .toSet();
     return ordered;
   }
@@ -2247,6 +2251,7 @@ class _SecondaryMenuSheet extends StatefulWidget {
 }
 
 class _SecondaryMenuSheetState extends State<_SecondaryMenuSheet> {
+  static const int _maxVisibleHomeItems = 4;
   static const Set<String> _validPrimaryApps = {
     'Pareto',
     'Habits',
@@ -2308,17 +2313,29 @@ class _SecondaryMenuSheetState extends State<_SecondaryMenuSheet> {
     _active = widget.initialActiveApps
         .where(_validPrimaryApps.contains)
         .toSet();
-    _shortcuts = Set<String>.from(widget.initialEnabledShortcuts);
+    _shortcuts = _normalizeLocalShortcuts(widget.initialEnabledShortcuts);
+  }
+
+  Set<String> _normalizeLocalShortcuts(Set<String> source) {
+    final availableShortcutSlots = (_maxVisibleHomeItems - _active.length)
+        .clamp(0, _shortcutOptions.length);
+    final orderedIds = _shortcutOptions.map((option) => option.moduleId);
+    return orderedIds
+        .where(source.contains)
+        .take(availableShortcutSlots)
+        .toSet();
   }
 
   Future<void> _onToggle(_ModuleToggleOption option, bool value) async {
     final previous = Set<String>.from(_active);
+    final previousShortcuts = Set<String>.from(_shortcuts);
     setState(() {
       if (value) {
         _active.add(option.moduleId);
       } else {
         _active.remove(option.moduleId);
       }
+      _shortcuts = _normalizeLocalShortcuts(_shortcuts);
       _saving.add(option.moduleId);
     });
 
@@ -2328,6 +2345,9 @@ class _SecondaryMenuSheetState extends State<_SecondaryMenuSheet> {
     setState(() {
       if (!success) {
         _active = previous;
+        _shortcuts = previousShortcuts;
+      } else {
+        _shortcuts = _normalizeLocalShortcuts(_shortcuts);
       }
       _saving.remove(option.moduleId);
     });
@@ -2349,6 +2369,8 @@ class _SecondaryMenuSheetState extends State<_SecondaryMenuSheet> {
     setState(() {
       if (!success) {
         _shortcuts = previous;
+      } else {
+        _shortcuts = _normalizeLocalShortcuts(_shortcuts);
       }
       _saving.remove(option.moduleId);
     });
