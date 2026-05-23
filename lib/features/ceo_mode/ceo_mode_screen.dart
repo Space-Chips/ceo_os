@@ -541,141 +541,125 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
 
   Widget _setupView(CeoModeProvider ceo) {
     return ListView(
-      padding: const EdgeInsets.symmetric(horizontal: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 8),
       children: [
         Text(
           _t('blackout_mode'),
           maxLines: 1,
           softWrap: false,
           overflow: TextOverflow.ellipsis,
-          style: AppTypography.mono.copyWith(
-            fontSize: 44,
-            fontWeight: FontWeight.w900,
+          style: AppTypography.largeTitle.copyWith(
+            fontSize: 46,
+            fontWeight: FontWeight.w800,
             color: AppColors.label,
-            height: 0.95,
+            height: 1,
+            letterSpacing: 0,
           ),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 12),
         Text(
           _t('blackout_description'),
-          style: AppTypography.mono.copyWith(
-            fontSize: 14,
+          style: AppTypography.body.copyWith(
+            fontSize: 17,
+            fontWeight: FontWeight.w600,
+            height: 1.34,
             color: AppColors.secondaryLabel,
           ),
         ),
-        const SizedBox(height: 16),
-        _glowSurface(
-          glowColor: AppColors.edgeGlowSoft.withValues(alpha: 0.16),
-          borderRadius: 28,
-          child: GlassCard(
-            padding: const EdgeInsets.all(18),
-            borderRadius: 28,
-            level: GlassCardLevel.elevated,
-            showEdgeGlow: false,
-            border: Border.all(
-              color: AppColors.glassBorder.withValues(alpha: 0.78),
-              width: 0.85,
-            ),
-            gradientColors: [
-              AppColors.cardBackgroundStrong.withValues(alpha: 0.84),
-              AppColors.backgroundLight.withValues(alpha: 0.95),
-            ],
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Duration',
-                  style: AppTypography.headline.copyWith(
-                    fontSize: 16,
-                    color: AppColors.label,
-                    fontWeight: FontWeight.w700,
+        const SizedBox(height: 20),
+        GlassCard(
+          padding: const EdgeInsets.fromLTRB(18, 17, 18, 19),
+          borderRadius: 24,
+          level: GlassCardLevel.standard,
+          showEdgeGlow: false,
+          border: Border.all(
+            color: AppColors.glassBorder.withValues(alpha: 0.54),
+            width: 0.55,
+          ),
+          gradientColors: [
+            AppColors.cardBackgroundStrong.withValues(alpha: 0.58),
+            AppColors.cardBackgroundAlt.withValues(alpha: 0.48),
+          ],
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _setupSectionTitle('Duration'),
+              const SizedBox(height: 11),
+              Container(
+                height: 136,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(15),
+                  color: AppColors.background.withValues(alpha: 0.44),
+                  border: Border.all(
+                    color: AppColors.glassBorder.withValues(alpha: 0.38),
+                    width: 0.55,
                   ),
                 ),
-                const SizedBox(height: 10),
-                Container(
-                  height: 146,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        AppColors.floatingGlassGradient.first.withValues(
-                          alpha: 0.88,
-                        ),
-                        AppColors.floatingGlassGradient.last.withValues(
-                          alpha: 0.78,
-                        ),
-                      ],
-                    ),
-                    border: Border.all(
-                      color: AppColors.glassBorder.withValues(alpha: 0.8),
-                      width: 0.7,
+                child: CupertinoPicker(
+                  itemExtent: 34,
+                  scrollController: FixedExtentScrollController(
+                    initialItem: _durationOptions
+                        .indexWhere((m) => m == ceo.selectedDurationMinutes)
+                        .clamp(0, _durationOptions.length - 1),
+                  ),
+                  onSelectedItemChanged: (index) {
+                    final value = _durationOptions[index];
+                    ceo.setDuration(value);
+                    unawaited(_persistWidgetDuration(value));
+                  },
+                  selectionOverlay: Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 11),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: AppColors.label.withValues(alpha: 0.36),
+                        width: 0.55,
+                      ),
+                      color: AppColors.white.withValues(alpha: 0.035),
                     ),
                   ),
-                  child: CupertinoPicker(
-                    itemExtent: 34,
-                    scrollController: FixedExtentScrollController(
-                      initialItem: _durationOptions
-                          .indexWhere((m) => m == ceo.selectedDurationMinutes)
-                          .clamp(0, _durationOptions.length - 1),
-                    ),
-                    onSelectedItemChanged: (index) {
-                      final value = _durationOptions[index];
-                      ceo.setDuration(value);
-                      unawaited(_persistWidgetDuration(value));
-                    },
-                    selectionOverlay: Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 12),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: AppColors.label.withValues(alpha: 0.48),
-                          width: 0.7,
-                        ),
-                        color: AppColors.white.withValues(alpha: 0.06),
-                      ),
-                    ),
-                    children: _durationOptions
-                        .map(
-                          (minutes) => Center(
-                            child: Text(
-                              _durationLabel(minutes),
-                              style: AppTypography.mono.copyWith(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w900,
-                                color: minutes == ceo.selectedDurationMinutes
-                                    ? AppColors.label
-                                    : AppColors.secondaryLabel,
-                              ),
+                  children: _durationOptions
+                      .map(
+                        (minutes) => Center(
+                          child: Text(
+                            _durationLabel(minutes),
+                            style: AppTypography.mono.copyWith(
+                              fontSize: 21,
+                              fontWeight: FontWeight.w800,
+                              color: minutes == ceo.selectedDurationMinutes
+                                  ? AppColors.label
+                                  : AppColors.secondaryLabel.withValues(
+                                      alpha: 0.42,
+                                    ),
                             ),
                           ),
-                        )
-                        .toList(growable: false),
-                  ),
+                        ),
+                      )
+                      .toList(growable: false),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
         const SizedBox(height: 14),
         GlassCard(
-          padding: const EdgeInsets.all(18),
+          padding: const EdgeInsets.fromLTRB(18, 17, 18, 18),
           borderRadius: 24,
           level: GlassCardLevel.standard,
-          showEdgeGlow: true,
+          showEdgeGlow: false,
+          border: Border.all(
+            color: AppColors.glassBorder.withValues(alpha: 0.54),
+            width: 0.55,
+          ),
+          gradientColors: [
+            AppColors.cardBackgroundStrong.withValues(alpha: 0.56),
+            AppColors.cardBackgroundAlt.withValues(alpha: 0.46),
+          ],
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Essential apps',
-                style: AppTypography.headline.copyWith(
-                  fontSize: 16,
-                  color: AppColors.label,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 10),
+              _setupSectionTitle('Essential apps (3)'),
+              const SizedBox(height: 11),
               _approvedAppItem(CupertinoIcons.phone, 'Phone'),
               const SizedBox(height: 8),
               _approvedAppItem(CupertinoIcons.chat_bubble_2, 'Messages'),
@@ -686,8 +670,14 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
         ),
         const SizedBox(height: 14),
         GlassCard(
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
           borderRadius: 18,
+          level: GlassCardLevel.standard,
+          showEdgeGlow: false,
+          border: Border.all(
+            color: AppColors.glassBorder.withValues(alpha: 0.44),
+            width: 0.55,
+          ),
           child: Row(
             children: [
               Icon(
@@ -702,11 +692,10 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  ceo.isAuthorized
-                      ? 'Protection access granted'
-                      : 'Grant Screen Time permissions for stronger enforcement',
+                  _protectionStatusMessage(ceo),
                   style: AppTypography.footnote.copyWith(
                     fontSize: 12,
+                    height: 1.25,
                     color: AppColors.secondaryLabel,
                   ),
                 ),
@@ -714,9 +703,9 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
               CupertinoButton(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 minimumSize: Size.zero,
-                onPressed: ceo.requestPermissions,
+                onPressed: () => _handleProtectionAction(ceo),
                 child: Text(
-                  ceo.isAuthorized ? 'Refresh' : 'Enable',
+                  _protectionActionLabel(ceo),
                   style: AppTypography.mono.copyWith(
                     fontSize: 11,
                     color: const Color(0xFF4C7DFF),
@@ -749,18 +738,28 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
                 height: 58,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(20),
-                  color: AppColors.surface.withValues(alpha: 0.82),
-                  border: Border.all(color: AppColors.borderStrong, width: 1),
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      AppColors.label.withValues(alpha: 0.88),
+                      AppColors.secondaryLabel.withValues(alpha: 0.84),
+                    ],
+                  ),
+                  border: Border.all(
+                    color: AppColors.white.withValues(alpha: 0.38),
+                    width: 0.55,
+                  ),
                 ),
                 alignment: Alignment.center,
                 child: ceo.isBusy
-                    ? CupertinoActivityIndicator(color: AppColors.label)
+                    ? CupertinoActivityIndicator(color: AppColors.background)
                     : Text(
                         _t('blackout_confirm_start'),
                         style: AppTypography.callout.copyWith(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
-                          color: AppColors.label,
+                          color: AppColors.background,
                         ),
                       ),
               ),
@@ -768,6 +767,18 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _setupSectionTitle(String label) {
+    return Text(
+      label,
+      style: AppTypography.callout.copyWith(
+        fontSize: 16,
+        fontWeight: FontWeight.w700,
+        color: AppColors.secondaryLabel,
+        letterSpacing: 0,
+      ),
     );
   }
 
@@ -1027,12 +1038,15 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
 
   Widget _approvedAppItem(IconData icon, String label) {
     return Container(
-      height: 52,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      height: 54,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(14),
-        color: AppColors.cardBackgroundAlt,
-        border: Border.all(color: AppColors.border, width: 0.9),
+        color: AppColors.background.withValues(alpha: 0.32),
+        border: Border.all(
+          color: AppColors.glassBorder.withValues(alpha: 0.34),
+          width: 0.55,
+        ),
       ),
       child: Row(
         children: [
@@ -1041,10 +1055,14 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
             height: 36,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
-              color: AppColors.moduleIconBackground,
+              color: AppColors.moduleIconBackground.withValues(alpha: 0.72),
             ),
             alignment: Alignment.center,
-            child: Icon(icon, size: 18, color: AppColors.secondaryLabel),
+            child: Icon(
+              icon,
+              size: 18,
+              color: AppColors.secondaryLabel.withValues(alpha: 0.82),
+            ),
           ),
           const SizedBox(width: 12),
           Text(

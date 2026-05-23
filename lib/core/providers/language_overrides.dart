@@ -25,7 +25,7 @@ const Map<String, Map<String, String>> kTranslationOverrides = {
     'screen_time_deep_work_environment': 'Deep work environment',
     'screen_time_control_title': 'Screen Time Control',
     'blackout_essential_note':
-        'Distractions will be blocked during the session.',
+        'Blackout Mode blocks everything except the essential apps shown above.',
     'blackout_confirm_start': 'Start session',
     'blackout_mode': 'Blackout Mode',
     'max_focus': 'Max focus',
@@ -463,7 +463,7 @@ const Map<String, Map<String, String>> kTranslationOverrides = {
     'screen_time_deep_work_environment': 'Deep work environment',
     'screen_time_control_title': 'Screen Time Control',
     'blackout_essential_note':
-        'Distractions will be blocked during the session.',
+        'Blackout Mode blocks everything except the essential apps shown above.',
     'blackout_confirm_start': 'Start session',
     'blackout_mode': 'Blackout Mode',
     'max_focus': 'Max focus',
