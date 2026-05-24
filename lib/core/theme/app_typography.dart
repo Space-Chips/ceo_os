@@ -53,32 +53,28 @@ class AppTypography {
     decorationColor: Color(0x00000000),
   );
 
-  static TextStyle get timer => _base(
-    color: AppColors.label,
-  ).copyWith(
+  static TextStyle get timer => _base(color: AppColors.label).copyWith(
     fontFeatures: const [FontFeature.tabularFigures()],
     letterSpacing: 0.1,
   );
 
-  static TextStyle get mono => _base(
-    color: AppColors.label,
-  ).copyWith(
+  static TextStyle get mono => _base(color: AppColors.label).copyWith(
     fontFeatures: const [FontFeature.tabularFigures()],
     letterSpacing: 0.1,
   );
 
   static TextStyle get largeTitle => _base(color: AppColors.label).copyWith(
-    fontSize: 32,
+    fontSize: 34,
     fontWeight: FontWeight.w700,
-    height: 1.18,
-    letterSpacing: -0.8,
+    height: 1.16,
+    letterSpacing: -0.9,
   );
 
   static TextStyle get title1 => _base(color: AppColors.label).copyWith(
     fontSize: 28,
     fontWeight: FontWeight.w700,
     height: 1.18,
-    letterSpacing: -0.65,
+    letterSpacing: -0.6,
   );
 
   static TextStyle get title2 => _base(color: AppColors.label).copyWith(
@@ -96,55 +92,46 @@ class AppTypography {
   );
 
   static TextStyle get headline => _base(color: AppColors.label).copyWith(
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: FontWeight.w600,
-    height: 1.28,
-    letterSpacing: -0.05,
+    height: 1.3,
+    letterSpacing: -0.15,
   );
 
   static TextStyle get body => _base(color: AppColors.label).copyWith(
-    fontSize: 15,
+    fontSize: 17,
     fontWeight: FontWeight.w400,
-    height: 1.4,
+    height: 1.35,
     letterSpacing: 0,
   );
 
-  static TextStyle get callout => _base(color: AppColors.label).copyWith(
-    fontSize: 14,
-    fontWeight: FontWeight.w500,
-    height: 1.35,
-  );
+  static TextStyle get callout => _base(
+    color: AppColors.label,
+  ).copyWith(fontSize: 16, fontWeight: FontWeight.w500, height: 1.32);
 
-  static TextStyle get subhead => _base(color: AppColors.secondaryLabel).copyWith(
-    fontSize: 13,
-    fontWeight: FontWeight.w500,
-    height: 1.35,
-  );
+  static TextStyle get subhead => _base(
+    color: AppColors.secondaryLabel,
+  ).copyWith(fontSize: 15, fontWeight: FontWeight.w500, height: 1.32);
 
-  static TextStyle get footnote => _base(color: AppColors.secondaryLabel).copyWith(
-    fontSize: 12,
-    fontWeight: FontWeight.w500,
-    height: 1.3,
-  );
+  static TextStyle get footnote => _base(
+    color: AppColors.secondaryLabel,
+  ).copyWith(fontSize: 13, fontWeight: FontWeight.w500, height: 1.3);
 
-  static TextStyle get caption1 => _base(color: AppColors.tertiaryLabel).copyWith(
-    fontSize: 11,
-    fontWeight: FontWeight.w500,
-    height: 1.25,
-  );
+  static TextStyle get caption1 => _base(
+    color: AppColors.tertiaryLabel,
+  ).copyWith(fontSize: 12, fontWeight: FontWeight.w500, height: 1.25);
 
-  static TextStyle get caption2 => _base(color: AppColors.quaternaryLabel).copyWith(
-    fontSize: 10,
-    fontWeight: FontWeight.w500,
-    height: 1.2,
-  );
+  static TextStyle get caption2 => _base(
+    color: AppColors.quaternaryLabel,
+  ).copyWith(fontSize: 10, fontWeight: FontWeight.w500, height: 1.2);
 
-  static TextStyle get overline => _base(color: AppColors.tertiaryLabel).copyWith(
-    fontSize: 10,
-    fontWeight: FontWeight.w600,
-    letterSpacing: 0.8,
-    height: 1.2,
-  );
+  static TextStyle get overline =>
+      _base(color: AppColors.tertiaryLabel).copyWith(
+        fontSize: 10,
+        fontWeight: FontWeight.w600,
+        letterSpacing: 0.8,
+        height: 1.2,
+      );
 
   static TextStyle get displayMono => timer.copyWith(
     fontSize: 48,

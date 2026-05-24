@@ -1,8 +1,10 @@
 import 'dart:ui';
 
 import 'package:flutter/cupertino.dart';
+import 'package:provider/provider.dart';
 
 import '../../../components/liquid_button.dart';
+import '../../../core/providers/theme_provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../control_center_setup_models.dart';
@@ -39,6 +41,7 @@ class _FinalPreviewScreenState extends State<FinalPreviewScreen>
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeProvider>();
     return Padding(
       padding: const EdgeInsets.fromLTRB(18, 4, 18, 18),
       child: Column(

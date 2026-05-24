@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import '../../components/components.dart';
 import '../../core/models/user_models.dart';
 import '../../core/providers/language_provider.dart';
+import '../../core/providers/theme_provider.dart';
 import '../../core/repositories/focus_repository.dart';
 import '../../core/repositories/user_repository.dart';
 import '../../core/theme/app_colors.dart';
@@ -176,6 +177,7 @@ class _RankScreenState extends State<RankScreen> {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeProvider>();
     context.watch<LanguageProvider>().languageCode;
     final current = _currentTier();
     final next = _nextTier(current);

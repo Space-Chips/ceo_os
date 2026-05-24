@@ -1,5 +1,7 @@
 import 'package:flutter/cupertino.dart';
+import 'package:provider/provider.dart';
 
+import '../../core/providers/theme_provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 
@@ -8,6 +10,7 @@ class BlockingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeProvider>();
     return CupertinoPageScaffold(
       backgroundColor: AppColors.background,
       navigationBar: const CupertinoNavigationBar(middle: Text('Blocked')),

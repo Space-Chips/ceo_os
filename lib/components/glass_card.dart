@@ -26,8 +26,8 @@ class GlassCard extends StatelessWidget {
     super.key,
     required this.child,
     this.padding,
-    this.borderRadius = 20,
-    this.blur = 18,
+    this.borderRadius = 22,
+    this.blur = 16,
     this.gradientColors,
     this.border,
     this.width,
@@ -51,14 +51,14 @@ class GlassCard extends StatelessWidget {
         spread: -8.0,
       ),
       GlassCardLevel.standard => (
-        alpha: AppColors.isDark ? 0.16 : 0.095,
-        blur: 14.0,
+        alpha: AppColors.isDark ? 0.2 : 0.11,
+        blur: 16.0,
         offsetY: 7.0,
         spread: -10.0,
       ),
       GlassCardLevel.elevated => (
-        alpha: AppColors.isDark ? 0.22 : 0.12,
-        blur: 18.0,
+        alpha: AppColors.isDark ? 0.26 : 0.14,
+        blur: 20.0,
         offsetY: 9.0,
         spread: -12.0,
       ),
@@ -103,13 +103,13 @@ class GlassCard extends StatelessWidget {
                 colors: [
                   Color.alphaBlend(
                     AppColors.ambientTint.withValues(
-                      alpha: AppColors.isDark ? 0.06 : 0.03,
+                      alpha: AppColors.isDark ? 0.09 : 0.04,
                     ),
                     baseGradient.first,
                   ),
                   Color.alphaBlend(
                     AppColors.glassHighlightSoft.withValues(
-                      alpha: AppColors.isDark ? 0.04 : 0.02,
+                      alpha: AppColors.isDark ? 0.07 : 0.03,
                     ),
                     baseGradient.last,
                   ),
@@ -140,7 +140,7 @@ class GlassCard extends StatelessWidget {
                     child: IgnorePointer(child: _SubtleGrain()),
                   ),
                 Padding(
-                  padding: padding ?? const EdgeInsets.all(14),
+                  padding: padding ?? const EdgeInsets.all(16),
                   child: child,
                 ),
               ],

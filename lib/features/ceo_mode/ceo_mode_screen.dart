@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:math' as math;
+import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/cupertino.dart';
@@ -11,8 +12,10 @@ import 'package:provider/provider.dart';
 import '../../components/components.dart';
 import '../../core/providers/ceo_mode_provider.dart';
 import '../../core/providers/language_provider.dart';
+import '../../core/providers/theme_provider.dart';
 import '../../core/services/home_widget_service.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/utils/android_protection_disclosure.dart';
 import 'blackout_preparation/blackout_preparation_flow_view.dart';
@@ -394,6 +397,7 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeProvider>();
     return Consumer<CeoModeProvider>(
       builder: (context, ceo, _) {
         final canPop = !ceo.isSessionActive;
@@ -404,27 +408,37 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
             backgroundColor: AppColors.background,
             child: AmbientBackdrop(
               child: SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(14, 8, 14, 12),
-                  child: Column(
-                    children: [
-                      _header(ceo),
-                      const SizedBox(height: 10),
-                      Expanded(
-                        child: ceo.isInitialized
-                            ? (ceo.state == CeoModeState.idle
-                                  ? _setupView(ceo)
-                                  : ceo.state == CeoModeState.active
-                                  ? _activeView(ceo)
-                                  : _exitPendingView(ceo))
-                            : Center(
-                                child: CupertinoActivityIndicator(
-                                  color: AppColors.primaryOrange,
-                                ),
+                child: Stack(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+                      child: ceo.isInitialized
+                          ? (ceo.state == CeoModeState.idle
+                                ? _setupView(ceo)
+                                : ceo.state == CeoModeState.active
+                                ? _activeView(ceo)
+                                : _exitPendingView(ceo))
+                          : Center(
+                              child: CupertinoActivityIndicator(
+                                color: AppColors.primaryOrange,
                               ),
+                            ),
+                    ),
+                    Positioned(
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      child: ClipRect(
+                        child: BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
+                            child: _header(ceo),
+                          ),
+                        ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -471,7 +485,7 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
                 color: AppColors.primaryOrange.withValues(alpha: 0.14),
                 border: Border.all(
                   color: AppColors.primaryOrange.withValues(alpha: 0.42),
-                  width: 0.6,
+                  width: 0.9,
                 ),
               ),
               child: Text(
@@ -541,7 +555,7 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
 
   Widget _setupView(CeoModeProvider ceo) {
     return ListView(
-      padding: const EdgeInsets.symmetric(horizontal: 8),
+      padding: const EdgeInsets.fromLTRB(8, 92, 8, 24),
       children: [
         Text(
           _t('blackout_mode'),
@@ -550,22 +564,32 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
           overflow: TextOverflow.ellipsis,
           style: TextStyle(
             fontFamily: '.SF Pro Display',
-            fontSize: 39,
+            fontSize: 38,
             fontWeight: FontWeight.w800,
             height: 1,
-            letterSpacing: 0,
+            letterSpacing: -0.6,
             color: AppColors.label,
           ),
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 8),
+        Text(
+          _t('blackout_subtitle'),
+          style: AppTypography.body.copyWith(
+            fontSize: 14,
+            height: 1.3,
+            fontWeight: FontWeight.w500,
+            color: AppColors.secondaryLabel.withValues(alpha: 0.78),
+          ),
+        ),
+        const SizedBox(height: 12),
         GlassCard(
-          padding: const EdgeInsets.fromLTRB(22, 22, 22, 24),
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 18),
           borderRadius: 24,
           level: GlassCardLevel.standard,
           showEdgeGlow: false,
           border: Border.all(
-            color: AppColors.glassBorder.withValues(alpha: 0.82),
-            width: 0.75,
+            color: AppColors.border.withValues(alpha: 0.30),
+            width: 0.5,
           ),
           gradientColors: [
             AppColors.cardBackgroundStrong.withValues(alpha: 0.46),
@@ -575,15 +599,15 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _setupSectionTitle('Duration'),
-              const SizedBox(height: 11),
+              const SizedBox(height: 9),
               Container(
-                height: 136,
+                height: 118,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(15),
                   color: AppColors.background.withValues(alpha: 0.5),
                   border: Border.all(
-                    color: AppColors.glassBorder.withValues(alpha: 0.72),
-                    width: 0.7,
+                    color: AppColors.border.withValues(alpha: 0.30),
+                    width: 0.5,
                   ),
                 ),
                 child: CupertinoPicker(
@@ -603,8 +627,8 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: AppColors.label.withValues(alpha: 0.36),
-                        width: 0.55,
+                        color: AppColors.border.withValues(alpha: 0.40),
+                        width: 0.5,
                       ),
                       color: AppColors.white.withValues(alpha: 0.035),
                     ),
@@ -632,15 +656,15 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
             ],
           ),
         ),
-        const SizedBox(height: 14),
+        const SizedBox(height: 10),
         GlassCard(
-          padding: const EdgeInsets.fromLTRB(22, 22, 22, 24),
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 18),
           borderRadius: 24,
           level: GlassCardLevel.standard,
           showEdgeGlow: false,
           border: Border.all(
-            color: AppColors.glassBorder.withValues(alpha: 0.82),
-            width: 0.75,
+            color: AppColors.border.withValues(alpha: 0.30),
+            width: 0.5,
           ),
           gradientColors: [
             AppColors.cardBackgroundStrong.withValues(alpha: 0.46),
@@ -650,24 +674,24 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _setupSectionTitle('Essential apps (3)'),
-              const SizedBox(height: 11),
+              const SizedBox(height: 9),
               _approvedAppItem(CupertinoIcons.phone, 'Phone'),
-              const SizedBox(height: 8),
+              const SizedBox(height: 6),
               _approvedAppItem(CupertinoIcons.chat_bubble_2, 'Messages'),
-              const SizedBox(height: 8),
+              const SizedBox(height: 6),
               _approvedAppItem(CupertinoIcons.calendar, 'Calendar'),
             ],
           ),
         ),
-        const SizedBox(height: 14),
+        const SizedBox(height: 10),
         GlassCard(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
           borderRadius: 18,
           level: GlassCardLevel.standard,
           showEdgeGlow: false,
           border: Border.all(
-            color: AppColors.glassBorder.withValues(alpha: 0.72),
-            width: 0.75,
+            color: AppColors.border.withValues(alpha: 0.30),
+            width: 0.5,
           ),
           child: Row(
             children: [
@@ -707,16 +731,7 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
             ],
           ),
         ),
-        const SizedBox(height: 12),
-        Text(
-          _t('blackout_essential_note'),
-          textAlign: TextAlign.center,
-          style: AppTypography.body.copyWith(
-            fontSize: 13,
-            color: AppColors.secondaryLabel.withValues(alpha: 0.55),
-          ),
-        ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 18),
         _PressScale(
           pressedScale: 0.96,
           child: GestureDetector(
@@ -726,7 +741,7 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
               opacity: ceo.isBusy ? 0.85 : 1,
               child: Container(
                 width: double.infinity,
-                height: 58,
+                height: 54,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(20),
                   gradient: LinearGradient(
@@ -738,8 +753,8 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
                     ],
                   ),
                   border: Border.all(
-                    color: AppColors.white.withValues(alpha: 0.38),
-                    width: 0.55,
+                    color: AppColors.border.withValues(alpha: 0.40),
+                    width: 0.5,
                   ),
                 ),
                 alignment: Alignment.center,
@@ -1029,14 +1044,14 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
 
   Widget _approvedAppItem(IconData icon, String label) {
     return Container(
-      height: 54,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+      height: 48,
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(14),
         color: AppColors.background.withValues(alpha: 0.32),
         border: Border.all(
-          color: AppColors.glassBorder.withValues(alpha: 0.34),
-          width: 0.55,
+          color: AppColors.border.withValues(alpha: 0.30),
+          width: 0.5,
         ),
       ),
       child: Row(

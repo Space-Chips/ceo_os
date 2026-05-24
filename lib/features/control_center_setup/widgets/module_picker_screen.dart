@@ -1,8 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
+import 'package:provider/provider.dart';
 
 import '../../../components/liquid_button.dart';
+import '../../../core/providers/theme_provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../control_center_setup_models.dart';
@@ -103,6 +105,7 @@ class _ModulePickerScreenState extends State<ModulePickerScreen>
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeProvider>();
     final state = widget.state;
     final selectedIds = {
       for (final item in state.selectedModules) item.id,

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../core/models/habit_models.dart';
 import '../../core/models/task_models.dart';
 import '../../core/providers/language_provider.dart';
+import '../../core/providers/theme_provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/widgets/home_widgets/widget_views.dart';
@@ -13,6 +14,7 @@ class WidgetGalleryScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeProvider>();
     final language = context.watch<LanguageProvider>();
     final sampleTasks = <ParetoTask>[
       ParetoTask(

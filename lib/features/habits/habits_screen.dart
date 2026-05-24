@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart' show LinearProgressIndicator;
 import 'package:go_router/go_router.dart';
@@ -6,8 +8,10 @@ import 'package:intl/intl.dart';
 import '../../components/components.dart';
 import '../../core/models/habit_models.dart';
 import '../../core/providers/habit_provider.dart';
+import '../../core/providers/theme_provider.dart';
 import '../../core/repositories/feature_repository.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
 import '../../components/ambient_backdrop.dart';
 import 'habit_gallery_sheet.dart';
@@ -44,119 +48,250 @@ class _HabitsScreenState extends State<HabitsScreen> {
   }
 
   void _openCompletionPage(Habit habit) {
-    context.push('/habits/complete', extra: habit);
+    // Completion page removed — tapping a habit row in the grid is now a no-op.
   }
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeProvider>();
     return CupertinoPageScaffold(
       backgroundColor: AppColors.background,
       child: AmbientBackdrop(
         child: SafeArea(
-          child: Column(
+          child: Stack(
             children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(18, 6, 18, 0),
-                child: Row(
-                  children: [
-                    CupertinoButton(
-                      padding: EdgeInsets.zero,
-                      minimumSize: Size.zero,
-                      onPressed: () => context.go('/home'),
+              Column(
+                children: [
+                  Expanded(
+                    child: PageView(
+                      controller: _pageController,
+                      onPageChanged: (i) => setState(() => _activeTab = i),
+                      children: [
+                        _GridTab(onOpenHabit: _openCompletionPage),
+                        const _GoalsTab(),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 4, 20, 10),
+                    child: Text(
+                      _activeTab == 0
+                          ? 'Swipe right for Goals & Contract →'
+                          : '← Swipe left for Habits Grid',
+                      textAlign: TextAlign.center,
+                      style: AppTypography.mono.copyWith(
+                        fontSize: 10,
+                        color: AppColors.tertiaryLabel,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: ClipRect(
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 8, 20, 10),
                       child: Row(
                         children: [
-                          Icon(
-                            CupertinoIcons.back,
-                            size: 21,
-                            color: AppColors.secondaryLabel,
+                          CupertinoButton(
+                            padding: EdgeInsets.zero,
+                            minimumSize: Size.zero,
+                            onPressed: () => context.go('/home'),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  CupertinoIcons.back,
+                                  size: 21,
+                                  color: AppColors.secondaryLabel,
+                                ),
+                                const SizedBox(width: 5),
+                                Text(
+                                  'Home',
+                                  style: AppTypography.callout.copyWith(
+                                    fontSize: 16,
+                                    color: AppColors.secondaryLabel,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                          const SizedBox(width: 5),
-                          Text(
-                            'Home',
-                            style: AppTypography.callout.copyWith(
-                              fontSize: 16,
-                              color: AppColors.secondaryLabel,
-                              fontWeight: FontWeight.w600,
+                          const Spacer(),
+                          CupertinoButton(
+                            padding: EdgeInsets.zero,
+                            minimumSize: Size.zero,
+                            onPressed: _showAddHabit,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 18,
+                                vertical: 12,
+                              ),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(
+                                  AppSpacing.radiusLg,
+                                ),
+                                color: AppColors.cardBackgroundStrong
+                                    .withValues(alpha: 0.54),
+                                border: Border.all(
+                                  color: AppColors.glassBorder.withValues(
+                                    alpha: 0.30,
+                                  ),
+                                  width: 0.5,
+                                ),
+                              ),
+                              child: Text(
+                                _activeTab == 0 ? '+ Habit' : '+ Goal',
+                                style: AppTypography.callout.copyWith(
+                                  fontSize: 16,
+                                  color: AppColors.label,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
                             ),
                           ),
                         ],
                       ),
                     ),
-                    const Spacer(),
-                    CupertinoButton(
-                      padding: EdgeInsets.zero,
-                      minimumSize: Size.zero,
-                      onPressed: _showAddHabit,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 18,
-                          vertical: 13,
-                        ),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(21),
-                          color: AppColors.cardBackgroundStrong.withValues(
-                            alpha: 0.54,
-                          ),
-                          border: Border.all(
-                            color: AppColors.glassBorder.withValues(
-                              alpha: 0.42,
-                            ),
-                            width: 0.55,
-                          ),
-                        ),
-                        child: Text(
-                          _activeTab == 0 ? '+ Habit' : '+ Goal',
-                          style: AppTypography.callout.copyWith(
-                            fontSize: 16,
-                            color: AppColors.label,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(18, 4, 18, 8),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    'Habits',
-                    style: AppTypography.largeTitle.copyWith(
-                      fontSize: 56,
-                      height: 1,
-                      color: AppColors.label,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0,
-                    ),
-                  ),
-                ),
-              ),
-              Expanded(
-                child: PageView(
-                  controller: _pageController,
-                  onPageChanged: (i) => setState(() => _activeTab = i),
-                  children: [
-                    _GridTab(onOpenHabit: _openCompletionPage),
-                    const _GoalsTab(),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 4, 20, 10),
-                child: Text(
-                  _activeTab == 0
-                      ? 'Swipe right for Goals & Contract →'
-                      : '← Swipe left for Habits Grid',
-                  textAlign: TextAlign.center,
-                  style: AppTypography.mono.copyWith(
-                    fontSize: 10,
-                    color: AppColors.tertiaryLabel,
                   ),
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ThresholdSlider extends StatelessWidget {
+  final int value;
+  final int min;
+  final int max;
+  final int step;
+  final ValueChanged<int>? onChanged;
+
+  const _ThresholdSlider({
+    required this.value,
+    required this.min,
+    required this.max,
+    this.step = 5,
+    this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    const thumbSize = 26.0;
+    const trackHeight = 3.0;
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        final usableWidth = width - thumbSize;
+        final progress = ((value - min) / (max - min)).clamp(0.0, 1.0);
+        final thumbX = progress * usableWidth;
+        final trackVerticalCenter = (thumbSize + 4 - trackHeight) / 2;
+
+        void handlePos(double dx) {
+          if (onChanged == null) return;
+          final pos = (dx - thumbSize / 2).clamp(0.0, usableWidth);
+          final newProgress = pos / usableWidth;
+          final rawValue = min + newProgress * (max - min);
+          final snapped = ((rawValue / step).round()) * step;
+          onChanged!(snapped.clamp(min, max));
+        }
+
+        return GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onHorizontalDragUpdate: (details) =>
+              handlePos(details.localPosition.dx),
+          onTapDown: (details) => handlePos(details.localPosition.dx),
+          child: SizedBox(
+            height: thumbSize + 4,
+            width: width,
+            child: Stack(
+              children: [
+                // Inactive track (full background)
+                Positioned(
+                  top: trackVerticalCenter,
+                  left: thumbSize / 2,
+                  right: thumbSize / 2,
+                  height: trackHeight,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.border.withValues(alpha: 0.30),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                // Active track (theme-aware label, left of thumb)
+                Positioned(
+                  top: trackVerticalCenter,
+                  left: thumbSize / 2,
+                  width: thumbX,
+                  height: trackHeight,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.label.withValues(alpha: 0.85),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                // Thumb (label-colored circle, theme-aware)
+                Positioned(
+                  left: thumbX,
+                  top: 2,
+                  width: thumbSize,
+                  height: thumbSize,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: AppColors.label,
+                      border: Border.all(
+                        color: AppColors.border.withValues(alpha: 0.40),
+                        width: 0.5,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.glassShadow.withValues(alpha: 0.32),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                          spreadRadius: -2,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _HabitsTitle extends StatelessWidget {
+  const _HabitsTitle();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(0, 0, 0, 14),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Text(
+          'Habits',
+          style: AppTypography.largeTitle.copyWith(
+            fontSize: 52,
+            height: 1,
+            color: AppColors.label,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 0,
           ),
         ),
       ),
@@ -267,10 +402,9 @@ class _GridTabState extends State<_GridTab> {
             ? ((totalCompleted / totalExpected) * 100).round()
             : 0;
         return ListView(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 20,
-          ).copyWith(bottom: 100),
+          padding: const EdgeInsets.fromLTRB(20, 70, 20, 100),
           children: [
+            const _HabitsTitle(),
             // ── Weekly Grid ──
             GlassCard(
               padding: const EdgeInsets.all(12),
@@ -331,7 +465,7 @@ class _GridTabState extends State<_GridTab> {
               borderRadius: 18,
               border: Border.all(
                 color: AppColors.glassBorder.withValues(alpha: 0.5),
-                width: 0.55,
+                width: 0.9,
               ),
               child: Column(
                 children: [
@@ -597,6 +731,88 @@ class _GoalsTabState extends State<_GoalsTab> {
   bool _loading = true;
   bool _saving = false;
   int _threshold = 90;
+  final Set<String> _collapsedGoals = <String>{};
+
+  void _toggleGoalCollapsed(String goalKey) {
+    setState(() {
+      if (_collapsedGoals.contains(goalKey)) {
+        _collapsedGoals.remove(goalKey);
+      } else {
+        _collapsedGoals.add(goalKey);
+      }
+    });
+  }
+
+  Future<void> _confirmDeleteHabit(
+    BuildContext context,
+    HabitProvider prov,
+    Habit habit,
+  ) async {
+    final confirmed = await showCupertinoDialog<bool>(
+      context: context,
+      builder: (dialogCtx) => CupertinoAlertDialog(
+        title: Text('Delete habit?'),
+        content: Padding(
+          padding: const EdgeInsets.only(top: 8),
+          child: Text('"${habit.title}" will be permanently removed.'),
+        ),
+        actions: [
+          CupertinoDialogAction(
+            isDefaultAction: true,
+            onPressed: () => Navigator.of(dialogCtx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          CupertinoDialogAction(
+            isDestructiveAction: true,
+            onPressed: () => Navigator.of(dialogCtx).pop(true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      await prov.deleteHabit(habit.id);
+    }
+  }
+
+  Future<void> _confirmDeleteGoal(
+    BuildContext context,
+    HabitProvider prov,
+    String goalName,
+    List<Habit> habits,
+  ) async {
+    final count = habits.length;
+    final confirmed = await showCupertinoDialog<bool>(
+      context: context,
+      builder: (dialogCtx) => CupertinoAlertDialog(
+        title: Text('Delete goal?'),
+        content: Padding(
+          padding: const EdgeInsets.only(top: 8),
+          child: Text(
+            '"$goalName" and its $count habit${count > 1 ? "s" : ""} '
+            'will be permanently removed.',
+          ),
+        ),
+        actions: [
+          CupertinoDialogAction(
+            isDefaultAction: true,
+            onPressed: () => Navigator.of(dialogCtx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          CupertinoDialogAction(
+            isDestructiveAction: true,
+            onPressed: () => Navigator.of(dialogCtx).pop(true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      for (final habit in habits) {
+        await prov.deleteHabit(habit.id);
+      }
+    }
+  }
 
   @override
   void initState() {
@@ -653,10 +869,9 @@ class _GoalsTabState extends State<_GoalsTab> {
         }
 
         return ListView(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 20,
-          ).copyWith(bottom: 100),
+          padding: const EdgeInsets.fromLTRB(20, 70, 20, 100),
           children: [
+            const _HabitsTitle(),
             if (categories.isEmpty)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 40),
@@ -687,94 +902,205 @@ class _GoalsTabState extends State<_GoalsTab> {
                 ),
               )
             else
-              ...categories.entries.map(
-                (entry) => Padding(
+              ...categories.entries.map((entry) {
+                final isCollapsed = _collapsedGoals.contains(entry.key);
+                return Padding(
                   padding: const EdgeInsets.only(bottom: 12),
                   child: GlassCard(
-                    padding: const EdgeInsets.fromLTRB(26, 24, 26, 26),
+                    padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
                     borderRadius: 24,
                     showEdgeGlow: false,
                     border: Border.all(
-                      color: AppColors.glassBorder.withValues(alpha: 0.48),
-                      width: 0.55,
+                      color: AppColors.glassBorder.withValues(alpha: 0.30),
+                      width: 0.5,
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
                           children: [
-                            Icon(
-                              CupertinoIcons.scope,
-                              size: 22,
-                              color: AppColors.secondaryLabel,
+                            Container(
+                              width: 38,
+                              height: 38,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(12),
+                                color: AppColors.secondaryLabel.withValues(
+                                  alpha: 0.18,
+                                ),
+                              ),
+                              child: Icon(
+                                CupertinoIcons.scope,
+                                size: 20,
+                                color: AppColors.label,
+                              ),
                             ),
                             const SizedBox(width: 14),
                             Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    entry.key.toUpperCase(),
-                                    style: AppTypography.callout.copyWith(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w800,
-                                      color: AppColors.label,
+                              child: GestureDetector(
+                                behavior: HitTestBehavior.opaque,
+                                onTap: () => _toggleGoalCollapsed(entry.key),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            entry.key,
+                                            style: AppTypography.headline
+                                                .copyWith(
+                                                  fontSize: 19,
+                                                  fontWeight: FontWeight.w800,
+                                                  color: AppColors.label,
+                                                  letterSpacing: -0.2,
+                                                ),
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            '${entry.value.length} habit'
+                                            '${entry.value.length > 1 ? "s" : ""}',
+                                            style: AppTypography.footnote
+                                                .copyWith(
+                                                  fontSize: 12,
+                                                  color: AppColors.secondaryLabel
+                                                      .withValues(alpha: 0.62),
+                                                ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    '${entry.value.length} habits',
-                                    style: AppTypography.footnote.copyWith(
-                                      fontSize: 12,
-                                      color: AppColors.secondaryLabel
-                                          .withValues(alpha: 0.62),
+                                    const SizedBox(width: 8),
+                                    AnimatedRotation(
+                                      turns: isCollapsed ? -0.25 : 0,
+                                      duration: const Duration(milliseconds: 180),
+                                      child: Icon(
+                                        CupertinoIcons.chevron_down,
+                                        size: 18,
+                                        color: AppColors.tertiaryLabel
+                                            .withValues(alpha: 0.85),
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            GestureDetector(
+                              behavior: HitTestBehavior.opaque,
+                              onTap: () => _confirmDeleteGoal(
+                                context,
+                                prov,
+                                entry.key,
+                                entry.value,
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 6,
+                                  vertical: 6,
+                                ),
+                                child: Icon(
+                                  CupertinoIcons.trash,
+                                  size: 20,
+                                  color: const Color(0xFFF7626B),
+                                ),
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 20),
-                        Container(
-                          height: 0.55,
-                          color: AppColors.glassBorder.withValues(alpha: 0.38),
-                        ),
-                        const SizedBox(height: 14),
-                        ...entry.value.map(
-                          (habit) => Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 7),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  prov.isHabitCompletedToday(habit.id)
-                                      ? CupertinoIcons.checkmark_circle_fill
-                                      : CupertinoIcons.circle,
-                                  size: 22,
-                                  color: prov.isHabitCompletedToday(habit.id)
-                                      ? AppColors.success
-                                      : AppColors.tertiaryLabel,
-                                ),
-                                const SizedBox(width: 18),
-                                Expanded(
-                                  child: Text(
-                                    habit.title,
-                                    style: AppTypography.callout.copyWith(
-                                      fontSize: 17,
-                                      fontWeight: FontWeight.w600,
-                                      color: AppColors.secondaryLabel,
+                        AnimatedSize(
+                          duration: const Duration(milliseconds: 200),
+                          curve: Curves.easeOutCubic,
+                          alignment: Alignment.topCenter,
+                          child: isCollapsed
+                              ? const SizedBox.shrink()
+                              : Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    const SizedBox(height: 16),
+                                    Container(
+                                      height: 0.55,
+                                      color: AppColors.glassBorder.withValues(
+                                        alpha: 0.38,
+                                      ),
                                     ),
-                                  ),
+                                    const SizedBox(height: 8),
+                                    ...entry.value.map(
+                                      (habit) => Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 4,
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            Icon(
+                                              prov.isHabitCompletedToday(
+                                                    habit.id,
+                                                  )
+                                                  ? CupertinoIcons
+                                                        .checkmark_circle_fill
+                                                  : CupertinoIcons.circle,
+                                              size: 17,
+                                              color:
+                                                  prov.isHabitCompletedToday(
+                                                    habit.id,
+                                                  )
+                                                  ? AppColors.success
+                                                  : AppColors.tertiaryLabel
+                                                        .withValues(alpha: 0.7),
+                                            ),
+                                            const SizedBox(width: 14),
+                                            Expanded(
+                                              child: Text(
+                                                habit.title,
+                                                style: AppTypography.callout
+                                                    .copyWith(
+                                                      fontSize: 14,
+                                                      fontWeight:
+                                                          FontWeight.w500,
+                                                      color: AppColors
+                                                          .tertiaryLabel
+                                                          .withValues(
+                                                            alpha: 0.92,
+                                                          ),
+                                                    ),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 8),
+                                            GestureDetector(
+                                              behavior: HitTestBehavior.opaque,
+                                              onTap: () => _confirmDeleteHabit(
+                                                context,
+                                                prov,
+                                                habit,
+                                              ),
+                                              child: Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 4,
+                                                      vertical: 4,
+                                                    ),
+                                                child: Icon(
+                                                  CupertinoIcons.trash,
+                                                  size: 15,
+                                                  color: const Color(
+                                                    0xFFF7626B,
+                                                  ).withValues(alpha: 0.85),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
-                          ),
                         ),
                       ],
                     ),
                   ),
-                ),
-              ),
+                );
+              }),
             const SizedBox(height: 20),
             _weekContractCard(),
           ],
@@ -786,12 +1112,12 @@ class _GoalsTabState extends State<_GoalsTab> {
   Widget _weekContractCard() {
     final committed = _contract?.committed ?? false;
     return GlassCard(
-      padding: const EdgeInsets.fromLTRB(26, 25, 26, 26),
-      borderRadius: 24,
+      padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
+      borderRadius: 22,
       showEdgeGlow: false,
       border: Border.all(
-        color: AppColors.glassBorder.withValues(alpha: 0.86),
-        width: 0.8,
+        color: AppColors.glassBorder.withValues(alpha: 0.30),
+        width: 0.5,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -800,104 +1126,139 @@ class _GoalsTabState extends State<_GoalsTab> {
             children: [
               Icon(
                 CupertinoIcons.star_fill,
-                size: 24,
+                size: 18,
                 color: AppColors.secondaryLabel,
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: 8),
               Text(
                 'Week Contract',
                 style: AppTypography.headline.copyWith(
-                  fontSize: 20,
+                  fontSize: 17,
                   color: AppColors.label,
                   fontWeight: FontWeight.w800,
                 ),
               ),
               const Spacer(),
-              Text(
-                committed ? 'Committed' : 'Draft',
-                style: AppTypography.mono.copyWith(
-                  fontSize: 13,
-                  color: committed ? AppColors.success : AppColors.warning,
-                  fontWeight: FontWeight.w800,
+              if (committed)
+                Text(
+                  '${_weeklyScore?.successPercentage ?? 0}%',
+                  style: AppTypography.mono.copyWith(
+                    fontSize: 18,
+                    color: AppColors.success,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
-              ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
           if (_loading)
             CupertinoActivityIndicator(color: AppColors.primaryOrange)
           else ...[
-            const SizedBox(height: 4),
+            const SizedBox(height: 2),
             _contractInput(
               controller: _rewardController,
               placeholder: 'Reward if successful',
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 10),
             _contractInput(
               controller: _sanctionController,
               placeholder: 'Sanction if failed',
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 18),
             Row(
               children: [
                 Text(
                   'Threshold $_threshold%',
                   style: AppTypography.callout.copyWith(
-                    fontSize: 16,
+                    fontSize: 14,
                     color: AppColors.secondaryLabel,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
                 const Spacer(),
-                Text(
-                  'Current ${_weeklyScore?.successPercentage ?? 0}%',
-                  style: AppTypography.mono.copyWith(
-                    fontSize: 13,
-                    color: AppColors.tertiaryLabel,
+                if (!committed)
+                  Text(
+                    'Current ${_weeklyScore?.successPercentage ?? 0}%',
+                    style: AppTypography.mono.copyWith(
+                      fontSize: 12,
+                      color: AppColors.tertiaryLabel,
+                    ),
                   ),
-                ),
               ],
             ),
-            CupertinoSlider(
-              value: _threshold.toDouble(),
+            _ThresholdSlider(
+              value: _threshold,
               min: 60,
               max: 100,
-              divisions: 8,
-              activeColor: AppColors.primaryOrange,
-              thumbColor: AppColors.label,
+              step: 5,
               onChanged: committed
                   ? null
-                  : (value) => setState(() => _threshold = value.round()),
+                  : (v) => setState(() => _threshold = v),
             ),
-            const SizedBox(height: 18),
+            if (committed) ...[
+              const SizedBox(height: 10),
+              Text(
+                'Locked after commitment for the current week.',
+                style: AppTypography.subhead.copyWith(
+                  fontSize: 12,
+                  color: AppColors.tertiaryLabel,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+            const SizedBox(height: 14),
             CupertinoButton(
               padding: EdgeInsets.zero,
               onPressed: committed || _saving ? null : _commitContract,
               child: Container(
                 width: double.infinity,
-                height: 48,
+                height: 50,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(18),
+                  borderRadius: BorderRadius.circular(16),
                   gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                     colors: committed
                         ? [
                             AppColors.surface.withValues(alpha: 0.72),
                             AppColors.surfaceMuted.withValues(alpha: 0.72),
                           ]
-                        : const [Color(0xFFFF934D), Color(0xFFFFC36A)],
+                        : [
+                            AppColors.label.withValues(alpha: 0.92),
+                            AppColors.secondaryLabel.withValues(alpha: 0.84),
+                          ],
                   ),
+                  border: Border.all(
+                    color: AppColors.border.withValues(
+                      alpha: committed ? 0.30 : 0.40,
+                    ),
+                    width: 0.5,
+                  ),
+                  boxShadow: committed
+                      ? null
+                      : [
+                          BoxShadow(
+                            color: AppColors.glassShadow.withValues(
+                              alpha: 0.28,
+                            ),
+                            blurRadius: 18,
+                            offset: const Offset(0, 8),
+                            spreadRadius: -8,
+                          ),
+                        ],
                 ),
                 child: _saving
-                    ? CupertinoActivityIndicator(color: AppColors.onAccent)
+                    ? CupertinoActivityIndicator(color: AppColors.background)
                     : Text(
                         committed ? 'Contract committed' : 'Commit Contract',
                         style: AppTypography.callout.copyWith(
-                          fontSize: 18,
+                          fontSize: 17,
                           color: committed
                               ? AppColors.secondaryLabel
-                              : AppColors.onAccent,
-                          fontWeight: FontWeight.w800,
+                              : AppColors.background,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: -0.2,
                         ),
                       ),
               ),
@@ -915,23 +1276,23 @@ class _GoalsTabState extends State<_GoalsTab> {
     return CupertinoTextField(
       controller: controller,
       placeholder: placeholder,
-      padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 18),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
       style: AppTypography.callout.copyWith(
-        fontSize: 18,
+        fontSize: 15,
         color: AppColors.label,
         fontWeight: FontWeight.w600,
       ),
       placeholderStyle: AppTypography.callout.copyWith(
-        fontSize: 18,
+        fontSize: 15,
         color: AppColors.secondaryLabel.withValues(alpha: 0.68),
         fontWeight: FontWeight.w600,
       ),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(18),
         color: AppColors.cardBackgroundStrong.withValues(alpha: 0.64),
         border: Border.all(
-          color: AppColors.glassBorder.withValues(alpha: 0.86),
-          width: 0.9,
+          color: AppColors.glassBorder.withValues(alpha: 0.30),
+          width: 0.5,
         ),
       ),
     );

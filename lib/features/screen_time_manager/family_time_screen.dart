@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 import '../../components/components.dart';
 import '../../core/models/family_time_models.dart';
 import '../../core/providers/language_provider.dart';
+import '../../core/providers/theme_provider.dart';
 import '../../core/repositories/family_time_repository.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
@@ -139,6 +140,7 @@ class _FamilyTimeScreenState extends State<FamilyTimeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeProvider>();
     context.watch<LanguageProvider>().languageCode;
     return CupertinoPageScaffold(
       backgroundColor: AppColors.background,
@@ -581,6 +583,7 @@ class _FamilyTimeGroupDetailScreenState
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeProvider>();
     return CupertinoPageScaffold(
       backgroundColor: AppColors.background,
       child: AmbientBackdrop(

@@ -1,7 +1,9 @@
 import 'package:flutter/cupertino.dart';
+import 'package:provider/provider.dart';
 
 import '../../../components/glass_card.dart';
 import '../../../components/liquid_button.dart';
+import '../../../core/providers/theme_provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../control_center_setup_models.dart';
@@ -43,6 +45,7 @@ class _DashboardIntroScreenState extends State<DashboardIntroScreen>
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeProvider>();
     final slots = widget.state.slots;
     return Padding(
       padding: const EdgeInsets.fromLTRB(18, 4, 18, 18),

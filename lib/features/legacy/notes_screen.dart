@@ -13,6 +13,7 @@ import 'package:uuid/uuid.dart';
 import '../../components/components.dart';
 import '../../core/models/premium_models.dart';
 import '../../core/providers/language_provider.dart';
+import '../../core/providers/theme_provider.dart';
 import '../../core/repositories/premium_repository.dart';
 import '../../core/models/task_models.dart';
 import '../../core/repositories/feature_repository.dart';
@@ -287,15 +288,17 @@ class _NotesScreenState extends State<NotesScreen> {
     if (_selected == null) {
       _setTagText('');
       _setEditorText('');
+      _notePhotoPath = null;
       _lastSavedText = '';
       _lastSavedTitle = '';
       return;
     }
 
     final rawText = _selected!.content ?? '';
-    final parts = _splitNoteContent(rawText);
-    _setTagText(parts.tagLine);
-    _setEditorText(parts.body);
+    final parsed = _parseNoteContent(rawText);
+    _setTagText(parsed.tagLine);
+    _setEditorText(parsed.body);
+    _notePhotoPath = parsed.photoPath;
     _lastSavedText = _composeNoteContent();
     _lastSavedTitle = _selected!.title ?? _deriveTitleFrom(_lastSavedText);
   }
@@ -508,6 +511,12 @@ class _NotesScreenState extends State<NotesScreen> {
     await _persistCurrentNote();
   }
 
+  Future<void> _removePhotoFromNote() async {
+    if (_notePhotoPath == null) return;
+    setState(() => _notePhotoPath = null);
+    await _persistCurrentNote();
+  }
+
   void _openNotePhotoFullScreen(String path) {
     Navigator.of(context).push(
       CupertinoPageRoute<void>(
@@ -639,10 +648,11 @@ class _NotesScreenState extends State<NotesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeProvider>();
     final tagTree = _tagTree();
     final selected = _selected;
     final screenWidth = MediaQuery.sizeOf(context).width;
-    final sidebarWidth = (screenWidth * 0.18).clamp(104.0, 132.0);
+    final sidebarWidth = (screenWidth * 0.26).clamp(118.0, 164.0);
 
     return CupertinoPageScaffold(
       backgroundColor: AppColors.background,
@@ -665,26 +675,26 @@ class _NotesScreenState extends State<NotesScreen> {
                           Expanded(
                             child: Padding(
                               padding: const EdgeInsets.fromLTRB(
+                                12,
                                 10,
-                                10,
-                                10,
+                                12,
                                 10,
                               ),
                               child: Stack(
                                 children: [
                                   GlassCard(
                                     padding: const EdgeInsets.fromLTRB(
+                                      18,
                                       14,
-                                      12,
+                                      18,
                                       14,
-                                      12,
                                     ),
-                                    borderRadius: 14,
+                                    borderRadius: 18,
                                     border: Border.all(
-                                      color: AppColors.glassBorder.withValues(
-                                        alpha: 0.85,
+                                      color: AppColors.border.withValues(
+                                        alpha: 0.30,
                                       ),
-                                      width: 0.6,
+                                      width: 0.5,
                                     ),
                                     child: Column(
                                       crossAxisAlignment:
@@ -693,15 +703,13 @@ class _NotesScreenState extends State<NotesScreen> {
                                         Row(
                                           children: [
                                             Text(
-                                              selected == null
-                                                  ? 'NEW NOTE'
-                                                  : "LAST EDIT: ${DateFormat('MMM d').format(_effectiveUpdateDate(selected))}",
-                                              style: AppTypography.mono
+                                              'Last Edit: ${DateFormat('MMM d').format(selected == null ? DateTime.now() : _effectiveUpdateDate(selected))}',
+                                              style: AppTypography.body
                                                   .copyWith(
-                                                    fontSize: 10,
+                                                    fontSize: 13,
                                                     color:
                                                         AppColors.tertiaryLabel,
-                                                    letterSpacing: 1.2,
+                                                    fontWeight: FontWeight.w500,
                                                   ),
                                             ),
                                             const Spacer(),
@@ -718,6 +726,20 @@ class _NotesScreenState extends State<NotesScreen> {
                                           ],
                                         ),
                                         const SizedBox(height: 10),
+                                        if (_notePhotoPath != null)
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                              bottom: 10,
+                                            ),
+                                            child: _NotePhotoBanner(
+                                              path: _notePhotoPath!,
+                                              onTap: () =>
+                                                  _openNotePhotoFullScreen(
+                                                    _notePhotoPath!,
+                                                  ),
+                                              onRemove: _removePhotoFromNote,
+                                            ),
+                                          ),
                                         Expanded(
                                           child: CupertinoTextField(
                                             controller: _editor,
@@ -729,16 +751,16 @@ class _NotesScreenState extends State<NotesScreen> {
                                             placeholder:
                                                 '#work/meeting\n\nWrite your note...',
                                             style: AppTypography.mono.copyWith(
-                                              fontSize: 20,
+                                              fontSize: 28,
                                               color: AppColors.label,
-                                              height: 1.35,
+                                              height: 1.3,
                                             ),
                                             placeholderStyle: AppTypography.mono
                                                 .copyWith(
-                                                  fontSize: 20,
+                                                  fontSize: 24,
                                                   color: AppColors.tertiaryLabel
                                                       .withValues(alpha: 0.65),
-                                                  height: 1.35,
+                                                  height: 1.3,
                                                 ),
                                             decoration: null,
                                           ),
@@ -760,14 +782,14 @@ class _NotesScreenState extends State<NotesScreen> {
                                           height: 58,
                                           decoration: BoxDecoration(
                                             borderRadius: BorderRadius.circular(
-                                              18,
+                                              16,
                                             ),
                                             color: AppColors.backgroundLight
                                                 .withValues(alpha: 0.72),
                                             border: Border.all(
-                                              color: AppColors.glassBorder
-                                                  .withValues(alpha: 0.82),
-                                              width: 0.6,
+                                              color: AppColors.border
+                                                  .withValues(alpha: 0.30),
+                                              width: 0.5,
                                             ),
                                           ),
                                           child: Icon(
@@ -775,6 +797,35 @@ class _NotesScreenState extends State<NotesScreen> {
                                             color: AppColors.tertiaryLabel,
                                             size: 24,
                                           ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  Positioned(
+                                    bottom: 10,
+                                    left: 10,
+                                    child: GestureDetector(
+                                      onTap: _pickPhotoForNote,
+                                      child: Container(
+                                        width: 46,
+                                        height: 46,
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                          color: AppColors.backgroundLight
+                                              .withValues(alpha: 0.72),
+                                          border: Border.all(
+                                            color: AppColors.border
+                                                .withValues(alpha: 0.30),
+                                            width: 0.5,
+                                          ),
+                                        ),
+                                        child: Icon(
+                                          CupertinoIcons
+                                              .photo_on_rectangle,
+                                          color: AppColors.secondaryLabel,
+                                          size: 22,
                                         ),
                                       ),
                                     ),
@@ -795,7 +846,7 @@ class _NotesScreenState extends State<NotesScreen> {
 
   Widget _topBar() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 18),
+      padding: const EdgeInsets.fromLTRB(18, 10, 18, 14),
       child: Row(
         children: [
           _iconButton(
@@ -810,10 +861,10 @@ class _NotesScreenState extends State<NotesScreen> {
           Text(
             _t('notes'),
             style: AppTypography.title2.copyWith(
-              fontSize: 28,
+              fontSize: 24,
               fontWeight: FontWeight.w700,
-              letterSpacing: 0.4,
-              color: AppColors.accent,
+              letterSpacing: -0.3,
+              color: AppColors.label,
             ),
           ),
           const Spacer(),
@@ -835,7 +886,7 @@ class _NotesScreenState extends State<NotesScreen> {
 
   Widget _searchBar() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+      padding: const EdgeInsets.fromLTRB(18, 0, 18, 10),
       child: GlassInputField(
         controller: _search,
         placeholder: _t('notes_search_placeholder'),
@@ -878,8 +929,10 @@ class _NotesScreenState extends State<NotesScreen> {
                       borderRadius: BorderRadius.circular(12),
                       color: active ? _selectionBg : AppColors.pillBackground,
                       border: Border.all(
-                        color: active ? _selectionBorder : AppColors.pillBorder,
-                        width: 1,
+                        color: active
+                            ? _selectionBorder
+                            : AppColors.border.withValues(alpha: 0.30),
+                        width: 0.5,
                       ),
                     ),
                     child: Column(
@@ -917,7 +970,10 @@ class _NotesScreenState extends State<NotesScreen> {
             }),
             const SizedBox(height: 6),
           ],
-          Container(height: 1, color: AppColors.border),
+          Container(
+            height: 0.5,
+            color: AppColors.border.withValues(alpha: 0.22),
+          ),
           const SizedBox(height: 8),
           _folderRow(
             label: _t('notes_all_notes'),
@@ -929,7 +985,10 @@ class _NotesScreenState extends State<NotesScreen> {
             tagTree,
           ).map((tagPath) => _tagTreeItem(tagTree, tagPath, depth: 0)),
           const SizedBox(height: 8),
-          Container(height: 1, color: AppColors.border),
+          Container(
+            height: 0.5,
+            color: AppColors.border.withValues(alpha: 0.22),
+          ),
           const SizedBox(height: 8),
           _folderRow(
             label: _t('notes_no_tag'),
@@ -967,7 +1026,7 @@ class _NotesScreenState extends State<NotesScreen> {
             pressedScale: 0.98,
             borderRadius: 10,
             child: Container(
-              height: 34,
+              height: 38,
               padding: const EdgeInsets.symmetric(horizontal: 8),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10),
@@ -976,9 +1035,9 @@ class _NotesScreenState extends State<NotesScreen> {
                     : AppColors.background.withValues(alpha: 0),
                 border: Border.all(
                   color: selected
-                      ? _notesGreen.withValues(alpha: 0.35)
+                      ? _notesGreen.withValues(alpha: 0.40)
                       : AppColors.background.withValues(alpha: 0),
-                  width: 1,
+                  width: 0.5,
                 ),
               ),
               child: Row(
@@ -1016,7 +1075,7 @@ class _NotesScreenState extends State<NotesScreen> {
                     Text(
                       '$count',
                       style: AppTypography.mono.copyWith(
-                        fontSize: 10,
+                        fontSize: 11,
                         color: AppColors.tertiaryLabel,
                       ),
                     ),
@@ -1053,7 +1112,7 @@ class _NotesScreenState extends State<NotesScreen> {
           Text(
             label,
             style: AppTypography.overline.copyWith(
-              fontSize: 10,
+              fontSize: 11,
               color: AppColors.secondaryLabel.withValues(alpha: 0.5),
               fontWeight: FontWeight.w700,
               letterSpacing: 1.2,
@@ -1083,7 +1142,7 @@ class _NotesScreenState extends State<NotesScreen> {
       pressedScale: 0.98,
       borderRadius: 10,
       child: Container(
-        height: 34,
+        height: 38,
         padding: const EdgeInsets.symmetric(horizontal: 8),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10),
@@ -1240,6 +1299,79 @@ class _ParsedNoteContent {
     required this.body,
     required this.photoPath,
   });
+}
+
+class _NotePhotoBanner extends StatelessWidget {
+  final String path;
+  final VoidCallback onTap;
+  final VoidCallback onRemove;
+
+  const _NotePhotoBanner({
+    required this.path,
+    required this.onTap,
+    required this.onRemove,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        GestureDetector(
+          onTap: onTap,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(14),
+            child: Container(
+              width: double.infinity,
+              height: 160,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(14),
+                color: AppColors.background.withValues(alpha: 0.5),
+                border: Border.all(
+                  color: AppColors.border.withValues(alpha: 0.30),
+                  width: 0.5,
+                ),
+              ),
+              child: Image.file(
+                File(path),
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stack) => Center(
+                  child: Icon(
+                    CupertinoIcons.photo,
+                    color: AppColors.tertiaryLabel,
+                    size: 32,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+        Positioned(
+          top: 8,
+          right: 8,
+          child: GestureDetector(
+            onTap: onRemove,
+            child: Container(
+              width: 28,
+              height: 28,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.background.withValues(alpha: 0.78),
+                border: Border.all(
+                  color: AppColors.border.withValues(alpha: 0.40),
+                  width: 0.5,
+                ),
+              ),
+              child: Icon(
+                CupertinoIcons.xmark,
+                size: 14,
+                color: AppColors.label,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 }
 
 class _NotePhotoViewer extends StatelessWidget {

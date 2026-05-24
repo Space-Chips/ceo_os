@@ -9,6 +9,7 @@ import '../../components/ambient_backdrop.dart';
 import '../../components/glass_card.dart';
 import '../../components/liquid_button.dart';
 import '../../core/providers/language_provider.dart';
+import '../../core/providers/theme_provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/services/focus_service.dart';
@@ -73,6 +74,7 @@ class _ScreenTimeSetupScreenState extends State<ScreenTimeSetupScreen>
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeProvider>();
     context.watch<LanguageProvider>().languageCode;
     return Consumer<ScreenTimeSetupController>(
       builder: (context, controller, _) {

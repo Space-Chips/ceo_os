@@ -10,6 +10,7 @@ import 'package:provider/provider.dart';
 import '../../components/components.dart';
 import '../../core/models/settings_models.dart';
 import '../../core/providers/language_provider.dart';
+import '../../core/providers/theme_provider.dart';
 import '../../core/repositories/feature_repository.dart';
 import '../../core/services/classic_blocking_coordinator.dart';
 import '../../core/services/classic_blocking_local_store.dart';
@@ -1484,6 +1485,7 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeProvider>();
     context.watch<LanguageProvider>().languageCode;
     if (_usesModernBlockingLayout) {
       return _modernBlockingScaffold();
@@ -2337,16 +2339,6 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
                       height: 1.12,
                       fontWeight: FontWeight.w800,
                       color: AppColors.label,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Open the Apple app\npicker and select one\nor multiple apps.',
-                    style: AppTypography.callout.copyWith(
-                      fontSize: 17,
-                      height: 1.28,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.secondaryLabel.withValues(alpha: 0.78),
                     ),
                   ),
                 ],

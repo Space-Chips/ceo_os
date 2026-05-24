@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 import '../../components/ambient_backdrop.dart';
 import '../../components/glass_card.dart';
 import '../../components/liquid_button.dart';
+import '../../core/providers/theme_provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../setup/setup_flow_controller.dart' hide SetupStep;
@@ -94,6 +95,7 @@ class _ControlCenterSetupScreenState extends State<ControlCenterSetupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeProvider>();
     return ChangeNotifierProvider.value(
       value: _viewModel,
       child: Consumer<ControlCenterSetupViewModel>(

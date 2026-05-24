@@ -7,6 +7,7 @@ import '../../components/components.dart';
 import '../../core/models/premium_models.dart';
 import '../../core/models/task_models.dart';
 import '../../core/providers/language_provider.dart';
+import '../../core/providers/theme_provider.dart';
 import '../../core/repositories/feature_repository.dart';
 import '../../core/repositories/premium_repository.dart';
 import '../../core/theme/app_colors.dart';
@@ -99,7 +100,7 @@ class _EventTypesScreenState extends State<EventTypesScreen> {
       if (!mounted) return;
       await _load();
       if (mounted) {
-        Navigator.of(context).pop();
+        setState(() => _showForm = false);
       }
     } finally {
       if (mounted) {
@@ -314,6 +315,7 @@ class _EventTypesScreenState extends State<EventTypesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeProvider>();
     return CupertinoPageScaffold(
       backgroundColor: AppColors.background,
       child: AmbientBackdrop(
@@ -334,6 +336,10 @@ class _EventTypesScreenState extends State<EventTypesScreen> {
                   children: [
                     _buildHeader(),
                     const SizedBox(height: 20),
+                    if (_showForm) ...[
+                      _buildFormCard(),
+                      const SizedBox(height: 16),
+                    ],
                     _buildTypesList(),
                   ],
                 ),
@@ -382,6 +388,36 @@ class _EventTypesScreenState extends State<EventTypesScreen> {
                 fontSize: 22,
                 fontWeight: FontWeight.w900,
                 color: AppColors.label,
+              ),
+            ),
+          ),
+          Align(
+            alignment: Alignment.centerRight,
+            child: CupertinoButton(
+              padding: EdgeInsets.zero,
+              minimumSize: Size.zero,
+              onPressed: () => setState(() => _showForm = !_showForm),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 9,
+                ),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(14),
+                  color: AppColors.cardBackgroundStrong.withValues(alpha: 0.54),
+                  border: Border.all(
+                    color: AppColors.border.withValues(alpha: 0.30),
+                    width: 0.5,
+                  ),
+                ),
+                child: Text(
+                  _showForm ? 'Close' : '+ Type',
+                  style: AppTypography.callout.copyWith(
+                    fontSize: 14,
+                    color: AppColors.label,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ),
             ),
           ),
@@ -567,32 +603,39 @@ class _EventTypesScreenState extends State<EventTypesScreen> {
         return Padding(
           padding: const EdgeInsets.only(bottom: 12),
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
             decoration: BoxDecoration(
-              color: AppColors.white.withValues(alpha: 0.03),
-              borderRadius: BorderRadius.circular(12),
+              color: AppColors.cardBackgroundStrong.withValues(alpha: 0.40),
+              borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: AppColors.white.withValues(alpha: 0.06),
-                width: 1,
+                color: AppColors.border.withValues(alpha: 0.30),
+                width: 0.5,
               ),
             ),
             child: Row(
               children: [
                 Container(
-                  width: 10,
-                  height: 10,
+                  width: 14,
+                  height: 14,
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(99),
+                    shape: BoxShape.circle,
                     color: color,
+                    boxShadow: [
+                      BoxShadow(
+                        color: color.withValues(alpha: 0.45),
+                        blurRadius: 8,
+                        spreadRadius: -2,
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(width: 14),
                 Expanded(
                   child: Text(
                     (type.name ?? _t('untitled')),
                     style: AppTypography.body.copyWith(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
+                      fontSize: 17,
+                      fontWeight: FontWeight.w700,
                       color: AppColors.label,
                     ),
                   ),
@@ -604,7 +647,7 @@ class _EventTypesScreenState extends State<EventTypesScreen> {
                   child: Icon(
                     CupertinoIcons.delete,
                     color: const Color(0xFFEF4444),
-                    size: 17,
+                    size: 20,
                   ),
                 ),
               ],

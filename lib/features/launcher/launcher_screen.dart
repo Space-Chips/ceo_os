@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/providers/launcher_provider.dart';
+import '../../core/providers/theme_provider.dart';
 import '../../core/services/focus_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
@@ -59,6 +60,7 @@ class _LauncherScreenState extends State<LauncherScreen> {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeProvider>();
     return Consumer<LauncherProvider>(
       builder: (context, launcher, _) {
         final apps = launcher.visibleApps;
@@ -204,6 +206,7 @@ class LauncherBlockScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeProvider>();
     return CupertinoPageScaffold(
       backgroundColor: AppColors.systemBackground,
       child: SafeArea(

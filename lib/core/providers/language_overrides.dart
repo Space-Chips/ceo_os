@@ -244,6 +244,23 @@ const Map<String, Map<String, String>> kTranslationOverrides = {
     'blackout_prep_done': 'Done',
     'blackout_prep_animation_calm_screen': 'Calmer screen',
     'blackout_prep_animation_folder_name': 'Out of Focus',
+    'blackout_subtitle':
+        'Maximum focus. Once activated, distractions are locked until the session ends.',
+    'blackout_protection_granted': 'Blackout protection granted',
+    'blackout_protection_unavailable_android':
+        'Blackout protection unavailable on this device',
+    'blackout_protection_unavailable_ios':
+        'Blackout protection unavailable on this device',
+    'blackout_protection_off_android': 'Blackout protection is off',
+    'blackout_protection_off_ios': 'Blackout protection is off',
+    'blackout_protection_grant_android':
+        'Grant accessibility permissions to enable protected Blackout Mode sessions',
+    'blackout_protection_grant_ios':
+        'Grant Screen Time permissions to enable protected Blackout Mode sessions',
+    'blackout_action_refresh': 'Refresh',
+    'blackout_action_unavailable': 'Unavailable',
+    'blackout_action_open_settings': 'Open Settings',
+    'blackout_action_enable': 'Enable',
     'create': 'Create',
     'done': 'Done',
     'theme_carbon_system': 'Carbon System',
@@ -411,12 +428,12 @@ const Map<String, Map<String, String>> kTranslationOverrides = {
     'tasks_other_tasks': 'Other Tasks',
     'tasks_swipe_hint_list': 'Swipe to complete or reopen',
     'tasks_tab_title_todo': 'To-Do',
-    'tasks_tab_subtitle_todo': 'Execution list',
-    'tasks_tab_title_matrix': 'Matrix',
-    'tasks_tab_subtitle_matrix': 'Priority map',
+    'tasks_tab_subtitle_todo': '',
+    'tasks_tab_title_matrix': 'Priority map',
+    'tasks_tab_subtitle_matrix': '',
     'tasks_tab_title_history': 'History',
-    'tasks_tab_subtitle_history': 'Completed tasks',
-    'tasks_matrix_impact_axis': 'Impact',
+    'tasks_tab_subtitle_history': '',
+    'tasks_matrix_impact_axis': '',
     'tasks_matrix_time_axis': 'Effort',
     'tasks_matrix_do_now': 'Do now',
     'tasks_matrix_do_now_subtitle': 'High impact, low effort',
@@ -688,6 +705,23 @@ const Map<String, Map<String, String>> kTranslationOverrides = {
     'blackout_prep_done': "C'est fait",
     'blackout_prep_animation_calm_screen': 'Écran plus calme',
     'blackout_prep_animation_folder_name': 'Hors Focus',
+    'blackout_subtitle':
+        'Focus maximal. Une fois activée, les distractions sont verrouillées jusqu\'à la fin de la session.',
+    'blackout_protection_granted': 'Protection Blackout active',
+    'blackout_protection_unavailable_android':
+        'Protection Blackout indisponible sur cet appareil',
+    'blackout_protection_unavailable_ios':
+        'Protection Blackout indisponible sur cet appareil',
+    'blackout_protection_off_android': 'Protection Blackout désactivée',
+    'blackout_protection_off_ios': 'Protection Blackout désactivée',
+    'blackout_protection_grant_android':
+        'Accordez les permissions d\'accessibilité pour activer les sessions Blackout protégées',
+    'blackout_protection_grant_ios':
+        'Accordez les permissions Temps d\'écran pour activer les sessions Blackout protégées',
+    'blackout_action_refresh': 'Actualiser',
+    'blackout_action_unavailable': 'Indisponible',
+    'blackout_action_open_settings': 'Ouvrir les paramètres',
+    'blackout_action_enable': 'Activer',
     'create': 'Créer',
     'done': 'Terminé',
     'theme_carbon_system': 'Système Carbone',
@@ -860,12 +894,12 @@ const Map<String, Map<String, String>> kTranslationOverrides = {
     'tasks_other_tasks': 'Autres tâches',
     'tasks_swipe_hint_list': 'Balaye pour terminer ou rouvrir',
     'tasks_tab_title_todo': 'To-Do',
-    'tasks_tab_subtitle_todo': "Liste d'exécution",
-    'tasks_tab_title_matrix': 'Matrice',
-    'tasks_tab_subtitle_matrix': 'Carte des priorités',
+    'tasks_tab_subtitle_todo': '',
+    'tasks_tab_title_matrix': 'Carte des priorités',
+    'tasks_tab_subtitle_matrix': '',
     'tasks_tab_title_history': 'Historique',
-    'tasks_tab_subtitle_history': 'Tâches terminées',
-    'tasks_matrix_impact_axis': 'Impact',
+    'tasks_tab_subtitle_history': '',
+    'tasks_matrix_impact_axis': '',
     'tasks_matrix_time_axis': 'Effort',
     'tasks_matrix_do_now': 'Faire maintenant',
     'tasks_matrix_do_now_subtitle': 'Impact élevé, effort faible',
@@ -1083,6 +1117,23 @@ const Map<String, Map<String, String>> kTranslationOverrides = {
     'blackout_prep_done': 'Listo',
     'blackout_prep_animation_calm_screen': 'Pantalla más calmada',
     'blackout_prep_animation_folder_name': 'Fuera de Focus',
+    'blackout_subtitle':
+        'Foco máximo. Una vez activado, las distracciones quedan bloqueadas hasta el final de la sesión.',
+    'blackout_protection_granted': 'Protección Blackout activa',
+    'blackout_protection_unavailable_android':
+        'Protección Blackout no disponible en este dispositivo',
+    'blackout_protection_unavailable_ios':
+        'Protección Blackout no disponible en este dispositivo',
+    'blackout_protection_off_android': 'Protección Blackout desactivada',
+    'blackout_protection_off_ios': 'Protección Blackout desactivada',
+    'blackout_protection_grant_android':
+        'Concede permisos de accesibilidad para activar sesiones Blackout protegidas',
+    'blackout_protection_grant_ios':
+        'Concede permisos de Tiempo de Pantalla para activar sesiones Blackout protegidas',
+    'blackout_action_refresh': 'Actualizar',
+    'blackout_action_unavailable': 'No disponible',
+    'blackout_action_open_settings': 'Abrir Ajustes',
+    'blackout_action_enable': 'Activar',
   },
   'pt': {
     'onboarding_step_of': 'Etapa {step} de {total}',
@@ -1206,6 +1257,23 @@ const Map<String, Map<String, String>> kTranslationOverrides = {
     'blackout_prep_done': 'Concluído',
     'blackout_prep_animation_calm_screen': 'Tela mais calma',
     'blackout_prep_animation_folder_name': 'Fora do Foco',
+    'blackout_subtitle':
+        'Foco máximo. Após ativado, as distrações ficam bloqueadas até o fim da sessão.',
+    'blackout_protection_granted': 'Proteção Blackout ativa',
+    'blackout_protection_unavailable_android':
+        'Proteção Blackout indisponível neste dispositivo',
+    'blackout_protection_unavailable_ios':
+        'Proteção Blackout indisponível neste dispositivo',
+    'blackout_protection_off_android': 'Proteção Blackout desativada',
+    'blackout_protection_off_ios': 'Proteção Blackout desativada',
+    'blackout_protection_grant_android':
+        'Conceda permissões de acessibilidade para ativar sessões Blackout protegidas',
+    'blackout_protection_grant_ios':
+        'Conceda permissões de Tempo de Tela para ativar sessões Blackout protegidas',
+    'blackout_action_refresh': 'Atualizar',
+    'blackout_action_unavailable': 'Indisponível',
+    'blackout_action_open_settings': 'Abrir Ajustes',
+    'blackout_action_enable': 'Ativar',
   },
   'ru': {
     'onboarding_step_of': 'Шаг {step} из {total}',
@@ -1330,6 +1398,23 @@ const Map<String, Map<String, String>> kTranslationOverrides = {
     'blackout_prep_done': 'Готово',
     'blackout_prep_animation_calm_screen': 'Экран спокойнее',
     'blackout_prep_animation_folder_name': 'Вне фокуса',
+    'blackout_subtitle':
+        'Максимальный фокус. После активации отвлечения заблокированы до конца сессии.',
+    'blackout_protection_granted': 'Защита Blackout активна',
+    'blackout_protection_unavailable_android':
+        'Защита Blackout недоступна на этом устройстве',
+    'blackout_protection_unavailable_ios':
+        'Защита Blackout недоступна на этом устройстве',
+    'blackout_protection_off_android': 'Защита Blackout отключена',
+    'blackout_protection_off_ios': 'Защита Blackout отключена',
+    'blackout_protection_grant_android':
+        'Предоставьте разрешения специальных возможностей для защищённых сессий Blackout',
+    'blackout_protection_grant_ios':
+        'Предоставьте разрешения Экранного времени для защищённых сессий Blackout',
+    'blackout_action_refresh': 'Обновить',
+    'blackout_action_unavailable': 'Недоступно',
+    'blackout_action_open_settings': 'Открыть настройки',
+    'blackout_action_enable': 'Включить',
   },
   'ar': {
     'onboarding_step_of': 'الخطوة {step} من {total}',
@@ -1452,6 +1537,23 @@ const Map<String, Map<String, String>> kTranslationOverrides = {
     'blackout_prep_done': 'تم',
     'blackout_prep_animation_calm_screen': 'شاشة أكثر هدوءًا',
     'blackout_prep_animation_folder_name': 'خارج التركيز',
+    'blackout_subtitle':
+        'تركيز كامل. بمجرد التفعيل، تُحجب المشتتات حتى نهاية الجلسة.',
+    'blackout_protection_granted': 'حماية Blackout مفعَّلة',
+    'blackout_protection_unavailable_android':
+        'حماية Blackout غير متوفرة على هذا الجهاز',
+    'blackout_protection_unavailable_ios':
+        'حماية Blackout غير متوفرة على هذا الجهاز',
+    'blackout_protection_off_android': 'حماية Blackout معطَّلة',
+    'blackout_protection_off_ios': 'حماية Blackout معطَّلة',
+    'blackout_protection_grant_android':
+        'امنح أذونات إمكانية الوصول لتفعيل جلسات Blackout المحمية',
+    'blackout_protection_grant_ios':
+        'امنح أذونات وقت الشاشة لتفعيل جلسات Blackout المحمية',
+    'blackout_action_refresh': 'تحديث',
+    'blackout_action_unavailable': 'غير متوفر',
+    'blackout_action_open_settings': 'فتح الإعدادات',
+    'blackout_action_enable': 'تفعيل',
   },
   'id': {
     'onboarding_step_of': 'Langkah {step} dari {total}',
@@ -1577,6 +1679,23 @@ const Map<String, Map<String, String>> kTranslationOverrides = {
     'blackout_prep_done': 'Selesai',
     'blackout_prep_animation_calm_screen': 'Layar lebih tenang',
     'blackout_prep_animation_folder_name': 'Di Luar Fokus',
+    'blackout_subtitle':
+        'Fokus maksimal. Setelah diaktifkan, semua gangguan terkunci hingga sesi selesai.',
+    'blackout_protection_granted': 'Proteksi Blackout aktif',
+    'blackout_protection_unavailable_android':
+        'Proteksi Blackout tidak tersedia di perangkat ini',
+    'blackout_protection_unavailable_ios':
+        'Proteksi Blackout tidak tersedia di perangkat ini',
+    'blackout_protection_off_android': 'Proteksi Blackout nonaktif',
+    'blackout_protection_off_ios': 'Proteksi Blackout nonaktif',
+    'blackout_protection_grant_android':
+        'Berikan izin aksesibilitas untuk mengaktifkan sesi Blackout terlindungi',
+    'blackout_protection_grant_ios':
+        'Berikan izin Waktu Layar untuk mengaktifkan sesi Blackout terlindungi',
+    'blackout_action_refresh': 'Segarkan',
+    'blackout_action_unavailable': 'Tidak tersedia',
+    'blackout_action_open_settings': 'Buka Pengaturan',
+    'blackout_action_enable': 'Aktifkan',
   },
   'hi': {
     'language_not_available': 'उपलब्ध नहीं',
@@ -1703,6 +1822,23 @@ const Map<String, Map<String, String>> kTranslationOverrides = {
     'blackout_prep_done': 'हो गया',
     'blackout_prep_animation_calm_screen': 'अधिक शांत स्क्रीन',
     'blackout_prep_animation_folder_name': 'फोकस से बाहर',
+    'blackout_subtitle':
+        'अधिकतम फोकस। एक बार चालू होने पर सत्र समाप्त होने तक सभी विकर्षण बंद रहते हैं।',
+    'blackout_protection_granted': 'Blackout सुरक्षा सक्रिय',
+    'blackout_protection_unavailable_android':
+        'इस डिवाइस पर Blackout सुरक्षा उपलब्ध नहीं है',
+    'blackout_protection_unavailable_ios':
+        'इस डिवाइस पर Blackout सुरक्षा उपलब्ध नहीं है',
+    'blackout_protection_off_android': 'Blackout सुरक्षा बंद है',
+    'blackout_protection_off_ios': 'Blackout सुरक्षा बंद है',
+    'blackout_protection_grant_android':
+        'सुरक्षित Blackout सत्र सक्षम करने हेतु एक्सेसिबिलिटी अनुमतियाँ दें',
+    'blackout_protection_grant_ios':
+        'सुरक्षित Blackout सत्र सक्षम करने हेतु Screen Time अनुमतियाँ दें',
+    'blackout_action_refresh': 'रिफ्रेश',
+    'blackout_action_unavailable': 'उपलब्ध नहीं',
+    'blackout_action_open_settings': 'सेटिंग्स खोलें',
+    'blackout_action_enable': 'सक्षम करें',
   },
   'zh': {
     'language_not_available': '暂不可用',
@@ -1815,5 +1951,17 @@ const Map<String, Map<String, String>> kTranslationOverrides = {
     'blackout_prep_done': '完成',
     'blackout_prep_animation_calm_screen': '更安静的屏幕',
     'blackout_prep_animation_folder_name': '专注外',
+    'blackout_subtitle': '极致专注。一旦启动，所有干扰将被锁定，直至会话结束。',
+    'blackout_protection_granted': 'Blackout 保护已开启',
+    'blackout_protection_unavailable_android': '此设备不支持 Blackout 保护',
+    'blackout_protection_unavailable_ios': '此设备不支持 Blackout 保护',
+    'blackout_protection_off_android': 'Blackout 保护已关闭',
+    'blackout_protection_off_ios': 'Blackout 保护已关闭',
+    'blackout_protection_grant_android': '授予无障碍权限以启用受保护的 Blackout 会话',
+    'blackout_protection_grant_ios': '授予屏幕使用时间权限以启用受保护的 Blackout 会话',
+    'blackout_action_refresh': '刷新',
+    'blackout_action_unavailable': '不可用',
+    'blackout_action_open_settings': '打开设置',
+    'blackout_action_enable': '启用',
   },
 };

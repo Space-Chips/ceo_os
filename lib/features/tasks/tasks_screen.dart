@@ -8,8 +8,10 @@ import '../../components/components.dart';
 import '../../core/models/task_models.dart';
 import '../../core/providers/language_provider.dart';
 import '../../core/providers/task_provider.dart';
+import '../../core/providers/theme_provider.dart';
 import '../../core/repositories/premium_repository.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
 import 'add_task_sheet.dart';
 import 'task_detail_sheet.dart';
@@ -283,6 +285,7 @@ class _TasksScreenState extends State<TasksScreen> {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeProvider>();
     final language = context.watch<LanguageProvider>();
     return CupertinoPageScaffold(
       backgroundColor: AppColors.background,
@@ -315,13 +318,13 @@ class _TasksScreenState extends State<TasksScreen> {
               return GestureDetector(
                 onHorizontalDragEnd: _handleTabSwipe,
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(14, 8, 14, 10),
+                  padding: const EdgeInsets.fromLTRB(20, 10, 20, 12),
                   child: Column(
                     children: [
                       _topRow(language),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: AppSpacing.sm),
                       _titleBlock(language),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: AppSpacing.md),
                       Expanded(
                         child: AnimatedSwitcher(
                           duration: const Duration(milliseconds: 260),
@@ -397,7 +400,7 @@ class _TasksScreenState extends State<TasksScreen> {
 
   Widget _topRow(LanguageProvider language) {
     return SizedBox(
-      height: 42,
+      height: 44,
       child: Row(
         children: [
           CupertinoButton(
@@ -415,7 +418,7 @@ class _TasksScreenState extends State<TasksScreen> {
                 Text(
                   language.t('home'),
                   style: AppTypography.subhead.copyWith(
-                    fontSize: 14,
+                    fontSize: 15,
                     color: AppColors.secondaryLabel.withValues(alpha: 0.72),
                     fontWeight: FontWeight.w500,
                   ),
@@ -447,16 +450,18 @@ class _TasksScreenState extends State<TasksScreen> {
             ),
           ),
         ),
-        const SizedBox(height: 6),
-        Text(
-          _subtitleByTab(language),
-          style: AppTypography.overline.copyWith(
-            fontSize: 12,
-            color: AppColors.tertiaryLabel.withValues(alpha: 0.6),
-            letterSpacing: 2,
-            fontWeight: FontWeight.w600,
+        if (_subtitleByTab(language).isNotEmpty) ...[
+          const SizedBox(height: 6),
+          Text(
+            _subtitleByTab(language),
+            style: AppTypography.overline.copyWith(
+              fontSize: 12,
+              color: AppColors.tertiaryLabel.withValues(alpha: 0.6),
+              letterSpacing: 2,
+              fontWeight: FontWeight.w600,
+            ),
           ),
-        ),
+        ],
       ],
     );
   }
@@ -845,21 +850,22 @@ class _TasksScreenState extends State<TasksScreen> {
       key: key,
       padding: EdgeInsets.zero,
       children: [
-        Align(
-          alignment: Alignment.centerLeft,
-          child: Padding(
-            padding: const EdgeInsets.only(left: 4, bottom: 8),
-            child: Text(
-              language.t('tasks_matrix_impact_axis'),
-              style: AppTypography.overline.copyWith(
-                fontSize: 11,
-                letterSpacing: 2,
-                color: AppColors.tertiaryLabel.withValues(alpha: 0.5),
-                fontWeight: FontWeight.w600,
+        if (language.t('tasks_matrix_impact_axis').isNotEmpty)
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Padding(
+              padding: const EdgeInsets.only(left: 4, bottom: 8),
+              child: Text(
+                language.t('tasks_matrix_impact_axis'),
+                style: AppTypography.overline.copyWith(
+                  fontSize: 11,
+                  letterSpacing: 2,
+                  color: AppColors.tertiaryLabel.withValues(alpha: 0.5),
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ),
-        ),
         Row(
           children: [
             Expanded(

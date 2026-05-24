@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../components/ambient_backdrop.dart';
+import '../../core/providers/theme_provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import 'setup_flow_controller.dart';
@@ -38,6 +39,7 @@ class _SetupGateScreenState extends State<SetupGateScreen> {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeProvider>();
     return AmbientBackdrop(
       child: Scaffold(
         backgroundColor: Colors.transparent,

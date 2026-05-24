@@ -17,31 +17,33 @@ class PremiumComparisonTable extends StatelessWidget {
         ? "Tout ça pour le prix d'un café par mois."
         : 'All this for the price of a coffee per month.';
 
+    // NOTE: Limits below must mirror PremiumConfig fallbacks
+    // (lib/core/repositories/premium_repository.dart : _configFromJson).
     final rows = <_RowSpec>[
       _RowSpec(
         title: isFr ? 'Tâches' : 'Tasks',
-        free: isFr ? 'Limité' : 'Limited',
+        free: isFr ? '5 max' : 'Up to 5',
         premium: isFr ? 'Illimité' : 'Unlimited',
       ),
       _RowSpec(
         title: isFr ? 'Habitudes' : 'Habits',
-        free: isFr ? 'Limité' : 'Limited',
+        free: isFr ? '3 max' : 'Up to 3',
         premium: isFr ? 'Illimité' : 'Unlimited',
       ),
       _RowSpec(
         title: isFr ? 'Notes' : 'Notes',
-        free: isFr ? 'Limité' : 'Limited',
+        free: isFr ? '50 max' : 'Up to 50',
         premium: isFr ? 'Illimité' : 'Unlimited',
       ),
       _RowSpec(
         title: isFr ? 'Focus' : 'Focus',
-        free: isFr ? 'Limites quotidiennes' : 'Daily limits',
-        premium: isFr ? 'Sessions illimitées + durées longues' : 'Unlimited + long sessions',
+        free: isFr ? '1 / jour · 1 h' : '1/day · 1h',
+        premium: isFr ? 'Illimité · durée libre' : 'Unlimited · any duration',
       ),
       _RowSpec(
         title: isFr ? 'Blackout' : 'Blackout',
-        free: isFr ? 'Limites hebdo + durées courtes' : 'Weekly limits + shorter',
-        premium: isFr ? 'Sessions illimitées + durées longues' : 'Unlimited + long sessions',
+        free: isFr ? '1 / semaine' : '1/week',
+        premium: isFr ? 'Illimité · durée libre' : 'Unlimited · any duration',
       ),
       _RowSpec(
         title: isFr ? 'Rapports' : 'Reports',
@@ -55,7 +57,7 @@ class PremiumComparisonTable extends StatelessWidget {
       ),
       _RowSpec(
         title: isFr ? 'Thèmes' : 'Themes',
-        free: isFr ? 'Gratuits' : 'Free',
+        free: isFr ? 'Gratuits' : 'Free only',
         premium: isFr ? 'Thèmes Premium' : 'Premium themes',
       ),
     ];
@@ -63,90 +65,133 @@ class PremiumComparisonTable extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: surface.withValues(alpha: 0.92),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.borderStrong, width: 0.9),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: AppColors.glassBorder.withValues(alpha: 0.45),
+          width: 0.5,
+        ),
         boxShadow: [
           BoxShadow(
             color: AppColors.glassShadow,
-            blurRadius: 26,
-            offset: const Offset(0, 12),
+            blurRadius: 28,
+            offset: const Offset(0, 14),
+            spreadRadius: -6,
           ),
           BoxShadow(
-            color: AppColors.themeGlow.withValues(alpha: 0.05),
-            blurRadius: 20,
-            spreadRadius: -6,
+            color: AppColors.primaryOrange.withValues(alpha: 0.06),
+            blurRadius: 22,
+            spreadRadius: -8,
           ),
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
+        padding: const EdgeInsets.fromLTRB(22, 24, 22, 22),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Row(
               children: [
                 Expanded(
+                  flex: 4,
                   child: _headerCell(
                     isFr ? 'Fonctionnalité' : 'Feature',
-                    AppColors.secondaryLabel,
+                    AppColors.tertiaryLabel,
                   ),
                 ),
-                const SizedBox(width: 10),
-                Expanded(child: _headerCell(headerFree, AppColors.secondaryLabel)),
-                const SizedBox(width: 10),
-                Expanded(child: _headerCell(headerPremium, AppColors.secondaryLabel)),
+                const SizedBox(width: 14),
+                Expanded(
+                  flex: 3,
+                  child: _headerCell(headerFree, AppColors.tertiaryLabel),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  flex: 3,
+                  child: _headerCell(
+                    headerPremium,
+                    AppColors.primaryOrange,
+                    accent: true,
+                  ),
+                ),
               ],
             ),
-            const SizedBox(height: 10),
-            for (final row in rows) ...[
-              _divider(),
-              const SizedBox(height: 10),
+            const SizedBox(height: 20),
+            for (int i = 0; i < rows.length; i++) ...[
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
+                    flex: 4,
                     child: Text(
-                      row.title,
-                      style: AppTypography.subhead.copyWith(
+                      rows[i].title,
+                      style: AppTypography.callout.copyWith(
+                        fontSize: 15,
                         color: AppColors.label,
                         fontWeight: FontWeight.w700,
+                        height: 1.3,
                       ),
                     ),
                   ),
-                  const SizedBox(width: 10),
-                  Expanded(child: _valueCell(row.free, AppColors.secondaryLabel)),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: 14),
                   Expanded(
-                    child: _valueCell(
-                      row.premium,
-                      AppColors.secondaryLabel,
-                      emphasize: true,
-                      primaryColor: AppColors.label,
+                    flex: 3,
+                    child: Text(
+                      rows[i].free,
+                      style: AppTypography.footnote.copyWith(
+                        fontSize: 13,
+                        color: AppColors.tertiaryLabel.withValues(alpha: 0.85),
+                        fontWeight: FontWeight.w500,
+                        height: 1.35,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    flex: 3,
+                    child: Text(
+                      rows[i].premium,
+                      style: AppTypography.footnote.copyWith(
+                        fontSize: 13,
+                        color: AppColors.primaryOrange,
+                        fontWeight: FontWeight.w700,
+                        height: 1.35,
+                      ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 10),
+              if (i < rows.length - 1) ...[
+                const SizedBox(height: 16),
+                _divider(),
+                const SizedBox(height: 16),
+              ],
             ],
-            _divider(),
-            const SizedBox(height: 12),
+            const SizedBox(height: 24),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                color: AppColors.accent.withValues(alpha: 0.10),
+                borderRadius: BorderRadius.circular(18),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    AppColors.primaryOrange.withValues(alpha: 0.18),
+                    AppColors.primaryOrange.withValues(alpha: 0.08),
+                  ],
+                ),
                 border: Border.all(
-                  color: AppColors.accent.withValues(alpha: 0.22),
-                  width: 0.8,
+                  color: AppColors.primaryOrange.withValues(alpha: 0.32),
+                  width: 0.6,
                 ),
               ),
               child: Text(
                 coffeeLine,
                 textAlign: TextAlign.center,
                 style: AppTypography.footnote.copyWith(
-                  color: AppColors.label.withValues(alpha: 0.92),
+                  fontSize: 13,
+                  color: AppColors.label,
                   fontWeight: FontWeight.w700,
-                  height: 1.25,
+                  height: 1.3,
+                  letterSpacing: 0.1,
                 ),
               ),
             ),
@@ -157,33 +202,17 @@ class PremiumComparisonTable extends StatelessWidget {
   }
 
   Widget _divider() => Container(
-        height: 1,
-        color: AppColors.border.withValues(alpha: 0.24),
+        height: 0.5,
+        color: AppColors.border.withValues(alpha: 0.18),
       );
 
-  Widget _headerCell(String text, Color secondary) => Text(
+  Widget _headerCell(String text, Color color, {bool accent = false}) => Text(
         text,
         style: AppTypography.overline.copyWith(
-          color: secondary.withValues(alpha: 0.75),
-          fontWeight: FontWeight.w800,
-          letterSpacing: 1.4,
-        ),
-      );
-
-  Widget _valueCell(
-    String text,
-    Color secondary, {
-    bool emphasize = false,
-    Color? primaryColor,
-  }) =>
-      Text(
-        text,
-        style: AppTypography.footnote.copyWith(
-          color: emphasize
-              ? (primaryColor ?? AppColors.label)
-              : secondary.withValues(alpha: 0.9),
-          fontWeight: emphasize ? FontWeight.w800 : FontWeight.w600,
-          height: 1.25,
+          fontSize: 11,
+          color: accent ? color : color.withValues(alpha: 0.85),
+          fontWeight: accent ? FontWeight.w800 : FontWeight.w700,
+          letterSpacing: 1.6,
         ),
       );
 }

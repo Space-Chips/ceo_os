@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 
@@ -13,9 +14,11 @@ import '../../core/models/block_list_model.dart';
 import '../../core/models/user_models.dart';
 import '../../core/providers/focus_provider.dart';
 import '../../core/providers/language_provider.dart';
+import '../../core/providers/theme_provider.dart';
 import '../../core/services/home_widget_service.dart';
 import '../../core/repositories/feature_repository.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/utils/android_protection_disclosure.dart';
 import '../calendar/add_event_sheet.dart';
@@ -80,6 +83,29 @@ class _FocusProgressRingPainter extends CustomPainter {
 }
 
 class _FocusScreenState extends State<FocusScreen> {
+  static const List<int> _focusDurationOptions = [
+    15,
+    25,
+    30,
+    45,
+    60,
+    75,
+    90,
+    105,
+    120,
+    150,
+    180,
+  ];
+
+  String _focusDurationLabel(int minutes) {
+    if (minutes >= 60) {
+      final hours = minutes ~/ 60;
+      final remainingMinutes = minutes % 60;
+      return "${hours}h ${remainingMinutes.toString().padLeft(2, '0')}";
+    }
+    return '${minutes}m';
+  }
+
   final FeatureRepository _repo = FeatureRepository();
   final TextEditingController _customDurationCtrl = TextEditingController();
 
@@ -355,21 +381,45 @@ class _FocusScreenState extends State<FocusScreen> {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeProvider>();
     return CupertinoPageScaffold(
       backgroundColor: AppColors.background,
       child: AmbientBackdrop(
         child: SafeArea(
           child: Consumer<FocusProvider>(
             builder: (context, provider, _) {
-              return _loading
-                  ? Center(
-                      child: CupertinoActivityIndicator(
-                        color: AppColors.primaryOrange,
+              if (_loading) {
+                return Center(
+                  child: CupertinoActivityIndicator(
+                    color: AppColors.primaryOrange,
+                  ),
+                );
+              }
+              final isIdle = provider.state == FocusState.idle;
+              return Stack(
+                children: [
+                  isIdle ? _buildIdle(provider) : _buildActive(provider),
+                  Positioned(
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    child: ClipRect(
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
+                          child: _header(
+                            title: isIdle
+                                ? (_isAndroid ? 'Focus Protection' : 'Screen Time')
+                                : 'Focus',
+                            showHome: isIdle,
+                          ),
+                        ),
                       ),
-                    )
-                  : provider.state == FocusState.idle
-                  ? _buildIdle(provider)
-                  : _buildActive(provider);
+                    ),
+                  ),
+                ],
+              );
             },
           ),
         ),
@@ -385,7 +435,7 @@ class _FocusScreenState extends State<FocusScreen> {
   }) {
     final language = context.watch<LanguageProvider>();
     return SizedBox(
-      height: 42,
+      height: 44,
       child: Row(
         children: [
           CupertinoButton(
@@ -474,14 +524,10 @@ class _FocusScreenState extends State<FocusScreen> {
         ? 0
         : ((sessions / (sessions + failed)) * 100).round();
 
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(20, 10, 20, 22),
-      children: [
-        _header(
-          title: _isAndroid ? 'Focus Protection' : 'Screen Time',
-          showHome: true,
-        ),
-        const SizedBox(height: 10),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 110, 20, 18),
+      child: Column(
+        children: [
         SizedBox(
           width: double.infinity,
           child: FittedBox(
@@ -490,7 +536,7 @@ class _FocusScreenState extends State<FocusScreen> {
               language.t('focus_enter_zone'),
               textAlign: TextAlign.center,
               style: AppTypography.largeTitle.copyWith(
-                fontSize: 50,
+                fontSize: 44,
                 color: AppColors.label,
                 fontWeight: FontWeight.w800,
                 height: 1,
@@ -499,171 +545,99 @@ class _FocusScreenState extends State<FocusScreen> {
             ),
           ),
         ),
-        const SizedBox(height: 10),
-        Text(
-          language.t('focus_select_duration'),
-          textAlign: TextAlign.center,
-          style: AppTypography.mono.copyWith(
-            fontSize: 20,
-            color: AppColors.secondaryLabel,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const SizedBox(height: 16),
-        Row(
-          children: presets
-              .map(
-                (preset) => Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 5),
-                    child: GestureDetector(
-                      onTap: () => _setDuration(preset),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 160),
-                        height: 132,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(18),
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: provider.focusDurationMinutes == preset
-                                ? [
-                                    AppColors.cardBackgroundStrong.withValues(
-                                      alpha: 0.68,
-                                    ),
-                                    AppColors.cardBackgroundAlt.withValues(
-                                      alpha: 0.62,
-                                    ),
-                                  ]
-                                : [
-                                    AppColors.cardBackgroundStrong.withValues(
-                                      alpha: 0.54,
-                                    ),
-                                    AppColors.cardBackgroundAlt.withValues(
-                                      alpha: 0.44,
-                                    ),
-                                  ],
-                          ),
-                          border: Border.all(
-                            color: provider.focusDurationMinutes == preset
-                                ? AppColors.label.withValues(alpha: 0.5)
-                                : AppColors.glassBorder.withValues(alpha: 0.42),
-                            width: 0.55,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.glassShadow.withValues(
-                                alpha: provider.focusDurationMinutes == preset
-                                    ? 0.2
-                                    : 0.12,
-                              ),
-                              blurRadius: 14,
-                              offset: const Offset(0, 7),
-                              spreadRadius: -8,
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              '$preset',
-                              style: AppTypography.mono.copyWith(
-                                fontSize: 48,
-                                fontWeight: FontWeight.w800,
-                                color: AppColors.label,
-                                height: 0.95,
-                              ),
-                            ),
-                            Text(
-                              language.t('focus_min'),
-                              style: AppTypography.mono.copyWith(
-                                fontSize: 16,
-                                color: AppColors.secondaryLabel,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              )
-              .toList(),
-        ),
-        const SizedBox(height: 20),
-        Text(
-          language.t('focus_custom_duration'),
-          style: AppTypography.mono.copyWith(
-            fontSize: 18,
-            color: AppColors.secondaryLabel,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        const SizedBox(height: 8),
+        const Spacer(flex: 2),
         GlassCard(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          borderRadius: 16,
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 18),
+          borderRadius: 24,
           level: GlassCardLevel.standard,
           showEdgeGlow: false,
           border: Border.all(
-            color: AppColors.glassBorder.withValues(alpha: 0.5),
-            width: 0.55,
+            color: AppColors.border.withValues(alpha: 0.30),
+            width: 0.5,
           ),
-          child: Row(
+          gradientColors: [
+            AppColors.cardBackgroundStrong.withValues(alpha: 0.46),
+            AppColors.cardBackgroundAlt.withValues(alpha: 0.36),
+          ],
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: CupertinoTextField(
-                  controller: _customDurationCtrl,
-                  keyboardType: TextInputType.number,
-                  style: AppTypography.mono.copyWith(
-                    fontSize: 42,
-                    color: AppColors.label,
-                    fontWeight: FontWeight.w900,
-                    height: 1,
-                  ),
-                  placeholder: '45',
-                  decoration: null,
-                  onChanged: (value) {
-                    final parsed = int.tryParse(value);
-                    if (parsed != null) _setDuration(parsed);
-                  },
+              Text(
+                'Duration',
+                style: AppTypography.callout.copyWith(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.secondaryLabel,
+                  letterSpacing: 0,
                 ),
               ),
-              Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  GestureDetector(
-                    onTap: () =>
-                        _setDuration(provider.focusDurationMinutes + 5),
-                    child: Icon(
-                      CupertinoIcons.chevron_up,
-                      color: AppColors.secondaryLabel,
+              const SizedBox(height: 8),
+              Container(
+                height: 100,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(15),
+                  color: AppColors.background.withValues(alpha: 0.5),
+                  border: Border.all(
+                    color: AppColors.border.withValues(alpha: 0.30),
+                    width: 0.5,
+                  ),
+                ),
+                child: CupertinoPicker(
+                  itemExtent: 34,
+                  scrollController: FixedExtentScrollController(
+                    initialItem: _focusDurationOptions
+                        .indexWhere(
+                          (m) => m == provider.focusDurationMinutes,
+                        )
+                        .clamp(0, _focusDurationOptions.length - 1),
+                  ),
+                  onSelectedItemChanged: (index) {
+                    final value = _focusDurationOptions[index];
+                    _setDuration(value);
+                  },
+                  selectionOverlay: Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 11),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: AppColors.border.withValues(alpha: 0.40),
+                        width: 0.5,
+                      ),
+                      color: AppColors.white.withValues(alpha: 0.035),
                     ),
                   ),
-                  const SizedBox(height: 2),
-                  GestureDetector(
-                    onTap: () =>
-                        _setDuration(provider.focusDurationMinutes - 5),
-                    child: Icon(
-                      CupertinoIcons.chevron_down,
-                      color: AppColors.secondaryLabel,
-                    ),
-                  ),
-                ],
+                  children: _focusDurationOptions
+                      .map(
+                        (minutes) => Center(
+                          child: Text(
+                            _focusDurationLabel(minutes),
+                            style: AppTypography.mono.copyWith(
+                              fontSize: 21,
+                              fontWeight: FontWeight.w800,
+                              color: minutes == provider.focusDurationMinutes
+                                  ? AppColors.label
+                                  : AppColors.secondaryLabel.withValues(
+                                      alpha: 0.42,
+                                    ),
+                            ),
+                          ),
+                        ),
+                      )
+                      .toList(growable: false),
+                ),
               ),
             ],
           ),
         ),
-        const SizedBox(height: 20),
+        const Spacer(flex: 2),
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: AppColors.error.withValues(alpha: 0.08),
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(18),
             border: Border.all(
               color: AppColors.error.withValues(alpha: 0.35),
-              width: 0.55,
+              width: 0.9,
             ),
           ),
           child: Row(
@@ -703,27 +677,27 @@ class _FocusScreenState extends State<FocusScreen> {
             ],
           ),
         ),
-        const SizedBox(height: 24),
+        const Spacer(flex: 3),
         Text(
           language.t('focus_current_streak'),
           textAlign: TextAlign.center,
           style: AppTypography.overline.copyWith(
-            fontSize: 14,
+            fontSize: 13,
             color: AppColors.secondaryLabel.withValues(alpha: 0.7),
             fontWeight: FontWeight.w600,
-            letterSpacing: 2,
+            letterSpacing: 1.4,
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 10),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text('🔥', style: TextStyle(fontSize: 40)),
+            const Text('🔥', style: TextStyle(fontSize: 32)),
             const SizedBox(width: 10),
             Text(
               '$currentStreak',
               style: AppTypography.heroNumber.copyWith(
-                fontSize: 48,
+                fontSize: 40,
                 color: AppColors.label,
                 fontWeight: FontWeight.w700,
                 height: 1,
@@ -731,136 +705,18 @@ class _FocusScreenState extends State<FocusScreen> {
             ),
           ],
         ),
-        const SizedBox(height: 22),
+        const Spacer(flex: 3),
         _FocusPrimaryButton(
           label: language.t('focus_begin_mode'),
           onTap: () => _start(provider),
         ),
         const SizedBox(height: 12),
         _FocusSecondaryButton(
-          label: language.t('focus_starter_enter_focus'),
-          onTap: _openStarterSheet,
-        ),
-        const SizedBox(height: 12),
-        _FocusSecondaryButton(
-          label: language.t('focus_plan'),
+          label: 'Schedule a session',
           onTap: () => _openPlanSheet(provider),
         ),
-        const SizedBox(height: 12),
-        _FocusSecondaryButton(
-          label: 'BLOCK LIST',
-          onTap: () => _openBlockListSheet(provider),
-        ),
-        if (!provider.isAuthorized) ...[
-          const SizedBox(height: 8),
-          Text(
-            _protectionWarningMessage(provider),
-            textAlign: TextAlign.center,
-            style: AppTypography.mono.copyWith(
-              fontSize: 11,
-              color: AppColors.warning,
-            ),
-          ),
-          if (provider.protectionStatus.isSupported) ...[
-            const SizedBox(height: 8),
-            CupertinoButton(
-              padding: EdgeInsets.zero,
-              minimumSize: Size.zero,
-              onPressed: () => _handleProtectionAction(provider),
-              child: Text(
-                _protectionActionLabel(provider),
-                style: AppTypography.mono.copyWith(
-                  fontSize: 13,
-                  color: AppColors.primaryOrange,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-          ],
-        ] else if ((provider.lastBlockingSyncError ?? '')
-            .trim()
-            .isNotEmpty) ...[
-          const SizedBox(height: 8),
-          Text(
-            provider.lastBlockingSyncError!,
-            textAlign: TextAlign.center,
-            style: AppTypography.mono.copyWith(
-              fontSize: 11,
-              color: AppColors.warning,
-            ),
-          ),
-        ] else if (!provider.hasConfiguredBlockingTargets) ...[
-          const SizedBox(height: 8),
-          Text(
-            language.t('focus_no_targets_warning'),
-            textAlign: TextAlign.center,
-            style: AppTypography.mono.copyWith(
-              fontSize: 11,
-              color: AppColors.warning,
-            ),
-          ),
-        ] else ...[
-          const SizedBox(height: 8),
-          Text(
-            language
-                .t('focus_blocking_summary')
-                .replaceAll(
-                  '{apps}',
-                  provider.configuredBlockedAppCount.toString(),
-                )
-                .replaceAll(
-                  '{websites}',
-                  provider.configuredBlockedWebsiteCount.toString(),
-                ),
-            textAlign: TextAlign.center,
-            style: AppTypography.mono.copyWith(
-              fontSize: 11,
-              color: AppColors.secondaryLabel.withValues(alpha: 0.8),
-            ),
-          ),
         ],
-        const SizedBox(height: 18),
-        GlassCard(
-          padding: const EdgeInsets.all(18),
-          borderRadius: 18,
-          level: GlassCardLevel.standard,
-          showEdgeGlow: true,
-          border: Border.all(
-            color: AppColors.glassBorder.withValues(alpha: 0.7),
-            width: 0.7,
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: _miniStat(
-                  icon: CupertinoIcons.rosette,
-                  color: AppColors.rankAccent,
-                  value: '${_streak?.longestStreak ?? 0}',
-                  label: language.t('focus_record'),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _miniStat(
-                  icon: CupertinoIcons.arrow_up_right,
-                  color: AppColors.success,
-                  value: '$successRate%',
-                  label: language.t('focus_success'),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _miniStat(
-                  icon: CupertinoIcons.check_mark_circled,
-                  color: const Color(0xFF60A5FA),
-                  value: '${_streak?.totalCompletedSessions ?? 0}',
-                  label: language.t('focus_complete'),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
+      ),
     );
   }
 
@@ -887,11 +743,9 @@ class _FocusScreenState extends State<FocusScreen> {
     };
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 10, 20, 22),
+      padding: const EdgeInsets.fromLTRB(20, 70, 20, 22),
       child: Column(
         children: [
-          _header(title: 'Focus'),
-          const SizedBox(height: 18),
           Text(
             provider.stateLabel,
             style: AppTypography.mono.copyWith(

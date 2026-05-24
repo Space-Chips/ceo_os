@@ -1,8 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
 import '../../components/components.dart';
 import '../../core/models/user_models.dart';
+import '../../core/providers/theme_provider.dart';
 import '../../core/repositories/feature_repository.dart';
 import '../../core/repositories/focus_repository.dart';
 import '../../core/theme/app_colors.dart';
@@ -56,6 +58,7 @@ class _WinStreakScreenState extends State<WinStreakScreen> {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeProvider>();
     return CupertinoPageScaffold(
       backgroundColor: AppColors.background,
       child: AmbientBackdrop(

@@ -35,6 +35,7 @@ Future<void> showPremiumPaywallSheet({
   final resolvedReason = reason ?? checkResult?.reason;
   await showCupertinoModalPopup<void>(
     context: context,
+    barrierDismissible: true,
     barrierColor: AppColors.overlayScrim.withValues(alpha: 0.76),
     builder: (sheetContext) => PremiumPaywallSheet(
       runtime: resolvedRuntime,
@@ -55,7 +56,6 @@ class PremiumPaywallSheet extends StatelessWidget {
   final int? limit;
   final int? current;
   final bool isFr;
-  final bool showRestoreButton;
   final bool manageOpensComparison;
 
   const PremiumPaywallSheet({
@@ -66,7 +66,6 @@ class PremiumPaywallSheet extends StatelessWidget {
     this.reason,
     this.limit,
     this.current,
-    this.showRestoreButton = false,
     this.manageOpensComparison = false,
   });
 
@@ -74,31 +73,90 @@ class PremiumPaywallSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     // Ensure paywall updates when the user switches themes while the sheet is open.
     context.watch<ThemeProvider>();
-    return BackdropFilter(
-      filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
-      child: SafeArea(
-        top: false,
-        child: Align(
-          alignment: Alignment.bottomCenter,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(12, 12, 12, 10),
-            child: GlassCard(
-              borderRadius: 28,
-              level: GlassCardLevel.elevated,
-              textured: true,
-              padding: const EdgeInsets.fromLTRB(18, 16, 18, 18),
-              child: PremiumPaywallContent(
-                runtime: runtime,
-                message: message,
-                reason: reason,
-                limit: limit,
-                current: current,
-                isFr: isFr,
-                showRestoreButton: showRestoreButton,
-                manageOpensComparison: manageOpensComparison,
+    return Stack(
+      children: [
+        // Backdrop layer: blurs background + tap-outside-to-dismiss
+        Positioned.fill(
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => Navigator.of(context).maybePop(),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+              child: const SizedBox.expand(),
+            ),
+          ),
+        ),
+        // Sheet card (absorbs taps so it doesn't bubble to the backdrop)
+        SafeArea(
+          top: false,
+          child: Align(
+            alignment: Alignment.bottomCenter,
+            child: GestureDetector(
+              onTap: () {},
+              behavior: HitTestBehavior.opaque,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(12, 12, 12, 10),
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    GlassCard(
+                      borderRadius: 28,
+                      level: GlassCardLevel.elevated,
+                      textured: true,
+                      padding: const EdgeInsets.fromLTRB(18, 16, 18, 18),
+                      child: PremiumPaywallContent(
+                        runtime: runtime,
+                        message: message,
+                        reason: reason,
+                        limit: limit,
+                        current: current,
+                        isFr: isFr,
+                        manageOpensComparison: manageOpensComparison,
+                      ),
+                    ),
+                    Positioned(
+                      top: 8,
+                      right: 8,
+                      child: _PaywallCloseButton(
+                        onTap: () => Navigator.of(context).maybePop(),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
+        ),
+      ],
+    );
+  }
+}
+
+class _PaywallCloseButton extends StatelessWidget {
+  final VoidCallback onTap;
+
+  const _PaywallCloseButton({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: AppColors.background.withValues(alpha: 0.78),
+          border: Border.all(
+            color: AppColors.border.withValues(alpha: 0.40),
+            width: 0.5,
+          ),
+        ),
+        child: Icon(
+          CupertinoIcons.xmark,
+          size: 16,
+          color: AppColors.label,
         ),
       ),
     );
@@ -112,7 +170,6 @@ class PremiumPaywallContent extends StatefulWidget {
   final int? limit;
   final int? current;
   final bool isFr;
-  final bool showRestoreButton;
   final bool manageOpensComparison;
 
   const PremiumPaywallContent({
@@ -123,7 +180,6 @@ class PremiumPaywallContent extends StatefulWidget {
     this.reason,
     this.limit,
     this.current,
-    this.showRestoreButton = true,
     this.manageOpensComparison = false,
   });
 
@@ -136,7 +192,6 @@ class _PremiumPaywallContentState extends State<PremiumPaywallContent> {
       BillingService().getPackageOptions();
   String? _selectedIdentifier;
   bool _purchaseInFlight = false;
-  bool _restoreInFlight = false;
 
   bool get _isAndroid =>
       !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
@@ -191,10 +246,12 @@ class _PremiumPaywallContentState extends State<PremiumPaywallContent> {
   }
 
   String _purchaseButtonLabel(BillingPackageOption? selected) {
+    if (widget.runtime.resolved.isPremiumUser) {
+      return widget.isFr ? 'Gérer' : 'Manage';
+    }
     if (!widget.runtime.config.paywallEnabled) {
       return widget.isFr ? 'Premium bientôt disponible' : 'Premium coming soon';
     }
-    if (selected == null) return widget.isFr ? 'Indisponible' : 'Unavailable';
     return widget.isFr ? 'Passer Premium' : 'Upgrade to Premium';
   }
 
@@ -455,70 +512,34 @@ class _PremiumPaywallContentState extends State<PremiumPaywallContent> {
               isLoading: _purchaseInFlight,
               fullWidth: true,
               height: 54,
-              onPressed: purchaseEnabled
-                  ? () async {
-                      setState(() => _purchaseInFlight = true);
-                      try {
-                        final result = await BillingService().purchasePremium();
-                        if (!context.mounted) return;
-                        final title = result.succeeded
-                            ? (widget.isFr
-                                  ? 'Premium activé'
-                                  : 'Premium activated')
-                            : (widget.isFr
-                                  ? 'Synchronisation en cours'
-                                  : 'Activation pending');
-                        final message = result.succeeded
-                            ? (widget.isFr
-                                  ? 'Ton achat a été confirmé. Ton accès Premium est maintenant actif.'
-                                  : 'Your purchase was confirmed. Premium is now active.')
-                            : (widget.isFr
-                                  ? 'Le store a confirmé ton achat. Ton accès Premium est en cours de synchronisation.'
-                                  : 'Store confirmed your purchase. Premium is still syncing.');
-                        showCupertinoDialog<void>(
-                          context: context,
-                          builder: (_) => CupertinoAlertDialog(
-                            title: Text(title),
-                            content: Text(message),
-                            actions: [
-                              CupertinoDialogAction(
-                                isDefaultAction: true,
-                                onPressed: () => Navigator.of(context).pop(),
-                                child: const Text('OK'),
-                              ),
-                            ],
-                          ),
-                        );
-                      } finally {
-                        if (mounted) {
-                          setState(() => _purchaseInFlight = false);
-                        }
-                      }
-                    }
-                  : null,
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: CupertinoButton(
-                    padding: EdgeInsets.zero,
-                    onPressed: _restoreInFlight
-                        ? null
-                        : () async {
-                            setState(() => _restoreInFlight = true);
+              onPressed: widget.runtime.resolved.isPremiumUser
+                  ? _openManageSubscriptions
+                  : (purchaseEnabled
+                        ? () async {
+                            setState(() => _purchaseInFlight = true);
                             try {
                               final result = await BillingService()
-                                  .restorePurchases();
+                                  .purchasePremium();
                               if (!context.mounted) return;
                               final title = result.succeeded
-                                  ? (widget.isFr ? 'Restauré' : 'Restored')
-                                  : (widget.isFr ? 'Échec' : 'Restore failed');
+                                  ? (widget.isFr
+                                        ? 'Premium activé'
+                                        : 'Premium activated')
+                                  : (widget.isFr
+                                        ? 'Synchronisation en cours'
+                                        : 'Activation pending');
+                              final message = result.succeeded
+                                  ? (widget.isFr
+                                        ? 'Ton achat a été confirmé. Ton accès Premium est maintenant actif.'
+                                        : 'Your purchase was confirmed. Premium is now active.')
+                                  : (widget.isFr
+                                        ? 'Le store a confirmé ton achat. Ton accès Premium est en cours de synchronisation.'
+                                        : 'Store confirmed your purchase. Premium is still syncing.');
                               showCupertinoDialog<void>(
                                 context: context,
                                 builder: (_) => CupertinoAlertDialog(
                                   title: Text(title),
-                                  content: Text(result.message ?? ''),
+                                  content: Text(message),
                                   actions: [
                                     CupertinoDialogAction(
                                       isDefaultAction: true,
@@ -531,58 +552,11 @@ class _PremiumPaywallContentState extends State<PremiumPaywallContent> {
                               );
                             } finally {
                               if (mounted) {
-                                setState(() => _restoreInFlight = false);
+                                setState(() => _purchaseInFlight = false);
                               }
                             }
-                          },
-                    child: Container(
-                      height: 46,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(16),
-                        color: AppColors.topBarControlBackground,
-                        border: Border.all(
-                          color: AppColors.border.withValues(alpha: 0.45),
-                        ),
-                      ),
-                      child: _restoreInFlight
-                          ? const CupertinoActivityIndicator()
-                          : Text(
-                              widget.isFr ? 'Restaurer' : 'Restore',
-                              style: AppTypography.subhead.copyWith(
-                                color: AppColors.label,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: CupertinoButton(
-                    padding: EdgeInsets.zero,
-                    onPressed: _openManageSubscriptions,
-                    child: Container(
-                      height: 46,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(16),
-                        color: AppColors.topBarControlBackground,
-                        border: Border.all(
-                          color: AppColors.border.withValues(alpha: 0.45),
-                        ),
-                      ),
-                      child: Text(
-                        widget.isFr ? 'Gérer' : 'Manage',
-                        style: AppTypography.subhead.copyWith(
-                          color: AppColors.label,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+                          }
+                        : null),
             ),
             const SizedBox(height: 14),
             Text(

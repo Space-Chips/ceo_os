@@ -159,6 +159,7 @@ class _SignupScreenState extends State<SignupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeProvider>();
     final language = context.watch<LanguageProvider>();
     return CupertinoPageScaffold(
       backgroundColor: AppColors.background,

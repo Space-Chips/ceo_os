@@ -1,7 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 
 import '../../components/components.dart';
+import '../../core/providers/theme_provider.dart';
 import '../../core/services/database_debug_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
@@ -98,6 +100,7 @@ class _DatabaseDebugScreenState extends State<DatabaseDebugScreen> {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeProvider>();
     final passed = _results
         .where((item) => item.status == DatabaseDebugTestStatus.passed)
         .length;

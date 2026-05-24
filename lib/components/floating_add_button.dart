@@ -13,34 +13,30 @@ class FloatingAddButton extends StatelessWidget {
       onTap: onPressed,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 120),
-        width: 54,
-        height: 54,
+        width: 56,
+        height: 56,
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [AppColors.focusPrimary, AppColors.focusSecondary],
           ),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(18),
           border: Border.all(
             color: AppColors.white.withValues(alpha: 0.2),
-            width: 0.9,
+            width: 1,
           ),
           boxShadow: [
             BoxShadow(
               color: AppColors.glassShadow.withValues(alpha: 0.24),
-              blurRadius: 14,
+              blurRadius: 16,
               offset: const Offset(0, 8),
               spreadRadius: -8,
             ),
           ],
         ),
         child: Center(
-          child: Icon(
-            CupertinoIcons.plus,
-            color: AppColors.onAccent,
-            size: 26,
-          ),
+          child: Icon(CupertinoIcons.plus, color: AppColors.onAccent, size: 25),
         ),
       ),
     );

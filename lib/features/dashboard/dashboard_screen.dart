@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
@@ -12,6 +13,7 @@ import '../../core/models/task_models.dart';
 import '../../core/providers/habit_provider.dart';
 import '../../core/providers/language_provider.dart';
 import '../../core/providers/task_provider.dart';
+import '../../core/providers/theme_provider.dart';
 import '../../core/repositories/habit_repository.dart';
 import '../../core/repositories/insights_repository.dart';
 import '../../core/repositories/task_repository.dart';
@@ -417,6 +419,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeProvider>();
     context.watch<LanguageProvider>().languageCode;
     return CupertinoPageScaffold(
       backgroundColor: AppColors.background,
@@ -441,27 +444,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             ),
             SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _topBar(),
-                    const SizedBox(height: 12),
-                    Text(
-                      _t('dashboard_control_center'),
-                      style: AppTypography.largeTitle.copyWith(
-                        fontSize: 42,
-                        height: 0.95,
-                        letterSpacing: -1.4,
-                        color: AppColors.label,
-                        fontWeight: FontWeight.w700,
+              child: Stack(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+                    child: _buildScrollableContent(),
+                  ),
+                  Positioned(
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    child: ClipRect(
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
+                          child: _topBar(),
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 28),
-                    Expanded(child: _buildBody()),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ],
@@ -579,9 +582,98 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  Widget _titleText() {
+    return Text(
+      _t('dashboard_control_center'),
+      style: AppTypography.largeTitle.copyWith(
+        fontSize: 42,
+        height: 0.95,
+        letterSpacing: -1.4,
+        color: AppColors.label,
+        fontWeight: FontWeight.w700,
+      ),
+    );
+  }
+
+  Widget _buildScrollableContent() {
+    final List<Widget> children = [
+      _titleText(),
+      const SizedBox(height: 28),
+    ];
+
+    if (_loading) {
+      children.add(const SizedBox(height: 120));
+      children.add(
+        Center(
+          child: CupertinoActivityIndicator(color: AppColors.primaryOrange),
+        ),
+      );
+    } else if (_error != null &&
+        _topTasks.isEmpty &&
+        _todayHabits.isEmpty &&
+        _todayEvents.isEmpty &&
+        _yesterdayHabits.isEmpty) {
+      children.add(
+        Center(
+          child: _PressScale(
+            child: Container(
+              padding: const EdgeInsets.all(18),
+              decoration: _panelDecoration(),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    _t('dashboard_unavailable'),
+                    style: AppTypography.headline.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.label,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    _error!,
+                    textAlign: TextAlign.center,
+                    style: AppTypography.caption1.copyWith(
+                      fontSize: 11,
+                      color: AppColors.tertiaryLabel,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  LiquidButton(
+                    label: _t('retry'),
+                    onPressed: _load,
+                    fullWidth: true,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    } else {
+      final needsYesterdayValidation = _yesterdayHabits.isNotEmpty;
+      if (needsYesterdayValidation) {
+        children.add(_wakeScoreCard());
+        children.add(const SizedBox(height: 18));
+        children.add(_yesterdayValidationCard());
+        children.add(const SizedBox(height: 18));
+      }
+      children.add(_prioritiesCard(showHeader: needsYesterdayValidation));
+      children.add(const SizedBox(height: 18));
+      children.add(_todayHabitsCard());
+      children.add(const SizedBox(height: 18));
+      children.add(_todayScheduleCard());
+    }
+
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(0, 60, 0, 120),
+      children: children,
+    );
+  }
+
   Widget _attentionScoreCard() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 26),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 32),
       decoration: _panelDecoration(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -614,13 +706,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _yesterdayValidationCard() {
     return Container(
-      padding: const EdgeInsets.fromLTRB(18, 18, 18, 20),
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 22),
       decoration: _panelDecoration(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            _t('dashboard_habits_from_yesterday'),
+            _t('dashboard_habits_from_yesterday').toUpperCase(),
             style: AppTypography.overline.copyWith(
               fontSize: 15,
               letterSpacing: 1.8,
@@ -638,31 +730,31 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
           ),
           const SizedBox(height: 22),
-          ..._yesterdayHabits.map(
-            (habit) => Padding(
-              padding: const EdgeInsets.only(bottom: 16),
+          for (var i = 0; i < _yesterdayHabits.length; i++) ...[
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 14),
               child: GestureDetector(
                 onTap: _isConfirmingYesterday
                     ? null
                     : () => setState(() {
-                        _yesterdayStates[habit.id] =
-                            !(_yesterdayStates[habit.id] ?? false);
+                        _yesterdayStates[_yesterdayHabits[i].id] =
+                            !(_yesterdayStates[_yesterdayHabits[i].id] ?? false);
                       }),
                 child: Row(
                   children: [
                     Icon(
-                      (_yesterdayStates[habit.id] ?? false)
+                      (_yesterdayStates[_yesterdayHabits[i].id] ?? false)
                           ? CupertinoIcons.check_mark_circled_solid
                           : CupertinoIcons.circle,
                       size: 24,
-                      color: (_yesterdayStates[habit.id] ?? false)
+                      color: (_yesterdayStates[_yesterdayHabits[i].id] ?? false)
                           ? const Color(0xFF3B82F6)
                           : AppColors.tertiaryLabel,
                     ),
                     const SizedBox(width: 16),
                     Expanded(
                       child: Text(
-                        habit.title,
+                        _yesterdayHabits[i].title,
                         style: AppTypography.headline.copyWith(
                           fontSize: 17,
                           color: AppColors.label,
@@ -674,8 +766,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               ),
             ),
-          ),
-          const SizedBox(height: 4),
+            if (i < _yesterdayHabits.length - 1)
+              Container(
+                height: 0.5,
+                color: AppColors.border.withValues(alpha: 0.22),
+              ),
+          ],
+          const SizedBox(height: 14),
           LiquidButton(
             label: _isConfirmingYesterday
                 ? _t('dashboard_confirming')
@@ -693,7 +790,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _prioritiesCard({required bool showHeader}) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(18, 18, 18, 20),
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 22),
       decoration: _panelDecoration(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -714,19 +811,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             )
           else
-            ..._topTasks.asMap().entries.map((entry) {
-              final rank = entry.key + 1;
-              final task = entry.value;
-              return Padding(
-                padding: EdgeInsets.only(
-                  bottom: entry.key == _topTasks.length - 1 ? 0 : 18,
-                ),
+            for (var i = 0; i < _topTasks.length; i++) ...[
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 14),
                 child: GestureDetector(
-                  onTap: () => _completeTask(task),
-                  child: _priorityRow(task: task, rank: rank),
+                  onTap: () => _completeTask(_topTasks[i]),
+                  child: _priorityRow(task: _topTasks[i], rank: i + 1),
                 ),
-              );
-            }),
+              ),
+              if (i < _topTasks.length - 1)
+                Container(
+                  height: 0.5,
+                  color: AppColors.border.withValues(alpha: 0.22),
+                ),
+            ],
         ],
       ),
     );
@@ -819,13 +917,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _todayHabitsCard() {
     return GlassCard(
-      padding: const EdgeInsets.fromLTRB(18, 18, 18, 20),
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 22),
       borderRadius: 24,
       level: GlassCardLevel.standard,
       showEdgeGlow: false,
       border: Border.all(
-        color: AppColors.glassBorder.withValues(alpha: 0.52),
-        width: 0.55,
+        color: AppColors.border.withValues(alpha: 0.30),
+        width: 0.5,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -845,24 +943,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             )
           else
-            ..._todayHabits.asMap().entries.map((entry) {
-              final habit = entry.value;
-              final index = entry.key + 1;
-              final marked = _todayHabitMarks.contains(habit.id);
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 16),
+            for (var i = 0; i < _todayHabits.length; i++) ...[
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 14),
                 child: GestureDetector(
-                  onTap: () => _toggleTodayHabitMark(habit.id),
+                  onTap: () => _toggleTodayHabitMark(_todayHabits[i].id),
                   child: Row(
                     children: [
                       Expanded(
                         child: Text(
-                          habit.title,
+                          _todayHabits[i].title,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: AppTypography.headline.copyWith(
                             fontSize: 17,
-                            color: marked
+                            color: _todayHabitMarks.contains(_todayHabits[i].id)
                                 ? AppColors.tertiaryLabel
                                 : AppColors.label,
                             fontWeight: FontWeight.w600,
@@ -873,15 +968,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         width: 34,
                         height: 34,
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          color: AppColors.white.withValues(alpha: 0.05),
+                          shape: BoxShape.circle,
+                          color: AppColors.surfaceMuted.withValues(alpha: 0.7),
+                          border: Border.all(
+                            color: AppColors.white.withValues(alpha: 0.06),
+                            width: 0.8,
+                          ),
                         ),
                         child: Center(
                           child: Text(
-                            '$index',
+                            '${i + 1}',
                             style: AppTypography.footnote.copyWith(
                               fontSize: 15,
-                              color: marked
+                              color: _todayHabitMarks.contains(_todayHabits[i].id)
                                   ? AppColors.tertiaryLabel
                                   : AppColors.secondaryLabel,
                               fontWeight: FontWeight.w700,
@@ -892,8 +991,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ],
                   ),
                 ),
-              );
-            }),
+              ),
+              if (i < _todayHabits.length - 1)
+                Container(
+                  height: 0.5,
+                  color: AppColors.border.withValues(alpha: 0.22),
+                ),
+            ],
         ],
       ),
     );
@@ -901,13 +1005,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _todayScheduleCard() {
     return GlassCard(
-      padding: const EdgeInsets.fromLTRB(18, 18, 18, 20),
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 22),
       borderRadius: 24,
       level: GlassCardLevel.standard,
       showEdgeGlow: false,
       border: Border.all(
-        color: AppColors.glassBorder.withValues(alpha: 0.52),
-        width: 0.55,
+        color: AppColors.border.withValues(alpha: 0.30),
+        width: 0.5,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1053,8 +1157,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ],
       ),
       border: Border.all(
-        color: AppColors.border.withValues(alpha: 0.46),
-        width: 0.55,
+        color: AppColors.border.withValues(alpha: 0.30),
+        width: 0.5,
       ),
       boxShadow: [
         BoxShadow(

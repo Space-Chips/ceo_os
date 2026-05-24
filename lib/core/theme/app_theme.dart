@@ -25,14 +25,18 @@ class AppTheme {
         textStyle: AppTypography.body,
         navLargeTitleTextStyle: AppTypography.title1,
         navTitleTextStyle: AppTypography.headline,
-        actionTextStyle: AppTypography.callout.copyWith(color: AppColors.accent),
+        actionTextStyle: AppTypography.callout.copyWith(
+          color: AppColors.accent,
+        ),
       ),
     );
   }
 
   static ThemeData materialForTone(AppThemeTone tone) {
     final isDark = tone == AppThemeTone.dark;
-    final baseScheme = isDark ? const ColorScheme.dark() : const ColorScheme.light();
+    final baseScheme = isDark
+        ? const ColorScheme.dark()
+        : const ColorScheme.light();
 
     final colorScheme = baseScheme.copyWith(
       primary: AppColors.accent,
@@ -54,7 +58,6 @@ class AppTheme {
       scaffoldBackgroundColor: AppColors.background,
       canvasColor: AppColors.background,
       primaryColor: AppColors.accent,
-      fontFamily: 'Inter',
       textTheme: TextTheme(
         displayLarge: AppTypography.largeTitle,
         displayMedium: AppTypography.title1,
@@ -62,7 +65,9 @@ class AppTheme {
         titleLarge: AppTypography.title3,
         bodyLarge: AppTypography.body,
         bodyMedium: AppTypography.body,
+        bodySmall: AppTypography.subhead,
         labelLarge: AppTypography.headline,
+        labelMedium: AppTypography.footnote,
       ),
       cardTheme: CardThemeData(
         color: AppColors.cardBase,
@@ -75,7 +80,10 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: AppColors.surface,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
           borderSide: BorderSide(color: outlineColor, width: 0.9),
@@ -92,21 +100,33 @@ class AppTheme {
           borderRadius: BorderRadius.circular(14),
           borderSide: BorderSide(color: AppColors.error, width: 1.1),
         ),
-        labelStyle: AppTypography.callout.copyWith(color: AppColors.secondaryLabel),
-        hintStyle: AppTypography.callout.copyWith(color: AppColors.tertiaryLabel),
+        labelStyle: AppTypography.callout.copyWith(
+          color: AppColors.secondaryLabel,
+        ),
+        hintStyle: AppTypography.callout.copyWith(
+          color: AppColors.tertiaryLabel,
+        ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           elevation: 0,
           backgroundColor: AppColors.accent,
           foregroundColor: AppColors.onAccent,
-          minimumSize: const Size(0, 48),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          textStyle: AppTypography.callout.copyWith(fontWeight: FontWeight.w600),
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+          minimumSize: const Size(0, 50),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          textStyle: AppTypography.callout.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
         ),
       ),
-      dividerTheme: DividerThemeData(color: outlineColor, thickness: 0.9, space: 1),
+      dividerTheme: DividerThemeData(
+        color: outlineColor,
+        thickness: 0.9,
+        space: 1,
+      ),
       dialogTheme: DialogThemeData(
         backgroundColor: AppColors.cardRaised,
         shape: RoundedRectangleBorder(
@@ -117,7 +137,8 @@ class AppTheme {
     );
   }
 
-  static CupertinoThemeData get cupertino => cupertinoForTone(AppThemeTone.dark);
+  static CupertinoThemeData get cupertino =>
+      cupertinoForTone(AppThemeTone.dark);
   static ThemeData get materialFallback => materialForTone(AppThemeTone.dark);
   static ThemeData get dark => materialFallback;
 }

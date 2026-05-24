@@ -22,6 +22,7 @@ import '../../core/repositories/habit_repository.dart';
 import '../../core/providers/language_provider.dart';
 import '../../components/liquid_button.dart';
 import '../../core/providers/task_provider.dart';
+import '../../core/providers/theme_provider.dart';
 
 String _localizedRankDisplay(BuildContext context, String rawRankName) {
   final language = context.watch<LanguageProvider>();
@@ -169,6 +170,7 @@ class _StatsScreenState extends State<StatsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeProvider>();
     return CupertinoPageScaffold(
       backgroundColor: AppColors.background,
       navigationBar: CupertinoNavigationBar(

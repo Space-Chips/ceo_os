@@ -10,6 +10,7 @@ import '../../core/providers/focus_provider.dart';
 import '../../core/providers/habit_provider.dart';
 import '../../core/providers/language_provider.dart';
 import '../../core/providers/task_provider.dart';
+import '../../core/providers/theme_provider.dart';
 import '../../core/repositories/premium_repository.dart';
 import '../../core/services/home_widget_service.dart';
 import '../../core/theme/app_colors.dart';
@@ -231,6 +232,7 @@ class _WidgetConfigurationScreenState extends State<WidgetConfigurationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeProvider>();
     return CupertinoPageScaffold(
       backgroundColor: AppColors.background,
       child: AmbientBackdrop(

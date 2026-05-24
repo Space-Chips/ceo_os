@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../config/tester_config.dart';
 import '../models/premium_models.dart';
 import '../services/supabase_service.dart';
 
@@ -49,6 +50,7 @@ class PremiumRepository {
     );
 
     final isPremiumUser =
+        TesterConfig.devForcePremium ||
         hasPaidSubscription ||
         clientGraceActive ||
         overrideActive ||
@@ -203,10 +205,11 @@ class PremiumRepository {
     if (hasPremiumAccess || runtime.resolved.canUseExtendedCeoMode) {
       return const PremiumCheckResult.allowed();
     }
-    if (minutes > runtime.config.ceoModeFreeMinutesLimit) {
+    final ceoMinutesLimit = runtime.config.ceoModeFreeMinutesLimit;
+    if (ceoMinutesLimit > 0 && minutes > ceoMinutesLimit) {
       return PremiumCheckResult.blocked(
         reason: 'ceo_mode',
-        limit: runtime.config.ceoModeFreeMinutesLimit,
+        limit: ceoMinutesLimit,
         current: minutes,
       );
     }
@@ -342,7 +345,7 @@ class PremiumRepository {
     return PremiumConfig(
       paywallEnabled: _boolValue(json['paywall_enabled']),
       habitsFreeLimit: _intValue(json['habits_free_limit'], fallback: 3),
-      tasksFreeLimit: _intValue(json['tasks_free_limit'], fallback: 12),
+      tasksFreeLimit: _intValue(json['tasks_free_limit'], fallback: 5),
       notesFreeLimit: _intValue(json['notes_free_limit'], fallback: 50),
       focusFreeDailyLimit: _intValue(
         json['focus_free_daily_limit'],
@@ -351,16 +354,18 @@ class PremiumRepository {
       focusFreeMinutesLimit: _intValue(
         json['focus_free_max_duration_minutes'] ??
             json['focus_free_minutes_limit'],
-        fallback: 25,
+        fallback: 60,
       ),
       ceoModeFreeWeeklyLimit: _intValue(
         json['ceo_free_weekly_limit'],
         fallback: 1,
       ),
+      // 0 acts as a sentinel: "no per-session duration limit"
+      // (enforced via `limit > 0` guard in canStartCeoSession).
       ceoModeFreeMinutesLimit: _intValue(
         json['ceo_free_max_duration_minutes'] ??
             json['ceo_mode_free_minutes_limit'],
-        fallback: 30,
+        fallback: 0,
       ),
       revenuecatEntitlementId:
           _stringValue(json['revenuecat_entitlement_id']) ?? 'premium',

@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../../components/components.dart';
 import '../../core/models/user_models.dart';
 import '../../core/providers/language_provider.dart';
+import '../../core/providers/theme_provider.dart';
 import '../../core/repositories/premium_repository.dart';
 import '../../core/repositories/user_repository.dart';
 import '../../core/theme/app_colors.dart';
@@ -164,6 +165,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeProvider>();
     context.watch<LanguageProvider>().languageCode;
     return CupertinoPageScaffold(
       backgroundColor: AppColors.background,

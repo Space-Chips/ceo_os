@@ -10,9 +10,11 @@ import '../../core/models/habit_models.dart';
 import '../../core/models/task_models.dart';
 import '../../core/providers/language_provider.dart';
 import '../../core/providers/task_provider.dart';
+import '../../core/providers/theme_provider.dart';
 import '../../core/repositories/feature_repository.dart';
 import '../../core/repositories/habit_repository.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
 import 'add_event_sheet.dart';
 import '../../components/ambient_backdrop.dart';
@@ -640,6 +642,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeProvider>();
     // Rebuild when language changes so localized date labels refresh.
     context.watch<LanguageProvider>().languageCode;
     return CupertinoPageScaffold(
@@ -662,13 +665,13 @@ class _CalendarScreenState extends State<CalendarScreen> {
               return GestureDetector(
                 onHorizontalDragEnd: _handleHorizontalSwipe,
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(14, 8, 14, 8),
+                  padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
                   child: Column(
                     children: [
                       _buildTopHeader(),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: AppSpacing.md),
                       _buildControlsRow(),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: AppSpacing.md),
                       Expanded(
                         child: AnimatedSwitcher(
                           duration: const Duration(milliseconds: 260),
@@ -939,7 +942,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
             borderRadius: 18,
             level: GlassCardLevel.standard,
             showEdgeGlow: count > 0,
-            border: Border.all(color: AppColors.glassBorder, width: 0.65),
+            border: Border.all(color: AppColors.glassBorder, width: 0.95),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -981,7 +984,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                       color: const Color(0xFF2563EB).withValues(alpha: 0.22),
                       border: Border.all(
                         color: const Color(0xFF3B82F6).withValues(alpha: 0.55),
-                        width: 0.6,
+                        width: 0.9,
                       ),
                     ),
                     child: Text(
@@ -1142,7 +1145,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
       showEdgeGlow: false,
       border: Border.all(
         color: AppColors.glassBorder.withValues(alpha: 0.68),
-        width: 0.55,
+        width: 0.9,
       ),
       child: Column(
         children: [

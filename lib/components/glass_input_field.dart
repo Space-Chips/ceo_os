@@ -40,7 +40,7 @@ class GlassInputField extends StatelessWidget {
     this.textInputAction,
     this.autofillHints,
     this.contentPadding,
-    this.borderRadius = 18,
+    this.borderRadius = 16,
     this.textStyle,
     this.placeholderStyle,
   });
@@ -65,8 +65,8 @@ class GlassInputField extends StatelessWidget {
             ),
             borderRadius: radius,
             border: Border.all(
-              color: AppColors.border.withValues(alpha: 0.82),
-              width: 0.8,
+              color: AppColors.border.withValues(alpha: 0.88),
+              width: 1,
             ),
             boxShadow: [
               BoxShadow(
@@ -109,13 +109,22 @@ class GlassInputField extends StatelessWidget {
                   color: AppColors.tertiaryLabel,
                 ),
                 style: AppTypography.callout.copyWith(color: AppColors.label),
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 13,
+                ),
                 decoration: null,
                 prefix: prefix != null
-                    ? Padding(padding: const EdgeInsets.only(left: 12), child: prefix)
+                    ? Padding(
+                        padding: const EdgeInsets.only(left: 12),
+                        child: prefix,
+                      )
                     : null,
                 suffix: suffix != null
-                    ? Padding(padding: const EdgeInsets.only(right: 12), child: suffix)
+                    ? Padding(
+                        padding: const EdgeInsets.only(right: 12),
+                        child: suffix,
+                      )
                     : null,
                 cursorColor: AppColors.accent,
                 cursorWidth: 1.4,

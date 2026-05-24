@@ -25,8 +25,8 @@ class LiquidButton extends StatefulWidget {
     this.labelStyle,
     this.fullWidth = false,
     this.gradient,
-    this.height = 50,
-    this.borderRadius = 14,
+    this.height = 52,
+    this.borderRadius = 16,
   });
 
   @override
@@ -37,7 +37,6 @@ class _LiquidButtonState extends State<LiquidButton>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
-  bool _isPressed = false;
 
   bool get _pressed => _controller.value > 0.01;
 
@@ -50,7 +49,7 @@ class _LiquidButtonState extends State<LiquidButton>
     );
     _scaleAnimation = Tween<double>(
       begin: 1,
-      end: 0.985,
+      end: 0.98,
     ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
   }
 
@@ -63,9 +62,11 @@ class _LiquidButtonState extends State<LiquidButton>
   @override
   Widget build(BuildContext context) {
     final disabled = widget.onPressed == null || widget.isLoading;
-    final colors = widget.gradient ?? [AppColors.focusPrimary, AppColors.focusSecondary];
+    final colors =
+        widget.gradient ?? [AppColors.focusPrimary, AppColors.focusSecondary];
     final textStyle =
-        widget.labelStyle ?? AppTypography.callout.copyWith(fontWeight: FontWeight.w600);
+        widget.labelStyle ??
+        AppTypography.callout.copyWith(fontWeight: FontWeight.w600);
     final radius = BorderRadius.circular(widget.borderRadius);
 
     return GestureDetector(
@@ -88,14 +89,16 @@ class _LiquidButtonState extends State<LiquidButton>
               boxShadow: [
                 BoxShadow(
                   color: AppColors.glassShadow.withValues(alpha: 0.28),
-                  blurRadius: _pressed ? 10 : 14,
-                  offset: Offset(0, _pressed ? 4 : 8),
+                  blurRadius: _pressed ? 9 : 15,
+                  offset: Offset(0, _pressed ? 3 : 8),
                   spreadRadius: -8,
                 ),
                 if (!disabled)
                   BoxShadow(
-                    color: colors.first.withValues(alpha: _pressed ? 0.18 : 0.26),
-                    blurRadius: _pressed ? 14 : 20,
+                    color: colors.first.withValues(
+                      alpha: _pressed ? 0.16 : 0.24,
+                    ),
+                    blurRadius: _pressed ? 12 : 18,
                     offset: const Offset(0, 8),
                     spreadRadius: -12,
                   ),
@@ -122,7 +125,7 @@ class _LiquidButtonState extends State<LiquidButton>
                       color: disabled
                           ? AppColors.border
                           : AppColors.selectionOutline.withValues(alpha: 0.52),
-                      width: 0.9,
+                      width: 1,
                     ),
                   ),
                   child: Stack(
@@ -136,14 +139,16 @@ class _LiquidButtonState extends State<LiquidButton>
                             height: 1,
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(999),
-                              color: AppColors.white.withValues(alpha: 0.2),
+                              color: AppColors.white.withValues(alpha: 0.24),
                             ),
                           ),
                         ),
                       ),
                       Center(
                         child: widget.isLoading
-                            ? CupertinoActivityIndicator(color: AppColors.onAccent)
+                            ? CupertinoActivityIndicator(
+                                color: AppColors.onAccent,
+                              )
                             : Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [

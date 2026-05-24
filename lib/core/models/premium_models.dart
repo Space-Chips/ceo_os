@@ -20,12 +20,13 @@ class PremiumConfig {
   const PremiumConfig({
     this.paywallEnabled = false,
     this.habitsFreeLimit = 3,
-    this.tasksFreeLimit = 12,
+    this.tasksFreeLimit = 5,
     this.notesFreeLimit = 50,
     this.focusFreeDailyLimit = 1,
-    this.focusFreeMinutesLimit = 25,
+    this.focusFreeMinutesLimit = 60,
     this.ceoModeFreeWeeklyLimit = 1,
-    this.ceoModeFreeMinutesLimit = 30,
+    // 0 acts as a sentinel: "no per-session duration limit".
+    this.ceoModeFreeMinutesLimit = 0,
     this.revenuecatEntitlementId = 'premium',
     this.revenuecatOfferingId,
     this.revenuecatIosApiKey,
