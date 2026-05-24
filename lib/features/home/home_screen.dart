@@ -2147,49 +2147,49 @@ class _CeoModeCard extends StatelessWidget {
     return GestureDetector(
       onTap: onOpenCeoMode,
       child: Container(
-        padding: const EdgeInsets.fromLTRB(22, 18, 20, 18),
+        padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(34),
+          borderRadius: BorderRadius.circular(30),
           border: Border.all(
-            color: AppColors.white.withValues(alpha: 0.86),
-            width: 1.35,
+            color: AppColors.white.withValues(alpha: 0.82),
+            width: 1.2,
           ),
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              AppColors.backgroundLight.withValues(alpha: 0.32),
-              AppColors.background.withValues(alpha: 0.86),
+              AppColors.cardRaised.withValues(alpha: 0.82),
+              AppColors.cardBase.withValues(alpha: 0.88),
             ],
           ),
         ),
         child: Row(
           children: [
             Container(
-              width: 94,
-              height: 94,
+              width: 82,
+              height: 82,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(29),
+                borderRadius: BorderRadius.circular(24),
                 border: Border.all(
-                  color: AppColors.white.withValues(alpha: 0.94),
-                  width: 4.0,
+                  color: AppColors.white.withValues(alpha: 0.9),
+                  width: 2.2,
                 ),
               ),
               child: Center(
                 child: Container(
-                  width: 28,
-                  height: 28,
+                  width: 24,
+                  height: 24,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: AppColors.secondaryLabel.withValues(alpha: 0.64),
-                      width: 2.2,
+                      color: AppColors.secondaryLabel.withValues(alpha: 0.58),
+                      width: 1.9,
                     ),
                   ),
                 ),
               ),
             ),
-            const SizedBox(width: 18),
+            const SizedBox(width: 16),
             Expanded(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -2201,29 +2201,29 @@ class _CeoModeCard extends StatelessWidget {
                     softWrap: false,
                     overflow: TextOverflow.ellipsis,
                     style: AppTypography.mono.copyWith(
-                      fontSize: 50 / 2,
+                      fontSize: 22,
                       fontWeight: FontWeight.w800,
                       color: AppColors.label,
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 10),
                   Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 22,
-                      vertical: 10,
+                      horizontal: 18,
+                      vertical: 8,
                     ),
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(24),
+                      borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                        color: AppColors.white.withValues(alpha: 0.84),
-                        width: 1.25,
+                        color: AppColors.white.withValues(alpha: 0.78),
+                        width: 1.0,
                       ),
-                      color: AppColors.surface.withValues(alpha: 0.2),
+                      color: AppColors.surface.withValues(alpha: 0.18),
                     ),
                     child: Text(
                       maxFocusLabel,
                       style: AppTypography.overline.copyWith(
-                        fontSize: 16 / 1.4,
+                        fontSize: 11,
                         letterSpacing: 2.0,
                         color: AppColors.secondaryLabel,
                         fontWeight: FontWeight.w600,
@@ -2233,10 +2233,10 @@ class _CeoModeCard extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 10),
             Icon(
               CupertinoIcons.chevron_right,
-              size: 38 / 2,
+              size: 18,
               color: AppColors.secondaryLabel.withValues(alpha: 0.76),
             ),
           ],
