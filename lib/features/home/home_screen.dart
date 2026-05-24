@@ -2147,49 +2147,49 @@ class _CeoModeCard extends StatelessWidget {
     return GestureDetector(
       onTap: onOpenCeoMode,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        padding: const EdgeInsets.fromLTRB(22, 18, 20, 18),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(28),
+          borderRadius: BorderRadius.circular(34),
           border: Border.all(
-            color: AppColors.white.withValues(alpha: 0.72),
-            width: 1.15,
+            color: AppColors.white.withValues(alpha: 0.86),
+            width: 1.35,
           ),
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              AppColors.backgroundLight.withValues(alpha: 0.45),
-              AppColors.background.withValues(alpha: 0.72),
+              AppColors.backgroundLight.withValues(alpha: 0.32),
+              AppColors.background.withValues(alpha: 0.86),
             ],
           ),
         ),
         child: Row(
           children: [
             Container(
-              width: 62,
-              height: 62,
+              width: 94,
+              height: 94,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(18),
+                borderRadius: BorderRadius.circular(29),
                 border: Border.all(
-                  color: AppColors.white.withValues(alpha: 0.95),
-                  width: 2.05,
+                  color: AppColors.white.withValues(alpha: 0.94),
+                  width: 4.0,
                 ),
               ),
               child: Center(
                 child: Container(
-                  width: 21,
-                  height: 21,
+                  width: 28,
+                  height: 28,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: AppColors.secondaryLabel.withValues(alpha: 0.6),
-                      width: 1.65,
+                      color: AppColors.secondaryLabel.withValues(alpha: 0.64),
+                      width: 2.2,
                     ),
                   ),
                 ),
               ),
             ),
-            const SizedBox(width: 14),
+            const SizedBox(width: 18),
             Expanded(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -2201,42 +2201,43 @@ class _CeoModeCard extends StatelessWidget {
                     softWrap: false,
                     overflow: TextOverflow.ellipsis,
                     style: AppTypography.mono.copyWith(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w900,
+                      fontSize: 50 / 2,
+                      fontWeight: FontWeight.w800,
                       color: AppColors.label,
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 12),
                   Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
+                      horizontal: 22,
+                      vertical: 10,
                     ),
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(18),
+                      borderRadius: BorderRadius.circular(24),
                       border: Border.all(
-                        color: AppColors.white.withValues(alpha: 0.78),
-                        width: 1,
+                        color: AppColors.white.withValues(alpha: 0.84),
+                        width: 1.25,
                       ),
-                      color: AppColors.surface.withValues(alpha: 0.24),
+                      color: AppColors.surface.withValues(alpha: 0.2),
                     ),
                     child: Text(
                       maxFocusLabel,
                       style: AppTypography.overline.copyWith(
-                        fontSize: 11,
-                        letterSpacing: 1.1,
+                        fontSize: 16 / 1.4,
+                        letterSpacing: 2.0,
                         color: AppColors.secondaryLabel,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 12),
             Icon(
               CupertinoIcons.chevron_right,
-              size: 18,
-              color: AppColors.secondaryLabel.withValues(alpha: 0.72),
+              size: 38 / 2,
+              color: AppColors.secondaryLabel.withValues(alpha: 0.76),
             ),
           ],
         ),
