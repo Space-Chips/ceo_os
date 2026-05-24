@@ -786,12 +786,12 @@ class _GoalsTabState extends State<_GoalsTab> {
   Widget _weekContractCard() {
     final committed = _contract?.committed ?? false;
     return GlassCard(
-      padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
+      padding: const EdgeInsets.fromLTRB(26, 25, 26, 26),
       borderRadius: 24,
       showEdgeGlow: false,
       border: Border.all(
-        color: AppColors.glassBorder.withValues(alpha: 0.62),
-        width: 0.7,
+        color: AppColors.glassBorder.withValues(alpha: 0.86),
+        width: 0.8,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -807,7 +807,7 @@ class _GoalsTabState extends State<_GoalsTab> {
               Text(
                 'Week Contract',
                 style: AppTypography.headline.copyWith(
-                  fontSize: 19,
+                  fontSize: 20,
                   color: AppColors.label,
                   fontWeight: FontWeight.w800,
                 ),
@@ -818,7 +818,7 @@ class _GoalsTabState extends State<_GoalsTab> {
                 style: AppTypography.mono.copyWith(
                   fontSize: 13,
                   color: committed ? AppColors.success : AppColors.warning,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w800,
                 ),
               ),
             ],
@@ -843,9 +843,9 @@ class _GoalsTabState extends State<_GoalsTab> {
                 Text(
                   'Threshold $_threshold%',
                   style: AppTypography.callout.copyWith(
-                    fontSize: 15,
+                    fontSize: 16,
                     color: AppColors.secondaryLabel,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w800,
                   ),
                 ),
                 const Spacer(),
@@ -853,7 +853,7 @@ class _GoalsTabState extends State<_GoalsTab> {
                   'Current ${_weeklyScore?.successPercentage ?? 0}%',
                   style: AppTypography.mono.copyWith(
                     fontSize: 13,
-                    color: AppColors.secondaryLabel.withValues(alpha: 0.74),
+                    color: AppColors.tertiaryLabel,
                   ),
                 ),
               ],
@@ -875,17 +875,17 @@ class _GoalsTabState extends State<_GoalsTab> {
               onPressed: committed || _saving ? null : _commitContract,
               child: Container(
                 width: double.infinity,
-                height: 50,
+                height: 48,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(24),
+                  borderRadius: BorderRadius.circular(18),
                   gradient: LinearGradient(
                     colors: committed
                         ? [
                             AppColors.surface.withValues(alpha: 0.72),
                             AppColors.surfaceMuted.withValues(alpha: 0.72),
                           ]
-                        : const [Color(0xFFFF964B), Color(0xFFF2BF6A)],
+                        : const [Color(0xFFFF934D), Color(0xFFFFC36A)],
                   ),
                 ),
                 child: _saving
@@ -902,8 +902,6 @@ class _GoalsTabState extends State<_GoalsTab> {
                       ),
               ),
             ),
-            const SizedBox(height: 18),
-            _widgetsSectionCard(),
           ],
         ],
       ),
@@ -929,81 +927,12 @@ class _GoalsTabState extends State<_GoalsTab> {
         fontWeight: FontWeight.w600,
       ),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(24),
         color: AppColors.cardBackgroundStrong.withValues(alpha: 0.64),
         border: Border.all(
-          color: AppColors.glassBorder.withValues(alpha: 0.62),
-          width: 0.7,
+          color: AppColors.glassBorder.withValues(alpha: 0.86),
+          width: 0.9,
         ),
-      ),
-    );
-  }
-
-  Widget _widgetsSectionCard() {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        color: AppColors.backgroundLight.withValues(alpha: 0.22),
-        border: Border.all(
-          color: AppColors.glassBorder.withValues(alpha: 0.5),
-          width: 0.55,
-        ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              color: AppColors.backgroundLight.withValues(alpha: 0.26),
-              border: Border.all(
-                color: AppColors.glassBorder.withValues(alpha: 0.46),
-                width: 0.55,
-              ),
-            ),
-            child: Icon(
-              CupertinoIcons.square_grid_2x2_fill,
-              size: 18,
-              color: AppColors.secondaryLabel,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              'Widgets',
-              style: AppTypography.callout.copyWith(
-                fontSize: 16,
-                color: AppColors.label,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-          CupertinoButton(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            minSize: 0,
-            onPressed: () => context.push('/widget-configuration'),
-            child: Row(
-              children: [
-                Text(
-                  'Configure',
-                  style: AppTypography.footnote.copyWith(
-                    fontSize: 13,
-                    color: AppColors.secondaryLabel,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(width: 4),
-                Icon(
-                  CupertinoIcons.chevron_right,
-                  size: 14,
-                  color: AppColors.tertiaryLabel,
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }
