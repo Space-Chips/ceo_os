@@ -1256,75 +1256,67 @@ class _TopShortcutsBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 56,
-      padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 6),
-      decoration: BoxDecoration(
-        color: AppColors.backgroundLight.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(2),
-      ),
-      child: Row(
-        children: [
-          _InteractiveLift(
-            onTap: onOpenMenu,
-            borderRadius: 24,
-            glowColor: AppColors.edgeGlowSoft,
-            child: Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: AppColors.floatingGlassGradient,
-                ),
-                border: Border.all(
-                  color: AppColors.glassBorder.withValues(alpha: 0.62),
-                  width: 0.8,
-                ),
+    return Row(
+      children: [
+        _InteractiveLift(
+          onTap: onOpenMenu,
+          borderRadius: 24,
+          glowColor: AppColors.edgeGlowSoft,
+          child: Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: AppColors.floatingGlassGradient,
               ),
-              child: Icon(
-                CupertinoIcons.person_fill,
-                color: AppColors.secondaryLabel,
-                size: 18,
+              border: Border.all(
+                color: AppColors.glassBorder.withValues(alpha: 0.62),
+                width: 0.8,
               ),
+            ),
+            child: Icon(
+              CupertinoIcons.person_fill,
+              color: AppColors.secondaryLabel,
+              size: 18,
             ),
           ),
-          const SizedBox(width: 9),
-          if (enabledShortcuts.contains('rank')) ...[
-            SizedBox(
-              width: 126,
-              child: _ShortcutPill(
-                label: 'WakeApp Pro',
-                icon: CupertinoIcons.arrow_up_circle_fill,
-                iconColor: AppColors.secondaryLabel,
-                labelColor: AppColors.secondaryLabel,
-                onTap: onOpenRank,
-              ),
-            ),
-            const SizedBox(width: 7),
-          ],
-          if (enabledShortcuts.contains('focus')) ...[
-            _ShortcutCircle(
-              icon: CupertinoIcons.bolt_fill,
+        ),
+        const SizedBox(width: 9),
+        if (enabledShortcuts.contains('rank')) ...[
+          SizedBox(
+            width: 126,
+            child: _ShortcutPill(
+              label: 'WakeApp Pro',
+              icon: CupertinoIcons.arrow_up_circle_fill,
               iconColor: AppColors.secondaryLabel,
-              onTap: onOpenFocus,
+              labelColor: AppColors.secondaryLabel,
+              onTap: onOpenRank,
             ),
-            const SizedBox(width: 7),
-          ],
-          if (enabledShortcuts.contains('notes')) ...[
-            _ShortcutCircle(
-              icon: CupertinoIcons.doc_text_fill,
-              iconColor: AppColors.secondaryLabel,
-              onTap: onOpenNotes,
-            ),
-            const SizedBox(width: 7),
-          ],
-          if (enabledShortcuts.contains('streak'))
-            _StreakPill(streak: winStreak, onTap: onOpenStreak),
+          ),
+          const SizedBox(width: 7),
         ],
-      ),
+        if (enabledShortcuts.contains('focus')) ...[
+          _ShortcutCircle(
+            icon: CupertinoIcons.bolt_fill,
+            iconColor: AppColors.secondaryLabel,
+            onTap: onOpenFocus,
+          ),
+          const SizedBox(width: 7),
+        ],
+        if (enabledShortcuts.contains('notes')) ...[
+          _ShortcutCircle(
+            icon: CupertinoIcons.doc_text_fill,
+            iconColor: AppColors.secondaryLabel,
+            onTap: onOpenNotes,
+          ),
+          const SizedBox(width: 7),
+        ],
+        if (enabledShortcuts.contains('streak'))
+          _StreakPill(streak: winStreak, onTap: onOpenStreak),
+      ],
     );
   }
 }
@@ -2200,9 +2192,10 @@ class _CeoModeCard extends StatelessWidget {
                     maxLines: 1,
                     softWrap: false,
                     overflow: TextOverflow.ellipsis,
-                    style: AppTypography.mono.copyWith(
+                    style: AppTypography.largeTitle.copyWith(
                       fontSize: 22,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w700,
+                      height: 1.0,
                       color: AppColors.label,
                     ),
                   ),
