@@ -1,0 +1,13 @@
+Pass 3 Recovery Report
+
+  + enum           AndroidProtectionStep               -> lib/core/services/focus_service.dart  (2026-05-16T08:45:01.143Z)
+  + class          IosFamilyActivitySelection          -> lib/core/services/focus_service.dart  (2026-04-15T21:16:23.162Z)
+  + enum           PrivateScreenTimeSummaryStatus      -> lib/core/services/focus_service.dart  (2026-04-05T16:14:58.993Z)
+  + static_getter  hasGoogleMobileClientConfig         -> lib/core/config/supabase_config.dart  (2026-05-16T08:38:14.930Z)
+
+Injected: 4
+Skipped (already present): 18
+Skipped (no target file): 0
+Skipped (non-source ext):  0
+
+Errors before: 1633

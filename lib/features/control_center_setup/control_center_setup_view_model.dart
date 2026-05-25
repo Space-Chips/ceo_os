@@ -98,6 +98,12 @@ class ControlCenterSetupViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  void goToStep(SetupStep step) {
+    if (!_initialized) return;
+    _state = _state.copyWith(currentStep: step);
+    notifyListeners();
+  }
+
   Future<void> completeSetup() async {
     if (!_initialized) return;
     if (_isPersisting) return;
@@ -120,15 +126,17 @@ class ControlCenterSetupViewModel extends ChangeNotifier {
       case SetupStep.modulePicker:
         return SetupStep.moduleConfirmation;
       case SetupStep.moduleConfirmation:
-        return _state.remainingSlots > 0
-            ? SetupStep.shortcutPicker
-            : SetupStep.dashboardIntro;
-      case SetupStep.shortcutPicker:
+        return SetupStep.shortcutConfirmation;
+      case SetupStep.shortcutConfirmation:
         return SetupStep.dashboardIntro;
+      case SetupStep.shortcutPicker:
+        return SetupStep.shortcutConfirmation;
       case SetupStep.dashboardIntro:
+        return SetupStep.themePicker;
+      case SetupStep.themePicker:
         return SetupStep.dashboardWidgets;
       case SetupStep.dashboardWidgets:
-        return SetupStep.finalPreview;
+        return SetupStep.permissions;
       case SetupStep.finalPreview:
         return SetupStep.permissions;
       case SetupStep.permissions:
@@ -145,17 +153,19 @@ class ControlCenterSetupViewModel extends ChangeNotifier {
       case SetupStep.moduleConfirmation:
         return SetupStep.modulePicker;
       case SetupStep.shortcutPicker:
-        return SetupStep.moduleConfirmation;
+        return SetupStep.shortcutConfirmation;
       case SetupStep.dashboardIntro:
-        return _state.remainingSlots > 0
-            ? SetupStep.shortcutPicker
-            : SetupStep.moduleConfirmation;
-      case SetupStep.dashboardWidgets:
+        return SetupStep.shortcutConfirmation;
+      case SetupStep.shortcutConfirmation:
+        return SetupStep.moduleConfirmation;
+      case SetupStep.themePicker:
         return SetupStep.dashboardIntro;
+      case SetupStep.dashboardWidgets:
+        return SetupStep.themePicker;
       case SetupStep.finalPreview:
         return SetupStep.dashboardWidgets;
       case SetupStep.permissions:
-        return SetupStep.finalPreview;
+        return SetupStep.dashboardWidgets;
     }
   }
 }

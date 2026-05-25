@@ -54,7 +54,10 @@ class UpgradeScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 14),
-                  PremiumComparisonTable(isFr: isFr),
+                  PremiumComparisonTable(
+                    isFr: isFr,
+                    isPremium: runtime.resolved.isPremiumUser,
+                  ),
                 ],
               );
             },

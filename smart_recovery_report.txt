@@ -1,0 +1,79 @@
+Smart recovery report
+Output directory: /Users/timo/ceo_os/smart_recovery_output
+Files written: 298
+Files deleted (skipped): 25
+Files written empty: 27
+
+Top 50 files by skipped hunks (= context drift, may need manual review):
+  skipped= 440  applied= 142  adds=0 updates=177  seed=disk  lib/features/home/home_screen.dart
+  skipped= 373  applied=  70  adds=0 updates=159  seed=disk  lib/features/legacy/screen_time_screen.dart
+  skipped= 193  applied=  27  adds=0 updates=67  seed=disk  lib/features/profile/profile_screen.dart
+  skipped= 165  applied=   0  adds=0 updates=53  seed=disk  lib/core/providers/language_overrides.dart
+  skipped= 135  applied=  87  adds=1 updates=63  seed=disk  lib/features/screen_time_manager/screen_time_manager_screen.dart
+  skipped=  83  applied=  13  adds=1 updates=33  seed=disk  lib/core/repositories/premium_repository.dart
+  skipped=  76  applied=  64  adds=1 updates=38  seed=disk  lib/features/rank/rank_screen.dart
+  skipped=  72  applied= 156  adds=1 updates=60  seed=disk  lib/features/habits/habits_screen.dart
+  skipped=  67  applied=   1  adds=1 updates=17  seed=new   android/app/src/main/kotlin/com/wakeapp/ceoos/AppBlockingService.kt
+  skipped=  64  applied=  59  adds=1 updates=49  seed=new   lib/core/providers/language_provider.dart
+  skipped=  63  applied=  51  adds=0 updates=31  seed=disk  lib/features/auth/onboarding_screen.dart
+  skipped=  49  applied=   0  adds=1 updates=18  seed=disk  lib/core/services/stats_engine.dart
+  skipped=  49  applied= 124  adds=2 updates=46  seed=new   lib/features/calendar/calendar_screen.dart
+  skipped=  46  applied=  74  adds=1 updates=36  seed=disk  lib/core/services/focus_service.dart
+  skipped=  46  applied= 100  adds=1 updates=45  seed=new   lib/core/services/home_widget_service.dart
+  skipped=  46  applied=  71  adds=1 updates=43  seed=new   lib/core/widgets/home_widgets/widget_views.dart
+  skipped=  44  applied=  77  adds=0 updates=50  seed=disk  ios/Runner.xcodeproj/project.pbxproj
+  skipped=  38  applied=  80  adds=1 updates=27  seed=disk  lib/features/dashboard/dashboard_screen.dart
+  skipped=  37  applied=   0  adds=0 updates=16  seed=disk  extractor.py
+  skipped=  35  applied= 112  adds=1 updates=49  seed=disk  lib/features/focus/focus_screen.dart
+  skipped=  35  applied=   0  adds=0 updates=5  seed=disk  docs/store_review_notes_and_disclosures.md
+  skipped=  34  applied= 105  adds=1 updates=44  seed=new   lib/features/ceo_mode/ceo_mode_screen.dart
+  skipped=  33  applied= 110  adds=1 updates=31  seed=disk  lib/features/legacy/notes_screen.dart
+  skipped=  33  applied=  12  adds=1 updates=13  seed=new   lib/core/services/classic_blocking_coordinator.dart
+  skipped=  32  applied=  12  adds=0 updates=20  seed=disk  lib/core/theme/app_colors.dart
+  skipped=  31  applied= 129  adds=1 updates=30  seed=disk  lib/features/leaderboard/leaderboard_screen.dart
+  skipped=  29  applied=  15  adds=0 updates=12  seed=disk  lib/features/auth/login_screen.dart
+  skipped=  29  applied=  29  adds=0 updates=11  seed=disk  lib/features/auth/signup_screen.dart
+  skipped=  29  applied=  82  adds=1 updates=44  seed=disk  lib/features/home/stats_screen.dart
+  skipped=  27  applied=   1  adds=1 updates=12  seed=disk  ios/FocusActivityMonitor/FocusActivityMonitorExtension.swift
+  skipped=  26  applied=  35  adds=1 updates=11  seed=disk  lib/features/calendar/add_event_sheet.dart
+  skipped=  25  applied=   0  adds=1 updates=5  seed=disk  lib/core/repositories/advanced_stats_repository.dart
+  skipped=  24  applied=  20  adds=1 updates=13  seed=disk  android/app/src/main/kotlin/com/wakeapp/ceoos/MainActivity.kt
+  skipped=  23  applied=   4  adds=1 updates=8  seed=disk  lib/core/models/premium_models.dart
+  skipped=  23  applied=  13  adds=1 updates=11  seed=new   lib/components/ambient_backdrop.dart
+  skipped=  22  applied=  94  adds=1 updates=36  seed=disk  lib/core/providers/focus_provider.dart
+  skipped=  17  applied=  20  adds=0 updates=15  seed=disk  lib/components/glass_card.dart
+  skipped=  16  applied=  38  adds=1 updates=18  seed=disk  lib/features/screen_time_manager/family_time_screen.dart
+  skipped=  16  applied=  91  adds=1 updates=32  seed=new   lib/components/premium_paywall.dart
+  skipped=  15  applied=   5  adds=0 updates=5  seed=disk  android/app/src/main/kotlin/com/example/ceo_os/AppBlockingService.kt
+  skipped=  13  applied= 156  adds=1 updates=46  seed=disk  lib/features/tasks/tasks_screen.dart
+  skipped=  12  applied=   0  adds=0 updates=5  seed=disk  docs/store_submission_checklist_blocking_stack.md
+  skipped=  11  applied=  30  adds=1 updates=14  seed=new   lib/features/screen_time_setup/screen_time_setup_screen.dart
+  skipped=  11  applied=  18  adds=0 updates=11  seed=disk  lib/components/liquid_button.dart
+  skipped=  10  applied=  28  adds=3 updates=10  seed=new   lib/components/premium_gate_dialog.dart
+  skipped=  10  applied=   0  adds=0 updates=1  seed=disk  docs/real_device_test_plan_blocking_stack.md
+  skipped=   9  applied=   7  adds=2 updates=7  seed=disk  lib/core/repositories/family_time_repository.dart
+  skipped=   9  applied=   0  adds=0 updates=4  seed=disk  packages/url_launcher_ios/ios/url_launcher_ios/Sources/url_launcher_ios/URLLauncherPlugin.swift
+  skipped=   8  applied=   0  adds=0 updates=5  seed=disk  android/app/src/main/kotlin/com/example/ceo_os/ClassicPauseScheduler.kt
+  skipped=   8  applied=  13  adds=1 updates=6  seed=new   android/app/src/main/kotlin/com/wakeapp/ceoos/WakeAccessibilityService.kt
+
+Top 20 files by total operations (highest churn):
+  ops= 177  lib/features/home/home_screen.dart
+  ops= 159  lib/features/legacy/screen_time_screen.dart
+  ops=  97  ios/Runner/AppDelegate.swift
+  ops=  67  lib/features/profile/profile_screen.dart
+  ops=  65  lib/features/screen_time_manager/screen_time_manager_screen.dart
+  ops=  62  lib/features/habits/habits_screen.dart
+  ops=  53  lib/core/providers/language_overrides.dart
+  ops=  51  lib/features/focus/focus_screen.dart
+  ops=  50  lib/core/providers/language_provider.dart
+  ops=  50  ios/Runner.xcodeproj/project.pbxproj
+  ops=  50  android/app/src/main/kotlin/com/wakeapp/ceoos/BlockingAccessibilityService.kt
+  ops=  50  lib/features/calendar/calendar_screen.dart
+  ops=  49  lib/features/setup/setup_flow_screen.dart
+  ops=  48  lib/features/tasks/tasks_screen.dart
+  ops=  46  lib/features/home/stats_screen.dart
+  ops=  46  lib/core/services/home_widget_service.dart
+  ops=  45  lib/features/ceo_mode/ceo_mode_screen.dart
+  ops=  44  lib/core/widgets/home_widgets/widget_views.dart
+  ops=  40  lib/features/rank/rank_screen.dart
+  ops=  38  lib/core/services/focus_service.dart

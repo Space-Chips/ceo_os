@@ -242,17 +242,12 @@ class _SignupScreenState extends State<SignupScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'IDENTIFICATION',
-                            style: AppTypography.mono.copyWith(
-                              fontSize: 11,
-                              color: AppColors.tertiaryLabel,
-                              letterSpacing: 1.5,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
                           GlassInputField(
-                            placeholder: 'FULL_NAME',
+                            placeholder: language.languageCode
+                                    .toLowerCase()
+                                    .startsWith('fr')
+                                ? 'Nom'
+                                : 'Name',
                             controller: _nameCtrl,
                             prefix: Icon(
                               CupertinoIcons.person,
@@ -260,9 +255,9 @@ class _SignupScreenState extends State<SignupScreen> {
                               color: AppColors.secondaryLabel,
                             ),
                           ),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 14),
                           GlassInputField(
-                            placeholder: 'EMAIL_ADDRESS',
+                            placeholder: language.t('auth_email'),
                             controller: _emailCtrl,
                             keyboardType: TextInputType.emailAddress,
                             prefix: Icon(
@@ -271,9 +266,9 @@ class _SignupScreenState extends State<SignupScreen> {
                               color: AppColors.secondaryLabel,
                             ),
                           ),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 14),
                           GlassInputField(
-                            placeholder: 'ACCESS_KEY',
+                            placeholder: language.t('auth_password'),
                             controller: _passCtrl,
                             obscureText: true,
                             prefix: Icon(
@@ -282,9 +277,11 @@ class _SignupScreenState extends State<SignupScreen> {
                               color: AppColors.secondaryLabel,
                             ),
                           ),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 14),
                           GlassInputField(
-                            placeholder: 'CONFIRM_ACCESS_KEY',
+                            placeholder: language.t(
+                              'auth_confirm_password_placeholder',
+                            ),
                             controller: _confirmPassCtrl,
                             obscureText: true,
                             autocorrect: false,
@@ -296,9 +293,9 @@ class _SignupScreenState extends State<SignupScreen> {
                               color: AppColors.secondaryLabel,
                             ),
                           ),
-                          const SizedBox(height: 32),
+                          const SizedBox(height: 28),
                           LiquidButton(
-                            label: 'CREATE_ACCOUNT',
+                            label: language.t('auth_create_account'),
                             fullWidth: true,
                             isLoading: _loading,
                             onPressed: _signup,
@@ -307,9 +304,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       ),
                     ),
 
-                    const SizedBox(height: 32),
-                    const AuthTrustFooter(),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 24),
 
                     // Footer
                     Row(

@@ -6,6 +6,7 @@ import '../models/premium_models.dart';
 import '../repositories/ceo_mode_repository.dart';
 import '../repositories/premium_repository.dart';
 import '../services/focus_service.dart';
+import '../services/live_activity_service.dart';
 import '../services/stats_engine.dart';
 import '../../features/ceo_mode/blackout_preparation/blackout_preparation_models.dart';
 import 'package:flutter/widgets.dart';
@@ -208,6 +209,14 @@ class CeoModeProvider extends ChangeNotifier with WidgetsBindingObserver {
 
       await _persistState();
       _ensureTicker();
+      unawaited(
+        LiveActivityService.instance.start(
+          session: LiveActivitySession.blackout,
+          title: 'Blackout',
+          startAt: now,
+          endAt: _sessionEndAt!,
+        ),
+      );
       return true;
     } finally {
       _busy = false;
@@ -308,6 +317,9 @@ class CeoModeProvider extends ChangeNotifier with WidgetsBindingObserver {
       _exitReadyAt = null;
       _sessionId = null;
       _ticker?.cancel();
+      unawaited(
+        LiveActivityService.instance.end(LiveActivitySession.blackout),
+      );
       _ticker = null;
       await _clearPersistedState();
     } finally {
@@ -371,6 +383,14 @@ class CeoModeProvider extends ChangeNotifier with WidgetsBindingObserver {
               now.add(const Duration(minutes: _exitDelayMinutes)))
         : null;
     _sessionId = sessionId;
+    unawaited(
+      LiveActivityService.instance.start(
+        session: LiveActivitySession.blackout,
+        title: 'Blackout',
+        startAt: restoredStart,
+        endAt: restoredEnd,
+      ),
+    );
   }
 
   Future<void> _persistState() async {

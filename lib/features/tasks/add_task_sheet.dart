@@ -22,7 +22,7 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
   DateTime? _deadline;
   bool _syncToCalendar = true;
 
-  static const _importances = ['crucial', 'essential', 'average'];
+  static const _importances = ['crucial', 'essential', 'average', 'optional'];
   static const _durations = [
     'less_than_30min',
     '1_hour',
@@ -34,6 +34,7 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
     'crucial': 'Crucial',
     'essential': 'Essential',
     'average': 'Average',
+    'optional': 'Optional',
   };
 
   static const Map<String, String> _durationLabels = {
@@ -46,11 +47,13 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
   Color _importanceColor(String value) {
     switch (value) {
       case 'crucial':
-        return const Color(0xFFFF453A);
+        return const Color(0xFFA02E2E);
       case 'essential':
-        return const Color(0xFFFF9F0A);
+        return const Color(0xFFA6562B);
       case 'average':
-        return const Color(0xFFFFD60A);
+        return const Color(0xFF9C7B28);
+      case 'optional':
+        return const Color(0xFF7A6E5E);
       default:
         return AppColors.secondaryLabel;
     }
@@ -154,19 +157,14 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
     return '${months[d.month - 1]} ${d.day}, ${d.year}';
   }
 
-  BoxDecoration _fieldDecoration() => BoxDecoration(
-    gradient: LinearGradient(
-      begin: Alignment.topCenter,
-      end: Alignment.bottomCenter,
-      colors: [
-        AppColors.cardBackgroundStrong.withValues(alpha: 0.52),
-        AppColors.cardBase.withValues(alpha: 0.38),
-      ],
+  BoxDecoration _fieldDecoration({bool primary = false}) => BoxDecoration(
+    color: AppColors.cardBackgroundStrong.withValues(
+      alpha: primary ? 0.55 : 0.32,
     ),
     borderRadius: BorderRadius.circular(16),
     border: Border.all(
-      color: AppColors.glassBorder.withValues(alpha: 0.20),
-      width: 0.5,
+      color: AppColors.glassBorder.withValues(alpha: primary ? 0.38 : 0.18),
+      width: primary ? 0.8 : 0.5,
     ),
   );
 
@@ -183,7 +181,7 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
           bottom: MediaQuery.of(context).viewInsets.bottom,
         ),
         decoration: BoxDecoration(
-          color: AppColors.background.withValues(alpha: 0.92),
+          color: AppColors.background.withValues(alpha: 0.82),
           borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
           border: Border(
             top: BorderSide(
@@ -195,18 +193,18 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
         child: SafeArea(
           top: false,
           child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Center(
                   child: Container(
-                    width: 28,
-                    height: 3,
+                    width: 36,
+                    height: 5,
                     decoration: BoxDecoration(
-                      color: AppColors.glassBorder.withValues(alpha: 0.45),
-                      borderRadius: BorderRadius.circular(2),
+                      color: AppColors.tertiaryLabel.withValues(alpha: 0.55),
+                      borderRadius: BorderRadius.circular(2.5),
                     ),
                   ),
                 ),
@@ -221,22 +219,22 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
                     color: AppColors.label,
                   ),
                 ),
-                const SizedBox(height: 22),
+                const SizedBox(height: 26),
                 Container(
-                  height: 56,
-                  decoration: _fieldDecoration(),
+                  height: 64,
+                  decoration: _fieldDecoration(primary: true),
                   alignment: Alignment.center,
                   child: CupertinoTextField(
                     controller: _titleCtrl,
                     placeholder: 'Task title',
                     autofocus: true,
                     style: AppTypography.callout.copyWith(
-                      fontSize: 16,
+                      fontSize: 17,
                       color: AppColors.label,
                       fontWeight: FontWeight.w500,
                     ),
                     placeholderStyle: AppTypography.callout.copyWith(
-                      fontSize: 16,
+                      fontSize: 17,
                       color: AppColors.tertiaryLabel,
                       fontWeight: FontWeight.w400,
                     ),
@@ -250,14 +248,14 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
                   behavior: HitTestBehavior.opaque,
                   onTap: _showDeadlinePicker,
                   child: Container(
-                    height: 56,
+                    height: 48,
                     padding: const EdgeInsets.symmetric(horizontal: 18),
                     decoration: _fieldDecoration(),
                     child: Row(
                       children: [
                         Icon(
                           CupertinoIcons.calendar,
-                          size: 18,
+                          size: 19,
                           color: _deadline != null
                               ? AppColors.label
                               : AppColors.tertiaryLabel,
@@ -269,7 +267,7 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
                                 ? _formatDeadline(_deadline!)
                                 : 'Set deadline',
                             style: AppTypography.callout.copyWith(
-                              fontSize: 16,
+                              fontSize: 17,
                               fontWeight: FontWeight.w500,
                               color: _deadline != null
                                   ? AppColors.label
@@ -292,7 +290,7 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
                 ),
                 const SizedBox(height: 12),
                 Container(
-                  height: 56,
+                  height: 48,
                   padding: const EdgeInsets.symmetric(horizontal: 18),
                   decoration: _fieldDecoration(),
                   child: Row(
@@ -301,7 +299,7 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
                         child: Text(
                           'Sync deadline to calendar',
                           style: AppTypography.callout.copyWith(
-                            fontSize: 16,
+                            fontSize: 17,
                             color: AppColors.label,
                             fontWeight: FontWeight.w500,
                           ),
@@ -323,7 +321,7 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 28),
+                const SizedBox(height: 32),
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -440,32 +438,21 @@ class _StackedSelectorCardState extends State<_StackedSelectorCard> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 4, bottom: 10),
-          child: Text(
-            widget.label,
-            style: AppTypography.callout.copyWith(
-              fontSize: 14,
-              color: AppColors.tertiaryLabel,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ),
         Container(
-          height: 168,
+          height: 160,
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                AppColors.cardBackgroundStrong.withValues(alpha: 0.52),
-                AppColors.cardBase.withValues(alpha: 0.38),
+                AppColors.cardBackgroundStrong.withValues(alpha: 0.40),
+                AppColors.cardBase.withValues(alpha: 0.28),
               ],
             ),
             borderRadius: BorderRadius.circular(18),
             border: Border.all(
-              color: AppColors.glassBorder.withValues(alpha: 0.20),
-              width: 0.5,
+              color: AppColors.glassBorder.withValues(alpha: 0.32),
+              width: 0.7,
             ),
           ),
           child: ClipRRect(
@@ -477,7 +464,17 @@ class _StackedSelectorCardState extends State<_StackedSelectorCard> {
               squeeze: 1.0,
               magnification: 1.0,
               useMagnifier: false,
-              selectionOverlay: const SizedBox.shrink(),
+              selectionOverlay: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 22),
+                decoration: BoxDecoration(
+                  color: AppColors.label.withValues(alpha: 0.06),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: AppColors.label.withValues(alpha: 0.85),
+                    width: 1.0,
+                  ),
+                ),
+              ),
               onSelectedItemChanged: (i) {
                 widget.onSelect(widget.items[i]);
               },
@@ -488,37 +485,15 @@ class _StackedSelectorCardState extends State<_StackedSelectorCard> {
                 final color =
                     widget.colorFor?.call(item) ?? AppColors.label;
                 return Center(
-                  child: isSelected
-                      ? Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 5,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.label.withValues(alpha: 0.04),
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(
-                              color: AppColors.label.withValues(alpha: 0.85),
-                              width: 0.9,
-                            ),
-                          ),
-                          child: Text(
-                            widget.labelFor(item),
-                            style: AppTypography.callout.copyWith(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
-                              color: color,
-                            ),
-                          ),
-                        )
-                      : Text(
-                          widget.labelFor(item),
-                          style: AppTypography.callout.copyWith(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            color: color,
-                          ),
-                        ),
+                  child: Text(
+                    widget.labelFor(item),
+                    style: AppTypography.callout.copyWith(
+                      fontSize: 15,
+                      fontWeight:
+                          isSelected ? FontWeight.w700 : FontWeight.w400,
+                      color: color,
+                    ),
+                  ),
                 );
               },
             ),

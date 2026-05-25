@@ -133,14 +133,7 @@ class _ModulePickerScreenState extends State<ModulePickerScreen>
               height: 1.35,
             ),
           ),
-          const SizedBox(height: 14),
-          ControlCenterPreview(
-            state: state,
-            showDashboard: false,
-            pulsingSlotIndex: _pulsingIndex,
-            slotKeys: _slotKeys,
-          ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 18),
           Expanded(
             child: ListView(
               padding: EdgeInsets.zero,

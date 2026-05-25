@@ -1,0 +1,132 @@
+Smart Recovery v3 Report
+Output:  /Users/timo/ceo_os/smart_recovery_v3
+Files written:  313
+Files deleted:  25
+Files empty:    13
+
+Total hunks applied:  5587
+Total hunks skipped:  2128
+Overall apply rate:   72.4%
+
+Files per chosen baseline:
+  (none)  : 237
+  179e501 : 4
+  HEAD    : 10
+  a57ee06 : 85
+  disk    : 2
+
+Files with skipped > 0, sorted by skipped desc (top 80):
+ skip  appl  upd adds  base     candidates                  path
+  265   317  177    1  179e501  a57ee06:311/271 179e501:317/265 HEAD:271/311 disk:271/311 empty:250/332 lib/features/home/home_screen.dart
+  210   233  159    1  a57ee06  a57ee06:233/210 179e501:232/211 HEAD:228/215 disk:228/215 empty:227/216 lib/features/legacy/screen_time_screen.dart
+  136    29   53    1  (none)   (none):29/136                  lib/core/providers/language_overrides.dart
+  110   112   63    2  (none)   (none):112/110                 lib/features/screen_time_manager/screen_time_manager_screen.dart
+   96   124   67    1  a57ee06  a57ee06:124/96 179e501:124/96 HEAD:123/97 disk:123/97 empty:123/97 lib/features/profile/profile_screen.dart
+   72   156   60    1  a57ee06  a57ee06:156/72 179e501:33/195 HEAD:33/195 disk:33/195 empty:0/228 lib/features/habits/habits_screen.dart
+   67     1   17    1  a57ee06  a57ee06:1/67 179e501:1/67 HEAD:1/67 disk:1/67 empty:1/67 android/app/src/main/kotlin/com/wakeapp/ceoos/AppBlockingService.kt
+   64    59   49    1  (none)   (none):59/64                   lib/core/providers/language_provider.dart
+   52    88   38    3  (none)   (none):88/52                   lib/features/rank/rank_screen.dart
+   49   124   46    2  a57ee06  a57ee06:124/49 179e501:124/49 HEAD:124/49 disk:124/49 empty:124/49 lib/features/calendar/calendar_screen.dart
+   49     0   18    1  a57ee06  a57ee06:0/49 179e501:0/49 HEAD:0/49 disk:0/49 empty:0/49 lib/core/services/stats_engine.dart
+   46   100   45    1  (none)   (none):100/46                  lib/core/services/home_widget_service.dart
+   46    71   43    1  (none)   (none):71/46                   lib/core/widgets/home_widgets/widget_views.dart
+   45    51   33    2  (none)   (none):51/45                   lib/core/repositories/premium_repository.dart
+   44    77   50    0  a57ee06  a57ee06:77/44 179e501:73/48 HEAD:53/68 disk:53/68 empty:0/121 ios/Runner.xcodeproj/project.pbxproj
+   36    78   31    1  (none)   (none):78/36                   lib/features/auth/onboarding_screen.dart
+   35   112   49    1  a57ee06  a57ee06:112/35 179e501:100/47 HEAD:100/47 disk:100/47 empty:100/47 lib/features/focus/focus_screen.dart
+   35     0    5    0  a57ee06  a57ee06:0/35 179e501:0/35 HEAD:0/35 disk:0/35 empty:0/35 docs/store_review_notes_and_disclosures.md
+   35    72   32    1  (none)   (none):72/35                   lib/components/premium_paywall.dart
+   34   105   44    1  (none)   (none):105/34                  lib/features/ceo_mode/ceo_mode_screen.dart
+   33   110   31    1  a57ee06  a57ee06:110/33 179e501:110/33 HEAD:110/33 disk:110/33 empty:110/33 lib/features/legacy/notes_screen.dart
+   33    12   13    1  (none)   (none):12/33                   lib/core/services/classic_blocking_coordinator.dart
+   29    82   44    1  a57ee06  a57ee06:82/29 179e501:77/34 HEAD:77/34 disk:77/34 empty:74/37 lib/features/home/stats_screen.dart
+   27    31   11    0  179e501  a57ee06:29/29 179e501:31/27 HEAD:25/33 disk:25/33 empty:0/58 lib/features/auth/signup_screen.dart
+   26    35   11    1  a57ee06  a57ee06:35/26 179e501:31/30 HEAD:31/30 disk:31/30 empty:25/36 lib/features/calendar/add_event_sheet.dart
+   25     0    5    1  a57ee06  a57ee06:0/25 179e501:0/25 HEAD:0/25 disk:0/25 empty:0/25 lib/core/repositories/advanced_stats_repository.dart
+   24    96   36    1  HEAD     a57ee06:74/46 179e501:71/49 HEAD:96/24 disk:96/24 empty:13/107 lib/core/services/focus_service.dart
+   22    22   20    1  a57ee06  a57ee06:22/22 179e501:20/24 HEAD:16/28 disk:16/28 empty:15/29 lib/core/theme/app_colors.dart
+   22    94   36    1  a57ee06  a57ee06:94/22 179e501:22/94 HEAD:88/28 disk:88/28 empty:2/114 lib/core/providers/focus_provider.dart
+   21    15   11    2  (none)   (none):15/21                   lib/components/ambient_backdrop.dart
+   19    90   48    1  (none)   (none):90/19                   lib/features/setup/setup_flow_screen.dart
+   18   100   27    2  (none)   (none):100/18                  lib/features/dashboard/dashboard_screen.dart
+   17    27   13    1  179e501  a57ee06:20/24 179e501:27/17 HEAD:27/17 disk:27/17 empty:20/24 android/app/src/main/kotlin/com/wakeapp/ceoos/MainActivity.kt
+   13   156   46    1  a57ee06  a57ee06:156/13 179e501:136/33 HEAD:134/35 disk:134/35 empty:130/39 lib/features/tasks/tasks_screen.dart
+   12     0    5    0  a57ee06  a57ee06:0/12 179e501:0/12 HEAD:0/12 disk:0/12 empty:0/12 docs/store_submission_checklist_blocking_stack.md
+   12    29   14    1  (none)   (none):29/12                   lib/features/screen_time_setup/screen_time_setup_screen.dart
+   11    18   11    1  a57ee06  a57ee06:18/11 179e501:13/16 HEAD:11/18 disk:11/18 empty:4/25 lib/components/liquid_button.dart
+   11    27   10    3  (none)   (none):27/11                   lib/components/premium_gate_dialog.dart
+   10     0    1    0  a57ee06  a57ee06:0/10 179e501:0/10 HEAD:0/10 disk:0/10 empty:0/10 docs/real_device_test_plan_blocking_stack.md
+    9     0    4    0  a57ee06  a57ee06:0/9 179e501:0/9 HEAD:0/9 disk:0/9 empty:0/9 packages/url_launcher_ios/ios/url_launcher_ios/Sources/url_launcher_ios/URLLauncherPlugin.swift
+    8    29    7    1  a57ee06  a57ee06:29/8 179e501:25/12 HEAD:24/13 disk:24/13 empty:22/15 lib/features/legacy/event_types_screen.dart
+    8    13    6    1  (none)   (none):13/8                    android/app/src/main/kotlin/com/wakeapp/ceoos/WakeAccessibilityService.kt
+    7   153   30    2  a57ee06  a57ee06:153/7 179e501:139/21 HEAD:139/21 disk:139/21 empty:137/23 lib/features/leaderboard/leaderboard_screen.dart
+    7   208   97    0  a57ee06  a57ee06:208/7 179e501:146/69 HEAD:146/69 disk:146/69 empty:0/215 ios/Runner/AppDelegate.swift
+    7     7    4    1  a57ee06  a57ee06:7/7 179e501:7/7 HEAD:7/7 disk:7/7 empty:7/7 lib/core/models/advanced_stats_models.dart
+    7   159   27    3  (none)   (none):159/7                   ios/CeoWidgets/CeoHomeWidget.swift
+    6    60   31    0  a57ee06  a57ee06:60/6 179e501:45/21 HEAD:33/33 disk:33/33 empty:0/66 lib/main.dart
+    6    14    5    1  a57ee06  a57ee06:14/6 179e501:14/6 HEAD:12/8 disk:12/8 empty:12/8 android/app/src/main/kotlin/com/example/ceo_os/AppBlockingService.kt
+    6     0    2    0  a57ee06  a57ee06:0/6 179e501:0/6 HEAD:0/6 disk:0/6 empty:0/6 packages/shared_preferences_foundation/darwin/shared_preferences_foundation/Sources/shared_preferences_foundation/SharedPreferencesPlugin.swift
+    6    31   16    0  HEAD     a57ee06:0/37 179e501:31/6 HEAD:31/6 disk:31/6 empty:0/37 extractor.py
+    5    32   15    1  a57ee06  a57ee06:32/5 179e501:28/9 HEAD:17/20 disk:17/20 empty:15/22 lib/components/glass_card.dart
+    5    13    4    1  (none)   (none):13/5                    docs/app_store_submission_packet.md
+    5     5    5    2  (none)   (none):5/5                     lib/core/config/tester_config.dart
+    4     2    3    1  (none)   (none):2/4                     supabase_theme_onboarding_update.sql
+    4    62   23    0  a57ee06  a57ee06:62/4 179e501:55/11 HEAD:54/12 disk:54/12 empty:0/66 lib/core/repositories/feature_repository.dart
+    4     2    3    1  (none)   (none):2/4                     supabase_p0_profile_settings_theme.sql
+    4    29    9    0  HEAD     a57ee06:29/4 179e501:25/8 HEAD:29/4 disk:29/4 empty:0/33 lib/core/repositories/user_repository.dart
+    4    25   13    0  a57ee06  a57ee06:25/4 179e501:20/9 HEAD:21/8 disk:21/8 empty:0/29 lib/core/providers/habit_provider.dart
+    4    24    9    1  (none)   (none):24/4                    lib/core/providers/ceo_mode_provider.dart
+    4    50   18    2  (none)   (none):50/4                    lib/features/screen_time_manager/family_time_screen.dart
+    4     8    7    0  a57ee06  a57ee06:8/4 179e501:6/6 HEAD:6/6 disk:6/6 empty:0/12 lib/core/providers/auth_provider.dart
+    4     0    2    1  (none)   (none):0/4                     supabase_theme_preset_ids_fix.sql
+    4     0    2    0  a57ee06  a57ee06:0/4 179e501:0/4 HEAD:0/4 disk:0/4 empty:0/4 supabase_theme_accent_system_update.sql
+    4    25   19    1  a57ee06  a57ee06:25/4 179e501:23/6 HEAD:21/8 disk:21/8 empty:2/27 android/app/src/main/AndroidManifest.xml
+    4     2    1    1  (none)   (none):2/4                     lib/features/ceo_mode/blackout_preparation/blackout_preparation_checklist_view.dart
+    4     0    2    0  a57ee06  a57ee06:0/4 179e501:0/4 HEAD:0/4 disk:0/4 empty:0/4 packages/home_widget/ios/Classes/HomeWidgetBackgroundWorker.swift
+    4    59   19    1  (none)   (none):59/4                    lib/features/widget_configuration/widget_configuration_screen.dart
+    3     7    7    0  a57ee06  a57ee06:7/3 179e501:5/5 HEAD:5/5 disk:5/5 empty:0/10 lib/core/models/settings_models.dart
+    3    20   12    1  a57ee06  a57ee06:20/3 179e501:15/8 HEAD:13/10 disk:13/10 empty:10/13 lib/core/theme/app_typography.dart
+    3     4    7    1  (none)   (none):4/3                     ios/Runner/Info.plist
+    3     0    1    1  a57ee06  a57ee06:0/3 179e501:0/3 HEAD:0/3 disk:0/3 empty:0/3 lib/core/models/stats_event_models.dart
+    3     5    6    0  a57ee06  a57ee06:5/3 179e501:2/6 HEAD:3/5 disk:3/5 empty:0/8 lib/core/config/supabase_config.dart
+    3     0    2    0  a57ee06  a57ee06:0/3 179e501:0/3 HEAD:0/3 disk:0/3 empty:0/3 packages/home_widget/ios/Classes/SwiftHomeWidgetPlugin.swift
+    3    30   18    2  (none)   (none):30/3                    lib/features/premium/upgrade_screen.dart
+    2    16    5    0  HEAD     a57ee06:16/2 179e501:11/7 HEAD:16/2 disk:16/2 empty:0/18 lib/core/repositories/task_repository.dart
+    2    28   10    0  a57ee06  a57ee06:28/2 179e501:19/11 HEAD:18/12 disk:18/12 empty:0/30 lib/core/repositories/focus_repository.dart
+    2    18    7    1  (none)   (none):18/2                    lib/core/services/billing_service.dart
+    2    29    2    1  (none)   (none):29/2                    docs/google_play_submission_packet.md
+    2    14    1    1  (none)   (none):14/2                    docs/site_privacy_policy.md
+    2     6    7    3  HEAD     a57ee06:5/3 179e501:5/3 HEAD:6/2 disk:6/2 empty:5/3 android/app/src/main/res/xml/accessibility_service_config.xml
+
+Files with 100% apply (sample, first 30):
+  .gitignore
+  .vscode/launch.json
+  .vscode/settings.json
+  .vscode/supabase.local.json
+  .vscode/tasks.json
+  README.md
+  Runner.xcworkspace/contents.xcworkspacedata
+  analysis_options.yaml
+  android/app/build.gradle.kts
+  android/app/src/androidTest/kotlin/com/wakeapp/ceoos/presentation/launcher/HomeActivityTest.kt
+  android/app/src/main/kotlin/com/example/ceo_os/ClassicDailyLimitTracker.kt
+  android/app/src/main/kotlin/com/example/ceo_os/ClassicPauseAlarmReceiver.kt
+  android/app/src/main/kotlin/com/example/ceo_os/ClassicPauseBootReceiver.kt
+  android/app/src/main/kotlin/com/example/ceo_os/ClassicPauseScheduler.kt
+  android/app/src/main/kotlin/com/example/ceo_os/MainActivity.kt
+  android/app/src/main/kotlin/com/wakeapp/ceoos/AppBlockEngine.kt
+  android/app/src/main/kotlin/com/wakeapp/ceoos/AppBlockingOverlay.kt
+  android/app/src/main/kotlin/com/wakeapp/ceoos/BlockGateActivity.kt
+  android/app/src/main/kotlin/com/wakeapp/ceoos/BlockPolicyRepository.kt
+  android/app/src/main/kotlin/com/wakeapp/ceoos/BlockingAccessibilityService.kt
+  android/app/src/main/kotlin/com/wakeapp/ceoos/BlockingLogger.kt
+  android/app/src/main/kotlin/com/wakeapp/ceoos/BrowserBlockCoordinator.kt
+  android/app/src/main/kotlin/com/wakeapp/ceoos/CeoDeviceAdminReceiver.kt
+  android/app/src/main/kotlin/com/wakeapp/ceoos/CeoHomeWidgetConfigureActivity.kt
+  android/app/src/main/kotlin/com/wakeapp/ceoos/CeoHomeWidgetProvider.kt
+  android/app/src/main/kotlin/com/wakeapp/ceoos/ForegroundAppDetector.kt
+  android/app/src/main/kotlin/com/wakeapp/ceoos/GateLauncher.kt
+  android/app/src/main/kotlin/com/wakeapp/ceoos/ModeResolver.kt
+  android/app/src/main/kotlin/com/wakeapp/ceoos/PermissionReturnCoordinator.kt
+  android/app/src/main/kotlin/com/wakeapp/ceoos/domain/block/BlockDecision.kt
+  (total clean files: 203)

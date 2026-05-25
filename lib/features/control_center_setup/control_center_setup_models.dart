@@ -5,12 +5,11 @@ enum ControlCenterItemType { module, shortcut }
 enum MainModule { screenTime, schedule, habits, todo }
 
 enum ControlShortcut {
-  blackout,
-  quickFocus,
-  controlledPause,
-  blockNow,
-  addRule,
-  stats,
+  rank,
+  focusMode,
+  blockAppsAndSites,
+  streak,
+  notes,
 }
 
 enum DashboardWidget { focus, notes, winStreak, rank, blackoutButton }
@@ -20,7 +19,9 @@ enum SetupStep {
   modulePicker,
   moduleConfirmation,
   shortcutPicker,
+  shortcutConfirmation,
   dashboardIntro,
+  themePicker,
   dashboardWidgets,
   finalPreview,
   permissions,
@@ -104,53 +105,45 @@ class ControlCenterShortcutItem extends ControlCenterItem {
 
   factory ControlCenterShortcutItem(ControlShortcut shortcut) {
     switch (shortcut) {
-      case ControlShortcut.blackout:
+      case ControlShortcut.rank:
         return const ControlCenterShortcutItem._(
-          shortcut: ControlShortcut.blackout,
-          id: 'shortcut_blackout',
-          title: 'Blackout',
-          subtitle: 'Passe instantanément en mode protection.',
-          icon: CupertinoIcons.moon_fill,
+          shortcut: ControlShortcut.rank,
+          id: 'shortcut_rank',
+          title: 'Rank',
+          subtitle: 'Ton classement et ton niveau de performance.',
+          icon: CupertinoIcons.star_fill,
         );
-      case ControlShortcut.quickFocus:
+      case ControlShortcut.focusMode:
         return const ControlCenterShortcutItem._(
-          shortcut: ControlShortcut.quickFocus,
-          id: 'shortcut_quick_focus',
-          title: 'Focus rapide',
-          subtitle: 'Lance une session en un geste.',
+          shortcut: ControlShortcut.focusMode,
+          id: 'shortcut_focus_mode',
+          title: 'Focus Mode',
+          subtitle: 'Lance une session focus en un geste.',
           icon: CupertinoIcons.bolt_fill,
         );
-      case ControlShortcut.controlledPause:
+      case ControlShortcut.blockAppsAndSites:
         return const ControlCenterShortcutItem._(
-          shortcut: ControlShortcut.controlledPause,
-          id: 'shortcut_controlled_pause',
-          title: 'Pause contrôlée',
-          subtitle: 'Coupe court, puis reprends.',
-          icon: CupertinoIcons.pause_circle_fill,
+          shortcut: ControlShortcut.blockAppsAndSites,
+          id: 'shortcut_block_apps_and_sites',
+          title: 'Block apps and sites',
+          subtitle: 'Bloque les apps et sites distrayants.',
+          icon: CupertinoIcons.shield_fill,
         );
-      case ControlShortcut.blockNow:
+      case ControlShortcut.streak:
         return const ControlCenterShortcutItem._(
-          shortcut: ControlShortcut.blockNow,
-          id: 'shortcut_block_now',
-          title: 'Bloquer maintenant',
-          subtitle: 'Applique une règle tout de suite.',
-          icon: CupertinoIcons.hand_raised_fill,
+          shortcut: ControlShortcut.streak,
+          id: 'shortcut_streak',
+          title: 'Streak',
+          subtitle: 'Ta série et tes habitudes de régularité.',
+          icon: CupertinoIcons.flame_fill,
         );
-      case ControlShortcut.addRule:
+      case ControlShortcut.notes:
         return const ControlCenterShortcutItem._(
-          shortcut: ControlShortcut.addRule,
-          id: 'shortcut_add_rule',
-          title: 'Ajouter une règle',
-          subtitle: 'Crée une règle en quelques secondes.',
-          icon: CupertinoIcons.plus_circle_fill,
-        );
-      case ControlShortcut.stats:
-        return const ControlCenterShortcutItem._(
-          shortcut: ControlShortcut.stats,
-          id: 'shortcut_stats',
-          title: 'Voir mes statistiques',
-          subtitle: 'Visualise ton rythme et tes progrès.',
-          icon: CupertinoIcons.chart_bar_alt_fill,
+          shortcut: ControlShortcut.notes,
+          id: 'shortcut_notes',
+          title: 'Notes',
+          subtitle: 'Tes notes et pensées du moment.',
+          icon: CupertinoIcons.doc_text_fill,
         );
     }
   }
@@ -165,12 +158,11 @@ class ControlCenterCatalog {
   ];
 
   static const List<ControlShortcut> shortcuts = [
-    ControlShortcut.blackout,
-    ControlShortcut.quickFocus,
-    ControlShortcut.controlledPause,
-    ControlShortcut.blockNow,
-    ControlShortcut.addRule,
-    ControlShortcut.stats,
+    ControlShortcut.rank,
+    ControlShortcut.focusMode,
+    ControlShortcut.blockAppsAndSites,
+    ControlShortcut.streak,
+    ControlShortcut.notes,
   ];
 
   static const Set<DashboardWidget> defaultWidgets = {

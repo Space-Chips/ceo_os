@@ -14,7 +14,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
 import '../../components/ambient_backdrop.dart';
-import 'habit_gallery_sheet.dart';
+import 'add_habit_sheet.dart';
 
 class HabitsScreen extends StatefulWidget {
   const HabitsScreen({super.key});
@@ -43,7 +43,7 @@ class _HabitsScreenState extends State<HabitsScreen> {
   void _showAddHabit() {
     showCupertinoModalPopup(
       context: context,
-      builder: (_) => const HabitGallerySheet(),
+      builder: (_) => const AddHabitSheet(),
     );
   }
 

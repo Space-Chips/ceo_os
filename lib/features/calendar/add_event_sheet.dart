@@ -350,21 +350,24 @@ class _AddEventSheetState extends State<AddEventSheet> {
   @override
   Widget build(BuildContext context) {
     return BackdropFilter(
-      filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+      filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
       child: Container(
         padding: EdgeInsets.only(
           bottom: MediaQuery.of(context).viewInsets.bottom,
         ),
         decoration: BoxDecoration(
-          color: AppColors.background.withValues(alpha: 0.88),
+          color: AppColors.background.withValues(alpha: 0.82),
           borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
           border: Border(
-            top: BorderSide(color: AppColors.glassBorder, width: 0.5),
+            top: BorderSide(
+              color: AppColors.glassBorder.withValues(alpha: 0.30),
+              width: 0.5,
+            ),
           ),
         ),
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(24, 18, 24, 14),
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
             child: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -372,24 +375,26 @@ class _AddEventSheetState extends State<AddEventSheet> {
                 children: [
                   Center(
                     child: Container(
-                      width: 42,
-                      height: 4,
+                      width: 36,
+                      height: 5,
                       decoration: BoxDecoration(
-                        color: AppColors.glassBorder,
-                        borderRadius: BorderRadius.circular(2),
+                        color: AppColors.tertiaryLabel.withValues(alpha: 0.55),
+                        borderRadius: BorderRadius.circular(2.5),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 18),
+                  const SizedBox(height: 28),
                   Text(
                     _t('calendar_add_event_title'),
-                    style: AppTypography.mono.copyWith(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w900,
+                    style: AppTypography.largeTitle.copyWith(
+                      fontSize: 38,
+                      height: 1.1,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.9,
                       color: AppColors.label,
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 26),
                   GlassInputField(
                     placeholder: 'Title',
                     controller: _titleCtrl,

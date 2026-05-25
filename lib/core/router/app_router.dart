@@ -286,16 +286,21 @@ class AppRouter {
         final setupGate = state.matchedLocation == '/setup-gate';
         final setupOrigin = state.uri.queryParameters['origin'];
 
-        // 1. If not logged in and not on auth/onboarding pages, go to onboarding
+        // 1. If not logged in and not on auth pages, go to signup (default entry)
         if (!auth.isAuthenticated) {
           if (!loggingIn && !onboarding) {
-            return '/onboarding';
+            return '/signup';
           }
           return null;
         }
 
-        // 2. If logged in and on auth or onboarding pages, go to home
+        // 2. If logged in and on auth/legacy-onboarding pages, route:
+        //    - just-signed-up users → /control-center-setup (no /home flash)
+        //    - other auth users → /home
         if (auth.isAuthenticated && (loggingIn || onboarding)) {
+          if (state.matchedLocation == '/signup') {
+            return '/control-center-setup';
+          }
           return '/home';
         }
 

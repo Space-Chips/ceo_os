@@ -9,7 +9,9 @@ import 'control_center_slot_grid.dart';
 class ControlCenterPreview extends StatelessWidget {
   final ControlCenterSetupState state;
   final bool showDashboard;
+  final bool bare;
   final void Function(String itemId)? onRemoveItem;
+  final void Function(int index)? onTapEmptySlot;
   final List<double>? slotAppearProgress;
   final int? pulsingSlotIndex;
   final List<GlobalKey>? slotKeys;
@@ -18,7 +20,9 @@ class ControlCenterPreview extends StatelessWidget {
     super.key,
     required this.state,
     this.showDashboard = true,
+    this.bare = false,
     this.onRemoveItem,
+    this.onTapEmptySlot,
     this.slotAppearProgress,
     this.pulsingSlotIndex,
     this.slotKeys,
@@ -27,15 +31,10 @@ class ControlCenterPreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final widgets = state.enabledDashboardWidgets;
-    return GlassCard(
-      level: GlassCardLevel.elevated,
-      padding: const EdgeInsets.all(14),
-      borderRadius: 24,
-      border: Border.all(color: AppColors.borderStrong, width: 1),
-      gradientColors: [AppColors.sectionBackground, AppColors.background],
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+    final body = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (!bare) ...[
           Text(
             'Aperçu',
             style: AppTypography.overline.copyWith(
@@ -45,24 +44,34 @@ class ControlCenterPreview extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          ControlCenterSlotGrid(
-            slots: state.slots,
-            showRemove: onRemoveItem != null,
-            onRemoveItem: onRemoveItem,
-            appearProgressByIndex: slotAppearProgress,
-            pulsingIndex: pulsingSlotIndex,
-            slotKeys: slotKeys,
-          ),
-          if (showDashboard) ...[
-            const SizedBox(height: 14),
-            AnimatedSize(
-              duration: const Duration(milliseconds: 280),
-              curve: Curves.easeOutCubic,
-              child: _DashboardPreview(widgets: widgets),
-            ),
-          ],
         ],
-      ),
+        ControlCenterSlotGrid(
+          slots: state.slots,
+          showRemove: onRemoveItem != null,
+          onRemoveItem: onRemoveItem,
+          onTapEmptySlot: onTapEmptySlot,
+          appearProgressByIndex: slotAppearProgress,
+          pulsingIndex: pulsingSlotIndex,
+          slotKeys: slotKeys,
+        ),
+        if (showDashboard) ...[
+          const SizedBox(height: 14),
+          AnimatedSize(
+            duration: const Duration(milliseconds: 280),
+            curve: Curves.easeOutCubic,
+            child: _DashboardPreview(widgets: widgets),
+          ),
+        ],
+      ],
+    );
+    if (bare) return body;
+    return GlassCard(
+      level: GlassCardLevel.elevated,
+      padding: const EdgeInsets.all(14),
+      borderRadius: 24,
+      border: Border.all(color: AppColors.borderStrong, width: 1),
+      gradientColors: [AppColors.sectionBackground, AppColors.background],
+      child: body,
     );
   }
 }

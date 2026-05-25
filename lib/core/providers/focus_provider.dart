@@ -10,6 +10,7 @@ import '../repositories/premium_repository.dart';
 import '../services/classic_blocking_coordinator.dart';
 import '../services/classic_blocking_local_store.dart';
 import '../services/focus_service.dart';
+import '../services/live_activity_service.dart';
 import '../repositories/focus_repository.dart';
 import '../services/stats_engine.dart';
 import '../utils/app_logger.dart';
@@ -43,6 +44,20 @@ class _FocusShieldSnapshot {
 }
 
 class FocusProvider extends ChangeNotifier {
+  FocusProvider() {
+    // Kick off async restore without blocking constructor (matches CeoModeProvider).
+    Future.microtask(_restoreSession);
+  }
+
+  // ── Persistence keys (must stay in sync across versions) ──
+  static const String _kSessionState = 'focus_session_state_v1';
+  static const String _kSessionStartAtMs = 'focus_session_start_at_ms_v1';
+  static const String _kSessionPlannedMin = 'focus_session_planned_min_v1';
+  static const String _kSessionExitReadyAtMs =
+      'focus_session_exit_ready_at_ms_v1';
+  static const String _kSessionTitle = 'focus_session_title_v1';
+  static const String _kSessionLinkedTaskId = 'focus_session_linked_task_id_v1';
+
   final FocusService _focusService = FocusService();
   final FocusRepository _repository = FocusRepository();
   final FeatureRepository _featureRepository = FeatureRepository();
@@ -239,6 +254,19 @@ class FocusProvider extends ChangeNotifier {
     await _applyFocusShieldOverrideFromBlockedAppsSites();
 
     _startTimer();
+    unawaited(_persistSession());
+    unawaited(
+      LiveActivityService.instance.start(
+        session: LiveActivitySession.focus,
+        title: (sessionTitle != null && sessionTitle!.trim().isNotEmpty)
+            ? sessionTitle!.trim()
+            : 'Focus',
+        startAt: _sessionStartTime!,
+        endAt: _sessionStartTime!.add(
+          Duration(minutes: focusDurationMinutes),
+        ),
+      ),
+    );
     unawaited(
       _statsEngine.recordFocusSessionStarted(
         plannedDurationMinutes: focusDurationMinutes,
@@ -280,6 +308,7 @@ class FocusProvider extends ChangeNotifier {
     _focusExitReadyAt = DateTime.now().add(
       const Duration(seconds: _focusExitCountdownSeconds),
     );
+    unawaited(_persistSession());
     notifyListeners();
   }
 
@@ -287,6 +316,7 @@ class FocusProvider extends ChangeNotifier {
     if (_state != FocusState.exitPending) return;
     _state = FocusState.focusing;
     _focusExitReadyAt = null;
+    unawaited(_persistSession());
     notifyListeners();
   }
 
@@ -346,6 +376,8 @@ class FocusProvider extends ChangeNotifier {
     _isFocusModeActive = false;
     _focusExitReadyAt = null;
     _remainingSeconds = focusDurationMinutes * 60;
+    unawaited(_clearPersistedSession());
+    unawaited(LiveActivityService.instance.end(LiveActivitySession.focus));
     if (_focusShieldOverrideActive) {
       unawaited(_syncClassicBaselineFromBlockedAppsSites());
       _focusShieldOverrideActive = false;
@@ -633,12 +665,151 @@ class FocusProvider extends ChangeNotifier {
     _isFocusModeActive = false;
     _focusExitReadyAt = null;
     _remainingSeconds = focusDurationMinutes * 60;
+    await _clearPersistedSession();
+    unawaited(LiveActivityService.instance.end(LiveActivitySession.focus));
 
     if (_focusShieldOverrideActive) {
       await _syncClassicBaselineFromBlockedAppsSites();
       _focusShieldOverrideActive = false;
     } else {
       await _refreshBlockingSummary();
+    }
+  }
+
+  // ── Session persistence ──
+
+  Future<void> _persistSession() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final isActive =
+          (_state == FocusState.focusing ||
+              _state == FocusState.exitPending) &&
+          _sessionStartTime != null;
+      if (!isActive) {
+        await _clearPersistedSession();
+        return;
+      }
+      await prefs.setString(_kSessionState, _state.name);
+      await prefs.setInt(
+        _kSessionStartAtMs,
+        _sessionStartTime!.millisecondsSinceEpoch,
+      );
+      await prefs.setInt(_kSessionPlannedMin, focusDurationMinutes);
+      final exitMs = _focusExitReadyAt?.millisecondsSinceEpoch;
+      if (exitMs != null) {
+        await prefs.setInt(_kSessionExitReadyAtMs, exitMs);
+      } else {
+        await prefs.remove(_kSessionExitReadyAtMs);
+      }
+      if (sessionTitle != null && sessionTitle!.isNotEmpty) {
+        await prefs.setString(_kSessionTitle, sessionTitle!);
+      } else {
+        await prefs.remove(_kSessionTitle);
+      }
+      if (linkedTaskId != null && linkedTaskId!.isNotEmpty) {
+        await prefs.setString(_kSessionLinkedTaskId, linkedTaskId!);
+      } else {
+        await prefs.remove(_kSessionLinkedTaskId);
+      }
+    } catch (e) {
+      AppLogger.error('Failed to persist focus session.', e);
+    }
+  }
+
+  Future<void> _clearPersistedSession() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_kSessionState);
+      await prefs.remove(_kSessionStartAtMs);
+      await prefs.remove(_kSessionPlannedMin);
+      await prefs.remove(_kSessionExitReadyAtMs);
+      await prefs.remove(_kSessionTitle);
+      await prefs.remove(_kSessionLinkedTaskId);
+    } catch (_) {}
+  }
+
+  Future<void> _restoreSession() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final stateName = prefs.getString(_kSessionState);
+      final startAtMs = prefs.getInt(_kSessionStartAtMs);
+      final plannedMin = prefs.getInt(_kSessionPlannedMin);
+      if (stateName == null || startAtMs == null || plannedMin == null) {
+        return;
+      }
+      final startAt = DateTime.fromMillisecondsSinceEpoch(startAtMs);
+      final plannedEnd = startAt.add(Duration(minutes: plannedMin));
+      final now = DateTime.now();
+      final title = prefs.getString(_kSessionTitle);
+      final taskId = prefs.getString(_kSessionLinkedTaskId);
+      final exitReadyMs = prefs.getInt(_kSessionExitReadyAtMs);
+
+      if (!plannedEnd.isAfter(now)) {
+        // Session finished naturally while the app was killed or backgrounded.
+        // Log it as completed and clear persisted state.
+        sessionTitle = title;
+        linkedTaskId = taskId;
+        _sessionStartTime = startAt;
+        focusDurationMinutes = plannedMin;
+        try {
+          await _logSession(completed: true);
+          unawaited(
+            _statsEngine.recordFocusSessionCompleted(
+              durationMinutes: plannedMin,
+              linkedTaskId: taskId,
+            ),
+          );
+          unawaited(
+            _statsEngine.recordProductiveTime(minutes: plannedMin),
+          );
+          _completedSessions++;
+          _totalFocusMinutesToday += plannedMin;
+        } catch (e) {
+          AppLogger.error('Failed to finalize restored focus session.', e);
+        }
+        await _clearPersistedSession();
+        _sessionStartTime = null;
+        sessionTitle = null;
+        linkedTaskId = null;
+        _state = FocusState.idle;
+        _remainingSeconds = focusDurationMinutes * 60;
+        notifyListeners();
+        return;
+      }
+
+      // Session still active: restore it and resume the ticker.
+      focusDurationMinutes = plannedMin;
+      _sessionStartTime = startAt;
+      sessionTitle = title;
+      linkedTaskId = taskId;
+      final restoredState = FocusState.values.firstWhere(
+        (s) => s.name == stateName,
+        orElse: () => FocusState.focusing,
+      );
+      _state =
+          (restoredState == FocusState.focusing ||
+              restoredState == FocusState.exitPending)
+          ? restoredState
+          : FocusState.focusing;
+      if (_state == FocusState.exitPending && exitReadyMs != null) {
+        _focusExitReadyAt = DateTime.fromMillisecondsSinceEpoch(exitReadyMs);
+      } else {
+        _focusExitReadyAt = null;
+      }
+      _isFocusModeActive = true;
+      _remainingSeconds = plannedEnd.difference(now).inSeconds;
+      _startTimer();
+      unawaited(
+        LiveActivityService.instance.start(
+          session: LiveActivitySession.focus,
+          title: (title != null && title.trim().isNotEmpty) ? title : 'Focus',
+          startAt: startAt,
+          endAt: plannedEnd,
+        ),
+      );
+      notifyListeners();
+    } catch (e) {
+      AppLogger.error('Failed to restore focus session.', e);
     }
   }
 

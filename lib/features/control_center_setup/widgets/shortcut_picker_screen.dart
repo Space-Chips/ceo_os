@@ -133,7 +133,7 @@ class _ShortcutPickerScreenState extends State<ShortcutPickerScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Ajoute des actions rapides',
+            'Choisis un raccourci',
             style: AppTypography.largeTitle.copyWith(
               fontSize: 30,
               fontWeight: FontWeight.w800,
@@ -143,20 +143,13 @@ class _ShortcutPickerScreenState extends State<ShortcutPickerScreen>
           ),
           const SizedBox(height: 8),
           Text(
-            'Complète ton centre avec ce que tu utilises le plus.',
+            "Une action par slot. Tu pourras en ajouter d'autres plus tard.",
             style: AppTypography.subhead.copyWith(
               color: AppColors.secondaryLabel.withValues(alpha: 0.72),
               height: 1.35,
             ),
           ),
-          const SizedBox(height: 14),
-          ControlCenterPreview(
-            state: state,
-            showDashboard: false,
-            pulsingSlotIndex: _pulsingIndex,
-            slotKeys: _slotKeys,
-          ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 18),
           Expanded(
             child: ListView(
               padding: EdgeInsets.zero,

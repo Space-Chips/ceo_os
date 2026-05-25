@@ -5,8 +5,13 @@ import '../../core/theme/app_typography.dart';
 
 class PremiumComparisonTable extends StatelessWidget {
   final bool isFr;
+  final bool isPremium;
 
-  const PremiumComparisonTable({super.key, required this.isFr});
+  const PremiumComparisonTable({
+    super.key,
+    required this.isFr,
+    this.isPremium = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -89,85 +94,148 @@ class PremiumComparisonTable extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Row(
-              children: [
-                Expanded(
-                  flex: 4,
-                  child: _headerCell(
-                    isFr ? 'Fonctionnalité' : 'Feature',
-                    AppColors.tertiaryLabel,
-                  ),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  flex: 3,
-                  child: _headerCell(headerFree, AppColors.tertiaryLabel),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  flex: 3,
-                  child: _headerCell(
-                    headerPremium,
-                    AppColors.primaryOrange,
-                    accent: true,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            for (int i = 0; i < rows.length; i++) ...[
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    flex: 4,
-                    child: Text(
-                      rows[i].title,
-                      style: AppTypography.callout.copyWith(
-                        fontSize: 15,
-                        color: AppColors.label,
-                        fontWeight: FontWeight.w700,
-                        height: 1.3,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    flex: 3,
-                    child: Text(
-                      rows[i].free,
-                      style: AppTypography.footnote.copyWith(
-                        fontSize: 13,
-                        color: AppColors.tertiaryLabel.withValues(alpha: 0.85),
-                        fontWeight: FontWeight.w500,
-                        height: 1.35,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    flex: 3,
-                    child: Text(
-                      rows[i].premium,
-                      style: AppTypography.footnote.copyWith(
-                        fontSize: 13,
-                        color: AppColors.primaryOrange,
-                        fontWeight: FontWeight.w700,
-                        height: 1.35,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              if (i < rows.length - 1) ...[
-                const SizedBox(height: 16),
-                _divider(),
-                const SizedBox(height: 16),
-              ],
+            if (isPremium) ...[
+              _activatedBanner(),
+              const SizedBox(height: 40),
             ],
-            const SizedBox(height: 24),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final totalWidth = constraints.maxWidth;
+                const gaps = 14.0 * 2;
+                final unit = (totalWidth - gaps) / 10;
+                final premiumColWidth = unit * 3;
+                return Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    if (isPremium)
+                      Positioned(
+                        top: -22,
+                        bottom: -24,
+                        right: -8,
+                        width: premiumColWidth + 16,
+                        child: IgnorePointer(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(18),
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  AppColors.success.withValues(alpha: 0.16),
+                                  AppColors.success.withValues(alpha: 0.06),
+                                ],
+                              ),
+                              border: Border.all(
+                                color: AppColors.success.withValues(
+                                  alpha: 0.38,
+                                ),
+                                width: 0.6,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Expanded(
+                              flex: 4,
+                              child: _headerCell(
+                                isFr ? 'Fonctionnalité' : 'Feature',
+                                AppColors.tertiaryLabel,
+                              ),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              flex: 3,
+                              child: _headerCell(
+                                headerFree,
+                                AppColors.tertiaryLabel,
+                              ),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              flex: 3,
+                              child: _headerCell(
+                                headerPremium,
+                                isPremium
+                                    ? AppColors.success
+                                    : AppColors.primaryOrange,
+                                accent: true,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+                        for (int i = 0; i < rows.length; i++) ...[
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Expanded(
+                                flex: 4,
+                                child: Text(
+                                  rows[i].title,
+                                  style: AppTypography.callout.copyWith(
+                                    fontSize: 15,
+                                    color: AppColors.label,
+                                    fontWeight: FontWeight.w700,
+                                    height: 1.3,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 14),
+                              Expanded(
+                                flex: 3,
+                                child: Text(
+                                  rows[i].free,
+                                  style: AppTypography.footnote.copyWith(
+                                    fontSize: 13,
+                                    color: AppColors.tertiaryLabel.withValues(
+                                      alpha: 0.85,
+                                    ),
+                                    fontWeight: FontWeight.w500,
+                                    height: 1.35,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 14),
+                              Expanded(
+                                flex: 3,
+                                child: Text(
+                                  rows[i].premium,
+                                  style: AppTypography.footnote.copyWith(
+                                    fontSize: 13,
+                                    color: isPremium
+                                        ? AppColors.label
+                                        : AppColors.primaryOrange,
+                                    fontWeight: FontWeight.w700,
+                                    height: 1.35,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          if (i < rows.length - 1) ...[
+                            const SizedBox(height: 16),
+                            _divider(),
+                            const SizedBox(height: 16),
+                          ],
+                        ],
+                      ],
+                    ),
+                  ],
+                );
+              },
+            ),
+            const SizedBox(height: 34),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 18,
+                vertical: 14,
+              ),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(18),
                 gradient: LinearGradient(
@@ -200,6 +268,48 @@ class PremiumComparisonTable extends StatelessWidget {
       ),
     );
   }
+
+  Widget _activatedBanner() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(14),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppColors.success.withValues(alpha: 0.22),
+            AppColors.success.withValues(alpha: 0.10),
+          ],
+        ),
+        border: Border.all(
+          color: AppColors.success.withValues(alpha: 0.45),
+          width: 0.6,
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            CupertinoIcons.checkmark_seal_fill,
+            size: 16,
+            color: AppColors.success,
+          ),
+          const SizedBox(width: 8),
+          Text(
+            isFr ? 'PREMIUM ACTIVÉ' : 'PREMIUM ACTIVATED',
+            style: AppTypography.overline.copyWith(
+              fontSize: 12,
+              color: AppColors.success,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 1.4,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
 
   Widget _divider() => Container(
         height: 0.5,

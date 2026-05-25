@@ -1,4 +1,7 @@
+import 'dart:ui';
+
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart' show Colors;
 import 'package:provider/provider.dart';
 
 import '../../components/components.dart';
@@ -608,52 +611,61 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final media = MediaQuery.of(context);
     final days = const ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+    final media = MediaQuery.of(context);
 
-    return SafeArea(
-      top: false,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-        child: SizedBox(
-          height: media.size.height * 0.82,
-          child: Container(
-            decoration: _sheetDecoration(),
+    return BackdropFilter(
+      filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+      child: Container(
+        constraints: BoxConstraints(maxHeight: media.size.height * 0.88),
+        padding: EdgeInsets.only(bottom: media.viewInsets.bottom),
+        decoration: BoxDecoration(
+          color: AppColors.background.withValues(alpha: 0.88),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+          border: Border(
+            top: BorderSide(
+              color: AppColors.border.withValues(alpha: 0.30),
+              width: 0.5,
+            ),
+          ),
+        ),
+        child: SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 14, 24, 14),
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(18, 14, 18, 0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Center(
-                        child: Container(
-                          width: 40,
-                          height: 4,
-                          decoration: BoxDecoration(
-                            color: AppColors.glassBorder,
-                            borderRadius: BorderRadius.circular(999),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 18),
-                      Text(
-                        'Create Habit',
-                        style: AppTypography.title2.copyWith(
-                          fontSize: 18,
-                          color: AppColors.label,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
+                Center(
+                  child: Container(
+                    width: 42,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: AppColors.border.withValues(alpha: 0.45),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
                   ),
                 ),
-                Expanded(
+                const SizedBox(height: 18),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Create Habit',
+                    style: AppTypography.mono.copyWith(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w900,
+                      color: AppColors.label,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Flexible(
                   child: SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(18, 16, 18, 14),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        _sectionLabel('Goal'),
+                        const SizedBox(height: 8),
                         if (_goals.isEmpty)
                           Container(
                             padding: const EdgeInsets.all(14),
@@ -947,28 +959,45 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
                     ),
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(18, 6, 18, 18),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: _SheetActionButton(
-                          label: 'Cancel',
-                          dark: true,
-                          onPressed: _saving
-                              ? null
-                              : () => Navigator.of(context).pop(),
+                const SizedBox(height: 18),
+                Row(
+                  children: [
+                    Expanded(
+                      child: CupertinoButton(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        color: AppColors.backgroundLight.withValues(alpha: 0.6),
+                        borderRadius: BorderRadius.circular(14),
+                        onPressed: _saving
+                            ? null
+                            : () => Navigator.of(context).pop(),
+                        child: Text(
+                          'Cancel',
+                          style: AppTypography.mono.copyWith(
+                            fontSize: 14,
+                            color: AppColors.label,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                       ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: _SheetActionButton(
-                          label: _saving ? 'Creating...' : 'Create',
-                          onPressed: _canCreate ? _addHabit : null,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: CupertinoButton(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(14),
+                        onPressed: _canCreate && !_saving ? _addHabit : null,
+                        child: Text(
+                          _saving ? 'Creating…' : 'Create',
+                          style: AppTypography.mono.copyWith(
+                            fontSize: 14,
+                            color: Colors.black,
+                            fontWeight: FontWeight.w900,
+                          ),
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -978,6 +1007,16 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
     );
   }
 
+  Widget _sectionLabel(String label) => Text(
+    label,
+    style: AppTypography.body.copyWith(
+      fontSize: 12,
+      color: AppColors.secondaryLabel.withValues(alpha: 0.7),
+      letterSpacing: 2,
+      fontWeight: FontWeight.w700,
+    ),
+  );
+
   BoxDecoration _sheetDecoration() {
     return BoxDecoration(
       gradient: LinearGradient(
@@ -986,7 +1025,10 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
         colors: [AppColors.cardBackgroundAlt, AppColors.cardBase],
       ),
       borderRadius: BorderRadius.circular(22),
-      border: Border.all(color: AppColors.border, width: 1),
+      border: Border.all(
+        color: AppColors.border.withValues(alpha: 0.30),
+        width: 0.5,
+      ),
       boxShadow: [
         BoxShadow(
           color: AppColors.glassShadow.withValues(alpha: 0.24),

@@ -15,6 +15,7 @@ dependencies:
   provider: ^6.1.2
   google_fonts: ^6.2.1
   flutter_local_notifications: ^18.0.1
+  live_activities: ^2.4.1
   home_widget: ^0.7.0
   image_picker: ^1.1.2
   path: ^1.9.0

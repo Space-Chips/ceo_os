@@ -28,7 +28,7 @@ import '../screen_time_setup/screen_time_setup_controller.dart';
 import '../control_center_setup/control_center_setup_models.dart';
 import '../control_center_setup/control_center_setup_store.dart';
 import '../calendar/add_event_sheet.dart';
-import '../habits/habit_gallery_sheet.dart';
+import '../habits/add_habit_sheet.dart';
 import '../tasks/add_task_sheet.dart';
 import '../../components/ambient_backdrop.dart';
 import '../../components/glass_card.dart';
@@ -239,6 +239,7 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isBootstrapping = false;
   bool _didRouteToControlCenterSetup = false;
   int _winStreak = 0;
+  bool _isPremiumUser = false;
   String? _lastDataSignature;
 
   bool get _showAdvancedStats => AppleReviewCompliance.allowAdvancedStats;
@@ -288,6 +289,16 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       _winStreak = streak?.currentStreak ?? 0;
     });
+  }
+
+  Future<void> _loadPremiumStatus() async {
+    try {
+      final runtime = await _premiumRepository.getRuntime();
+      if (!mounted) return;
+      setState(() {
+        _isPremiumUser = runtime.resolved.isPremiumUser;
+      });
+    } catch (_) {}
   }
 
   void _handleSourceDataChanged() {
@@ -420,7 +431,11 @@ class _HomeScreenState extends State<HomeScreen> {
       await _hydrateUser();
       if (!mounted) return;
 
-      await Future.wait<void>([_loadActiveApps(), _loadWinStreak()]);
+      await Future.wait<void>([
+        _loadActiveApps(),
+        _loadWinStreak(),
+        _loadPremiumStatus(),
+      ]);
       if (!mounted) return;
 
       await _loadHomePreferences();
@@ -699,7 +714,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void _openQuickAddHabit() {
     showCupertinoModalPopup(
       context: context,
-      builder: (_) => const HabitGallerySheet(),
+      builder: (_) => const AddHabitSheet(),
     );
   }
 
@@ -748,6 +763,10 @@ class _HomeScreenState extends State<HomeScreen> {
             onOpenAdvancedStats: () {
               Navigator.of(sheetContext).pop();
               unawaited(_pushAndRefresh('/stats'));
+            },
+            onOpenUpgrade: () {
+              Navigator.of(sheetContext).pop();
+              unawaited(_pushAndRefresh('/upgrade'));
             },
             showAdvancedStats: _showAdvancedStats,
           ),
@@ -1039,6 +1058,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             rankName: rankName,
                             winStreak: _winStreak,
                             enabledShortcuts: _enabledShortcuts,
+                            isPremium: _isPremiumUser,
                             onOpenMenu: _openSecondaryMenu,
                             onOpenRank: () => context.push('/upgrade'),
                             onOpenFocus: _openFocusQuickStart,
@@ -1347,6 +1367,7 @@ class _TopShortcutsBar extends StatelessWidget {
   final String rankName;
   final int winStreak;
   final Set<String> enabledShortcuts;
+  final bool isPremium;
   final VoidCallback onOpenMenu;
   final VoidCallback onOpenRank;
   final VoidCallback onOpenFocus;
@@ -1357,6 +1378,7 @@ class _TopShortcutsBar extends StatelessWidget {
     required this.rankName,
     required this.winStreak,
     required this.enabledShortcuts,
+    required this.isPremium,
     required this.onOpenMenu,
     required this.onOpenRank,
     required this.onOpenFocus,
@@ -1401,10 +1423,17 @@ class _TopShortcutsBar extends StatelessWidget {
         SizedBox(
           width: 126,
           child: _ShortcutPill(
-            label: 'WakeApp Pro',
-            icon: CupertinoIcons.arrow_up_circle_fill,
-            iconColor: AppColors.secondaryLabel,
+            label: isPremium ? 'Premium' : 'WakeApp Pro',
+            icon: isPremium
+                ? CupertinoIcons.checkmark_seal_fill
+                : CupertinoIcons.arrow_up_circle_fill,
+            iconColor: isPremium
+                ? AppColors.success
+                : AppColors.secondaryLabel,
             labelColor: AppColors.secondaryLabel,
+            labelFontSize: isPremium ? 15 : null,
+            labelFontWeight: isPremium ? FontWeight.w700 : null,
+            iconSize: isPremium ? 15 : 12,
             onTap: onOpenRank,
           ),
         ),
@@ -1434,6 +1463,9 @@ class _ShortcutPill extends StatelessWidget {
   final Color labelColor;
   final VoidCallback onTap;
   final Widget? leading;
+  final double? labelFontSize;
+  final FontWeight? labelFontWeight;
+  final double iconSize;
 
   const _ShortcutPill({
     required this.label,
@@ -1442,6 +1474,9 @@ class _ShortcutPill extends StatelessWidget {
     required this.labelColor,
     required this.onTap,
     this.leading,
+    this.labelFontSize,
+    this.labelFontWeight,
+    this.iconSize = 12,
   });
 
   @override
@@ -1486,7 +1521,7 @@ class _ShortcutPill extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 child: Row(
                   children: [
-                    leading ?? Icon(icon, color: iconColor, size: 12),
+                    leading ?? Icon(icon, color: iconColor, size: iconSize),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -1494,8 +1529,8 @@ class _ShortcutPill extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: AppTypography.footnote.copyWith(
-                          fontSize: 35 / 3,
-                          fontWeight: FontWeight.w600,
+                          fontSize: labelFontSize ?? 35 / 3,
+                          fontWeight: labelFontWeight ?? FontWeight.w600,
                           color: labelColor,
                         ),
                       ),
@@ -1648,7 +1683,7 @@ class _DashboardMainCard extends StatelessWidget {
       pressedScale: 1.028,
       glowColor: AppColors.edgeGlow,
       child: GlassCard(
-        padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
+        padding: const EdgeInsets.fromLTRB(20, 22, 20, 18),
         borderRadius: 28,
         level: GlassCardLevel.standard,
         showEdgeGlow: false,
@@ -1657,8 +1692,8 @@ class _DashboardMainCard extends StatelessWidget {
           AppColors.cardBase.withValues(alpha: 0.68),
         ],
         border: Border.all(
-          color: AppColors.border.withValues(alpha: 0.45),
-          width: 0.5,
+          color: AppColors.border.withValues(alpha: 0.32),
+          width: 0.4,
         ),
         child: SizedBox(
           height: 148,
@@ -1951,8 +1986,8 @@ class _PrimaryAppCard extends StatelessWidget {
         glowColor: glowColor,
         gradientColors: [AppColors.cardBackgroundStrong, AppColors.cardBase],
         border: Border.all(
-          color: AppColors.border.withValues(alpha: 0.45),
-          width: 0.5,
+          color: AppColors.border.withValues(alpha: 0.32),
+          width: 0.4,
         ),
         child: Center(
           child: Column(
@@ -2027,8 +2062,8 @@ class _PrimaryAppCard extends StatelessWidget {
       gradientColors: [AppColors.cardRaised, AppColors.cardBase],
       border: Border.all(
         color: (data.active ? AppColors.borderStrong : AppColors.border)
-            .withValues(alpha: 0.45),
-        width: 0.5,
+            .withValues(alpha: 0.28),
+        width: 0.4,
       ),
       child: SizedBox.expand(
         child: Column(
@@ -2074,8 +2109,8 @@ class _PrimaryAppCard extends StatelessWidget {
                           borderRadius: BorderRadius.circular(12),
                           color: AppColors.background.withValues(alpha: 0.38),
                           border: Border.all(
-                            color: AppColors.glassBorder.withValues(alpha: 0.6),
-                            width: 0.82,
+                            color: AppColors.glassBorder.withValues(alpha: 0.28),
+                            width: 0.4,
                           ),
                         ),
                         child: Icon(
@@ -2262,12 +2297,12 @@ class _CeoModeCard extends StatelessWidget {
     return GestureDetector(
       onTap: onOpenCeoMode,
       child: Container(
-        padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
+        padding: const EdgeInsets.fromLTRB(18, 12, 18, 12),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(30),
+          borderRadius: BorderRadius.circular(26),
           border: Border.all(
-            color: AppColors.border.withValues(alpha: 0.45),
-            width: 0.5,
+            color: AppColors.border.withValues(alpha: 0.32),
+            width: 0.4,
           ),
           gradient: LinearGradient(
             begin: Alignment.topLeft,
@@ -2281,10 +2316,10 @@ class _CeoModeCard extends StatelessWidget {
         child: Row(
           children: [
             Container(
-              width: 82,
-              height: 82,
+              width: 72,
+              height: 72,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(24),
+                borderRadius: BorderRadius.circular(22),
                 border: Border.all(
                   color: AppColors.white.withValues(alpha: 0.22),
                   width: 1.0,
@@ -2371,6 +2406,7 @@ class _SecondaryMenuSheet extends StatefulWidget {
   final VoidCallback onOpenWidgetConfiguration;
   final VoidCallback onOpenProfileAndSettings;
   final VoidCallback onOpenAdvancedStats;
+  final VoidCallback onOpenUpgrade;
   final bool showAdvancedStats;
 
   const _SecondaryMenuSheet({
@@ -2382,6 +2418,7 @@ class _SecondaryMenuSheet extends StatefulWidget {
     required this.onOpenWidgetConfiguration,
     required this.onOpenProfileAndSettings,
     required this.onOpenAdvancedStats,
+    required this.onOpenUpgrade,
     required this.showAdvancedStats,
   });
 
@@ -2566,7 +2603,7 @@ class _SecondaryMenuSheetState extends State<_SecondaryMenuSheet> {
                     _SheetActionButton(
                       label: 'Upgrade',
                       icon: CupertinoIcons.arrow_up_circle_fill,
-                      onTap: () => context.push('/upgrade'),
+                      onTap: widget.onOpenUpgrade,
                     ),
                     const SizedBox(height: 22),
                     Text(
@@ -2707,8 +2744,8 @@ class _SheetActionButton extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: GlassCard(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        borderRadius: 22,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+        borderRadius: 18,
         border: Border.all(
           color: AppColors.glassBorder.withValues(alpha: 0.30),
           width: 0.5,
@@ -2716,10 +2753,10 @@ class _SheetActionButton extends StatelessWidget {
         child: Row(
           children: [
             Container(
-              width: 46,
-              height: 46,
+              width: 38,
+              height: 38,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(10),
                 color: AppColors.backgroundLight.withValues(alpha: 0.55),
                 border: Border.all(
                   color: AppColors.glassBorder.withValues(alpha: 0.30),
@@ -2728,25 +2765,25 @@ class _SheetActionButton extends StatelessWidget {
               ),
               child: Icon(
                 icon,
-                size: 21,
+                size: 18,
                 color: AppColors.secondaryLabel,
               ),
             ),
-            const SizedBox(width: 14),
+            const SizedBox(width: 12),
             Expanded(
               child: Text(
                 label,
                 style: AppTypography.callout.copyWith(
-                  fontSize: 17,
+                  fontSize: 15,
                   fontWeight: FontWeight.w700,
                   color: AppColors.label,
                 ),
               ),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 6),
             Icon(
               CupertinoIcons.chevron_right,
-              size: 18,
+              size: 16,
               color: AppColors.tertiaryLabel.withValues(alpha: 0.85),
             ),
           ],
@@ -2794,8 +2831,8 @@ class _ModuleToggleCard extends StatelessWidget {
       behavior: HitTestBehavior.opaque,
       onTap: (saving || locked) ? null : () => onChanged(!enabled),
       child: GlassCard(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        borderRadius: 22,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+        borderRadius: 18,
         border: Border.all(
           color: AppColors.glassBorder.withValues(alpha: 0.30),
           width: 0.5,
@@ -2803,10 +2840,10 @@ class _ModuleToggleCard extends StatelessWidget {
         child: Row(
           children: [
             Container(
-              width: 46,
-              height: 46,
+              width: 38,
+              height: 38,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(10),
                 color: AppColors.backgroundLight.withValues(alpha: 0.55),
                 border: Border.all(
                   color: AppColors.glassBorder.withValues(alpha: 0.30),
@@ -2815,16 +2852,16 @@ class _ModuleToggleCard extends StatelessWidget {
               ),
               child: Icon(
                 option.icon,
-                size: 21,
+                size: 18,
                 color: AppColors.secondaryLabel,
               ),
             ),
-            const SizedBox(width: 14),
+            const SizedBox(width: 12),
             Expanded(
               child: Text(
                 displayLabel,
                 style: AppTypography.callout.copyWith(
-                  fontSize: 17,
+                  fontSize: 15,
                   color: AppColors.label,
                   fontWeight: FontWeight.w700,
                 ),
@@ -2834,7 +2871,7 @@ class _ModuleToggleCard extends StatelessWidget {
               CupertinoActivityIndicator(color: AppColors.accent)
             else
               Transform.scale(
-                scale: 0.96,
+                scale: 0.85,
                 child: CupertinoSwitch(
                   value: enabled,
                   onChanged: locked ? null : onChanged,

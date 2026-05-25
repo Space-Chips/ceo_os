@@ -362,17 +362,20 @@ class _WidgetConfigurationScreenState extends State<WidgetConfigurationScreen> {
             icon: CupertinoIcons.back,
             onTap: () => Navigator.of(context).maybePop(),
           ),
-          const Spacer(),
-          Text(
-            _t('widget_configuration'),
-            style: AppTypography.title2.copyWith(
-              fontSize: 28,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.4,
-              color: AppColors.accent,
+          Expanded(
+            child: Text(
+              _t('widget_configuration'),
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AppTypography.title2.copyWith(
+                fontSize: 22,
+                fontWeight: FontWeight.w800,
+                letterSpacing: -0.2,
+                color: AppColors.label,
+              ),
             ),
           ),
-          const Spacer(),
           Opacity(
             opacity: 0,
             child: _iconButton(icon: CupertinoIcons.back, onTap: null),
@@ -401,12 +404,16 @@ class _WidgetConfigurationScreenState extends State<WidgetConfigurationScreen> {
   }
 
   Widget _sectionTitle(String text) {
-    return Text(
-      text,
-      style: AppTypography.overline.copyWith(
-        fontSize: 11,
-        letterSpacing: 2,
-        color: AppColors.secondaryLabel.withValues(alpha: 0.5),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(4, 4, 4, 10),
+      child: Text(
+        text.toUpperCase(),
+        style: AppTypography.overline.copyWith(
+          fontSize: 12,
+          letterSpacing: 1.6,
+          fontWeight: FontWeight.w800,
+          color: AppColors.secondaryLabel.withValues(alpha: 0.78),
+        ),
       ),
     );
   }

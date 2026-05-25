@@ -1,11 +1,10 @@
 import 'package:flutter/cupertino.dart';
 
-import '../../../components/glass_card.dart';
 import '../../../components/liquid_button.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../control_center_setup_models.dart';
-import 'control_center_preview.dart';
+import 'control_center_slot_grid.dart';
 
 class ControlCenterEmptyState extends StatefulWidget {
   final VoidCallback onPrimary;
@@ -70,30 +69,20 @@ class _ControlCenterEmptyStateState extends State<ControlCenterEmptyState>
             animation: _controller,
             builder: (context, _) {
               final g = _controller.value;
-              return GlassCard(
-                level: GlassCardLevel.elevated,
-                padding: const EdgeInsets.all(14),
-                borderRadius: 24,
-                border: Border.all(color: AppColors.borderStrong, width: 1),
-                gradientColors: [
-                  AppColors.sectionBackground,
-                  AppColors.background,
+              return ControlCenterSlotGrid(
+                slots: empty.slots,
+                appearProgressByIndex: [
+                  _slotProgress(0, g),
+                  _slotProgress(1, g),
+                  _slotProgress(2, g),
+                  _slotProgress(3, g),
                 ],
-                child: ControlCenterPreview(
-                  state: empty,
-                  showDashboard: false,
-                  slotAppearProgress: [
-                    _slotProgress(0, g),
-                    _slotProgress(1, g),
-                    _slotProgress(2, g),
-                    _slotProgress(3, g),
-                  ],
-                ),
+                onTapEmptySlot: (_) => widget.onPrimary(),
               );
             },
           ),
           const Spacer(),
-          LiquidButton(label: 'Choisir mes apps', onPressed: widget.onPrimary),
+          LiquidButton(label: 'Continuer', onPressed: widget.onPrimary),
           const SizedBox(height: 10),
           Text(
             '1 écran = 1 idée. Tu construis, on guide.',

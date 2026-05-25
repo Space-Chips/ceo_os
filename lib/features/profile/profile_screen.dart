@@ -9,7 +9,6 @@ import 'package:provider/provider.dart';
 import '../../components/components.dart';
 import '../../core/config/apple_review_compliance.dart';
 import '../../core/models/premium_models.dart';
-import '../../core/models/settings_models.dart';
 import '../../core/models/user_models.dart';
 import '../../core/providers/language_provider.dart';
 import '../../core/providers/auth_provider.dart';
@@ -105,7 +104,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final TextEditingController _nameCtrl = TextEditingController();
 
   Profile? _profile;
-  AppSettings? _appSettings;
   UserRank? _rank;
   WinStreak? _streak;
   bool _isLoading = true;
@@ -126,14 +124,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
     setState(() => _isLoading = true);
     try {
       final profile = await _userRepository.getProfile();
-      final settings = await _settingsRepository.getAppSettings();
       final rank = await _userRepository.getUserRank();
       final streak = await _userRepository.getWinStreak();
       _nameCtrl.text = profile?.fullName ?? '';
       if (mounted) {
         setState(() {
           _profile = profile;
-          _appSettings = settings;
           _rank = rank;
           _streak = streak;
           _isLoading = false;
@@ -259,36 +255,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  void _showNotificationsInfo() {
-    showCupertinoDialog(
-      context: context,
-      builder: (context) => CupertinoAlertDialog(
-        title: Text('NOTIFICATION_CHANNELS', style: AppTypography.mono),
-        content: Padding(
-          padding: const EdgeInsets.only(top: 8),
-          child: Text(
-            'Notification channel controls will be available in a future update.',
-            style: AppTypography.mono.copyWith(
-              fontSize: 12,
-              color: AppColors.secondaryLabel,
-            ),
-          ),
-        ),
-        actions: [
-          CupertinoDialogAction(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(
-              'OK',
-              style: AppTypography.mono.copyWith(
-                color: AppColors.primaryOrange,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   String _languageLabel(String code) {
     final normalized = code.toLowerCase();
     for (final option in _languages) {
@@ -323,10 +289,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     } finally {
       if (mounted) setState(() => _isSettingsSaving = false);
     }
-  }
-
-  void _showNotificationChannels() {
-    _showNotificationsInfo();
   }
 
   Future<void> _openPrivacyPolicy() {
@@ -409,15 +371,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final theme = context.watch<ThemeProvider>();
     final language = context.watch<LanguageProvider>();
     final languageCode = language.languageCode.toLowerCase();
-    final notificationsEnabled = _appSettings?.notificationsEnabled ?? true;
-    final habitEnabled = _appSettings?.habitNotificationsEnabled ?? true;
-    final calendarEnabled = _appSettings?.calendarNotificationsEnabled ?? true;
-    final focusEnabled = _appSettings?.focusNotificationsEnabled ?? true;
-    final enabledChannels = [
-      if (habitEnabled) 'H',
-      if (calendarEnabled) 'C',
-      if (focusEnabled) 'F',
-    ].length;
     final showDebugTools = kDebugMode;
 
     return CupertinoPageScaffold(
@@ -589,66 +542,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  _sectionHeader(language.t('focus_protocols')),
-                  const SizedBox(height: 10),
-                  _settingCard(
-                    child: Column(
-                      children: [
-                        _settingRow(
-                          label: language.t('focus_session_duration'),
-                          trailing: Text(
-                            '${focus.focusDurationMinutes}M',
-                            style: AppTypography.callout.copyWith(
-                              fontSize: 14,
-                              color: AppColors.primaryOrange,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        _settingRow(
-                          label: language.t('focus_short_break'),
-                          trailing: Text(
-                            '${focus.shortBreakMinutes}M',
-                            style: AppTypography.callout.copyWith(
-                              fontSize: 14,
-                              color: AppColors.primaryOrange,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        _settingRow(
-                          label: language.t('focus_auto_start_breaks'),
-                          trailing: _adaptiveSwitch(
-                            value: focus.autoStartBreaks,
-                            onChanged: (_) => focus.toggleAutoStartBreaks(),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        _settingRow(
-                          label: language.t('prepare_home_screen_blackout'),
-                          onTap: () async {
-                            final ceoModeProvider = context
-                                .read<CeoModeProvider>();
-                            final outcome = await showBlackoutPreparationFlow(
-                              context: context,
-                              launchContext:
-                                  BlackoutPreparationLaunchContext.settings,
-                            );
-                            if (!mounted || outcome == null) return;
-                            await ceoModeProvider.persistPreparationOutcome(
-                              outcome,
-                            );
-                          },
-                          leadingIcon: CupertinoIcons.sparkles,
-                          leadingColor: AppColors.primaryOrange,
-                          trailing: _rowArrow(),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 24),
                   _sectionHeader(language.t('system_preferences')),
                   const SizedBox(height: 10),
                   Column(
@@ -673,21 +566,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 color: AppColors.primaryOrange,
                               )
                             : _rowValueChevron(_languageLabel(languageCode)),
-                      ),
-                      const SizedBox(height: 12),
-                      _settingRow(
-                        label: language.t('notification_channels'),
-                        onTap: _isSettingsSaving
-                            ? null
-                            : _showNotificationChannels,
-                        trailing: _rowValueChevron(
-                          notificationsEnabled
-                              ? '$enabledChannels/3 ON'
-                              : 'OFF',
-                          valueColor: notificationsEnabled
-                              ? AppColors.secondaryLabel
-                              : AppColors.error,
-                        ),
                       ),
                     ],
                   ),
@@ -771,20 +649,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 ),
                               ),
                             ),
-                            _divider(),
-                            _settingRow(
-                              label: language.t('theme_preview'),
-                              onTap: () => context.push('/debug/themes'),
-                              leadingIcon: CupertinoIcons.paintbrush,
-                              leadingColor: AppColors.tertiaryLabel,
-                              trailing: Icon(
-                                CupertinoIcons.chevron_right,
-                                size: 16,
-                                color: AppColors.tertiaryLabel.withValues(
-                                  alpha: 0.4,
-                                ),
-                              ),
-                            ),
                           ],
                         ),
                       ),
@@ -800,16 +664,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     const SizedBox(height: 10),
                   ],
-                  _actionButton(
-                    label: language.t('open_rank'),
-                    onPressed: () => context.push('/rank'),
-                  ),
-                  const SizedBox(height: 10),
-                  _actionButton(
-                    label: language.t('open_screen_manager'),
-                    onPressed: () => context.push('/screen-time-manager'),
-                  ),
-                  const SizedBox(height: 10),
                   SizedBox(
                     width: double.infinity,
                     child: CupertinoButton(
