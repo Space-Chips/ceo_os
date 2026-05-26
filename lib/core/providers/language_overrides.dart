@@ -439,7 +439,8 @@ const Map<String, Map<String, String>> kTranslationOverrides = {
     'tasks_picker_done': 'Done',
     'tasks_your_priorities': 'Your Priorities',
     'tasks_no_priorities': 'No priorities yet',
-    'tasks_no_priorities_subtitle': '添加你的第一个优先任务，开始执行。',
+    'tasks_no_priorities_subtitle':
+        'Add your first priority to start executing.',
     'tasks_other_tasks': 'Other Tasks',
     'tasks_swipe_hint_list': 'Swipe to complete or reopen',
     'tasks_tab_title_todo': 'To-Do',

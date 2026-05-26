@@ -348,21 +348,51 @@ class _GridTabState extends State<_GridTab> {
 
         if (prov.habits.isEmpty) {
           return Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  CupertinoIcons.flame,
-                  size: 48,
-                  color: AppColors.tertiaryLabel,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => showCupertinoModalPopup(
+                  context: context,
+                  builder: (_) => const AddHabitSheet(),
                 ),
-                const SizedBox(height: 16),
-                NeoMonoText(
-                  'NO_HABITS',
-                  fontSize: 14,
-                  color: AppColors.secondaryLabel,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 28,
+                    vertical: 22,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.cardBackgroundStrong.withValues(
+                      alpha: 0.55,
+                    ),
+                    borderRadius: BorderRadius.circular(28),
+                    border: Border.all(
+                      color: AppColors.glassBorder.withValues(alpha: 0.30),
+                      width: 0.5,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        CupertinoIcons.plus,
+                        size: 18,
+                        color: AppColors.secondaryLabel,
+                      ),
+                      const SizedBox(width: 10),
+                      Text(
+                        'Create your first habit',
+                        style: AppTypography.callout.copyWith(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.label,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ],
+              ),
             ),
           );
         }
@@ -874,30 +904,48 @@ class _GoalsTabState extends State<_GoalsTab> {
             const _HabitsTitle(),
             if (categories.isEmpty)
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 40),
-                child: Center(
-                  child: Column(
-                    children: [
-                      Icon(
-                        CupertinoIcons.star,
-                        size: 48,
-                        color: AppColors.tertiaryLabel,
+                padding: const EdgeInsets.fromLTRB(8, 24, 8, 24),
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => showCupertinoModalPopup(
+                    context: context,
+                    builder: (_) => const AddHabitSheet(),
+                  ),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 28,
+                      vertical: 22,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.cardBackgroundStrong.withValues(
+                        alpha: 0.55,
                       ),
-                      const SizedBox(height: 16),
-                      NeoMonoText(
-                        'NO_GOALS',
-                        fontSize: 14,
-                        color: AppColors.secondaryLabel,
+                      borderRadius: BorderRadius.circular(28),
+                      border: Border.all(
+                        color: AppColors.glassBorder.withValues(alpha: 0.30),
+                        width: 0.5,
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Add habits with categories to see goals here',
-                        style: AppTypography.mono.copyWith(
-                          fontSize: 10,
-                          color: AppColors.tertiaryLabel,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          CupertinoIcons.plus,
+                          size: 18,
+                          color: AppColors.secondaryLabel,
                         ),
-                      ),
-                    ],
+                        const SizedBox(width: 10),
+                        Text(
+                          'Create your first goal',
+                          style: AppTypography.callout.copyWith(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.label,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               )

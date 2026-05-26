@@ -327,12 +327,21 @@ class _HomeScreenState extends State<HomeScreen> {
     final storedShortcuts = prefs
         .getStringList(_prefsKey('enabled_shortcuts_v2'))
         ?.toSet();
-    // Fall back to defaults if nothing stored OR if stored list is empty
-    // (an empty list usually means a stale write — never an intentional
-    // "no shortcuts" choice).
-    final shortcuts = (storedShortcuts == null || storedShortcuts.isEmpty)
-        ? _defaultEnabledShortcuts
-        : storedShortcuts;
+    // Defaults policy:
+    //   - Stored & non-empty → respect user choice.
+    //   - Stored & empty → respect "no shortcut" choice (user opted out).
+    //   - Not stored at all AND setup never completed → fresh install,
+    //     seed with _defaultEnabledShortcuts as a starting point.
+    //   - Not stored at all BUT setup completed → user finished onboarding
+    //     without picking shortcuts → stay empty (no auto-fill).
+    final Set<String> shortcuts;
+    if (storedShortcuts != null) {
+      shortcuts = storedShortcuts;
+    } else if (_controlCenterConfiguration.setupCompleted) {
+      shortcuts = const <String>{};
+    } else {
+      shortcuts = _defaultEnabledShortcuts;
+    }
     var hideNoModules =
         prefs.getBool(_prefsKey('hide_no_modules_message_v1')) ?? false;
     final normalizedShortcuts = _normalizeEnabledShortcuts(
@@ -438,10 +447,10 @@ class _HomeScreenState extends State<HomeScreen> {
       ]);
       if (!mounted) return;
 
-      await _loadHomePreferences();
+      await _loadControlCenterConfiguration();
       if (!mounted) return;
 
-      await _loadControlCenterConfiguration();
+      await _loadHomePreferences();
       if (!mounted) return;
 
       if (!_controlCenterConfiguration.setupCompleted &&
