@@ -46,7 +46,27 @@ app.*.map.json
 
 # Environment variables
 .env
+.env.*
+!.env.example
 .vscode/supabase.local.json
 
 # Agent specific files
 .agent/
+
+# Local recovery / temp artefacts (not part of the app)
+codex_recovery/
+.tmp_v1/
+private/
+fichiertxt.txt
+*_recovery_report.txt
+audit_results.txt
+pass*_report.txt
+pass*_recovery.py
+smart_recovery*.py
+partial_snapshot_overlay.py
+reapply_skipped_hunks.py
+snapshot_recovery.py
+fix_missing_imports.py
+fix_quote_conflicts.py
+fix_smart_quotes.py
+extractor.py

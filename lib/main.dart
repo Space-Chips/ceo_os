@@ -46,6 +46,17 @@ void main() async {
     );
     return;
   }
+  // Surface, in debug only, when a build forgot to inject --dart-define values
+  // and silently fell back to the embedded production keys.
+  assert(() {
+    if (!SupabaseConfig.isConfiguredFromEnvironment) {
+      debugPrint(
+        '[SupabaseConfig] No --dart-define provided; using embedded fallback values. '
+        'Production builds must pass SUPABASE_URL and SUPABASE_ANON_KEY.',
+      );
+    }
+    return true;
+  }());
   await Supabase.initialize(
     url: SupabaseConfig.url,
     anonKey: SupabaseConfig.anonKey,
@@ -101,10 +112,47 @@ class _CeoOsAppState extends State<CeoOsApp> {
     }
   }
 
+  // Routes a deep link (or a home widget tap) is allowed to land on.
+  // Mirrors AppRouter — explicit allowlist prevents external links from
+  // navigating into auth / setup / debug screens that should only be reached
+  // by the in-app flow.
+  static const Set<String> _allowedExternalNavPaths = {
+    '/home',
+    '/tasks',
+    '/habits',
+    '/habits/complete',
+    '/calendar',
+    '/focus',
+    '/ceo-mode',
+    '/stats',
+    '/dashboard',
+    '/profile',
+    '/rank',
+    '/leaderboard',
+    '/notes',
+    '/upgrade',
+    '/win-streak',
+    '/rewards',
+    '/screen-time',
+    '/screen-time-manager',
+    '/screen-time-manager/blocking',
+    '/family-time',
+    '/event-types',
+    '/biannual-report',
+    '/app-modules',
+    '/widget-configuration',
+  };
+
+  bool _isAllowedNavPath(String path) {
+    if (path.isEmpty) return false;
+    return _allowedExternalNavPaths.contains(path);
+  }
+
   void _handleHomeWidgetUri(Uri? uri) {
     if (uri == null) return;
+    if (uri.scheme.isNotEmpty && uri.scheme.toLowerCase() != 'ceoos') return;
     final path = uri.path;
-    if (path.isEmpty) return;
+    if (!_isAllowedNavPath(path)) return;
     final query = uri.hasQuery ? '?${uri.query}' : '';
     _router.go('$path$query');
   }
@@ -123,7 +171,7 @@ class _CeoOsAppState extends State<CeoOsApp> {
     if (uri == null) return;
     if (uri.scheme.toLowerCase() != 'ceoos') return;
     final path = uri.path;
-    if (path.isEmpty) return;
+    if (!_isAllowedNavPath(path)) return;
     final query = uri.hasQuery ? '?${uri.query}' : '';
     _router.go('$path$query');
   }

@@ -36,6 +36,13 @@ Deno.serve(async (request) => {
     return new Response('Unauthorized', { status: 401 });
   }
 
+  // Block unconfirmed accounts: otherwise an attacker can sign up with an
+  // allowlisted email they don't own and claim premium without ever
+  // proving ownership of the mailbox.
+  if (!user.email_confirmed_at) {
+    return new Response('Email not confirmed', { status: 403 });
+  }
+
   const email = (user.email ?? '').trim().toLowerCase();
   if (!email) {
     return new Response('Missing email', { status: 400 });

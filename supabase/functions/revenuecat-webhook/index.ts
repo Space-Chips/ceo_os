@@ -27,21 +27,27 @@ if (!supabaseUrl || !serviceRoleKey) {
   throw new Error('Supabase service role environment is missing.');
 }
 
+// Fail loud at boot if the shared secret is missing — this webhook MUST be
+// authenticated. RevenueCat sends this header per dashboard configuration.
+if (!revenueCatAuth) {
+  throw new Error('REVENUECAT_WEBHOOK_AUTH is not configured.');
+}
+
 const supabase = createClient(supabaseUrl, serviceRoleKey, {
   auth: { persistSession: false },
 });
+
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 Deno.serve(async (request) => {
   if (request.method !== 'POST') {
     return new Response('Method not allowed', { status: 405 });
   }
 
-  if (revenueCatAuth) {
-    const header = request.headers.get('authorization') ?? '';
-    const expected = `Bearer ${revenueCatAuth}`;
-    if (header !== expected) {
-      return new Response('Unauthorized', { status: 401 });
-    }
+  const header = request.headers.get('authorization') ?? '';
+  const expected = `Bearer ${revenueCatAuth}`;
+  if (header !== expected) {
+    return new Response('Unauthorized', { status: 401 });
   }
 
   let payload: Record<string, Json>;
@@ -59,15 +65,25 @@ Deno.serve(async (request) => {
   if (!appUserId) {
     return new Response('Missing app_user_id', { status: 400 });
   }
+  if (!UUID_PATTERN.test(appUserId)) {
+    return new Response('Invalid app_user_id', { status: 400 });
+  }
 
-  const eventId =
-    normalizeText(event.id) ??
-    [
-      normalizeText(event.type) ?? 'unknown',
-      normalizeText(event.product_id) ?? 'product',
-      normalizeText(event.app_user_id) ?? 'user',
-      String(event.event_timestamp_ms ?? Date.now()),
-    ].join(':');
+  // Confirm the user exists in auth.users before treating app_user_id as a
+  // billable identity. Prevents a leaked bearer from granting premium to
+  // arbitrary UUIDs that don't match a real account.
+  const { data: userLookup, error: userLookupError } =
+    await supabase.auth.admin.getUserById(appUserId);
+  if (userLookupError || !userLookup?.user) {
+    return new Response('Unknown app_user_id', { status: 404 });
+  }
+
+  // Require a stable provider event id for idempotency. Without it we cannot
+  // safely dedupe replays and out-of-order deliveries.
+  const eventId = normalizeText(event.id);
+  if (!eventId) {
+    return new Response('Missing event.id', { status: 400 });
+  }
 
   const status = deriveStatus(event);
   const providerPayload = payload as Json;
@@ -105,6 +121,35 @@ Deno.serve(async (request) => {
     });
   }
 
+  // Ordering guard: ignore deliveries that are older than what we already
+  // persisted for this customer. RevenueCat can retry / reorder events.
+  const incomingTimestampMs = Number.isFinite(event.event_timestamp_ms ?? NaN)
+    ? (event.event_timestamp_ms as number)
+    : Date.now();
+  const incomingTimestamp = new Date(incomingTimestampMs);
+
+  const { data: existingSubscription } = await supabase
+    .from('billing_subscriptions')
+    .select('last_webhook_event_at, last_webhook_event_id')
+    .eq('created_by', appUserId)
+    .maybeSingle();
+
+  if (
+    existingSubscription?.last_webhook_event_id === eventId
+  ) {
+    // Exact replay of the same event — already mirrored.
+    return Response.json({ ok: true, deduped: true });
+  }
+  if (
+    existingSubscription?.last_webhook_event_at &&
+    new Date(existingSubscription.last_webhook_event_at).getTime() >
+      incomingTimestamp.getTime()
+  ) {
+    // Stale (out-of-order) event — keep the webhook event log row but skip
+    // overwriting the subscription state.
+    return Response.json({ ok: true, skipped: 'stale' });
+  }
+
   const { error: subscriptionError } = await supabase.from(
     'billing_subscriptions',
   ).upsert(
@@ -123,7 +168,7 @@ Deno.serve(async (request) => {
       canceled_at: canceledAt,
       provider_payload: providerPayload,
       last_webhook_event_id: eventId,
-      last_webhook_event_at: new Date().toISOString(),
+      last_webhook_event_at: incomingTimestamp.toISOString(),
       last_error: null,
       last_error_at: null,
       last_synced_at: new Date().toISOString(),
