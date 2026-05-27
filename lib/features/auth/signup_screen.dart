@@ -105,30 +105,11 @@ class _SignupScreenState extends State<SignupScreen> {
 
   Future<void> _showError(dynamic error) async {
     if (!mounted) return;
-    showCupertinoDialog(
-      context: context,
-      builder: (context) => BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-        child: CupertinoAlertDialog(
-          title: Text(
-            'AUTH ERROR',
-            style: AppTypography.mono.copyWith(fontSize: 16),
-          ),
-          content: Padding(
-            padding: const EdgeInsets.only(top: 8.0),
-            child: Text(error.toString(), style: AppTypography.caption1),
-          ),
-          actions: [
-            CupertinoDialogAction(
-              child: Text(
-                'DISMISS',
-                style: TextStyle(color: AppColors.primaryOrange),
-              ),
-              onPressed: () => Navigator.pop(context),
-            ),
-          ],
-        ),
-      ),
+    final language = context.read<LanguageProvider>();
+    await showAuthDialog(
+      context,
+      title: language.t('auth_error_title'),
+      message: humanizeAuthError(error, language: language),
     );
   }
 
@@ -140,9 +121,10 @@ class _SignupScreenState extends State<SignupScreen> {
     }
     setState(() => _loading = true);
     try {
-      await context.read<AuthProvider>().signup(
+      final email = _emailCtrl.text.trim();
+      final result = await context.read<AuthProvider>().signup(
         _nameCtrl.text,
-        _emailCtrl.text,
+        email,
         _passCtrl.text,
       );
       if (!mounted) return;
@@ -150,8 +132,19 @@ class _SignupScreenState extends State<SignupScreen> {
         context.read<ThemeProvider>().setPendingOnboardingSetup(_setupData!);
       }
       await context.read<ThemeProvider>().persistPendingOnboardingSetup();
+      if (!mounted) return;
+      // When confirmation is required (normal prod path) we navigate to a
+      // dedicated screen instead of showing a transient dialog so the user
+      // has a clear next step and a place to land while they wait for the
+      // email. When confirmation is NOT required, the AuthState listener
+      // will route the app forward on its own.
+      if (result.requiresEmailConfirmation) {
+        context.go('/signup-email-sent', extra: email);
+      }
+      // Otherwise the AuthState listener + router redirect will route the
+      // user forward (no email confirmation needed = session live already).
     } catch (e) {
-      _showError(e);
+      await _showError(e);
     } finally {
       if (mounted) setState(() => _loading = false);
     }

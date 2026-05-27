@@ -11,6 +11,7 @@ import '../providers/focus_provider.dart';
 import '../config/apple_review_compliance.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
+import '../../features/auth/email_sent_screen.dart';
 import '../../features/auth/login_screen.dart';
 import '../../features/auth/signup_screen.dart';
 import '../../features/tasks/tasks_screen.dart';
@@ -85,6 +86,15 @@ class AppRouter {
         GoRoute(
           path: '/signup',
           builder: (context, state) => const SignupScreen(),
+        ),
+        GoRoute(
+          path: '/signup-email-sent',
+          builder: (context, state) {
+            final email = (state.extra is String)
+                ? state.extra as String
+                : (state.uri.queryParameters['email'] ?? '');
+            return EmailSentScreen(email: email);
+          },
         ),
 
         // ── Onboarding ──
@@ -280,7 +290,8 @@ class AppRouter {
         final auth = context.read<AuthProvider>();
         final loggingIn =
             state.matchedLocation == '/login' ||
-            state.matchedLocation == '/signup';
+            state.matchedLocation == '/signup' ||
+            state.matchedLocation == '/signup-email-sent';
         final onboarding = state.matchedLocation == '/onboarding';
         final setupFlow = state.matchedLocation == '/setup';
         final setupGate = state.matchedLocation == '/setup-gate';
@@ -294,14 +305,20 @@ class AppRouter {
           return null;
         }
 
-        // 2. If logged in and on auth/legacy-onboarding pages, route:
-        //    - just-signed-up users → /control-center-setup (no /home flash)
-        //    - other auth users → /home
+        // 2. If logged in and on an auth landing page, route by intent:
+        //    - Coming from /signup, /signup-email-sent, or legacy onboarding
+        //      → first-time user, send through /control-center-setup so they
+        //        configure the app.
+        //    - Coming from /login → returning user, jump straight to /home.
+        //      (If they happen to need config again they can reach it from
+        //      Settings; we avoid showing the setup screen to people who
+        //      already finished it once.)
         if (auth.isAuthenticated && (loggingIn || onboarding)) {
-          if (state.matchedLocation == '/signup') {
-            return '/control-center-setup';
-          }
-          return '/home';
+          final fromSignup =
+              state.matchedLocation == '/signup' ||
+              state.matchedLocation == '/signup-email-sent' ||
+              onboarding;
+          return fromSignup ? '/control-center-setup' : '/home';
         }
 
         if (auth.isAuthenticated && (setupFlow || setupGate)) {

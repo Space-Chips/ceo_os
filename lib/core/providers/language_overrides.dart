@@ -214,6 +214,30 @@ const Map<String, Map<String, String>> kTranslationOverrides = {
         'The password confirmation does not match.',
     'auth_check_email_signup_message':
         'Your account was created. Please confirm your email address before signing in.',
+    'auth_error_title': 'Oops',
+    'auth_error_rate_limit_seconds':
+        'You just asked for an email. Please wait {seconds} seconds before trying again.',
+    'auth_error_invalid_credentials':
+        'The email or password is incorrect. Please try again.',
+    'auth_error_email_not_confirmed':
+        'You need to confirm your email first. Check your inbox for the confirmation link.',
+    'auth_error_user_already_exists':
+        'An account with this email already exists. Try signing in instead.',
+    'auth_error_invalid_email':
+        'This email address looks invalid. Please check it and try again.',
+    'auth_error_weak_password':
+        'Your password is too short. Use at least 8 characters.',
+    'auth_error_network':
+        'Cannot reach the server. Check your internet connection and try again.',
+    'auth_error_unknown':
+        'Something went wrong. Please try again in a moment.',
+    'auth_email_sent_title': 'Check your inbox',
+    'auth_email_sent_message':
+        'We sent a confirmation link to {email}. Tap it to activate your account — the app will open automatically and finish your setup.',
+    'auth_email_sent_tip_title': 'NOT IN YOUR INBOX?',
+    'auth_email_sent_tip_body':
+        'Look in your Spam or Promotions folder. The email arrives in less than a minute.',
+    'auth_email_sent_back_to_login': 'Back to login',
     'auth_create_account_title': 'Create your account',
     'auth_create_account_subtitle':
         'Set up your WakeApp login once, then use it across your devices.',
@@ -692,6 +716,30 @@ const Map<String, Map<String, String>> kTranslationOverrides = {
         'La confirmation du mot de passe ne correspond pas.',
     'auth_check_email_signup_message':
         'Ton compte a été créé. Merci de confirmer ton adresse email avant de te connecter.',
+    'auth_error_title': 'Oups',
+    'auth_error_rate_limit_seconds':
+        'Tu viens de demander un email. Attends {seconds} secondes avant de réessayer.',
+    'auth_error_invalid_credentials':
+        'Email ou mot de passe incorrect. Réessaie.',
+    'auth_error_email_not_confirmed':
+        'Tu dois d\'abord confirmer ton email. Regarde dans ta boîte mail.',
+    'auth_error_user_already_exists':
+        'Un compte existe déjà avec cet email. Essaie plutôt de te connecter.',
+    'auth_error_invalid_email':
+        'Cette adresse email semble invalide. Vérifie-la et réessaie.',
+    'auth_error_weak_password':
+        'Ton mot de passe est trop court. Utilise au moins 8 caractères.',
+    'auth_error_network':
+        'Impossible de joindre le serveur. Vérifie ta connexion internet.',
+    'auth_error_unknown':
+        'Quelque chose s\'est mal passé. Réessaie dans un instant.',
+    'auth_email_sent_title': 'Regarde ta boîte mail',
+    'auth_email_sent_message':
+        'On a envoyé un lien de confirmation à {email}. Tape dessus pour activer ton compte — l\'app va s\'ouvrir toute seule pour finir la configuration.',
+    'auth_email_sent_tip_title': 'PAS DANS TA BOÎTE ?',
+    'auth_email_sent_tip_body':
+        'Regarde dans tes Spams ou Promotions. L\'email arrive en moins d\'une minute.',
+    'auth_email_sent_back_to_login': 'Retour à la connexion',
     'auth_create_account_title': 'Crée ton compte',
     'auth_create_account_subtitle':
         'Configure ton accès WakeApp une seule fois, puis utilise-le sur tous tes appareils.',

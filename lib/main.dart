@@ -170,6 +170,20 @@ class _CeoOsAppState extends State<CeoOsApp> {
   void _handleDeepLink(Uri? uri) {
     if (uri == null) return;
     if (uri.scheme.toLowerCase() != 'ceoos') return;
+
+    // Supabase auth callbacks (email confirmation, OAuth) arrive as
+    // ceoos://auth/callback?code=... — supabase_flutter listens to incoming
+    // app_links itself and exchanges the code via getSessionFromUrl, then
+    // emits onAuthStateChange which the GoRouter redirect picks up to send
+    // the user to /control-center-setup. We intentionally do NOT call
+    // getSessionFromUrl here ourselves: doing it twice burns the single-use
+    // code and surfaces "otp_expired" on the second call.
+    final isAuthCallback =
+        (uri.host == 'auth' && uri.pathSegments.contains('callback')) ||
+        uri.path == '/auth/callback' ||
+        uri.path.startsWith('/auth/callback');
+    if (isAuthCallback) return;
+
     final path = uri.path;
     if (!_isAllowedNavPath(path)) return;
     final query = uri.hasQuery ? '?${uri.query}' : '';

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../components/components.dart';
 import '../../core/providers/auth_provider.dart';
+import '../../core/providers/language_provider.dart';
 import '../../core/providers/theme_provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
@@ -29,10 +30,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _showError(dynamic error) async {
     if (!mounted) return;
+    final language = context.read<LanguageProvider>();
     await showAuthDialog(
       context,
-      title: 'AUTH ERROR',
-      message: humanizeAuthError(error),
+      title: language.t('auth_error_title'),
+      message: humanizeAuthError(error, language: language),
     );
   }
 
@@ -124,26 +126,17 @@ class _LoginScreenState extends State<LoginScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     // Header
-                    Column(
-                      children: [
-                        NeoMonoText(
-                          'WakeApp',
-                          fontSize: 42,
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.label,
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'SYSTEM INITIALIZING...',
-                          style: AppTypography.mono.copyWith(
-                            color: AppColors.primaryOrange,
-                            fontSize: 12,
-                            letterSpacing: 2,
-                          ),
-                        ),
-                      ],
+                    Text(
+                      'Welcome back',
+                      textAlign: TextAlign.center,
+                      style: AppTypography.largeTitle.copyWith(
+                        fontSize: 31,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.label,
+                        letterSpacing: -0.95,
+                      ),
                     ),
-                    const SizedBox(height: 64),
+                    const SizedBox(height: 48),
 
                     // Auth Form
                     GlassCard(
@@ -151,17 +144,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'CREDENTIALS',
-                            style: AppTypography.mono.copyWith(
-                              fontSize: 11,
-                              color: AppColors.tertiaryLabel,
-                              letterSpacing: 1.5,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
                           GlassInputField(
-                            placeholder: 'EMAIL_ADDRESS',
+                            placeholder: 'Email',
                             controller: _emailCtrl,
                             keyboardType: TextInputType.emailAddress,
                             autocorrect: false,
@@ -173,9 +157,9 @@ class _LoginScreenState extends State<LoginScreen> {
                               color: AppColors.secondaryLabel,
                             ),
                           ),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 14),
                           GlassInputField(
-                            placeholder: 'ACCESS_KEY',
+                            placeholder: 'Password',
                             controller: _passCtrl,
                             obscureText: true,
                             autocorrect: false,
@@ -187,9 +171,9 @@ class _LoginScreenState extends State<LoginScreen> {
                               color: AppColors.secondaryLabel,
                             ),
                           ),
-                          const SizedBox(height: 32),
+                          const SizedBox(height: 28),
                           LiquidButton(
-                            label: 'AUTHENTICATE',
+                            label: 'Sign in',
                             fullWidth: true,
                             isLoading: _loading,
                             onPressed: _login,
@@ -201,11 +185,11 @@ class _LoginScreenState extends State<LoginScreen> {
                               minimumSize: Size.zero,
                               onPressed: _loading ? null : _resetPassword,
                               child: Text(
-                                'FORGOT_PASSWORD',
-                                style: AppTypography.mono.copyWith(
-                                  fontSize: 11,
+                                'Forgot password?',
+                                style: AppTypography.footnote.copyWith(
+                                  fontSize: 13,
                                   color: AppColors.primaryOrange,
-                                  letterSpacing: 1.2,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ),
@@ -214,17 +198,15 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
 
-                    const SizedBox(height: 32),
-                    const AuthTrustFooter(),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 24),
 
                     // Footer
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          "NEW_OPERATOR? ",
-                          style: AppTypography.mono.copyWith(
+                          'New user? ',
+                          style: AppTypography.footnote.copyWith(
                             fontSize: 12,
                             color: AppColors.tertiaryLabel,
                           ),
@@ -232,11 +214,11 @@ class _LoginScreenState extends State<LoginScreen> {
                         GestureDetector(
                           onTap: () => context.go('/signup'),
                           child: Text(
-                            'SIGN_UP',
-                            style: AppTypography.mono.copyWith(
+                            'Sign up',
+                            style: AppTypography.footnote.copyWith(
                               fontSize: 12,
                               color: AppColors.primaryOrange,
-                              fontWeight: FontWeight.bold,
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
                         ),
