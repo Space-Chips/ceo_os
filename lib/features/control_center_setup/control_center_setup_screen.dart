@@ -71,6 +71,13 @@ class _ControlCenterSetupScreenState extends State<ControlCenterSetupScreen> {
   Future<void> _kickoff() async {
     await _viewModel.initialize();
     if (!mounted) return;
+    // Short-circuit: a returning user who already completed setup must not
+    // be forced through the flow again on every login. The router pipes
+    // every fresh login through here as a safety gate; we bounce immediately.
+    if (!widget.isEditing && _viewModel.uiState.hasCompletedSetup) {
+      context.go('/home');
+      return;
+    }
     setState(() => _didInit = true);
     if (widget.isEditing) {
       _viewModel.goNext(); // Empty -> Module picker.
