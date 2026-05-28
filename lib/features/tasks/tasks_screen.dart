@@ -576,31 +576,44 @@ class _TasksScreenState extends State<TasksScreen> {
           }),
         ],
         if (topFive.isNotEmpty) ...[
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           Center(
-            child: CupertinoButton(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              color: AppColors.backgroundLight.withValues(alpha: 0.65),
-              borderRadius: BorderRadius.circular(14),
-              onPressed: onAdd,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    CupertinoIcons.add,
-                    size: 20,
-                    color: AppColors.secondaryLabel,
+            // Match the top-right "+" button (_DarkGlassAddButton) exactly:
+            // same fill, same border color and width, same corner radius, same
+            // icon size and tint. The only difference is this one also shows
+            // the "Add Task" label, so we extend the height/width to fit.
+            child: _PressScale(
+              onTap: onAdd,
+              child: Container(
+                height: 46,
+                padding: const EdgeInsets.symmetric(horizontal: 22),
+                decoration: BoxDecoration(
+                  color: AppColors.topBarControlBackground,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: AppColors.topBarControlBorder,
+                    width: 1,
                   ),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Add Task',
-                    style: AppTypography.mono.copyWith(
-                      fontSize: 15,
-                      color: AppColors.secondaryLabel,
-                      fontWeight: FontWeight.w800,
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      CupertinoIcons.add,
+                      size: 20,
+                      color: AppColors.label,
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 8),
+                    Text(
+                      'Add Task',
+                      style: AppTypography.mono.copyWith(
+                        fontSize: 15,
+                        color: AppColors.label,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -616,57 +629,66 @@ class _TasksScreenState extends State<TasksScreen> {
     required Future<void> Function() onTap,
   }) {
     final palette = _paletteForImportance(task.importanceLevel);
+    // Symmetric cascade: each subsequent priority is inset from both sides so
+    // it stays visually centered while becoming progressively narrower —
+    // Apple-style tapering rather than a one-sided shrink.
+    final cascadeInset = ((rank - 1).clamp(0, 6)) * 7.0;
     return _PressScale(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        margin: EdgeInsets.symmetric(horizontal: cascadeInset),
+        // Slightly larger padding to give each card more presence — matches
+        // the model's perceived "weight" while staying within iOS row-height
+        // conventions.
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(24),
+          // Softer, more iOS-like rounding (24 → 20).
+          borderRadius: BorderRadius.circular(20),
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [AppColors.cardBackgroundAlt, AppColors.cardBase],
           ),
+          // Discreet colored ring; the importance is carried by the badge,
+          // not the card outline.
           border: Border.all(
-            color: palette.border.withValues(alpha: 0.55),
+            color: palette.border.withValues(alpha: 0.32),
             width: _taskCardBorderWidth(task.importanceLevel),
           ),
           boxShadow: [
             BoxShadow(
               color: AppColors.glassShadow.withValues(
-                alpha: AppColors.isDark ? 0.16 : 0.08,
+                alpha: AppColors.isDark ? 0.10 : 0.05,
               ),
-              blurRadius: 12,
-              offset: const Offset(0, 6),
-              spreadRadius: -9,
+              blurRadius: 14,
+              offset: const Offset(0, 4),
+              spreadRadius: -10,
             ),
           ],
         ),
         child: Row(
           children: [
+            // Rank chip — no border, slightly bigger (44 → 48) so it matches
+            // the more generous card padding.
             Container(
-              width: 56,
-              height: 56,
+              width: 48,
+              height: 48,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: AppColors.topBarControlBackground,
-                border: Border.all(
-                  color: AppColors.topBarControlBorder,
-                  width: 1,
-                ),
               ),
               child: Center(
                 child: Text(
                   '$rank',
                   style: AppTypography.footnote.copyWith(
-                    fontSize: 20,
-                    color: AppColors.label.withValues(alpha: 0.92),
-                    fontWeight: FontWeight.w700,
+                    fontSize: 17,
+                    color: AppColors.label.withValues(alpha: 0.9),
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
             ),
-            const SizedBox(width: 18),
+            const SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -676,9 +698,10 @@ class _TasksScreenState extends State<TasksScreen> {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: AppTypography.mono.copyWith(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w800,
+                      fontSize: 19,
+                      fontWeight: FontWeight.w700,
                       color: AppColors.label,
+                      height: 1.15,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -689,9 +712,9 @@ class _TasksScreenState extends State<TasksScreen> {
                       Text(
                         _durationLabel(task.timeDuration, language),
                         style: AppTypography.mono.copyWith(
-                          fontSize: 15,
+                          fontSize: 14,
                           color: AppColors.secondaryLabel,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ],

@@ -281,7 +281,9 @@ class _HabitsTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(0, 0, 0, 14),
+      // Bottom padding sets the gap between the screen title and the first
+      // GlassCard. Bumped from 14 → 24 for a more breathing layout.
+      padding: const EdgeInsets.fromLTRB(0, 0, 0, 24),
       child: Align(
         alignment: Alignment.centerLeft,
         child: Text(
@@ -487,7 +489,9 @@ class _GridTabState extends State<_GridTab> {
               ),
             ),
 
-            const SizedBox(height: 20),
+            // Spacing between Weekly Grid and Weekly Score cards
+            // (bumped 20 → 28 for a more breathing layout).
+            const SizedBox(height: 28),
 
             // ── Weekly Score Card ──
             GlassCard(
