@@ -94,11 +94,11 @@ class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: AppColors.accent, width: 1.2),
+          borderSide: BorderSide(color: AppColors.accent, width: 1),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: AppColors.error, width: 1.1),
+          borderSide: BorderSide(color: AppColors.error, width: 1),
         ),
         labelStyle: AppTypography.callout.copyWith(
           color: AppColors.secondaryLabel,

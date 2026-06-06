@@ -1,10 +1,15 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:math';
 
+import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../config/supabase_config.dart';
+import '../services/write_queue.dart';
 
 class AuthSignupResult {
   final bool requiresEmailConfirmation;
@@ -34,7 +39,18 @@ class AuthProvider extends ChangeNotifier {
   void _listenToAuthChanges() {
     _authSubscription?.cancel();
     _authSubscription = _supabase.auth.onAuthStateChange.listen((data) {
-      _user = data.session?.user;
+      // Only clear _user on explicit sign-out. Token refresh failures (e.g.
+      // when offline) emit a null session that would otherwise log the user
+      // out — instead we keep their cached session active until they regain
+      // network and either refresh or hit an explicit signedOut event.
+      if (data.event == AuthChangeEvent.signedOut) {
+        _user = null;
+      } else {
+        final session = data.session;
+        if (session != null) {
+          _user = session.user;
+        }
+      }
       notifyListeners();
     });
   }
@@ -126,12 +142,101 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  /// Apple Sign-In integration (native iOS flow).
+  ///
+  /// We follow Supabase's recommended pattern for native id-token sign-in:
+  ///   1. Generate a high-entropy raw nonce locally.
+  ///   2. Send the SHA-256 hash to Apple (the id_token Apple returns includes
+  ///      that hashed nonce, so we know later that the token is bound to us).
+  ///   3. Hand Supabase the identity token + the original raw nonce so it
+  ///      can recompute the hash and verify the binding before issuing a
+  ///      Supabase session.
+  ///
+  /// On first sign-in only, Apple returns the user's full name. We forward it
+  /// to Supabase as `full_name` metadata so the rest of the app picks it up.
+  Future<void> signInWithApple() async {
+    try {
+      // Only iOS/macOS support native Sign in with Apple. Apple does not
+      // publish a credential flow for Android/Web from this package.
+      final isApplePlatform =
+          !kIsWeb &&
+          (defaultTargetPlatform == TargetPlatform.iOS ||
+              defaultTargetPlatform == TargetPlatform.macOS);
+      if (!isApplePlatform) {
+        throw StateError('Sign in with Apple is only available on Apple devices.');
+      }
+
+      final rawNonce = _generateRawNonce();
+      final hashedNonce = sha256
+          .convert(utf8.encode(rawNonce))
+          .toString();
+
+      final credential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+        nonce: hashedNonce,
+      );
+
+      final idToken = credential.identityToken;
+      if (idToken == null) {
+        throw StateError('Apple did not return an identity token.');
+      }
+
+      await _supabase.auth.signInWithIdToken(
+        provider: OAuthProvider.apple,
+        idToken: idToken,
+        nonce: rawNonce,
+      );
+
+      // Apple only ships givenName/familyName on the FIRST sign-in. If we
+      // got them, push them into Supabase user metadata so the rest of the
+      // app can render a personalised greeting on subsequent launches.
+      final given = credential.givenName?.trim();
+      final family = credential.familyName?.trim();
+      final fullName = [
+        if (given != null && given.isNotEmpty) given,
+        if (family != null && family.isNotEmpty) family,
+      ].join(' ').trim();
+      if (fullName.isNotEmpty) {
+        await _supabase.auth.updateUser(
+          UserAttributes(data: {'full_name': fullName}),
+        );
+      }
+
+      _hasCompletedOnboarding = true;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Cryptographically-strong random nonce — 32 url-safe characters.
+  /// Used as the binding between our request to Apple and Supabase's later
+  /// verification of the returned identity token.
+  String _generateRawNonce([int length = 32]) {
+    const charset =
+        'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._';
+    final random = Random.secure();
+    return List.generate(
+      length,
+      (_) => charset[random.nextInt(charset.length)],
+    ).join();
+  }
+
   void completeOnboarding() {
     _hasCompletedOnboarding = true;
     notifyListeners();
   }
 
   Future<void> logout() async {
+    // Clear queued offline writes before signing out so they don't flush
+    // under a different account on next sign-in.
+    try {
+      await WriteQueue.clear();
+    } catch (_) {
+      // Best effort.
+    }
     await _supabase.auth.signOut();
   }
 

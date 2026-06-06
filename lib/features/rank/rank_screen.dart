@@ -250,8 +250,8 @@ class _RankScreenState extends State<RankScreen> {
           ),
           const Spacer(),
           CupertinoButton(
-            padding: const EdgeInsets.symmetric(horizontal: 2),
-            minimumSize: Size.zero,
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+            minimumSize: const Size(44, 44),
             onPressed: () => context.go('/home'),
             child: Row(
               children: [

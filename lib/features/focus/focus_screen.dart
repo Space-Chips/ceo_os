@@ -439,8 +439,8 @@ class _FocusScreenState extends State<FocusScreen> {
       child: Row(
         children: [
           CupertinoButton(
-            padding: const EdgeInsets.symmetric(horizontal: 2),
-            minimumSize: Size.zero,
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+            minimumSize: const Size(44, 44),
             onPressed: () => context.go('/screen-time-manager'),
             child: Row(
               children: [
@@ -464,8 +464,8 @@ class _FocusScreenState extends State<FocusScreen> {
           const Spacer(),
           if (showHome)
             CupertinoButton(
-              padding: const EdgeInsets.symmetric(horizontal: 2),
-              minimumSize: Size.zero,
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+              minimumSize: const Size(44, 44),
               onPressed: () => context.go('/home'),
               child: Row(
                 children: [
@@ -551,10 +551,7 @@ class _FocusScreenState extends State<FocusScreen> {
           borderRadius: 24,
           level: GlassCardLevel.standard,
           showEdgeGlow: false,
-          border: Border.all(
-            color: AppColors.border.withValues(alpha: 0.30),
-            width: 0.5,
-          ),
+          border: const Border.fromBorderSide(BorderSide.none),
           gradientColors: [
             AppColors.cardBackgroundStrong.withValues(alpha: 0.46),
             AppColors.cardBackgroundAlt.withValues(alpha: 0.36),

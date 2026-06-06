@@ -25,5 +25,12 @@
 		<key>EXExtensionPointIdentifier</key>
 		<string>com.apple.deviceactivity.monitor-extension</string>
 	</dict>
+	<key>NSExtension</key>
+	<dict>
+		<key>NSExtensionPointIdentifier</key>
+		<string>com.apple.deviceactivity.monitor-extension</string>
+		<key>NSExtensionPrincipalClass</key>
+		<string>$(PRODUCT_MODULE_NAME).FocusActivityMonitorExtension</string>
+	</dict>
 </dict>
 </plist>

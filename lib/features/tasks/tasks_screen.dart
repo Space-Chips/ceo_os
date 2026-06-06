@@ -404,8 +404,10 @@ class _TasksScreenState extends State<TasksScreen> {
       child: Row(
         children: [
           CupertinoButton(
-            padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
-            minimumSize: Size.zero,
+            // Generous hit area — chevron + label tap as one continuous 44pt
+            // target, per Apple HIG.
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+            minimumSize: const Size(44, 44),
             onPressed: () => context.go('/home'),
             child: Row(
               children: [

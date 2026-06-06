@@ -10,6 +10,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:app_links/app_links.dart';
 import 'core/config/supabase_config.dart';
 import 'core/providers/auth_provider.dart';
+import 'core/providers/connectivity_provider.dart';
+import 'core/services/sync_service.dart';
 import 'core/providers/theme_provider.dart';
 import 'core/providers/task_provider.dart';
 import 'core/providers/habit_provider.dart';
@@ -64,6 +66,14 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
+        ChangeNotifierProvider(
+          create: (_) => ConnectivityProvider()..initialize(),
+        ),
+        ProxyProvider<ConnectivityProvider, SyncService>(
+          lazy: false,
+          update: (_, conn, prev) => prev ?? SyncService(connectivity: conn),
+          dispose: (_, sync) => sync.dispose(),
+        ),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => LanguageProvider()),

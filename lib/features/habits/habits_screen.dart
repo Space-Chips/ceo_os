@@ -99,8 +99,18 @@ class _HabitsScreenState extends State<HabitsScreen> {
                       child: Row(
                         children: [
                           CupertinoButton(
-                            padding: EdgeInsets.zero,
-                            minimumSize: Size.zero,
+                            // Generous horizontal + vertical padding so the
+                            // hit area covers the chevron AND the label as
+                            // one continuous tappable region. Apple HIG
+                            // calls for a 44pt minimum tap target — we
+                            // enforce that explicitly via minimumSize so the
+                            // arrow alone (only 21×21 visually) is still
+                            // comfortable to hit.
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 8,
+                            ),
+                            minimumSize: const Size(44, 44),
                             onPressed: () => context.go('/home'),
                             child: Row(
                               children: [

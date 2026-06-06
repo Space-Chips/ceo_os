@@ -70,3 +70,7 @@ fix_missing_imports.py
 fix_quote_conflicts.py
 fix_smart_quotes.py
 extractor.py
+
+# Node.js artifacts inside helper scripts (Apple JWT generator, etc.)
+scripts/node_modules/
+scripts/package-lock.json

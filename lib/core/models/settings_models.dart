@@ -137,6 +137,7 @@ class RestPeriod {
   final DateTime? startTime;
   final DateTime? endTime;
   final bool active;
+  final String reason;
   final DateTime createdAt;
 
   RestPeriod({
@@ -145,10 +146,12 @@ class RestPeriod {
     this.startTime,
     this.endTime,
     this.active = true,
+    this.reason = 'flemme',
     required this.createdAt,
   });
 
   factory RestPeriod.fromJson(Map<String, dynamic> json) {
+    final rawReason = (json['reason'] as String?)?.trim();
     return RestPeriod(
       id: json['id'],
       createdBy: json['created_by'],
@@ -159,6 +162,7 @@ class RestPeriod {
           ? DateTime.tryParse(json['end_time'])
           : null,
       active: json['active'] ?? true,
+      reason: (rawReason == null || rawReason.isEmpty) ? 'flemme' : rawReason,
       createdAt: DateTime.parse(json['created_at']),
     );
   }

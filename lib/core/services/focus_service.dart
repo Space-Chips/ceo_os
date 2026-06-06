@@ -563,13 +563,20 @@ class FocusService {
   }
 
   // iOS only: Open Family Activity Picker
+  //
+  // The native side returns a List<Map<String, Any>> where each map is shaped
+  // like { "payload": "<encoded>", "appName"?: "...", "bundleIdentifier"?: "..." }
+  // for app pickers, or { "payload": "<encoded>", "domain"?: "..." } for the
+  // website picker. We must NOT cast the raw list to List<String> — doing so
+  // throws `_Map<Object?, Object?> is not a subtype of String` the moment the
+  // caller iterates it.
   Future<List<String>?> openFamilyActivityPicker() async {
     const method = 'openFamilyActivityPicker';
     if (_shouldSkipMissingMethod(method)) return null;
     try {
-      // Returns a list of opaque tokens representing selected apps/categories
       final List<dynamic>? result = await _channel.invokeMethod(method);
-      return result?.cast<String>();
+      if (result == null) return null;
+      return _extractPayloads(result);
     } on PlatformException catch (e) {
       AppLogger.error("Failed to open picker: '${e.message}'.");
       return null;
@@ -584,7 +591,8 @@ class FocusService {
     if (_shouldSkipMissingMethod(method)) return null;
     try {
       final List<dynamic>? result = await _channel.invokeMethod(method);
-      return result?.cast<String>();
+      if (result == null) return null;
+      return _extractPayloads(result);
     } on PlatformException catch (e) {
       _lastIosWebsitePickerError = e.message;
       AppLogger.error("Failed to open website picker: '${e.message}'.");
@@ -597,18 +605,65 @@ class FocusService {
 
   Future<List<IosFamilyActivitySelection>?>
   openFamilyActivityWebsitePickerWithMetadata() async {
-    final payloads = await openFamilyActivityWebsitePicker();
-    if (payloads == null) return null;
-    final selections = <IosFamilyActivitySelection>[];
-    for (final payload in payloads) {
-      final trimmed = payload.trim();
-      if (trimmed.isEmpty) continue;
-      final described = await describeWebsiteSelectionPayload(trimmed);
-      selections.add(
-        IosFamilyActivitySelection(payload: trimmed, domain: described?.domain),
-      );
+    const method = 'openFamilyActivityWebsitePicker';
+    if (_shouldSkipMissingMethod(method)) return null;
+    try {
+      final List<dynamic>? raw = await _channel.invokeMethod(method);
+      if (raw == null) return null;
+      final selections = <IosFamilyActivitySelection>[];
+      for (final item in raw) {
+        String? payload;
+        String? domain;
+        if (item is String) {
+          payload = item;
+        } else if (item is Map) {
+          final p = item['payload'];
+          payload = p is String ? p : null;
+          final d = item['domain'];
+          domain = d is String ? d : null;
+        }
+        if (payload == null) continue;
+        final trimmedPayload = payload.trim();
+        if (trimmedPayload.isEmpty) continue;
+        final trimmedDomain = domain?.trim();
+        selections.add(
+          IosFamilyActivitySelection(
+            payload: trimmedPayload,
+            domain: (trimmedDomain != null && trimmedDomain.isNotEmpty)
+                ? trimmedDomain
+                : null,
+          ),
+        );
+      }
+      return selections;
+    } on PlatformException catch (e) {
+      _lastIosWebsitePickerError = e.message;
+      AppLogger.error("Failed to open website picker: '${e.message}'.");
+      return null;
+    } on MissingPluginException {
+      _markMissingMethod(method);
+      return null;
     }
-    return selections;
+  }
+
+  /// Normalises the native picker payload list to a `List<String>` of
+  /// `payload` values, tolerating both legacy String items and the current
+  /// `Map` shape returned by AppDelegate's `finishPicker`.
+  List<String> _extractPayloads(List<dynamic> raw) {
+    final out = <String>[];
+    for (final item in raw) {
+      if (item is String) {
+        final t = item.trim();
+        if (t.isNotEmpty) out.add(t);
+      } else if (item is Map) {
+        final p = item['payload'];
+        if (p is String) {
+          final t = p.trim();
+          if (t.isNotEmpty) out.add(t);
+        }
+      }
+    }
+    return out;
   }
 
   String? takeLastIosWebsitePickerError() {

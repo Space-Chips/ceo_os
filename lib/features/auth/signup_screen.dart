@@ -9,6 +9,7 @@ import '../../core/providers/language_provider.dart';
 import '../../core/providers/theme_provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
+import 'apple_sign_in_button.dart';
 import 'auth_support.dart';
 import '../../components/glass_card.dart';
 import '../../components/glass_input_field.dart';
@@ -297,6 +298,10 @@ class _SignupScreenState extends State<SignupScreen> {
                       ),
                     ),
 
+                    const SizedBox(height: 18),
+                    // Sign in with Apple — Apple Guideline 4.8 requires this
+                    // to be offered when a third-party login is offered.
+                    const AppleSignInButton(),
                     const SizedBox(height: 24),
 
                     // Footer

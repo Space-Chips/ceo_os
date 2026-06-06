@@ -17,6 +17,9 @@ class PremiumRepository {
   static const Duration _clientGraceDuration = Duration(hours: 24);
   static const Duration _billingPollInterval = Duration(seconds: 2);
   static const Duration _billingPollTimeout = Duration(seconds: 30);
+  static const String _runtimeCacheKey = 'premium_runtime_cache_v1';
+  static const String _runtimeCacheAtKey = 'premium_runtime_cache_at_v1';
+  static const Duration _runtimeCacheValidity = Duration(hours: 24);
 
   SupabaseClient get _client => _supabaseService.client;
   String? get _currentUserId => _client.auth.currentUser?.id;
@@ -29,6 +32,19 @@ class PremiumRepository {
   }
 
   Future<PremiumRuntime> getRuntime() async {
+    try {
+      final fresh = await _fetchRuntime();
+      await _cacheRuntime(fresh);
+      return fresh;
+    } catch (_) {
+      // Network/Supabase failure — fall back to cached runtime if recent.
+      final cached = await _readCachedRuntime();
+      if (cached != null) return cached;
+      rethrow;
+    }
+  }
+
+  Future<PremiumRuntime> _fetchRuntime() async {
     final config = await getConfig();
     final billing = await _getBillingSubscription();
     final entitlements = await _syncAndGetEntitlements();
@@ -421,5 +437,58 @@ class PremiumRepository {
   String _dayStartIso(DateTime date) {
     final day = DateTime(date.year, date.month, date.day);
     return day.toIso8601String();
+  }
+
+  // ── Offline runtime cache ──
+  // Persists the last resolved PremiumRuntime in SharedPreferences so that
+  // when the device is offline (or Supabase is unreachable) gating decisions
+  // can still be made from the most recent known state for up to 24 h.
+
+  String _cacheScopedKey(String base) {
+    final uid = _currentUserId ?? 'guest';
+    return '$base::$uid';
+  }
+
+  Future<void> _cacheRuntime(PremiumRuntime runtime) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(
+        _cacheScopedKey(_runtimeCacheKey),
+        runtime.resolved.isPremiumUser,
+      );
+      await prefs.setInt(
+        _cacheScopedKey(_runtimeCacheAtKey),
+        DateTime.now().millisecondsSinceEpoch,
+      );
+    } catch (_) {}
+  }
+
+  Future<PremiumRuntime?> _readCachedRuntime() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final cachedAt = prefs.getInt(_cacheScopedKey(_runtimeCacheAtKey));
+      if (cachedAt == null) return null;
+      final age = DateTime.now().difference(
+        DateTime.fromMillisecondsSinceEpoch(cachedAt),
+      );
+      if (age > _runtimeCacheValidity) return null;
+      final isPremium =
+          prefs.getBool(_cacheScopedKey(_runtimeCacheKey)) ?? false;
+      // Build a minimal PremiumConfig with defaults — gating mostly reads
+      // `resolved.isPremiumUser`, so default config is acceptable offline.
+      const config = PremiumConfig(paywallEnabled: true);
+      return PremiumRuntime(
+        config: config,
+        subscriptionStatus: isPremium ? 'cached' : 'free',
+        resolved: PremiumResolvedAccess(
+          isPremiumUser: isPremium,
+          clientGraceActive: false,
+          hasPaidSubscription: isPremium,
+          isTrialing: false,
+        ),
+      );
+    } catch (_) {
+      return null;
+    }
   }
 }

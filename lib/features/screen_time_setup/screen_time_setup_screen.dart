@@ -493,45 +493,85 @@ class _PermissionStep extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 20),
-          GlassCard(
-            padding: const EdgeInsets.all(16),
-            borderRadius: 18,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  t('ios_setup_steps_title'),
-                  style: AppTypography.caption1.copyWith(
-                    color: AppColors.secondaryLabel,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                const _InstructionRow(index: 1, text: 'Tap "Open Settings".'),
-                const SizedBox(height: 8),
-                const _InstructionRow(
-                  index: 2,
-                  text: 'Choose WakeApp in the list.',
-                ),
-                const SizedBox(height: 8),
-                const _InstructionRow(
-                  index: 3,
-                  text: 'Enable Screen Time access.',
-                ),
-                const SizedBox(height: 8),
-                const _InstructionRow(index: 4, text: 'Return to WakeApp.'),
-                const SizedBox(height: 12),
-                if (!isSupported)
+          if (shouldOpenSettings) ...[
+            // Show manual steps only when the user has previously denied
+            // permission and must re-enable it from iOS Settings. In every
+            // other state the in-app native AuthorizationCenter popup handles
+            // the grant without leaving the app.
+            GlassCard(
+              padding: const EdgeInsets.all(16),
+              borderRadius: 18,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                   Text(
-                    'Screen Time access is only available on supported iPhone builds.',
+                    t('ios_setup_steps_title'),
                     style: AppTypography.caption1.copyWith(
                       color: AppColors.secondaryLabel,
+                      letterSpacing: 0.5,
                     ),
                   ),
-              ],
+                  const SizedBox(height: 10),
+                  const _InstructionRow(index: 1, text: 'Tap "Open Settings".'),
+                  const SizedBox(height: 8),
+                  const _InstructionRow(
+                    index: 2,
+                    text: 'Choose Screen Time → See All Activity.',
+                  ),
+                  const SizedBox(height: 8),
+                  const _InstructionRow(
+                    index: 3,
+                    text: 'Enable WakeApp under Family Controls.',
+                  ),
+                  const SizedBox(height: 8),
+                  const _InstructionRow(
+                    index: 4,
+                    text: 'Return to WakeApp.',
+                  ),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(height: 18),
+            const SizedBox(height: 18),
+          ] else if (shouldPrompt && isSupported) ...[
+            // First-time grant: just tell the user a system popup will appear.
+            GlassCard(
+              padding: const EdgeInsets.all(16),
+              borderRadius: 18,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    CupertinoIcons.checkmark_shield_fill,
+                    size: 22,
+                    color: AppColors.success,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'iOS will show a confirmation. Tap "Continue" then "Allow" — you stay in WakeApp the whole time.',
+                      style: AppTypography.footnote.copyWith(
+                        color: AppColors.secondaryLabel,
+                        height: 1.45,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 18),
+          ] else if (!isSupported) ...[
+            GlassCard(
+              padding: const EdgeInsets.all(16),
+              borderRadius: 18,
+              child: Text(
+                'Screen Time access is only available on supported iPhone builds.',
+                style: AppTypography.caption1.copyWith(
+                  color: AppColors.secondaryLabel,
+                ),
+              ),
+            ),
+            const SizedBox(height: 18),
+          ],
           _PermissionStatusPill(status: status, showSuccess: showSuccess),
         ],
       ),

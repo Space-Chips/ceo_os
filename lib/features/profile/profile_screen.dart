@@ -377,7 +377,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       backgroundColor: AppColors.background,
       navigationBar: CupertinoNavigationBar(
         leading: CupertinoButton(
-          padding: EdgeInsets.zero,
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+          minimumSize: const Size(44, 44),
           onPressed: () => context.go('/home'),
           child: Icon(CupertinoIcons.back, color: AppColors.primaryOrange),
         ),

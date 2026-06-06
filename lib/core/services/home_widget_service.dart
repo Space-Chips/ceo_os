@@ -609,7 +609,7 @@ class _CeoHabitsTableCard extends StatelessWidget {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: done || failed ? color : AppColors.cardBackgroundStrong,
-        border: Border.all(color: color, width: 1.4),
+        border: Border.all(color: color, width: 1),
       ),
     );
   }

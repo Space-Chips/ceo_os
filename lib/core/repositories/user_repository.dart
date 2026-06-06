@@ -1,7 +1,9 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/user_models.dart';
 import 'focus_repository.dart';
+import '../services/offline_cache.dart';
 import '../services/supabase_service.dart';
+import '../services/write_queue.dart';
 import '../utils/app_logger.dart';
 
 class UserRepository {
@@ -24,11 +26,23 @@ class UserRepository {
           .eq('id', _currentUserId)
           .maybeSingle();
 
-      if (response == null) return null;
+      if (response == null) {
+        await OfflineCache.writeList('profile_v1', const []);
+        return null;
+      }
+      await OfflineCache.writeList('profile_v1', [
+        response.cast<String, dynamic>(),
+      ]);
       return Profile.fromJson(response);
     } catch (e) {
       AppLogger.error('Error getting profile.', e);
-      return null;
+      final cached = await OfflineCache.readList('profile_v1');
+      if (cached == null || cached.isEmpty) return null;
+      try {
+        return Profile.fromJson(cached.first);
+      } catch (_) {
+        return null;
+      }
     }
   }
 
@@ -40,11 +54,24 @@ class UserRepository {
           .eq('created_by', _currentUserId)
           .maybeSingle();
 
+      if (response == null) {
+        await OfflineCache.writeList('user_rank_v1', const []);
+      } else {
+        await OfflineCache.writeList('user_rank_v1', [
+          response.cast<String, dynamic>(),
+        ]);
+      }
       final rank = response == null ? null : UserRank.fromJson(response);
       return await _resolveBronzeFallback(rank);
     } catch (e) {
       AppLogger.error('Error getting rank.', e);
-      return null;
+      final cached = await OfflineCache.readList('user_rank_v1');
+      if (cached == null || cached.isEmpty) return null;
+      try {
+        return UserRank.fromJson(cached.first);
+      } catch (_) {
+        return null;
+      }
     }
   }
 
@@ -212,7 +239,17 @@ class UserRepository {
     if (avatarUrl != null) payload['avatar_url'] = avatarUrl;
     if (payload.isEmpty) return;
 
-    await _client.from('profiles').update(payload).eq('id', _currentUserId);
+    final match = {'id': _currentUserId};
+    try {
+      await _client.from('profiles').update(payload).eq('id', _currentUserId);
+    } catch (_) {
+      await WriteQueue.enqueue(
+        table: 'profiles',
+        type: WriteOpType.update,
+        payload: payload,
+        match: match,
+      );
+    }
   }
 
   Future<List<FriendConnection>> getFriendConnections() async {

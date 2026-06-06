@@ -733,8 +733,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
           Align(
             alignment: Alignment.centerLeft,
             child: CupertinoButton(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              minimumSize: Size.zero,
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+              minimumSize: const Size(44, 44),
               onPressed: () => context.go('/home'),
               child: Row(
                 mainAxisSize: MainAxisSize.min,

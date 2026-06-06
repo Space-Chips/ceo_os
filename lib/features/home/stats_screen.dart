@@ -177,7 +177,8 @@ class _StatsScreenState extends State<StatsScreen> {
         backgroundColor: AppColors.background.withValues(alpha: 0.92),
         border: Border(bottom: BorderSide(color: AppColors.border, width: 0.7)),
         leading: CupertinoButton(
-          padding: EdgeInsets.zero,
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+          minimumSize: const Size(44, 44),
           onPressed: () => context.go('/home'),
           child: Icon(CupertinoIcons.back, color: AppColors.accent),
         ),

@@ -1,10 +1,13 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:uuid/uuid.dart';
 
 import '../config/apple_review_compliance.dart';
 import '../models/block_list_model.dart';
 import '../models/user_models.dart';
 import '../services/family_controls_local_store.dart';
+import '../services/offline_cache.dart';
 import '../services/supabase_service.dart';
+import '../services/write_queue.dart';
 import '../utils/app_logger.dart';
 
 class FocusRepository {
@@ -34,13 +37,17 @@ class FocusRepository {
           .from('block_lists')
           .select()
           .eq('created_by', _currentUserId);
-
-      return (response as List)
-          .map((data) => BlockList.fromJson(data))
-          .toList();
+      final raw = (response as List)
+          .whereType<Map>()
+          .map((m) => m.cast<String, dynamic>())
+          .toList(growable: false);
+      await OfflineCache.writeList('block_lists_v1', raw);
+      return raw.map(BlockList.fromJson).toList(growable: false);
     } catch (e) {
       AppLogger.error('Error getting block lists.', e);
-      return [];
+      final cached = await OfflineCache.readList('block_lists_v1');
+      if (cached == null) return const [];
+      return cached.map(BlockList.fromJson).toList(growable: false);
     }
   }
 
@@ -86,11 +93,20 @@ class FocusRepository {
       await _familyControlsLocalStore.deleteBlockList(id);
       return;
     }
-    await _client
-        .from('block_lists')
-        .delete()
-        .eq('id', id)
-        .eq('created_by', _currentUserId);
+    final match = {'id': id, 'created_by': _currentUserId};
+    try {
+      await _client
+          .from('block_lists')
+          .delete()
+          .eq('id', id)
+          .eq('created_by', _currentUserId);
+    } catch (_) {
+      await WriteQueue.enqueue(
+        table: 'block_lists',
+        type: WriteOpType.delete,
+        match: match,
+      );
+    }
   }
 
   // --- Focus Sessions ---
@@ -105,27 +121,57 @@ class FocusRepository {
     final persistedBlockListId = _useLocalFamilyControlsStorage
         ? null
         : blockListId;
-    await _client.from('focus_sessions').insert({
+    final payload = {
+      'id': const Uuid().v4(),
       'created_by': _currentUserId,
       'start_time': startTime.toIso8601String(),
       'end_time': endTime.toIso8601String(),
       'duration_minutes': durationMinutes,
       'block_list_id': persistedBlockListId,
       'completed': completed,
-    });
-    await _refreshWinStreakForSession(completed: completed, endTime: endTime);
+      'created_at': DateTime.now().toIso8601String(),
+    };
+    try {
+      await _client.from('focus_sessions').insert(payload);
+      await _refreshWinStreakForSession(completed: completed, endTime: endTime);
+    } catch (_) {
+      await WriteQueue.enqueue(
+        table: 'focus_sessions',
+        type: WriteOpType.insert,
+        payload: payload,
+      );
+      // Optimistically prepend to local cache so recent sessions reflect it.
+      try {
+        final cached =
+            await OfflineCache.readList('focus_sessions_v1') ?? const [];
+        await OfflineCache.writeList('focus_sessions_v1', [
+          Map<String, dynamic>.from(payload),
+          ...cached,
+        ]);
+      } catch (_) {
+        // Best effort.
+      }
+      // Win streak refresh requires server reads — defer to next online flush.
+    }
   }
 
   Future<List<Map<String, dynamic>>> getRecentSessions() async {
     try {
-      return await _client
+      final response = await _client
           .from('focus_sessions')
           .select()
           .eq('created_by', _currentUserId)
           .order('created_at', ascending: false)
           .limit(10);
-    } catch (e) {
-      return [];
+      final raw = (response as List)
+          .whereType<Map>()
+          .map((m) => m.cast<String, dynamic>())
+          .toList(growable: false);
+      await OfflineCache.writeList('focus_sessions_v1', raw);
+      return raw;
+    } catch (_) {
+      final cached = await OfflineCache.readList('focus_sessions_v1');
+      return cached ?? const [];
     }
   }
 

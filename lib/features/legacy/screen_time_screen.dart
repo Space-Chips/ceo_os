@@ -1109,6 +1109,20 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
     try {
       await action();
       await _load();
+      // Push the fresh classic block list to the native ManagedSettingsStore
+      // so iOS actually applies the shield to the selected apps / websites.
+      // Without this, mutations were only persisted to DB + local store and
+      // the system shield stayed empty (nothing got blocked).
+      try {
+        await _syncClassicNative(
+          apps: _blockedApps,
+          websites: _blockedWebsites,
+          rests: _restPeriods,
+        );
+      } catch (_) {
+        // Sync errors must not roll back the DB mutation. The classic
+        // coordinator already logs platform-side failures.
+      }
     } catch (_) {
       if (!mounted) return;
       _showNotice(
@@ -2188,20 +2202,20 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
               )
             : SafeArea(
                 child: ListView(
-                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
                   children: [
                     _modernSectionTitle(
                       key: _appsSectionKey,
                       title: 'Blocked apps',
                       onAdd: _saving ? null : _addBlockedApp,
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 10),
                     _chooseAppsCard(),
                     if (_blockedApps.isNotEmpty) ...[
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 10),
                       ..._blockedApps.map(
                         (app) => Padding(
-                          padding: const EdgeInsets.only(bottom: 8),
+                          padding: const EdgeInsets.only(bottom: 7),
                           child: _modernBlockedItemCard(
                             title: app.appName ?? 'Unknown app',
                             onDelete: _saving
@@ -2216,7 +2230,7 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
                         ),
                       ),
                     ],
-                    const SizedBox(height: 44),
+                    const SizedBox(height: 36),
                     _modernSectionTitle(
                       key: _sitesSectionKey,
                       title: 'Blocked websites',
@@ -2228,17 +2242,17 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
                                     () => _showAddWebsite = !_showAddWebsite,
                                   ),
                     ),
-                    const SizedBox(height: 14),
+                    const SizedBox(height: 12),
                     _adultShieldCard(),
                     if (_showAddWebsite && !Platform.isIOS) ...[
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 10),
                       _websiteInputCard(),
                     ],
                     if (_blockedWebsites.isNotEmpty) ...[
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 10),
                       ..._blockedWebsites.map(
                         (site) => Padding(
-                          padding: const EdgeInsets.only(bottom: 8),
+                          padding: const EdgeInsets.only(bottom: 7),
                           child: _modernBlockedItemCard(
                             title: site.urlDomain ?? 'Unknown website',
                             onDelete: _saving
@@ -2252,10 +2266,11 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
                         ),
                       ),
                     ],
-                    const SizedBox(height: 44),
+                    const SizedBox(height: 36),
                     _modernSectionTitle(key: _pausesSectionKey, title: 'Pause'),
-                    const SizedBox(height: 14),
+                    const SizedBox(height: 12),
                     _planPauseCard(),
+                    ..._modernPauseList(),
                   ],
                 ),
               ),
@@ -2275,7 +2290,7 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
           child: Text(
             title,
             style: AppTypography.title1.copyWith(
-              fontSize: 30,
+              fontSize: 26,
               fontWeight: FontWeight.w800,
               color: AppColors.label,
               letterSpacing: 0,
@@ -2290,24 +2305,24 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
   Widget _modernAddButton(VoidCallback? onTap) {
     return CupertinoButton(
       padding: EdgeInsets.zero,
-      minimumSize: const Size(56, 56),
+      minimumSize: const Size(48, 48),
       onPressed: onTap,
       child: Container(
-        width: 56,
-        height: 56,
+        width: 48,
+        height: 48,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(17),
           color: AppColors.backgroundLight.withValues(alpha: 0.46),
           border: Border.all(
-            color: AppColors.glassBorder.withValues(alpha: 0.78),
-            width: 0.9,
+            color: AppColors.glassBorder.withValues(alpha: 0.6),
+            width: 0.5,
           ),
         ),
         alignment: Alignment.center,
         child: Icon(
           CupertinoIcons.add,
           color: AppColors.secondaryLabel,
-          size: 26,
+          size: 22,
         ),
       ),
     );
@@ -2318,16 +2333,16 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
       padding: EdgeInsets.zero,
       onPressed: _saving ? null : _addBlockedApp,
       child: Container(
-        padding: const EdgeInsets.fromLTRB(26, 24, 22, 24),
-        decoration: _modernPanelDecoration(radius: 28),
+        padding: const EdgeInsets.fromLTRB(22, 20, 18, 20),
+        decoration: _modernPanelDecoration(radius: 24),
         child: Row(
           children: [
             Icon(
               CupertinoIcons.add_circled,
-              size: 24,
+              size: 20,
               color: AppColors.secondaryLabel,
             ),
-            const SizedBox(width: 28),
+            const SizedBox(width: 22),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -2335,7 +2350,7 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
                   Text(
                     'Choose apps to\nblock',
                     style: AppTypography.title3.copyWith(
-                      fontSize: 21,
+                      fontSize: 18,
                       height: 1.12,
                       fontWeight: FontWeight.w800,
                       color: AppColors.label,
@@ -2344,22 +2359,22 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
                 ],
               ),
             ),
-            const SizedBox(width: 18),
+            const SizedBox(width: 14),
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   'Choose apps',
                   style: AppTypography.callout.copyWith(
-                    fontSize: 16,
+                    fontSize: 14,
                     fontWeight: FontWeight.w700,
                     color: AppColors.secondaryLabel.withValues(alpha: 0.86),
                   ),
                 ),
-                const SizedBox(width: 7),
+                const SizedBox(width: 6),
                 Icon(
                   CupertinoIcons.chevron_right,
-                  size: 18,
+                  size: 15,
                   color: AppColors.secondaryLabel.withValues(alpha: 0.74),
                 ),
               ],
@@ -2372,32 +2387,32 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
 
   Widget _adultShieldCard() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 22),
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
       decoration: _modernPanelDecoration(
-        radius: 24,
-        borderColor: AppColors.error.withValues(alpha: 0.28),
+        radius: 20,
+        borderColor: AppColors.error.withValues(alpha: 0.22),
       ),
       child: Row(
         children: [
           Icon(
             CupertinoIcons.exclamationmark_shield,
-            size: 18,
+            size: 16,
             color: AppColors.error,
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 12),
           Expanded(
             child: Text(
               'Global NSFW shield',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: AppTypography.title3.copyWith(
-                fontSize: 18,
+                fontSize: 15,
                 fontWeight: FontWeight.w800,
                 color: AppColors.label,
               ),
             ),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 12),
           CupertinoSwitch(
             value: _adultContentShieldEnabled,
             onChanged: _saving ? null : _setAdultContentShieldEnabled,
@@ -2410,37 +2425,593 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
 
   Widget _planPauseCard() {
     return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: _modernPanelDecoration(radius: 24),
+      padding: const EdgeInsets.all(20),
+      decoration: _modernPanelDecoration(radius: 20),
       child: CupertinoButton(
-        padding: const EdgeInsets.symmetric(vertical: 17),
-        borderRadius: BorderRadius.circular(22),
-        onPressed: _saving
-            ? null
-            : () => _scheduleRestPeriod(
-                startsInMinutes: 120,
-                durationMinutes: 30,
-              ),
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        borderRadius: BorderRadius.circular(18),
+        onPressed: _saving ? null : _openPlanPauseSheet,
         child: Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 17),
+          padding: const EdgeInsets.symmetric(vertical: 14),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(22),
+            borderRadius: BorderRadius.circular(18),
             border: Border.all(
-              color: AppColors.glassBorder.withValues(alpha: 0.86),
-              width: 0.95,
+              color: AppColors.glassBorder.withValues(alpha: 0.6),
+              width: 0.5,
             ),
           ),
           alignment: Alignment.center,
           child: Text(
             'Plan pause',
             style: AppTypography.title3.copyWith(
-              fontSize: 21,
+              fontSize: 18,
               fontWeight: FontWeight.w800,
               color: AppColors.label,
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Future<void> _openPlanPauseSheet() async {
+    if (_saving) return;
+
+    // Minimum advance booking: 3 hours from now.
+    const minAdvanceMinutes = 180;
+    final now = DateTime.now();
+    var initial = now.add(const Duration(minutes: minAdvanceMinutes));
+    final rem = initial.minute % 5;
+    if (rem != 0) {
+      initial = initial.add(Duration(minutes: 5 - rem));
+    }
+    DateTime start = initial;
+    int durationMinutes = 30;
+    final reasonCtrl = TextEditingController();
+    var confirmed = false;
+
+    await showCupertinoModalPopup<void>(
+      context: context,
+      builder: (sheetCtx) {
+        return StatefulBuilder(
+          builder: (innerCtx, setSheetState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.viewInsetsOf(innerCtx).bottom,
+              ),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: AppColors.background,
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(22),
+                  ),
+                  border: Border(
+                    top: BorderSide(
+                      color: AppColors.glassBorder.withValues(alpha: 0.5),
+                      width: 0.5,
+                    ),
+                  ),
+                ),
+                child: SafeArea(
+                  top: false,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const SizedBox(height: 8),
+                      Container(
+                        width: 38,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(2),
+                          color: AppColors.glassBorder.withValues(alpha: 0.6),
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            'Plan pause',
+                            style: AppTypography.title3.copyWith(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.label,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 18),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            'STARTS',
+                            style: AppTypography.overline.copyWith(
+                              fontSize: 11,
+                              color: AppColors.secondaryLabel,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 1.2,
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        height: 158,
+                        child: CupertinoDatePicker(
+                          mode: CupertinoDatePickerMode.dateAndTime,
+                          initialDateTime: start,
+                          minimumDate: DateTime.now().add(
+                            const Duration(minutes: minAdvanceMinutes),
+                          ),
+                          use24hFormat: true,
+                          minuteInterval: 5,
+                          onDateTimeChanged: (value) {
+                            setSheetState(() => start = value);
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            'DURATION',
+                            style: AppTypography.overline.copyWith(
+                              fontSize: 11,
+                              color: AppColors.secondaryLabel,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 1.2,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: CupertinoSlidingSegmentedControl<int>(
+                          groupValue: durationMinutes,
+                          thumbColor: AppColors.backgroundLight,
+                          backgroundColor: AppColors.backgroundLight.withValues(
+                            alpha: 0.4,
+                          ),
+                          onValueChanged: (value) {
+                            if (value != null) {
+                              setSheetState(() => durationMinutes = value);
+                            }
+                          },
+                          children: {
+                            for (final entry in const [
+                              [15, '15m'],
+                              [30, '30m'],
+                              [60, '1h'],
+                              [120, '2h'],
+                              [240, '4h'],
+                              [480, '8h'],
+                            ])
+                              entry[0] as int: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 8,
+                                ),
+                                child: Text(
+                                  entry[1] as String,
+                                  style: AppTypography.callout.copyWith(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.label,
+                                  ),
+                                ),
+                              ),
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            'RAISON',
+                            style: AppTypography.overline.copyWith(
+                              fontSize: 11,
+                              color: AppColors.secondaryLabel,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 1.2,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: CupertinoTextField(
+                          controller: reasonCtrl,
+                          placeholder: 'Raison',
+                          placeholderStyle: AppTypography.callout.copyWith(
+                            fontSize: 14,
+                            color: AppColors.tertiaryLabel,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          style: AppTypography.callout.copyWith(
+                            fontSize: 15,
+                            color: AppColors.label,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 12,
+                          ),
+                          maxLength: 80,
+                          decoration: BoxDecoration(
+                            color: AppColors.backgroundLight.withValues(
+                              alpha: 0.45,
+                            ),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(
+                              color: AppColors.glassBorder.withValues(
+                                alpha: 0.5,
+                              ),
+                              width: 0.5,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 18),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 0, 20, 18),
+                        child: SizedBox(
+                          width: double.infinity,
+                          child: CupertinoButton(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            borderRadius: BorderRadius.circular(18),
+                            color: AppColors.primaryOrange,
+                            onPressed: () {
+                              confirmed = true;
+                              Navigator.pop(sheetCtx);
+                            },
+                            child: Text(
+                              'Confirm',
+                              style: AppTypography.callout.copyWith(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+
+    final reasonInput = reasonCtrl.text;
+    reasonCtrl.dispose();
+
+    if (!confirmed) return;
+    if (!mounted) return;
+
+    final startsIn = start.difference(DateTime.now()).inMinutes;
+    if (startsIn < minAdvanceMinutes) {
+      await _showNotice(
+        title: 'Trop tard pour planifier',
+        message:
+            'Une pause doit être planifiée au moins 3 h à l'avance. Choisis une heure de départ plus éloignée.',
+      );
+      return;
+    }
+
+    final end = start.add(Duration(minutes: durationMinutes));
+    final cleaned = reasonInput.trim();
+    final effectiveReason = cleaned.isEmpty ? 'flemme' : cleaned;
+    await _runMutation(() {
+      return _repo.createRestPeriod(
+        startTime: start,
+        endTime: end,
+        active: false,
+        reason: effectiveReason,
+      );
+    });
+
+    if (!mounted) return;
+    await _showNotice(
+      title: 'Pause planifiée',
+      message:
+          '${DateFormat('EEE d MMM, HH:mm').format(start)}\nDurée : ${_formatPauseDuration(durationMinutes)}\nRaison : $effectiveReason',
+    );
+  }
+
+  String _formatPauseDuration(int minutes) {
+    if (minutes < 60) return '${minutes}m';
+    final h = minutes ~/ 60;
+    final m = minutes % 60;
+    return m == 0 ? '${h}h' : '${h}h ${m}m';
+  }
+
+  List<Widget> _modernPauseList() {
+    final active = _activeRestPeriod();
+    final scheduled = _scheduledRestPeriods()
+      ..sort((a, b) {
+        final aTime = a.startTime ?? DateTime.now();
+        final bTime = b.startTime ?? DateTime.now();
+        return aTime.compareTo(bTime);
+      });
+
+    final now = DateTime.now();
+    final history =
+        _restPeriods.where((period) => _isCompletedRest(period, now)).where((
+          period,
+        ) {
+          final end = period.endTime;
+          if (end == null) return false;
+          return now.difference(end).inDays <= 30;
+        }).toList()..sort((a, b) {
+          final aEnd = a.endTime ?? DateTime.now();
+          final bEnd = b.endTime ?? DateTime.now();
+          return bEnd.compareTo(aEnd);
+        });
+    final historyVisible = history.take(20).toList();
+
+    if (active == null && scheduled.isEmpty && historyVisible.isEmpty) {
+      return const [];
+    }
+
+    final widgets = <Widget>[const SizedBox(height: 14)];
+
+    if (active != null) {
+      widgets.add(_modernPauseRow(period: active, isActive: true));
+      if (scheduled.isNotEmpty) widgets.add(const SizedBox(height: 8));
+    }
+
+    for (var i = 0; i < scheduled.length; i++) {
+      widgets.add(_modernPauseRow(period: scheduled[i], isActive: false));
+      if (i != scheduled.length - 1) widgets.add(const SizedBox(height: 8));
+    }
+
+    if (historyVisible.isNotEmpty) {
+      widgets.add(const SizedBox(height: 26));
+      widgets.add(
+        Padding(
+          padding: const EdgeInsets.only(left: 4),
+          child: Row(
+            children: [
+              Text(
+                'HISTORIQUE',
+                style: AppTypography.overline.copyWith(
+                  fontSize: 11,
+                  color: AppColors.secondaryLabel,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 1.2,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                '· 30 derniers jours',
+                style: AppTypography.subhead.copyWith(
+                  fontSize: 11,
+                  color: AppColors.tertiaryLabel,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+      widgets.add(const SizedBox(height: 8));
+      for (var i = 0; i < historyVisible.length; i++) {
+        widgets.add(_modernHistoryRow(historyVisible[i]));
+        if (i != historyVisible.length - 1) widgets.add(const SizedBox(height: 8));
+      }
+      if (history.length > historyVisible.length) {
+        widgets.add(const SizedBox(height: 8));
+        widgets.add(
+          Padding(
+            padding: const EdgeInsets.only(left: 4),
+            child: Text(
+              '+ ${history.length - historyVisible.length} autres pauses dans les stats avancées',
+              style: AppTypography.subhead.copyWith(
+                fontSize: 11,
+                color: AppColors.tertiaryLabel,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        );
+      }
+    }
+
+    return widgets;
+  }
+
+  Widget _modernHistoryRow(RestPeriod period) {
+    final start = period.startTime;
+    final end = period.endTime;
+    final durationMinutes = (start != null && end != null)
+        ? end.difference(start).inMinutes
+        : 0;
+    final dateLabel = start == null
+        ? _t('screen_time_unknown_period')
+        : DateFormat('d MMM, HH:mm').format(start);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(14),
+        color: AppColors.backgroundLight.withValues(alpha: 0.32),
+        border: Border.all(
+          color: AppColors.glassBorder.withValues(alpha: 0.35),
+          width: 0.5,
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 30,
+            height: 30,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: AppColors.backgroundLight.withValues(alpha: 0.45),
+              border: Border.all(
+                color: AppColors.glassBorder.withValues(alpha: 0.4),
+                width: 0.5,
+              ),
+            ),
+            alignment: Alignment.center,
+            child: Icon(
+              CupertinoIcons.check_mark,
+              size: 14,
+              color: AppColors.secondaryLabel,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      dateLabel,
+                      style: AppTypography.callout.copyWith(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.label,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      '· ${_formatPauseDuration(durationMinutes)}',
+                      style: AppTypography.subhead.copyWith(
+                        fontSize: 12,
+                        color: AppColors.tertiaryLabel,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  period.reason,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTypography.subhead.copyWith(
+                    fontSize: 12,
+                    color: AppColors.secondaryLabel,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _modernPauseRow({
+    required RestPeriod period,
+    required bool isActive,
+  }) {
+    final start = period.startTime;
+    final end = period.endTime;
+    final durationMinutes = (start != null && end != null)
+        ? end.difference(start).inMinutes
+        : 0;
+    final label = start == null
+        ? _t('screen_time_unknown_period')
+        : DateFormat('EEE d MMM, HH:mm').format(start);
+    final endsInMinutes = end != null
+        ? end.difference(DateTime.now()).inMinutes
+        : 0;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: _modernPanelDecoration(
+        radius: 16,
+        borderColor: isActive
+            ? AppColors.primaryOrange.withValues(alpha: 0.45)
+            : null,
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: isActive
+                  ? AppColors.primaryOrange.withValues(alpha: 0.18)
+                  : AppColors.backgroundLight.withValues(alpha: 0.5),
+              border: Border.all(
+                color: isActive
+                    ? AppColors.primaryOrange.withValues(alpha: 0.55)
+                    : AppColors.glassBorder.withValues(alpha: 0.5),
+                width: 0.5,
+              ),
+            ),
+            alignment: Alignment.center,
+            child: Icon(
+              isActive
+                  ? CupertinoIcons.pause_circle_fill
+                  : CupertinoIcons.clock,
+              size: 18,
+              color: isActive
+                  ? AppColors.primaryOrange
+                  : AppColors.secondaryLabel,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  isActive ? 'Active now' : label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTypography.headline.copyWith(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.label,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  isActive
+                      ? 'Ends in ${_formatPauseDuration(endsInMinutes.clamp(0, 100000))} · ${period.reason}'
+                      : 'Durée : ${_formatPauseDuration(durationMinutes)} · ${period.reason}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTypography.subhead.copyWith(
+                    fontSize: 12,
+                    color: AppColors.secondaryLabel,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          CupertinoButton(
+            padding: EdgeInsets.zero,
+            minimumSize: const Size(32, 32),
+            onPressed: _saving
+                ? null
+                : () => _runMutation(() => _repo.deleteRestPeriod(period.id)),
+            child: Icon(
+              CupertinoIcons.xmark_circle,
+              size: 20,
+              color: AppColors.secondaryLabel,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -2490,8 +3061,8 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
     required VoidCallback? onDelete,
   }) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-      decoration: _modernPanelDecoration(radius: 18),
+      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 13),
+      decoration: _modernPanelDecoration(radius: 15),
       child: Row(
         children: [
           Expanded(
@@ -2500,7 +3071,7 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: AppTypography.callout.copyWith(
-                fontSize: 17,
+                fontSize: 15,
                 fontWeight: FontWeight.w700,
                 color: AppColors.label,
               ),
@@ -2512,7 +3083,7 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
             onPressed: onDelete,
             child: Icon(
               CupertinoIcons.xmark_circle,
-              size: 22,
+              size: 19,
               color: AppColors.secondaryLabel,
             ),
           ),
@@ -2529,8 +3100,8 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
       borderRadius: BorderRadius.circular(radius),
       color: AppColors.backgroundLight.withValues(alpha: 0.52),
       border: Border.all(
-        color: borderColor ?? AppColors.glassBorder.withValues(alpha: 0.58),
-        width: 0.9,
+        color: borderColor ?? AppColors.glassBorder.withValues(alpha: 0.5),
+        width: 0.5,
       ),
       boxShadow: [
         BoxShadow(

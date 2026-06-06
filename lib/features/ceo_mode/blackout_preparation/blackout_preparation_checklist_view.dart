@@ -55,7 +55,10 @@ class BlackoutPreparationChecklistView extends StatelessWidget {
               end: Alignment.bottomCenter,
               colors: [AppColors.cardBackgroundAlt, AppColors.cardBase],
             ),
-            border: Border.all(color: AppColors.borderStrong, width: 1),
+            border: Border.all(
+              color: AppColors.border.withValues(alpha: 0.5),
+              width: 0.9,
+            ),
           ),
           padding: const EdgeInsets.all(18),
           child: Column(

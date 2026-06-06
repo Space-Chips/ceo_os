@@ -48,8 +48,8 @@ class _BlackoutPreparationAnimationViewState
               ],
             ),
             border: Border.all(
-              color: AppColors.borderStrong.withValues(alpha: 0.95),
-              width: 1,
+              color: AppColors.border.withValues(alpha: 0.5),
+              width: 0.9,
             ),
             boxShadow: [
               BoxShadow(
@@ -377,7 +377,10 @@ Widget _folderTile({required double size, required int itemCount}) {
           AppColors.cardBackgroundAlt.withValues(alpha: 0.96),
         ],
       ),
-      border: Border.all(color: AppColors.borderStrong, width: 1),
+      border: Border.all(
+        color: AppColors.border.withValues(alpha: 0.5),
+        width: 0.9,
+      ),
     ),
     child: Padding(
       padding: const EdgeInsets.all(8),
@@ -412,7 +415,10 @@ Widget _folderPanel({
     decoration: BoxDecoration(
       borderRadius: BorderRadius.circular(26),
       color: AppColors.cardBackgroundStrong.withValues(alpha: 0.95),
-      border: Border.all(color: AppColors.borderStrong, width: 1),
+      border: Border.all(
+        color: AppColors.border.withValues(alpha: 0.5),
+        width: 0.9,
+      ),
       boxShadow: [
         BoxShadow(
           color: AppColors.black.withValues(alpha: 0.28),

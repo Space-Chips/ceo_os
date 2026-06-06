@@ -32,6 +32,7 @@ import '../habits/add_habit_sheet.dart';
 import '../tasks/add_task_sheet.dart';
 import '../../components/ambient_backdrop.dart';
 import '../../components/glass_card.dart';
+import '../../components/offline_banner.dart';
 import '../../core/providers/auth_provider.dart';
 import '../../core/providers/language_provider.dart';
 import '../../core/providers/theme_provider.dart';
@@ -1061,19 +1062,31 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: ClipRect(
                       child: BackdropFilter(
                         filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(20, 18, 20, 14),
-                          child: _TopShortcutsBar(
-                            rankName: rankName,
-                            winStreak: _winStreak,
-                            enabledShortcuts: _enabledShortcuts,
-                            isPremium: _isPremiumUser,
-                            onOpenMenu: _openSecondaryMenu,
-                            onOpenRank: () => context.push('/upgrade'),
-                            onOpenFocus: _openFocusQuickStart,
-                            onOpenNotes: () => context.push('/notes'),
-                            onOpenStreak: () => context.push('/win-streak'),
-                          ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(
+                                20,
+                                18,
+                                20,
+                                14,
+                              ),
+                              child: _TopShortcutsBar(
+                                rankName: rankName,
+                                winStreak: _winStreak,
+                                enabledShortcuts: _enabledShortcuts,
+                                isPremium: _isPremiumUser,
+                                onOpenMenu: _openSecondaryMenu,
+                                onOpenRank: () => context.push('/upgrade'),
+                                onOpenFocus: _openFocusQuickStart,
+                                onOpenNotes: () => context.push('/notes'),
+                                onOpenStreak: () =>
+                                    context.push('/win-streak'),
+                              ),
+                            ),
+                            const OfflineBanner(),
+                          ],
                         ),
                       ),
                     ),

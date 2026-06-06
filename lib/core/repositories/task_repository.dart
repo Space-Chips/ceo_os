@@ -1,8 +1,13 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:uuid/uuid.dart';
 import '../models/task_models.dart';
+import '../services/offline_cache.dart';
 import '../services/supabase_service.dart';
+import '../services/write_queue.dart';
 
 class TaskRepository {
+  static const String _tasksCacheKey = 'tasks_v1';
+
   final SupabaseService _supabaseService;
 
   TaskRepository({SupabaseService? supabaseService})
@@ -23,25 +28,60 @@ class TaskRepository {
       }
 
       final response = await query.order('sort_order', ascending: true);
+      final raw = (response as List)
+          .whereType<Map>()
+          .map((m) => m.cast<String, dynamic>())
+          .toList(growable: false);
 
-      return (response as List)
-          .map((data) => ParetoTask.fromJson(data))
-          .toList();
-    } catch (e) {
-      print('Error getting tasks: $e');
-      return [];
+      // Cache the full raw set (incl. completed when we just fetched them) so
+      // the offline read can answer either flavour from the same snapshot.
+      await OfflineCache.writeList(_tasksCacheKey, raw);
+
+      return raw.map(ParetoTask.fromJson).toList(growable: false);
+    } catch (_) {
+      // Network/Supabase failure — serve last known snapshot.
+      final cached = await OfflineCache.readList(_tasksCacheKey);
+      if (cached == null) return const [];
+      final tasks = cached.map(ParetoTask.fromJson).toList(growable: false);
+      if (includeCompleted) return tasks;
+      return tasks.where((t) => !t.completed).toList(growable: false);
     }
   }
 
   Future<void> uncompleteTask(String taskId) async {
-    await _client
-        .from('pareto_tasks')
-        .update({'completed': false, 'completed_date': null})
-        .eq('id', taskId);
+    const payload = {'completed': false, 'completed_date': null};
+    final match = {'id': taskId, 'created_by': _currentUserId};
+    try {
+      await _client
+          .from('pareto_tasks')
+          .update(payload)
+          .eq('id', taskId)
+          .eq('created_by', _currentUserId);
+    } catch (_) {
+      await WriteQueue.enqueue(
+        table: 'pareto_tasks',
+        type: WriteOpType.update,
+        payload: payload,
+        match: match,
+      );
+    }
   }
 
   Future<void> deleteTask(String taskId) async {
-    await _client.from('pareto_tasks').delete().eq('id', taskId);
+    final match = {'id': taskId, 'created_by': _currentUserId};
+    try {
+      await _client
+          .from('pareto_tasks')
+          .delete()
+          .eq('id', taskId)
+          .eq('created_by', _currentUserId);
+    } catch (_) {
+      await WriteQueue.enqueue(
+        table: 'pareto_tasks',
+        type: WriteOpType.delete,
+        match: match,
+      );
+    }
   }
 
   Future<void> addTask(
@@ -53,7 +93,11 @@ class TaskRepository {
     String? description,
     bool syncToCalendar = false,
   }) async {
+    // Pre-allocate a UUID so the same id is reused if we have to enqueue
+    // the write for offline replay. Postgres accepts client-side UUIDs.
+    final clientId = const Uuid().v4();
     final payload = <String, dynamic>{
+      'id': clientId,
       'created_by': _currentUserId,
       'title': title,
       'importance_level': importance,
@@ -64,6 +108,7 @@ class TaskRepository {
       'completed': false,
     };
     Map<String, dynamic> response = {};
+    var queuedOffline = false;
     try {
       response = await _client
           .from('pareto_tasks')
@@ -102,27 +147,80 @@ class TaskRepository {
           continue;
         }
       }
+    } catch (_) {
+      // Network / offline — optimistically write to local cache and queue
+      // the insert for replay on reconnect.
+      queuedOffline = true;
+      await _optimisticallyAppendTaskToCache(payload);
+      await WriteQueue.enqueue(
+        table: 'pareto_tasks',
+        type: WriteOpType.insert,
+        payload: payload,
+      );
+      response = {'id': clientId, 'title': title};
     }
 
     if (syncToCalendar && deadline != null) {
-      await addEvent(
-        title,
-        '${deadline.year.toString().padLeft(4, '0')}-${deadline.month.toString().padLeft(2, '0')}-${deadline.day.toString().padLeft(2, '0')}',
-        description: description,
-        sourceType: 'task',
-        sourceId: response['id'] as String?,
-      );
+      final eventDate =
+          '${deadline.year.toString().padLeft(4, '0')}-${deadline.month.toString().padLeft(2, '0')}-${deadline.day.toString().padLeft(2, '0')}';
+      if (queuedOffline) {
+        // Queue the event insert directly to keep the offline flow self-contained.
+        await WriteQueue.enqueue(
+          table: 'calendar_events',
+          type: WriteOpType.insert,
+          payload: {
+            'id': const Uuid().v4(),
+            'created_by': _currentUserId,
+            'title': title,
+            'description': description,
+            'event_date': eventDate,
+            'source_type': 'task',
+            'source_id': response['id'] as String?,
+          },
+        );
+      } else {
+        await addEvent(
+          title,
+          eventDate,
+          description: description,
+          sourceType: 'task',
+          sourceId: response['id'] as String?,
+        );
+      }
     }
   }
 
+  Future<void> _optimisticallyAppendTaskToCache(
+    Map<String, dynamic> payload,
+  ) async {
+    final cached = await OfflineCache.readList(_tasksCacheKey) ?? const [];
+    final next = [
+      ...cached,
+      Map<String, dynamic>.from(payload),
+    ];
+    await OfflineCache.writeList(_tasksCacheKey, next);
+  }
+
   Future<void> completeTask(String taskId) async {
-    await _client
-        .from('pareto_tasks')
-        .update({
-          'completed': true,
-          'completed_date': DateTime.now().toIso8601String(),
-        })
-        .eq('id', taskId);
+    final payload = {
+      'completed': true,
+      'completed_date': DateTime.now().toIso8601String(),
+    };
+    final match = {'id': taskId, 'created_by': _currentUserId};
+    try {
+      await _client
+          .from('pareto_tasks')
+          .update(payload)
+          .eq('id', taskId)
+          .eq('created_by', _currentUserId);
+    } catch (_) {
+      await WriteQueue.enqueue(
+        table: 'pareto_tasks',
+        type: WriteOpType.update,
+        payload: payload,
+        match: match,
+      );
+    }
   }
 
   // --- Task Groups ---
@@ -218,6 +316,7 @@ class TaskRepository {
     String? eventTypeId,
   }) async {
     final payload = <String, dynamic>{
+      'id': const Uuid().v4(),
       'created_by': _currentUserId,
       'title': title,
       'description': description,
@@ -262,6 +361,12 @@ class TaskRepository {
           continue;
         }
       }
+    } catch (_) {
+      await WriteQueue.enqueue(
+        table: 'calendar_events',
+        type: WriteOpType.insert,
+        payload: payload,
+      );
     }
   }
 

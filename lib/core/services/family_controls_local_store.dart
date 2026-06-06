@@ -253,13 +253,16 @@ class FamilyControlsLocalStore {
     required DateTime startTime,
     required DateTime endTime,
     required bool active,
+    String reason = 'flemme',
   }) async {
+    final cleaned = reason.trim();
     final item = RestPeriod(
       id: _newId('rest_period'),
       createdBy: createdBy,
       startTime: startTime,
       endTime: endTime,
       active: active,
+      reason: cleaned.isEmpty ? 'flemme' : cleaned,
       createdAt: DateTime.now(),
     );
     final rows = await _loadRows(_restPeriodsKey);
@@ -331,6 +334,7 @@ class FamilyControlsLocalStore {
     'start_time': item.startTime?.toIso8601String(),
     'end_time': item.endTime?.toIso8601String(),
     'active': item.active,
+    'reason': item.reason,
     'created_at': item.createdAt.toIso8601String(),
   };
 

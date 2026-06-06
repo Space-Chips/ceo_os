@@ -332,8 +332,8 @@ class _ScreenTimeManagerScreenState extends State<ScreenTimeManagerScreen> {
       child: Row(
         children: [
           CupertinoButton(
-            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-            minimumSize: Size.zero,
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+            minimumSize: const Size(44, 44),
             onPressed: () => context.go('/home'),
             child: Row(
               children: [
@@ -423,8 +423,7 @@ class _ScreenTimeManagerScreenState extends State<ScreenTimeManagerScreen> {
             Expanded(
               child: Text(
                 _t('focus_mode'),
-                style: TextStyle(
-                  fontFamily: '.SF Pro Display',
+                style: AppTypography.largeTitle.copyWith(
                   fontSize: 42,
                   fontWeight: FontWeight.w700,
                   color: AppColors.label,
@@ -591,7 +590,7 @@ class _ScreenTimeManagerScreenState extends State<ScreenTimeManagerScreen> {
             value,
             maxLines: 1,
             overflow: TextOverflow.visible,
-            style: AppTypography.timer.copyWith(
+            style: AppTypography.title3.copyWith(
               fontSize: 30,
               color: AppColors.label,
               fontWeight: FontWeight.w700,
@@ -602,9 +601,9 @@ class _ScreenTimeManagerScreenState extends State<ScreenTimeManagerScreen> {
           Text(
             subtitle,
             style: AppTypography.subhead.copyWith(
-              fontSize: 11,
-              color: AppColors.tertiaryLabel,
-              fontWeight: FontWeight.w600,
+              fontSize: 12,
+              color: AppColors.secondaryLabel,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],
@@ -649,9 +648,9 @@ class _ScreenTimeManagerScreenState extends State<ScreenTimeManagerScreen> {
                     label,
                     style: AppTypography.overline.copyWith(
                       fontSize: 11,
-                      color: AppColors.tertiaryLabel,
+                      color: AppColors.secondaryLabel,
                       fontWeight: FontWeight.w800,
-                      letterSpacing: 1.0,
+                      letterSpacing: 1.2,
                     ),
                   ),
                 ),
@@ -691,8 +690,15 @@ class _ScreenTimeManagerScreenState extends State<ScreenTimeManagerScreen> {
       child: GlassCard(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         borderRadius: 18,
+        // Darker gradient than the default card so these "menu" rows blend
+        // more into the page background — less contrast, calmer hierarchy.
+        gradientColors: [
+          AppColors.cardBackgroundStrong,
+          AppColors.background,
+        ],
+        level: GlassCardLevel.subtle,
         border: Border.all(
-          color: AppColors.glassBorder.withValues(alpha: 0.38),
+          color: AppColors.glassBorder.withValues(alpha: 0.28),
           width: 0.5,
         ),
         child: Row(
@@ -721,7 +727,7 @@ class _ScreenTimeManagerScreenState extends State<ScreenTimeManagerScreen> {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: AppTypography.headline.copyWith(
-                      fontSize: 17,
+                      fontSize: 19,
                       fontWeight: FontWeight.w700,
                       color: AppColors.label,
                     ),

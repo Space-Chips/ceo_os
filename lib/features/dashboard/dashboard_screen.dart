@@ -545,8 +545,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Row(
       children: [
         CupertinoButton(
-          padding: EdgeInsets.zero,
-          minimumSize: Size.zero,
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+          minimumSize: const Size(44, 44),
           onPressed: () => context.go('/home'),
           child: Row(
             children: [
@@ -666,7 +666,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(0, 60, 0, 120),
+      padding: const EdgeInsets.fromLTRB(0, 88, 0, 120),
       children: children,
     );
   }

@@ -1,12 +1,15 @@
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:uuid/uuid.dart';
 
 import '../models/habit_models.dart';
 import '../models/settings_models.dart';
 import '../models/task_models.dart';
 import '../models/user_models.dart';
 import '../services/family_controls_local_store.dart';
+import '../services/offline_cache.dart';
 import '../services/supabase_service.dart';
+import '../services/write_queue.dart';
 import '../config/apple_review_compliance.dart';
 import 'focus_repository.dart';
 
@@ -45,13 +48,25 @@ class FeatureRepository {
   }
 
   Future<AppSettings?> getAppSettings() async {
-    final response = await _client
-        .from('app_settings')
-        .select()
-        .eq('created_by', _currentUserId)
-        .maybeSingle();
-    if (response == null) return null;
-    return AppSettings.fromJson(response);
+    try {
+      final response = await _client
+          .from('app_settings')
+          .select()
+          .eq('created_by', _currentUserId)
+          .maybeSingle();
+      if (response == null) {
+        await OfflineCache.writeList('app_settings_v1', const []);
+        return null;
+      }
+      await OfflineCache.writeList('app_settings_v1', [
+        response.cast<String, dynamic>(),
+      ]);
+      return AppSettings.fromJson(response);
+    } catch (_) {
+      final cached = await OfflineCache.readList('app_settings_v1');
+      if (cached == null || cached.isEmpty) return null;
+      return AppSettings.fromJson(cached.first);
+    }
   }
 
   Future<void> saveActiveApps(List<String> apps) async {
@@ -96,12 +111,23 @@ class FeatureRepository {
   }
 
   Future<List<Note>> getNotes() async {
-    final response = await _client
-        .from('notes')
-        .select()
-        .eq('created_by', _currentUserId)
-        .order('updated_date', ascending: false);
-    return (response as List).map((e) => Note.fromJson(e)).toList();
+    try {
+      final response = await _client
+          .from('notes')
+          .select()
+          .eq('created_by', _currentUserId)
+          .order('updated_date', ascending: false);
+      final raw = (response as List)
+          .whereType<Map>()
+          .map((m) => m.cast<String, dynamic>())
+          .toList(growable: false);
+      await OfflineCache.writeList('notes_v1', raw);
+      return raw.map(Note.fromJson).toList(growable: false);
+    } catch (_) {
+      final cached = await OfflineCache.readList('notes_v1');
+      if (cached == null) return const [];
+      return cached.map(Note.fromJson).toList(growable: false);
+    }
   }
 
   Future<int> countNotes() async {
@@ -113,29 +139,58 @@ class FeatureRepository {
   }
 
   Future<String> createNote(String title, String content) async {
-    final inserted = await _client
-        .from('notes')
-        .insert({
-          'created_by': _currentUserId,
-          'title': title,
-          'content': content,
-          'updated_date': DateTime.now().toIso8601String(),
-        })
-        .select('id')
-        .single();
-    return inserted['id'] as String;
+    final clientId = const Uuid().v4();
+    final payload = {
+      'id': clientId,
+      'created_by': _currentUserId,
+      'title': title,
+      'content': content,
+      'updated_date': DateTime.now().toIso8601String(),
+    };
+    try {
+      final inserted = await _client
+          .from('notes')
+          .insert(payload)
+          .select('id')
+          .single();
+      return inserted['id'] as String;
+    } catch (_) {
+      await WriteQueue.enqueue(
+        table: 'notes',
+        type: WriteOpType.insert,
+        payload: payload,
+      );
+      // Optimistically append to cache so the notes list shows the new note.
+      final cached = await OfflineCache.readList('notes_v1') ?? const [];
+      await OfflineCache.writeList('notes_v1', [
+        Map<String, dynamic>.from(payload),
+        ...cached,
+      ]);
+      return clientId;
+    }
   }
 
   Future<void> updateNote(String id, String title, String content) async {
-    await _client
-        .from('notes')
-        .update({
-          'title': title,
-          'content': content,
-          'updated_date': DateTime.now().toIso8601String(),
-        })
-        .eq('id', id)
-        .eq('created_by', _currentUserId);
+    final payload = {
+      'title': title,
+      'content': content,
+      'updated_date': DateTime.now().toIso8601String(),
+    };
+    final match = {'id': id, 'created_by': _currentUserId};
+    try {
+      await _client
+          .from('notes')
+          .update(payload)
+          .eq('id', id)
+          .eq('created_by', _currentUserId);
+    } catch (_) {
+      await WriteQueue.enqueue(
+        table: 'notes',
+        type: WriteOpType.update,
+        payload: payload,
+        match: match,
+      );
+    }
   }
 
   Future<void> updateBlockedWebsiteDomain(String id, String? domain) async {
@@ -177,79 +232,177 @@ class FeatureRepository {
       await _familyControlsLocalStore.deleteRestPeriod(id);
       return;
     }
-    await _client
-        .from('rest_periods')
-        .delete()
-        .eq('id', id)
-        .eq('created_by', _currentUserId);
+    final match = {'id': id, 'created_by': _currentUserId};
+    try {
+      await _client
+          .from('rest_periods')
+          .delete()
+          .eq('id', id)
+          .eq('created_by', _currentUserId);
+    } catch (_) {
+      await WriteQueue.enqueue(
+        table: 'rest_periods',
+        type: WriteOpType.delete,
+        match: match,
+      );
+    }
   }
 
   Future<void> deleteNote(String id) async {
-    await _client
-        .from('notes')
-        .delete()
-        .eq('id', id)
-        .eq('created_by', _currentUserId);
+    final match = {'id': id, 'created_by': _currentUserId};
+    try {
+      await _client
+          .from('notes')
+          .delete()
+          .eq('id', id)
+          .eq('created_by', _currentUserId);
+    } catch (_) {
+      await WriteQueue.enqueue(
+        table: 'notes',
+        type: WriteOpType.delete,
+        match: match,
+      );
+    }
   }
 
   Future<List<Objective>> getObjectives() async {
-    final response = await _client
-        .from('objectives')
-        .select()
-        .eq('created_by', _currentUserId)
-        .eq('archived', false)
-        .order('created_at', ascending: false);
-    return (response as List).map((e) => Objective.fromJson(e)).toList();
+    try {
+      final response = await _client
+          .from('objectives')
+          .select()
+          .eq('created_by', _currentUserId)
+          .eq('archived', false)
+          .order('created_at', ascending: false);
+      final raw = (response as List)
+          .whereType<Map>()
+          .map((m) => m.cast<String, dynamic>())
+          .toList(growable: false);
+      await OfflineCache.writeList('objectives_v1', raw);
+      return raw.map(Objective.fromJson).toList(growable: false);
+    } catch (_) {
+      final cached = await OfflineCache.readList('objectives_v1');
+      if (cached == null) return const [];
+      return cached.map(Objective.fromJson).toList(growable: false);
+    }
   }
 
   Future<Objective?> createObjective(String title) async {
     if (title.trim().isEmpty) return null;
-    final response = await _client
-        .from('objectives')
-        .insert({
-          'created_by': _currentUserId,
-          'title': title.trim(),
-          'archived': false,
-        })
-        .select()
-        .single();
-    return Objective.fromJson(response);
+    final clientId = const Uuid().v4();
+    final payload = {
+      'id': clientId,
+      'created_by': _currentUserId,
+      'title': title.trim(),
+      'archived': false,
+      'created_at': DateTime.now().toIso8601String(),
+    };
+    try {
+      final response = await _client
+          .from('objectives')
+          .insert(payload)
+          .select()
+          .single();
+      return Objective.fromJson(response);
+    } catch (_) {
+      await WriteQueue.enqueue(
+        table: 'objectives',
+        type: WriteOpType.insert,
+        payload: payload,
+      );
+      final cached = await OfflineCache.readList('objectives_v1') ?? const [];
+      await OfflineCache.writeList('objectives_v1', [
+        Map<String, dynamic>.from(payload),
+        ...cached,
+      ]);
+      try {
+        return Objective.fromJson(payload);
+      } catch (_) {
+        return null;
+      }
+    }
   }
 
   Future<void> archiveObjective(String objectiveId) async {
-    await _client
-        .from('objectives')
-        .update({'archived': true})
-        .eq('id', objectiveId)
-        .eq('created_by', _currentUserId);
+    const payload = {'archived': true};
+    final match = {'id': objectiveId, 'created_by': _currentUserId};
+    try {
+      await _client
+          .from('objectives')
+          .update(payload)
+          .eq('id', objectiveId)
+          .eq('created_by', _currentUserId);
+    } catch (_) {
+      await WriteQueue.enqueue(
+        table: 'objectives',
+        type: WriteOpType.update,
+        payload: payload,
+        match: match,
+      );
+    }
   }
 
   Future<List<EventType>> getEventTypes() async {
-    final response = await _client
-        .from('event_types')
-        .select()
-        .eq('created_by', _currentUserId)
-        .order('created_at', ascending: false);
-    return (response as List).map((e) => EventType.fromJson(e)).toList();
+    try {
+      final response = await _client
+          .from('event_types')
+          .select()
+          .eq('created_by', _currentUserId)
+          .order('created_at', ascending: false);
+      final raw = (response as List)
+          .whereType<Map>()
+          .map((m) => m.cast<String, dynamic>())
+          .toList(growable: false);
+      await OfflineCache.writeList('event_types_v1', raw);
+      return raw.map(EventType.fromJson).toList(growable: false);
+    } catch (_) {
+      final cached = await OfflineCache.readList('event_types_v1');
+      if (cached == null) return const [];
+      return cached.map(EventType.fromJson).toList(growable: false);
+    }
   }
 
   Future<void> createEventType(String name, String color, String icon) async {
     final trimmedName = name.trim();
     if (trimmedName.isEmpty) return;
-    await _client.from('event_types').insert({
+    final payload = {
+      'id': const Uuid().v4(),
       'created_by': _currentUserId,
       'name': trimmedName,
       'color': color,
       'icon': icon,
-    });
+      'created_at': DateTime.now().toIso8601String(),
+    };
+    try {
+      await _client.from('event_types').insert(payload);
+    } catch (_) {
+      await WriteQueue.enqueue(
+        table: 'event_types',
+        type: WriteOpType.insert,
+        payload: payload,
+      );
+      final cached = await OfflineCache.readList('event_types_v1') ?? const [];
+      await OfflineCache.writeList('event_types_v1', [
+        Map<String, dynamic>.from(payload),
+        ...cached,
+      ]);
+    }
   }
 
   Future<void> deleteEventType(String id) async {
-    await _client
-        .from('event_types')
-        .delete()
-        .eq('id', id)
-        .eq('created_by', _currentUserId);
+    final match = {'id': id, 'created_by': _currentUserId};
+    try {
+      await _client
+          .from('event_types')
+          .delete()
+          .eq('id', id)
+          .eq('created_by', _currentUserId);
+    } catch (_) {
+      await WriteQueue.enqueue(
+        table: 'event_types',
+        type: WriteOpType.delete,
+        match: match,
+      );
+    }
   }
 
   Future<WinStreak?> getWinStreak() async {
@@ -260,12 +413,23 @@ class FeatureRepository {
     if (_useLocalFamilyControlsStorage) {
       return _familyControlsLocalStore.getBlockedApps();
     }
-    final response = await _client
-        .from('blocked_apps')
-        .select()
-        .eq('created_by', _currentUserId)
-        .order('created_at', ascending: false);
-    return (response as List).map((e) => BlockedApp.fromJson(e)).toList();
+    try {
+      final response = await _client
+          .from('blocked_apps')
+          .select()
+          .eq('created_by', _currentUserId)
+          .order('created_at', ascending: false);
+      final raw = (response as List)
+          .whereType<Map>()
+          .map((m) => m.cast<String, dynamic>())
+          .toList(growable: false);
+      await OfflineCache.writeList('blocked_apps_v1', raw);
+      return raw.map(BlockedApp.fromJson).toList(growable: false);
+    } catch (_) {
+      final cached = await OfflineCache.readList('blocked_apps_v1');
+      if (cached == null) return const [];
+      return cached.map(BlockedApp.fromJson).toList(growable: false);
+    }
   }
 
   Future<BlockedApp?> createBlockedAppRecord(String appName) async {
@@ -277,16 +441,37 @@ class FeatureRepository {
         appName: trimmedName,
       );
     }
-    final response = await _client
-        .from('blocked_apps')
-        .insert({
-          'created_by': _currentUserId,
-          'app_name': trimmedName,
-          'time_limit_minutes': 0,
-        })
-        .select()
-        .single();
-    return BlockedApp.fromJson(response);
+    final payload = {
+      'id': const Uuid().v4(),
+      'created_by': _currentUserId,
+      'app_name': trimmedName,
+      'time_limit_minutes': 0,
+      'created_at': DateTime.now().toIso8601String(),
+    };
+    try {
+      final response = await _client
+          .from('blocked_apps')
+          .insert(payload)
+          .select()
+          .single();
+      return BlockedApp.fromJson(response);
+    } catch (_) {
+      await WriteQueue.enqueue(
+        table: 'blocked_apps',
+        type: WriteOpType.insert,
+        payload: payload,
+      );
+      final cached = await OfflineCache.readList('blocked_apps_v1') ?? const [];
+      await OfflineCache.writeList('blocked_apps_v1', [
+        Map<String, dynamic>.from(payload),
+        ...cached,
+      ]);
+      try {
+        return BlockedApp.fromJson(payload);
+      } catch (_) {
+        return null;
+      }
+    }
   }
 
   Future<void> createBlockedApp(String appName) async {
@@ -298,11 +483,20 @@ class FeatureRepository {
       await _familyControlsLocalStore.deleteBlockedApp(id);
       return;
     }
-    await _client
-        .from('blocked_apps')
-        .delete()
-        .eq('id', id)
-        .eq('created_by', _currentUserId);
+    final match = {'id': id, 'created_by': _currentUserId};
+    try {
+      await _client
+          .from('blocked_apps')
+          .delete()
+          .eq('id', id)
+          .eq('created_by', _currentUserId);
+    } catch (_) {
+      await WriteQueue.enqueue(
+        table: 'blocked_apps',
+        type: WriteOpType.delete,
+        match: match,
+      );
+    }
   }
 
   Future<void> setAdultContentShieldEnabled(bool enabled) async {
@@ -397,27 +591,60 @@ class FeatureRepository {
     if (_useLocalFamilyControlsStorage) {
       return _familyControlsLocalStore.getBlockedWebsites();
     }
-    final response = await _client
-        .from('blocked_websites')
-        .select()
-        .eq('created_by', _currentUserId)
-        .order('created_at', ascending: false);
-    return (response as List).map((e) => BlockedWebsite.fromJson(e)).toList();
+    try {
+      final response = await _client
+          .from('blocked_websites')
+          .select()
+          .eq('created_by', _currentUserId)
+          .order('created_at', ascending: false);
+      final raw = (response as List)
+          .whereType<Map>()
+          .map((m) => m.cast<String, dynamic>())
+          .toList(growable: false);
+      await OfflineCache.writeList('blocked_websites_v1', raw);
+      return raw.map(BlockedWebsite.fromJson).toList(growable: false);
+    } catch (_) {
+      final cached = await OfflineCache.readList('blocked_websites_v1');
+      if (cached == null) return const [];
+      return cached.map(BlockedWebsite.fromJson).toList(growable: false);
+    }
   }
 
   Future<BlockedWebsite?> createBlockedWebsiteRecord(String urlDomain) async {
     final trimmedDomain = urlDomain.trim();
     if (trimmedDomain.isEmpty) return null;
-    final response = await _client
-        .from('blocked_websites')
-        .insert({
-          'created_by': _currentUserId,
-          'url_domain': trimmedDomain,
-          'time_limit_minutes': 0,
-        })
-        .select()
-        .single();
-    return BlockedWebsite.fromJson(response);
+    final payload = {
+      'id': const Uuid().v4(),
+      'created_by': _currentUserId,
+      'url_domain': trimmedDomain,
+      'time_limit_minutes': 0,
+      'created_at': DateTime.now().toIso8601String(),
+    };
+    try {
+      final response = await _client
+          .from('blocked_websites')
+          .insert(payload)
+          .select()
+          .single();
+      return BlockedWebsite.fromJson(response);
+    } catch (_) {
+      await WriteQueue.enqueue(
+        table: 'blocked_websites',
+        type: WriteOpType.insert,
+        payload: payload,
+      );
+      final cached =
+          await OfflineCache.readList('blocked_websites_v1') ?? const [];
+      await OfflineCache.writeList('blocked_websites_v1', [
+        Map<String, dynamic>.from(payload),
+        ...cached,
+      ]);
+      try {
+        return BlockedWebsite.fromJson(payload);
+      } catch (_) {
+        return null;
+      }
+    }
   }
 
   Future<void> createBlockedWebsite(String urlDomain) async {
@@ -429,11 +656,20 @@ class FeatureRepository {
       await _familyControlsLocalStore.deleteBlockedWebsite(id);
       return;
     }
-    await _client
-        .from('blocked_websites')
-        .delete()
-        .eq('id', id)
-        .eq('created_by', _currentUserId);
+    final match = {'id': id, 'created_by': _currentUserId};
+    try {
+      await _client
+          .from('blocked_websites')
+          .delete()
+          .eq('id', id)
+          .eq('created_by', _currentUserId);
+    } catch (_) {
+      await WriteQueue.enqueue(
+        table: 'blocked_websites',
+        type: WriteOpType.delete,
+        match: match,
+      );
+    }
   }
 
   Future<void> addBlockedWebsiteTime(String id, int minutes) async {
@@ -460,34 +696,66 @@ class FeatureRepository {
     if (_useLocalFamilyControlsStorage) {
       return _familyControlsLocalStore.getRestPeriods();
     }
-    final response = await _client
-        .from('rest_periods')
-        .select()
-        .eq('created_by', _currentUserId)
-        .order('created_at', ascending: false);
-    return (response as List).map((e) => RestPeriod.fromJson(e)).toList();
+    try {
+      final response = await _client
+          .from('rest_periods')
+          .select()
+          .eq('created_by', _currentUserId)
+          .order('created_at', ascending: false);
+      final raw = (response as List)
+          .whereType<Map>()
+          .map((m) => m.cast<String, dynamic>())
+          .toList(growable: false);
+      await OfflineCache.writeList('rest_periods_v1', raw);
+      return raw.map(RestPeriod.fromJson).toList(growable: false);
+    } catch (_) {
+      final cached = await OfflineCache.readList('rest_periods_v1');
+      if (cached == null) return const [];
+      return cached.map(RestPeriod.fromJson).toList(growable: false);
+    }
   }
 
   Future<void> createRestPeriod({
     required DateTime startTime,
     required DateTime endTime,
     bool active = true,
+    String reason = 'flemme',
   }) async {
+    final cleanedReason = reason.trim();
+    final effectiveReason = cleanedReason.isEmpty ? 'flemme' : cleanedReason;
     if (_useLocalFamilyControlsStorage) {
       await _familyControlsLocalStore.createRestPeriod(
         createdBy: _currentUserId,
         startTime: startTime,
         endTime: endTime,
         active: active,
+        reason: effectiveReason,
       );
       return;
     }
-    await _client.from('rest_periods').insert({
+    final payload = {
+      'id': const Uuid().v4(),
       'created_by': _currentUserId,
       'start_time': startTime.toIso8601String(),
       'end_time': endTime.toIso8601String(),
       'active': active,
-    });
+      'reason': effectiveReason,
+      'created_at': DateTime.now().toIso8601String(),
+    };
+    try {
+      await _client.from('rest_periods').insert(payload);
+    } catch (_) {
+      await WriteQueue.enqueue(
+        table: 'rest_periods',
+        type: WriteOpType.insert,
+        payload: payload,
+      );
+      final cached = await OfflineCache.readList('rest_periods_v1') ?? const [];
+      await OfflineCache.writeList('rest_periods_v1', [
+        Map<String, dynamic>.from(payload),
+        ...cached,
+      ]);
+    }
   }
 
   Future<void> updateRestPeriodActive(String id, bool active) async {
@@ -495,11 +763,22 @@ class FeatureRepository {
       await _familyControlsLocalStore.updateRestPeriodActive(id, active);
       return;
     }
-    await _client
-        .from('rest_periods')
-        .update({'active': active})
-        .eq('id', id)
-        .eq('created_by', _currentUserId);
+    final payload = {'active': active};
+    final match = {'id': id, 'created_by': _currentUserId};
+    try {
+      await _client
+          .from('rest_periods')
+          .update(payload)
+          .eq('id', id)
+          .eq('created_by', _currentUserId);
+    } catch (_) {
+      await WriteQueue.enqueue(
+        table: 'rest_periods',
+        type: WriteOpType.update,
+        payload: payload,
+        match: match,
+      );
+    }
   }
 
   Future<void> updateRestPeriod({
@@ -523,11 +802,21 @@ class FeatureRepository {
     if (active != null) payload['active'] = active;
     if (payload.isEmpty) return;
 
-    await _client
-        .from('rest_periods')
-        .update(payload)
-        .eq('id', id)
-        .eq('created_by', _currentUserId);
+    final match = {'id': id, 'created_by': _currentUserId};
+    try {
+      await _client
+          .from('rest_periods')
+          .update(payload)
+          .eq('id', id)
+          .eq('created_by', _currentUserId);
+    } catch (_) {
+      await WriteQueue.enqueue(
+        table: 'rest_periods',
+        type: WriteOpType.update,
+        payload: payload,
+        match: match,
+      );
+    }
   }
 
   Future<WeeklyContract?> getCurrentWeeklyContract() async {
@@ -607,12 +896,15 @@ class FeatureRepository {
           .eq('created_by', _currentUserId)
           .gte('created_at', since.toIso8601String())
           .order('created_at', ascending: false);
-      return (response as List)
+      final raw = (response as List)
           .whereType<Map>()
           .map((row) => Map<String, dynamic>.from(row))
           .toList(growable: false);
+      await OfflineCache.writeList('screen_time_logs_v1', raw);
+      return raw;
     } catch (_) {
-      return const [];
+      final cached = await OfflineCache.readList('screen_time_logs_v1');
+      return cached ?? const [];
     }
   }
 }
