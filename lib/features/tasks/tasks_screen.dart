@@ -14,7 +14,6 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
 import 'add_task_sheet.dart';
-import 'task_detail_sheet.dart';
 import 'task_importance_theme.dart';
 import '../../components/ambient_backdrop.dart';
 import '../../components/glass_card.dart';
@@ -89,21 +88,20 @@ class _TasksScreenState extends State<TasksScreen> {
   }
 
   Future<void> _showTaskDetail(ParetoTask task) async {
+    // Tap on a task tile marks it as completed immediately — no sheet, no
+    // confirmation. The task disappears from the active list and shows up
+    // in the History tab, preserving what was accomplished. This is the
+    // previously agreed UX for the todo list ("supprimer = compléter" in
+    // the user's words). Kept method name (`_showTaskDetail`) so all
+    // existing wiring stays intact; the body is what changed.
     final provider = context.read<TaskProvider>();
-    await showCupertinoModalPopup<void>(
-      context: context,
-      builder: (_) => TaskDetailSheet(
-        task: task,
-        onToggleComplete: () async {
-          if (task.completed) {
-            await provider.uncompleteTask(task.id);
-          } else {
-            await provider.completeTask(task.id);
-          }
-        },
-        onDelete: () => provider.deleteTask(task.id),
-      ),
-    );
+    if (task.completed) {
+      // Guard: tapping an already-completed task shouldn't re-complete it
+      // (would double-count stats). If somehow surfaced in an active list,
+      // silently no-op.
+      return;
+    }
+    await provider.completeTask(task.id);
   }
 
   int _importanceWeight(String? raw) {

@@ -1006,16 +1006,34 @@ public class FocusEngine: NSObject {
     }
 
     private func startClassicDailyLimitMonitoring(for entry: ClassicDailyLimitEntry) {
-        guard let selection = decodeSelection(encoded: entry.selector) else { return }
+        guard let selection = decodeSelection(encoded: entry.selector) else {
+            NSLog("🟠CLASSICLIMIT app decode FAILED id=%@", entry.id)
+            return
+        }
         let hasSelection =
             !selection.applicationTokens.isEmpty
             || !selection.categoryTokens.isEmpty
             || !selection.webDomainTokens.isEmpty
-        guard hasSelection else { return }
+        NSLog(
+            "🟠CLASSICLIMIT app scheduling id=%@ minutes=%d apps=%d cats=%d web=%d",
+            entry.id,
+            entry.limitMinutes,
+            selection.applicationTokens.count,
+            selection.categoryTokens.count,
+            selection.webDomainTokens.count
+        )
+        guard hasSelection else {
+            NSLog("🟠CLASSICLIMIT app EMPTY selection id=%@", entry.id)
+            return
+        }
 
         let schedule = DeviceActivitySchedule(
-            intervalStart: DateComponents(hour: 0, minute: 0),
-            intervalEnd: DateComponents(hour: 23, minute: 59),
+            // Full day. Using 23:59:59 (not 23:59) avoids a known DeviceActivity
+            // gotcha where the 1-minute gap between repeating intervals makes iOS
+            // drop the next `intervalDidStart` (which the extension relies on for
+            // the midnight daily reset).
+            intervalStart: DateComponents(hour: 0, minute: 0, second: 0),
+            intervalEnd: DateComponents(hour: 23, minute: 59, second: 59),
             repeats: true
         )
 
@@ -1030,14 +1048,64 @@ public class FocusEngine: NSObject {
         do {
             let activityName = DeviceActivityName("\(classicDailyLimitActivityPrefix)\(entry.id)")
             try deviceActivityCenter.startMonitoring(activityName, during: schedule, events: [eventName: event])
+            NSLog("🟠CLASSICLIMIT app startMonitoring OK id=%@", entry.id)
         } catch {
-            print("Failed to schedule classic daily limit for \(entry.id): \(error)")
+            NSLog("🟠CLASSICLIMIT app startMonitoring FAILED id=%@ err=%@", entry.id, String(describing: error))
         }
     }
 
     private func syncClassicDailyLimits(args: [String: Any]?, result: FlutterResult) {
         let rawEntries = args?["entries"] as? [[String: Any]] ?? []
         let parsed = rawEntries.compactMap(parseClassicDailyLimitEntry)
+        NSLog(
+            "🟠CLASSICLIMIT app sync raw=%d parsed=%d | lastEvent=%@ | lastFire=%@ | triggered=[%@]",
+            rawEntries.count,
+            parsed.count,
+            sharedDefaults()?.string(forKey: "classic_limit_debug_last_event") ?? "none",
+            sharedDefaults()?.string(forKey: "classic_limit_debug_last_fire") ?? "none",
+            (sharedDefaults()?.stringArray(forKey: classicDailyLimitTriggeredIdsStorageKey) ?? [])
+                .joined(separator: ",")
+        )
+        // Device-local calendar day (yyyy-MM-dd) for daily bookkeeping.
+        let dayFormatter = DateFormatter()
+        dayFormatter.calendar = Calendar(identifier: .gregorian)
+        dayFormatter.locale = Locale(identifier: "en_US_POSIX")
+        dayFormatter.dateFormat = "yyyy-MM-dd"
+        let today = dayFormatter.string(from: Date())
+        let dayChanged =
+            sharedDefaults()?.string(forKey: "classic_daily_limit_scheduled_day") != today
+
+        // Idempotency guard. Restarting DeviceActivity monitoring RESETS the
+        // usage counters, so re-syncing mid-day (e.g. every Screen Time screen
+        // load / twice per mutation) would keep the counter at zero and the
+        // threshold would never be reached. Keep monitoring alive when nothing
+        // changed AND we're still on the same calendar day AND the activities are
+        // actually running. Reschedule otherwise (config change, new day, or a
+        // reboot/kill that dropped the DeviceActivity registration).
+        func classicLimitSignature(_ entries: [ClassicDailyLimitEntry]) -> Set<String> {
+            Set(entries.map { "\($0.id)|\($0.kind)|\($0.limitMinutes)" })
+        }
+        let activeActivityNames = Set(deviceActivityCenter.activities.map { $0.rawValue })
+        let allAlreadyScheduled = parsed.allSatisfy {
+            activeActivityNames.contains("\(classicDailyLimitActivityPrefix)\($0.id)")
+        }
+        if !parsed.isEmpty, !dayChanged,
+           classicLimitSignature(parsed) == classicLimitSignature(loadClassicDailyLimitEntries()),
+           allAlreadyScheduled {
+            NSLog("🟠CLASSICLIMIT app sync UNCHANGED — keeping monitoring alive (no counter reset)")
+            saveClassicDailyLimitEntries(parsed)
+            applyEffectiveShield()
+            result(true)
+            return
+        }
+
+        // New calendar day → clear yesterday's triggered blocks as a fallback in
+        // case the extension's midnight `intervalDidStart` reset was missed, so
+        // limits start fresh today instead of staying blocked forever.
+        if dayChanged {
+            saveTriggeredClassicDailyLimitIds([])
+        }
+
         saveClassicDailyLimitEntries(parsed)
         clearClassicDailyLimitActivities()
         clearTriggeredClassicDailyLimitIds(except: Set(parsed.map(\.id)))
@@ -1045,6 +1113,12 @@ public class FocusEngine: NSObject {
         for entry in parsed {
             startClassicDailyLimitMonitoring(for: entry)
         }
+        sharedDefaults()?.set(today, forKey: "classic_daily_limit_scheduled_day")
+        NSLog(
+            "🟠CLASSICLIMIT app sync (RE)SCHEDULED %d entries dayChanged=%@",
+            parsed.count,
+            dayChanged ? "yes" : "no"
+        )
         applyEffectiveShield()
         result(true)
     }
@@ -2096,6 +2170,20 @@ private extension UIColor {
       #endif
     }
     NSLog("[PluginReg] deterministic registration end")
+  }
+
+  override func applicationDidBecomeActive(_ application: UIApplication) {
+    super.applicationDidBecomeActive(application)
+    // DEBUG: surface the classic daily-limit extension breadcrumbs in the app's
+    // Xcode-visible log, so we can tell whether the DeviceActivity threshold
+    // event fired — without needing Console.app for the separate extension.
+    let d = UserDefaults(suiteName: "group.com.wakeapp.ceoos")
+    NSLog(
+      "🟠CLASSICLIMIT app RESUME lastEvent=%@ | lastFire=%@ | triggered=[%@]",
+      d?.string(forKey: "classic_limit_debug_last_event") ?? "none",
+      d?.string(forKey: "classic_limit_debug_last_fire") ?? "none",
+      (d?.stringArray(forKey: "classic_daily_limit_triggered_ids_v1") ?? []).joined(separator: ",")
+    )
   }
 
   override func application(

@@ -373,7 +373,7 @@ class _ManageBlockedItemSheetState extends State<ManageBlockedItemSheet> {
             value: _draftLimitMinutes.toDouble(),
             min: 0,
             max: 240,
-            divisions: 24, // 10-minute steps
+            divisions: 48, // 5-minute steps (0, 5, 10 … 240)
             onChanged: (v) =>
                 setState(() => _draftLimitMinutes = v.round()),
           ),

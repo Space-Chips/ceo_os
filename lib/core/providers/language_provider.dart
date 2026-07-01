@@ -227,6 +227,13 @@ class LanguageProvider extends ChangeNotifier {
 const Map<String, Map<String, String>> _translations = {
   'en': {
     'app_name': 'WakeApp',
+    'blackout_active': 'Blackout active',
+    'blackout_remaining': 'remaining',
+    'blackout_unlocks_at': 'unlocks at',
+    'blackout_active_description':
+        'Your distracting apps stay locked until the timer ends. Stay with it — you set this yourself.',
+    'blackout_request_exit': 'Request early exit',
+    'blackout_locked': 'locked',
     'profile': 'PROFILE',
     'save': 'SAVE',
     'saving': 'SAVING',
@@ -603,6 +610,13 @@ const Map<String, Map<String, String>> _translations = {
   },
   'fr': {
     'app_name': 'WakeApp',
+    'blackout_active': 'Blackout actif',
+    'blackout_remaining': 'restant',
+    'blackout_unlocks_at': 'déverrouillage à',
+    'blackout_active_description':
+        'Tes apps distrayantes restent verrouillées jusqu\'à la fin du minuteur. Tiens bon — c\'est toi qui l\'as décidé.',
+    'blackout_request_exit': 'Demander une sortie anticipée',
+    'blackout_locked': 'verrouillé',
     'profile': 'PROFIL',
     'save': 'ENREGISTRER',
     'saving': 'ENREGISTREMENT',

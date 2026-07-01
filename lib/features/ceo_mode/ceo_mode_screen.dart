@@ -15,7 +15,6 @@ import '../../core/providers/language_provider.dart';
 import '../../core/providers/theme_provider.dart';
 import '../../core/services/home_widget_service.dart';
 import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/utils/android_protection_disclosure.dart';
 import 'blackout_preparation/blackout_preparation_flow_view.dart';
@@ -791,72 +790,153 @@ class _CeoModeScreenState extends State<CeoModeScreen> {
   Widget _activeView(CeoModeProvider ceo) {
     final totalSeconds = ceo.selectedDurationMinutes * 60;
     final remainingSeconds = ceo.sessionRemainingSeconds;
-    return ListView(
-      padding: const EdgeInsets.symmetric(horizontal: 6),
-      children: [
-        _glowSurface(
-          glowColor: AppColors.primaryOrange.withValues(alpha: 0.22),
-          borderRadius: 32,
-          child: Container(
-            padding: const EdgeInsets.fromLTRB(20, 22, 20, 20),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(32),
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  AppColors.cardBackgroundAlt.withValues(alpha: 0.96),
-                  AppColors.cardBase.withValues(alpha: 0.98),
+    final unlockAt = DateTime.now().add(Duration(seconds: remainingSeconds));
+    final unlockLabel =
+        '${unlockAt.hour.toString().padLeft(2, '0')}:${unlockAt.minute.toString().padLeft(2, '0')}';
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: ConstrainedBox(
+            // Fill the available height so the card + action sit centered
+            // instead of clinging to the top with a large empty gap below.
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: Padding(
+              // Top inset clears the translucent header; content then centers.
+              padding: const EdgeInsets.fromLTRB(6, 60, 6, 16),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _glowSurface(
+                    glowColor: AppColors.primaryOrange.withValues(alpha: 0.22),
+                    borderRadius: 32,
+                    child: Container(
+                      padding: const EdgeInsets.fromLTRB(20, 28, 20, 26),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(32),
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            AppColors.cardBackgroundAlt.withValues(alpha: 0.96),
+                            AppColors.cardBase.withValues(alpha: 0.98),
+                          ],
+                        ),
+                        border: Border.all(
+                          color: AppColors.primaryOrange.withValues(alpha: 0.35),
+                          width: 1,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.primaryOrange.withValues(alpha: 0.12),
+                            blurRadius: 28,
+                            offset: const Offset(0, 10),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Status badge — reinforces the locked state.
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 7,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.primaryOrange.withValues(
+                                alpha: 0.14,
+                              ),
+                              borderRadius: BorderRadius.circular(999),
+                              border: Border.all(
+                                color: AppColors.primaryOrange.withValues(
+                                  alpha: 0.42,
+                                ),
+                                width: 1,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  CupertinoIcons.lock_fill,
+                                  size: 13,
+                                  color: AppColors.primaryOrange,
+                                ),
+                                const SizedBox(width: 7),
+                                Text(
+                                  _t('blackout_active').toUpperCase(),
+                                  style: AppTypography.caption1.copyWith(
+                                    fontSize: 11,
+                                    color: AppColors.primaryOrange,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: 1.5,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 28),
+                          // Hero — countdown ring.
+                          _CeoCountdownRing(
+                            remainingSeconds: remainingSeconds,
+                            totalSeconds: totalSeconds,
+                          ),
+                          const SizedBox(height: 22),
+                          // Concrete unlock time — removes ambiguity.
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                CupertinoIcons.lock_open,
+                                size: 14,
+                                color: AppColors.secondaryLabel,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                '${_t('blackout_unlocks_at')} $unlockLabel',
+                                style: AppTypography.subhead.copyWith(
+                                  fontSize: 13,
+                                  color: AppColors.secondaryLabel,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 18),
+                          Container(
+                            height: 1,
+                            width: double.infinity,
+                            color: AppColors.borderStrong.withValues(alpha: 0.25),
+                          ),
+                          const SizedBox(height: 16),
+                          // Reassurance copy.
+                          Text(
+                            _t('blackout_active_description'),
+                            textAlign: TextAlign.center,
+                            style: AppTypography.subhead.copyWith(
+                              fontSize: 13,
+                              height: 1.4,
+                              color: AppColors.secondaryLabel,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 22),
+                  LiquidButton(
+                    label: _t('blackout_request_exit').replaceAll('{minutes}', '10'),
+                    fullWidth: true,
+                    onPressed: ceo.requestExit,
+                  ),
                 ],
               ),
-              border: Border.all(
-                color: AppColors.primaryOrange.withValues(alpha: 0.35),
-                width: 1,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primaryOrange.withValues(alpha: 0.12),
-                  blurRadius: 28,
-                  offset: const Offset(0, 10),
-                ),
-              ],
-            ),
-            child: Column(
-              children: [
-                Text(
-                  _t('blackout_active'),
-                  style: AppTypography.caption1.copyWith(
-                    fontSize: 12,
-                    color: AppColors.primaryOrange,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 1.6,
-                  ),
-                ),
-                const SizedBox(height: 18),
-                _CeoCountdownRing(
-                  remainingSeconds: remainingSeconds,
-                  totalSeconds: totalSeconds,
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  _t('blackout_active_description'),
-                  textAlign: TextAlign.center,
-                  style: AppTypography.subhead.copyWith(
-                    fontSize: 13,
-                    color: AppColors.secondaryLabel,
-                  ),
-                ),
-              ],
             ),
           ),
-        ),
-        const SizedBox(height: 14),
-        LiquidButton(
-          label: _t('blackout_request_exit').replaceAll('{minutes}', '10'),
-          fullWidth: true,
-          onPressed: ceo.requestExit,
-        ),
-      ],
+        );
+      },
     );
   }
 
