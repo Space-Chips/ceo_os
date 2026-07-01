@@ -1,7 +1,0 @@
-*** Begin Patch
-*** Update File: /Users/timo/ceo_os/lib/features/focus/focus_screen.dart
-@@
-   Widget _buildActive(FocusProvider provider) {
--    final isFocusing = provider.state == FocusState.focusing;
-     final isExitPending = provider.state == FocusState.exitPending;
-*** End Patch

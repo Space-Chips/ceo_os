@@ -1,6 +1,0 @@
-*** Begin Patch
-*** Update File: supabase/functions/revenuecat-webhook/index.ts
-@@
--indRimport { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-*** End Patch

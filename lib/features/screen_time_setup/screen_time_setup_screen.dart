@@ -261,12 +261,32 @@ class _IntroStep extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
+          Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              color: AppColors.primaryOrange.withValues(alpha: 0.14),
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(
+                color: AppColors.primaryOrange.withValues(alpha: 0.30),
+                width: 0.8,
+              ),
+            ),
+            child: Icon(
+              CupertinoIcons.shield_lefthalf_fill,
+              size: 28,
+              color: AppColors.primaryOrange,
+            ),
+          ),
+          const SizedBox(height: 20),
           Text(
             'Configure Screen Time',
             style: AppTypography.largeTitle.copyWith(
               fontSize: 34,
+              fontWeight: FontWeight.w800,
               height: 1.05,
+              letterSpacing: -0.5,
             ),
           ),
           const SizedBox(height: 12),
@@ -277,21 +297,28 @@ class _IntroStep extends StatelessWidget {
               height: 1.5,
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 28),
           GlassCard(
             padding: const EdgeInsets.all(18),
             borderRadius: 20,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("What you'll unlock", style: AppTypography.title3),
-                const SizedBox(height: 10),
+                Text(
+                  "What you'll unlock",
+                  style: AppTypography.title3.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 16),
                 _BenefitRow(
+                  icon: CupertinoIcons.bolt_fill,
                   title: 'Instant blocking',
                   subtitle: 'Protected apps close immediately during sessions.',
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 16),
                 _BenefitRow(
+                  icon: CupertinoIcons.lock_shield_fill,
                   title: 'On-device privacy',
                   subtitle:
                       'Your Screen Time data stays on this device — never synced.',
@@ -317,9 +344,29 @@ class _ValueStep extends StatelessWidget {
     required this.onContinue,
   });
 
+  // Rotative wheel range: 15 → 180 minutes by 15-minute steps. Covers the
+  // previous chip options (30 / 60 / 90) and then some.
+  static const List<int> _valueOptions = [
+    15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165, 180,
+  ];
+  static const int _defaultMinutes = 60;
+
+  static String _labelFor(int minutes) => '$minutes min';
+
+  int? _parseSelection(String? value) {
+    if (value == null) return null;
+    final match = RegExp(r'(\d+)').firstMatch(value);
+    if (match == null) return null;
+    return int.tryParse(match.group(1)!);
+  }
+
   @override
   Widget build(BuildContext context) {
-    final options = const ['30 min', '60 min', '90 min'];
+    final selectedMinutes = _parseSelection(selection) ?? _defaultMinutes;
+    final initialIndex = _valueOptions
+        .indexOf(selectedMinutes)
+        .clamp(0, _valueOptions.length - 1);
+
     return _SetupStepScaffold(
       showBack: true,
       onBack: () => context.read<ScreenTimeSetupController>().jumpTo(
@@ -328,10 +375,15 @@ class _ValueStep extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
           Text(
             'How much time do you want back each day?',
-            style: AppTypography.title1.copyWith(height: 1.12),
+            style: AppTypography.largeTitle.copyWith(
+              fontSize: 30,
+              fontWeight: FontWeight.w800,
+              height: 1.1,
+              letterSpacing: -0.4,
+            ),
           ),
           const SizedBox(height: 12),
           Text(
@@ -341,19 +393,75 @@ class _ValueStep extends StatelessWidget {
               height: 1.5,
             ),
           ),
-          const SizedBox(height: 24),
-          Wrap(
-            spacing: 12,
-            runSpacing: 12,
-            children: options
-                .map(
-                  (option) => _SelectionChip(
-                    label: option,
-                    isSelected: selection == option,
-                    onTap: () => onSelect(option),
+          const SizedBox(height: 28),
+          // Live read-out of the current wheel value.
+          Center(
+            child: Column(
+              children: [
+                Text(
+                  _labelFor(selectedMinutes),
+                  style: AppTypography.largeTitle.copyWith(
+                    fontSize: 40,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.primaryOrange,
+                    letterSpacing: -0.5,
                   ),
-                )
-                .toList(growable: false),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'back each day',
+                  style: AppTypography.footnote.copyWith(
+                    color: AppColors.tertiaryLabel,
+                    letterSpacing: 0.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 22),
+          GlassCard(
+            level: GlassCardLevel.subtle,
+            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 6),
+            borderRadius: 22,
+            child: SizedBox(
+              height: 180,
+              child: CupertinoPicker(
+                itemExtent: 40,
+                magnification: 1.05,
+                squeeze: 1.1,
+                diameterRatio: 1.25,
+                scrollController:
+                    FixedExtentScrollController(initialItem: initialIndex),
+                onSelectedItemChanged: (index) =>
+                    onSelect(_labelFor(_valueOptions[index])),
+                selectionOverlay: Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 14),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(14),
+                    color: AppColors.primaryOrange.withValues(alpha: 0.10),
+                    border: Border.all(
+                      color: AppColors.primaryOrange.withValues(alpha: 0.45),
+                      width: 0.8,
+                    ),
+                  ),
+                ),
+                children: _valueOptions.map((minutes) {
+                  final isSelected = minutes == selectedMinutes;
+                  return Center(
+                    child: Text(
+                      _labelFor(minutes),
+                      style: AppTypography.mono.copyWith(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                        color: isSelected
+                            ? AppColors.label
+                            : AppColors.secondaryLabel.withValues(alpha: 0.45),
+                      ),
+                    ),
+                  );
+                }).toList(growable: false),
+              ),
+            ),
           ),
         ],
       ),
@@ -378,9 +486,17 @@ class _OverviewStep extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: 6),
-          Text('Setup checklist', style: AppTypography.title1),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
+          Text(
+            'Setup checklist',
+            style: AppTypography.largeTitle.copyWith(
+              fontSize: 30,
+              fontWeight: FontWeight.w800,
+              height: 1.1,
+              letterSpacing: -0.4,
+            ),
+          ),
+          const SizedBox(height: 12),
           Text(
             "We'll ask for one permission to enable Screen Time protections.",
             style: AppTypography.body.copyWith(
@@ -388,14 +504,14 @@ class _OverviewStep extends StatelessWidget {
               height: 1.5,
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
           GlassCard(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(18),
             borderRadius: 18,
             child: Row(
               children: [
                 _StatusDot(isComplete: isAuthorized),
-                const SizedBox(width: 12),
+                const SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -403,7 +519,7 @@ class _OverviewStep extends StatelessWidget {
                       Text(
                         'Screen Time / Family Controls',
                         style: AppTypography.body.copyWith(
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -411,17 +527,22 @@ class _OverviewStep extends StatelessWidget {
                         'Required to block apps and websites instantly.',
                         style: AppTypography.caption1.copyWith(
                           color: AppColors.secondaryLabel,
+                          height: 1.35,
                         ),
                       ),
                     ],
                   ),
                 ),
-                if (isAuthorized)
-                  Icon(
-                    CupertinoIcons.checkmark_seal_fill,
-                    color: AppColors.success,
-                    size: 20,
-                  ),
+                const SizedBox(width: 10),
+                Icon(
+                  isAuthorized
+                      ? CupertinoIcons.checkmark_seal_fill
+                      : CupertinoIcons.circle,
+                  color: isAuthorized
+                      ? AppColors.success
+                      : AppColors.tertiaryLabel,
+                  size: 22,
+                ),
               ],
             ),
           ),
@@ -482,9 +603,37 @@ class _PermissionStep extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: 6),
-          Text(title, style: AppTypography.title1),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
+          Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              color: AppColors.primaryOrange.withValues(alpha: 0.14),
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(
+                color: AppColors.primaryOrange.withValues(alpha: 0.30),
+                width: 0.8,
+              ),
+            ),
+            child: Icon(
+              isSupported
+                  ? CupertinoIcons.checkmark_shield_fill
+                  : CupertinoIcons.exclamationmark_shield_fill,
+              size: 28,
+              color: AppColors.primaryOrange,
+            ),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            title,
+            style: AppTypography.largeTitle.copyWith(
+              fontSize: 30,
+              fontWeight: FontWeight.w800,
+              height: 1.1,
+              letterSpacing: -0.4,
+            ),
+          ),
+          const SizedBox(height: 12),
           Text(
             subtitle,
             style: AppTypography.body.copyWith(
@@ -492,7 +641,7 @@ class _PermissionStep extends StatelessWidget {
               height: 1.5,
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
           if (shouldOpenSettings) ...[
             // Show manual steps only when the user has previously denied
             // permission and must re-enable it from iOS Settings. In every
@@ -708,51 +857,16 @@ class _SuccessStep extends StatelessWidget {
   }
 }
 
-class _SelectionChip extends StatelessWidget {
-  final String label;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  const _SelectionChip({
-    required this.label,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final background = isSelected
-        ? AppColors.primaryOrange.withValues(alpha: 0.22)
-        : AppColors.glassSurfaceSoft;
-    final border = isSelected ? AppColors.primaryOrange : AppColors.border;
-    final textColor = isSelected ? AppColors.primaryOrange : AppColors.label;
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        decoration: BoxDecoration(
-          color: background,
-          borderRadius: BorderRadius.circular(999),
-          border: Border.all(color: border),
-        ),
-        child: Text(
-          label,
-          style: AppTypography.body.copyWith(
-            color: textColor,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class _BenefitRow extends StatelessWidget {
   final String title;
   final String subtitle;
+  final IconData icon;
 
-  const _BenefitRow({required this.title, required this.subtitle});
+  const _BenefitRow({
+    required this.title,
+    required this.subtitle,
+    this.icon = CupertinoIcons.circle_fill,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -760,28 +874,35 @@ class _BenefitRow extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          margin: const EdgeInsets.only(top: 4),
-          width: 8,
-          height: 8,
+          width: 34,
+          height: 34,
           decoration: BoxDecoration(
-            color: AppColors.accent,
-            shape: BoxShape.circle,
+            color: AppColors.primaryOrange.withValues(alpha: 0.14),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: AppColors.primaryOrange.withValues(alpha: 0.30),
+              width: 0.6,
+            ),
           ),
+          child: Icon(icon, size: 17, color: AppColors.primaryOrange),
         ),
-        const SizedBox(width: 10),
+        const SizedBox(width: 12),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 title,
-                style: AppTypography.body.copyWith(fontWeight: FontWeight.w600),
+                style: AppTypography.body.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 3),
               Text(
                 subtitle,
                 style: AppTypography.caption1.copyWith(
                   color: AppColors.secondaryLabel,
+                  height: 1.35,
                 ),
               ),
             ],
@@ -804,24 +925,27 @@ class _InstructionRow extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          width: 22,
-          height: 22,
+          width: 24,
+          height: 24,
           decoration: BoxDecoration(
-            color: AppColors.glassSurfaceStrong,
+            color: AppColors.primaryOrange.withValues(alpha: 0.16),
             shape: BoxShape.circle,
-            border: Border.all(color: AppColors.border),
+            border: Border.all(
+              color: AppColors.primaryOrange.withValues(alpha: 0.35),
+              width: 0.6,
+            ),
           ),
           child: Center(
             child: Text(
               '$index',
               style: AppTypography.caption1.copyWith(
                 fontWeight: FontWeight.w700,
-                color: AppColors.secondaryLabel,
+                color: AppColors.primaryOrange,
               ),
             ),
           ),
         ),
-        const SizedBox(width: 10),
+        const SizedBox(width: 12),
         Expanded(
           child: Text(text, style: AppTypography.body.copyWith(height: 1.4)),
         ),

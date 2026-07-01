@@ -1,9 +1,0 @@
-*** Begin Patch
-*** Update File: /Users/timo/ceo_os/lib/features/home/stats_screen.dart
-@@
-   @override
-   Widget build(BuildContext context) {
--    final daily = snapshot.daily;
-     final weekly = snapshot.weekly;
-     final lifetime = snapshot.lifetime;
-*** End Patch

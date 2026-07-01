@@ -1,6 +1,0 @@
-*** Begin Patch
-*** Update File: lib/core/providers/language_overrides.dart
-@@
--    'ios_setup_instruction_3': 'Screen Time access सक्षम करें।',
-+    'ios_setup_instruction_3': 'Screen Time एक्सेस सक्षम करें।',
-*** End Patch

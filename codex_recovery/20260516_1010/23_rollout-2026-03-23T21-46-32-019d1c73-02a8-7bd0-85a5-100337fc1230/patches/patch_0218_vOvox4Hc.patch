@@ -1,8 +1,0 @@
-*** Begin Patch
-*** Update File: /Users/timo/ceo_os/lib/features/screen_time_manager/screen_time_manager_screen.dart
-@@
--import 'package:flutter/foundation.dart';
-+import 'dart:async';
-+
-+import 'package:flutter/foundation.dart';
-*** End Patch

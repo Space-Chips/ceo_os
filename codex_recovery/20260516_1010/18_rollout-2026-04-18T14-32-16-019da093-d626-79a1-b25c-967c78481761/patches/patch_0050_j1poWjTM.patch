@@ -1,9 +1,0 @@
-*** Begin Patch
-*** Update File: /Users/timo/ceo_os/lib/core/repositories/premium_repository.dart
-@@
-     final overrideActive =
-         entitlements.premiumOverride &&
-         (entitlements.premiumOverrideExpiresAt == null ||
--            entitlements.premiumOverrideExpiresAt!.isAfter(now));
-+            (entitlements.premiumOverrideExpiresAt?.isAfter(now) ?? false));
-*** End Patch

@@ -239,6 +239,7 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _hideNoModulesMessage = false;
   bool _isBootstrapping = false;
   bool _didRouteToControlCenterSetup = false;
+  bool _didPromptPendingDeletion = false;
   int _winStreak = 0;
   bool _isPremiumUser = false;
   String? _lastDataSignature;
@@ -480,9 +481,116 @@ class _HomeScreenState extends State<HomeScreen> {
       if (!isRecentAccount) {
         unawaited(PremiumOnboardingPromptService.maybeShow(context));
       }
+
+      // If the signed-in user previously requested a soft account deletion that
+      // has not yet been purged, offer to cancel it (recovery within the
+      // 3-day grace period). Non-blocking and shown at most once per session.
+      _maybePromptPendingDeletion();
     } finally {
       _isBootstrapping = false;
     }
+  }
+
+  /// Surfaces the "cancel scheduled deletion" dialog when the profile carries a
+  /// future `deletion_scheduled_at`. Detection lives on [AuthProvider]
+  /// (`hasPendingDeletion` / `pendingDeletionDate`), populated on login.
+  void _maybePromptPendingDeletion() {
+    if (_didPromptPendingDeletion) return;
+    final auth = context.read<AuthProvider>();
+    if (!auth.hasPendingDeletion) return;
+    _didPromptPendingDeletion = true;
+
+    final date = auth.pendingDeletionDate?.toLocal();
+    final language = context.read<LanguageProvider>();
+    final dateLabel = date == null
+        ? ''
+        : '${date.year.toString().padLeft(4, '0')}-'
+              '${date.month.toString().padLeft(2, '0')}-'
+              '${date.day.toString().padLeft(2, '0')}';
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+      final cancelDeletion = await showCupertinoDialog<bool>(
+        context: context,
+        builder: (dialogContext) => CupertinoAlertDialog(
+          title: Text(
+            language.t('pending_deletion_title'),
+            style: AppTypography.mono,
+          ),
+          content: Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Text(
+              language
+                  .t('pending_deletion_message')
+                  .replaceFirst('{date}', dateLabel),
+              style: AppTypography.mono.copyWith(
+                fontSize: 12,
+                color: AppColors.secondaryLabel,
+              ),
+            ),
+          ),
+          actions: [
+            CupertinoDialogAction(
+              isDestructiveAction: true,
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: Text(
+                language.t('pending_deletion_keep_deleting'),
+                style: AppTypography.mono.copyWith(color: AppColors.error),
+              ),
+            ),
+            CupertinoDialogAction(
+              isDefaultAction: true,
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: Text(
+                language.t('pending_deletion_cancel_action'),
+                style: AppTypography.mono.copyWith(
+                  color: AppColors.primaryOrange,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+
+      if (cancelDeletion != true || !mounted) return;
+
+      try {
+        await context.read<AuthProvider>().cancelScheduledDeletion();
+      } catch (_) {
+        return;
+      }
+      if (!mounted) return;
+      await showCupertinoDialog<void>(
+        context: context,
+        builder: (dialogContext) => CupertinoAlertDialog(
+          title: Text(
+            language.t('deletion_cancelled'),
+            style: AppTypography.mono,
+          ),
+          content: Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Text(
+              language.t('deletion_cancelled_message'),
+              style: AppTypography.mono.copyWith(
+                fontSize: 12,
+                color: AppColors.secondaryLabel,
+              ),
+            ),
+          ),
+          actions: [
+            CupertinoDialogAction(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: Text(
+                language.t('ok'),
+                style: AppTypography.mono.copyWith(
+                  color: AppColors.primaryOrange,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    });
   }
 
   Future<void> _loadBaseData() async {
@@ -981,7 +1089,20 @@ class _HomeScreenState extends State<HomeScreen> {
                             eventsCount: eventsToday,
                             hasPendingYesterdayHabits:
                                 pendingSnapshot.data ?? false,
-                            onOpenDashboard: () => context.push('/dashboard'),
+                            onOpenDashboard: () async {
+                              await context.push('/dashboard');
+                              if (!mounted) return;
+                              // User may have validated yesterday's habits or
+                              // updated stats while on /dashboard. Recompute
+                              // both the snapshot and the yesterday-pending
+                              // flag so the home card reflects the new state.
+                              setState(() {
+                                _snapshotFuture = _insightsRepository
+                                    .getDashboardSnapshot();
+                                _pendingYesterdayValidationFuture =
+                                    _hasPendingYesterdayHabits();
+                              });
+                            },
                           );
                         },
                       ),

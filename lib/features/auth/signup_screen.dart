@@ -114,12 +114,149 @@ class _SignupScreenState extends State<SignupScreen> {
     );
   }
 
+  bool get _isFr =>
+      context.read<LanguageProvider>().languageCode.toLowerCase().startsWith(
+        'fr',
+      );
+
+  /// Age gate (RGPD art.8 / COPPA). Runs before any account is created. If the
+  /// device already cleared the gate we let the flow through immediately;
+  /// otherwise we show a date-of-birth picker, compute the age, and either
+  /// persist the verification (>= 13) or show a blocking message (< 13).
+  ///
+  /// Returns `true` when account creation may proceed.
+  Future<bool> _ensureAgeVerified() async {
+    final auth = context.read<AuthProvider>();
+    if (await auth.isAgeVerified()) return true;
+    if (!mounted) return false;
+
+    final isFr = _isFr;
+    final now = DateTime.now();
+    // Default the picker to a plausible adult DOB so the common case is one tap.
+    DateTime selected = DateTime(now.year - 18, now.month, now.day);
+
+    final confirmed = await showCupertinoModalPopup<bool>(
+      context: context,
+      builder: (popupContext) {
+        return Container(
+          height: 320,
+          color: AppColors.background,
+          child: SafeArea(
+            top: false,
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(
+                        isFr ? 'Quelle est ta date de naissance ?' : 'When were you born?',
+                        textAlign: TextAlign.center,
+                        style: AppTypography.body.copyWith(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.label,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        isFr
+                            ? 'Tu dois avoir au moins 13 ans pour utiliser WakeApp.'
+                            : 'You must be at least 13 to use WakeApp.',
+                        textAlign: TextAlign.center,
+                        style: AppTypography.footnote.copyWith(
+                          fontSize: 12,
+                          color: AppColors.secondaryLabel,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: CupertinoDatePicker(
+                    mode: CupertinoDatePickerMode.date,
+                    initialDateTime: selected,
+                    minimumYear: 1900,
+                    maximumDate: now,
+                    onDateTimeChanged: (value) => selected = value,
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: CupertinoButton.filled(
+                      onPressed: () => Navigator.of(popupContext).pop(true),
+                      child: Text(isFr ? 'Confirmer' : 'Confirm'),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    if (confirmed != true) return false;
+    if (!mounted) return false;
+
+    final age = _ageFrom(selected, now);
+    if (age < AuthProvider.minimumSignupAge) {
+      await _showAgeBlocked();
+      return false;
+    }
+
+    await auth.setAgeVerified();
+    return true;
+  }
+
+  /// Whole years between [dob] and [asOf], without counting a birthday that
+  /// hasn't happened yet this year.
+  int _ageFrom(DateTime dob, DateTime asOf) {
+    var age = asOf.year - dob.year;
+    final hadBirthday =
+        asOf.month > dob.month ||
+        (asOf.month == dob.month && asOf.day >= dob.day);
+    if (!hadBirthday) age -= 1;
+    return age;
+  }
+
+  Future<void> _showAgeBlocked() async {
+    if (!mounted) return;
+    final isFr = _isFr;
+    await showCupertinoDialog<void>(
+      context: context,
+      builder: (dialogContext) => CupertinoAlertDialog(
+        title: Text(isFr ? 'Accès non autorisé' : 'Access not allowed'),
+        content: Text(
+          isFr
+              ? 'WakeApp nécessite d\'avoir au moins 13 ans. Nous ne pouvons pas créer de compte pour le moment.'
+              : 'WakeApp requires you to be at least 13 years old. We can\'t create an account right now.',
+        ),
+        actions: [
+          CupertinoDialogAction(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text(isFr ? 'OK' : 'OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _signup() async {
     if (_nameCtrl.text.isEmpty ||
         _emailCtrl.text.isEmpty ||
         _passCtrl.text.isEmpty) {
       return;
     }
+    // Age gate must pass before we create any account (shown once per device).
+    if (!await _ensureAgeVerified()) return;
+    if (!mounted) return;
     setState(() => _loading = true);
     try {
       final email = _emailCtrl.text.trim();
@@ -301,7 +438,13 @@ class _SignupScreenState extends State<SignupScreen> {
                     const SizedBox(height: 18),
                     // Sign in with Apple — Apple Guideline 4.8 requires this
                     // to be offered when a third-party login is offered.
-                    const AppleSignInButton(),
+                    //
+                    // The age gate must also intercept this OAuth path. We do
+                    // it without touching the Apple flow itself: while the
+                    // gate is unverified we overlay an absorbing tap target
+                    // that runs `_ensureAgeVerified()`; once it clears we
+                    // rebuild and let the real button handle the tap.
+                    _AgeGatedAppleButton(ensureAgeVerified: _ensureAgeVerified),
                     const SizedBox(height: 24),
 
                     // Footer
@@ -346,6 +489,63 @@ class _SignupScreenState extends State<SignupScreen> {
         fontWeight: FontWeight.w600,
         color: AppColors.secondaryLabel,
       ),
+    );
+  }
+}
+
+/// Wraps [AppleSignInButton] so the age gate is enforced before the Apple
+/// OAuth flow starts, without modifying the Apple flow itself.
+///
+/// While the gate is not yet cleared we render the Apple button behind a
+/// transparent absorbing overlay: a tap runs [ensureAgeVerified] and, if it
+/// passes, immediately triggers the real Apple sign-in via the button's
+/// success-agnostic re-tap (we simply rebuild and let the user tap again, or
+/// — for a one-tap feel — drop the overlay so the next press goes through).
+class _AgeGatedAppleButton extends StatefulWidget {
+  final Future<bool> Function() ensureAgeVerified;
+
+  const _AgeGatedAppleButton({required this.ensureAgeVerified});
+
+  @override
+  State<_AgeGatedAppleButton> createState() => _AgeGatedAppleButtonState();
+}
+
+class _AgeGatedAppleButtonState extends State<_AgeGatedAppleButton> {
+  bool _verified = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _hydrateVerified();
+  }
+
+  Future<void> _hydrateVerified() async {
+    final verified = await context.read<AuthProvider>().isAgeVerified();
+    if (!mounted) return;
+    if (verified != _verified) setState(() => _verified = verified);
+  }
+
+  Future<void> _onGateTap() async {
+    final passed = await widget.ensureAgeVerified();
+    if (!mounted) return;
+    if (passed) setState(() => _verified = true);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Once the gate is cleared the real button owns its taps. Until then we
+    // overlay an absorbing layer that runs the gate first.
+    if (_verified) return const AppleSignInButton();
+    return Stack(
+      children: [
+        const IgnorePointer(child: AppleSignInButton()),
+        Positioned.fill(
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: _onGateTap,
+          ),
+        ),
+      ],
     );
   }
 }

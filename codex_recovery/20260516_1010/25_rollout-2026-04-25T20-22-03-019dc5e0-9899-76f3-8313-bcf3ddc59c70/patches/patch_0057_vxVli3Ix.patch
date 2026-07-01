@@ -1,6 +1,0 @@
-*** Begin Patch
-*** Update File: lib/features/control_center_setup/widgets/dashboard_intro_screen.dart
-@@
--    final opacity = progress.clamp(0, 1);
-+    final opacity = progress.clamp(0.0, 1.0).toDouble();
-*** End Patch

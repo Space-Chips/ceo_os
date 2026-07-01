@@ -1,8 +1,0 @@
-*** Begin Patch
-*** Update File: android/app/src/main/res/anim/block_gate_enter.xml
-@@
--<set xmlns:android="http://schemas.android.com/apk/res/android"
--    android:interpolator="@android:interpolator/decelerate_interpolator">
-+<set xmlns:android="http://schemas.android.com/apk/res/android"
-+    android:interpolator="@interpolator/block_gate_decelerate">
-*** End Patch

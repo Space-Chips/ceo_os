@@ -36,10 +36,10 @@ class CalendarScreen extends StatefulWidget {
 class _CalendarScreenState extends State<CalendarScreen> {
   final HabitRepository _habitRepository = HabitRepository();
   final FeatureRepository _featureRepository = FeatureRepository();
+  final PageController _pageController = PageController();
 
   _CalendarPanel _activePanel = _CalendarPanel.calendar;
   _CalendarDisplayMode _displayMode = _CalendarDisplayMode.yearly;
-  int _panelDirection = -1;
 
   DateTime _currentDate = DateTime.now();
   bool _loadingHabits = true;
@@ -111,6 +111,12 @@ class _CalendarScreenState extends State<CalendarScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) => _loadAll());
   }
 
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
   Future<void> _loadAll() async {
     await Future.wait([
       context.read<TaskProvider>().loadEvents(),
@@ -168,19 +174,16 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   void _setPanel(_CalendarPanel panel) {
     if (panel == _activePanel) return;
-    final direction = panel.index > _activePanel.index ? -1 : 1;
-    setState(() {
-      _panelDirection = direction;
-      _activePanel = panel;
-    });
-  }
-
-  void _handleHorizontalSwipe(DragEndDetails details) {
-    final velocity = details.primaryVelocity ?? 0;
-    if (velocity < -300 && _activePanel == _CalendarPanel.calendar) {
-      _setPanel(_CalendarPanel.stats);
-    } else if (velocity > 300 && _activePanel == _CalendarPanel.stats) {
-      _setPanel(_CalendarPanel.calendar);
+    // Drive the PageView so the panel change is a finger-linked scroll like
+    // Habits — not a fade/apparition. onPageChanged mirrors _activePanel.
+    if (_pageController.hasClients) {
+      _pageController.animateToPage(
+        panel.index,
+        duration: const Duration(milliseconds: 320),
+        curve: Curves.easeOutCubic,
+      );
+    } else {
+      setState(() => _activePanel = panel);
     }
   }
 
@@ -662,60 +665,49 @@ class _CalendarScreenState extends State<CalendarScreen> {
               );
               final weekAnalysis = _analyzeWeek(allEvents, _currentDate);
 
-              return GestureDetector(
-                onHorizontalDragEnd: _handleHorizontalSwipe,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
-                  child: Column(
-                    children: [
-                      _buildTopHeader(),
-                      const SizedBox(height: AppSpacing.md),
-                      _buildControlsRow(),
-                      const SizedBox(height: AppSpacing.md),
-                      Expanded(
-                        child: AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 260),
-                          switchInCurve: Curves.easeOutCubic,
-                          switchOutCurve: Curves.easeInCubic,
-                          transitionBuilder: (child, animation) {
-                            final begin = _panelDirection < 0
-                                ? const Offset(0.2, 0)
-                                : const Offset(-0.2, 0);
-                            final slide = Tween<Offset>(
-                              begin: begin,
-                              end: Offset.zero,
-                            ).animate(animation);
-                            return FadeTransition(
-                              opacity: animation,
-                              child: SlideTransition(
-                                position: slide,
-                                child: child,
-                              ),
-                            );
-                          },
-                          child: _activePanel == _CalendarPanel.calendar
-                              ? _buildCalendarPanel(allEvents)
-                              : _buildStatsPanel(
-                                  overloadInfo: overloadInfo,
-                                  focusSuggestion: focusSuggestion,
-                                  freeTime: freeTime,
-                                  habitConflict: habitConflict,
-                                  weekAnalysis: weekAnalysis,
-                                ),
-                        ),
+              // PageView mirrors the Habits screen scroll grammar: the two
+              // panels are finger-linked and travel together with the drag,
+              // instead of fading in on drag-end.
+              return Padding(
+                padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
+                child: Column(
+                  children: [
+                    _buildTopHeader(),
+                    const SizedBox(height: AppSpacing.md),
+                    _buildControlsRow(),
+                    const SizedBox(height: AppSpacing.md),
+                    Expanded(
+                      child: PageView(
+                        controller: _pageController,
+                        physics: const BouncingScrollPhysics(),
+                        onPageChanged: (index) {
+                          final panels = _CalendarPanel.values;
+                          if (index < 0 || index >= panels.length) return;
+                          setState(() => _activePanel = panels[index]);
+                        },
+                        children: [
+                          _buildCalendarPanel(allEvents),
+                          _buildStatsPanel(
+                            overloadInfo: overloadInfo,
+                            focusSuggestion: focusSuggestion,
+                            freeTime: freeTime,
+                            habitConflict: habitConflict,
+                            weekAnalysis: weekAnalysis,
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        _activePanel == _CalendarPanel.calendar
-                            ? _t('calendar_swipe_stats_hint')
-                            : _t('calendar_swipe_calendar_hint'),
-                        style: AppTypography.mono.copyWith(
-                          fontSize: 10,
-                          color: AppColors.tertiaryLabel,
-                        ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      _activePanel == _CalendarPanel.calendar
+                          ? _t('calendar_swipe_stats_hint')
+                          : _t('calendar_swipe_calendar_hint'),
+                      style: AppTypography.mono.copyWith(
+                        fontSize: 10,
+                        color: AppColors.tertiaryLabel,
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               );
             },
@@ -1320,10 +1312,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 ),
             color: AppColors.success,
           ),
-        _focusOpportunityCard(focusSuggestion),
-        const SizedBox(height: 12),
-        _freeTimeCard(freeTime),
-        const SizedBox(height: 14),
+        _freeTimeFocusCard(freeTime, focusSuggestion),
+        const SizedBox(height: 18),
         _weekOverviewCard(weekAnalysis),
       ],
     );
@@ -1381,143 +1371,136 @@ class _CalendarScreenState extends State<CalendarScreen> {
     );
   }
 
-  Widget _focusOpportunityCard(_FocusSuggestion focusSuggestion) {
+  Widget _freeTimeFocusCard(
+    _FreeTimeInfo freeTime,
+    _FocusSuggestion focusSuggestion,
+  ) {
+    final timeLabel =
+        '${freeTime.freeTimeHours}h${freeTime.freeTimeRemainingMinutes > 0 ? '${freeTime.freeTimeRemainingMinutes}m' : ''}';
     final canStart = focusSuggestion.suggest;
-    final subtitle = focusSuggestion.reason == 'no_events'
+    final reasonLine = focusSuggestion.reason == 'no_events'
         ? _t('calendar_focus_reason_no_events')
         : focusSuggestion.reason == 'light_schedule'
         ? _t('calendar_focus_reason_light_schedule')
         : _t('calendar_focus_reason_busy_schedule');
+    final ctaLine = canStart
+        ? 'Start a ${focusSuggestion.recommendedDuration}-min focus session'
+        : reasonLine;
 
     return GlassCard(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
       borderRadius: 22,
-      level: GlassCardLevel.elevated,
-      showEdgeGlow: canStart,
+      level: GlassCardLevel.subtle,
+      showEdgeGlow: false,
+      gradientColors: [
+        AppColors.cardBackgroundStrong,
+        AppColors.background,
+      ],
       border: Border.all(
-        color: canStart ? AppColors.borderStrong : AppColors.border,
-        width: 0.9,
+        color: AppColors.glassBorder.withValues(alpha: 0.28),
+        width: 0.5,
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(14),
-              color: AppColors.moduleIconBackground,
-              border: Border.all(
-                color: canStart
-                    ? AppColors.activeBorder.withValues(alpha: 0.48)
-                    : AppColors.border,
-                width: 0.9,
+          // --- Top: Real Free Time -------------------------------------
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(
+                width: 46,
+                height: 46,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  color: AppColors.secondaryLabel.withValues(alpha: 0.55),
+                ),
+                alignment: Alignment.center,
+                child: Icon(
+                  CupertinoIcons.clock_fill,
+                  color: AppColors.background,
+                  size: 22,
+                ),
               ),
-            ),
-            alignment: Alignment.center,
-            child: Icon(
-              CupertinoIcons.bolt_fill,
-              color: canStart ? AppColors.accentIcon : AppColors.secondaryLabel,
-              size: 24,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  _t('calendar_focus_opportunity'),
-                  style: AppTypography.title3.copyWith(
-                    fontSize: 21,
+              const SizedBox(width: 14),
+              Expanded(
+                child: Text(
+                  'Real Free Time',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTypography.headline.copyWith(
+                    fontSize: 19,
                     fontWeight: FontWeight.w700,
                     color: AppColors.label,
                   ),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  subtitle,
-                  style: AppTypography.callout.copyWith(
-                    fontSize: 12,
-                    color: AppColors.secondaryLabel,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 12),
-          GestureDetector(
-            onTap: canStart ? () => context.push('/focus') : null,
-            child: Opacity(
-              opacity: canStart ? 1 : 0.55,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(14),
-                  color: AppColors.backgroundLight.withValues(alpha: 0.72),
-                  border: Border.all(color: AppColors.glassBorder, width: 0.7),
-                ),
-                child: Text(
-                  'Start ${focusSuggestion.recommendedDuration}min',
-                  style: AppTypography.mono.copyWith(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w900,
-                    color: AppColors.label,
-                  ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                timeLabel,
+                style: AppTypography.title3.copyWith(
+                  fontSize: 38,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.label,
+                  height: 0.95,
+                  letterSpacing: -0.6,
                 ),
               ),
+            ],
+          ),
+          // --- Subtle inner divider ------------------------------------
+          Padding(
+            padding: const EdgeInsets.only(top: 14, bottom: 12),
+            child: Container(
+              height: 0.5,
+              color: AppColors.glassBorder.withValues(alpha: 0.32),
             ),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _freeTimeCard(_FreeTimeInfo freeTime) {
-    final timeLabel =
-        '${freeTime.freeTimeHours}h${freeTime.freeTimeRemainingMinutes > 0 ? '${freeTime.freeTimeRemainingMinutes}m' : ''}';
-    return GlassCard(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
-      borderRadius: 22,
-      level: GlassCardLevel.standard,
-      showEdgeGlow: true,
-      border: Border.all(color: AppColors.glassBorder, width: 0.75),
-      child: Row(
-        children: [
-          Icon(CupertinoIcons.clock, color: AppColors.secondaryLabel, size: 26),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Real Free Time',
-                  style: AppTypography.mono.copyWith(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w900,
-                    color: AppColors.label,
+          // --- Bottom: Focus suggestion (tappable when canStart) -------
+          GestureDetector(
+            onTap: canStart ? () => context.push('/focus') : null,
+            behavior: HitTestBehavior.opaque,
+            child: Opacity(
+              opacity: canStart ? 1 : 0.55,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          reasonLine,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTypography.subhead.copyWith(
+                            fontSize: 13,
+                            color: AppColors.label,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          ctaLine,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTypography.subhead.copyWith(
+                            fontSize: 12,
+                            color: AppColors.secondaryLabel,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  _t('calendar_real_free_time_subtitle'),
-                  style: AppTypography.footnote.copyWith(
-                    fontSize: 12,
-                    color: AppColors.secondaryLabel,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Text(
-            timeLabel,
-            style: AppTypography.largeTitle.copyWith(
-              fontSize: 48,
-              fontWeight: FontWeight.w700,
-              color: AppColors.label,
-              height: 1.0,
+                  if (canStart) ...[
+                    const SizedBox(width: 10),
+                    Icon(
+                      CupertinoIcons.arrow_right,
+                      color: AppColors.tertiaryLabel.withValues(alpha: 0.85),
+                      size: 18,
+                    ),
+                  ],
+                ],
+              ),
             ),
           ),
         ],
@@ -1527,31 +1510,32 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   Widget _weekOverviewCard(_WeekAnalysis weekAnalysis) {
     return GlassCard(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(18),
       borderRadius: 24,
-      level: GlassCardLevel.elevated,
-      showEdgeGlow: true,
-      border: Border.all(color: AppColors.glassBorder, width: 0.7),
+      level: GlassCardLevel.subtle,
+      showEdgeGlow: false,
+      gradientColors: [
+        AppColors.cardBackgroundStrong,
+        AppColors.background,
+      ],
+      border: Border.all(
+        color: AppColors.glassBorder.withValues(alpha: 0.28),
+        width: 0.5,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Icon(
-                CupertinoIcons.chart_bar_alt_fill,
-                color: const Color(0xFF818CF8),
-                size: 22,
+          Padding(
+            padding: const EdgeInsets.only(left: 2),
+            child: Text(
+              _t('calendar_week_overview').toUpperCase(),
+              style: AppTypography.overline.copyWith(
+                fontSize: 11,
+                color: AppColors.secondaryLabel,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 1.2,
               ),
-              const SizedBox(width: 10),
-              Text(
-                _t('calendar_week_overview'),
-                style: AppTypography.title3.copyWith(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.accentText,
-                ),
-              ),
-            ],
+            ),
           ),
           const SizedBox(height: 14),
           Row(
@@ -1561,26 +1545,17 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 value: '${weekAnalysis.totalEventHours}h',
                 label: _t('calendar_week_scheduled'),
                 color: AppColors.accent,
-                gradient: [
-                  AppColors.accent.withValues(alpha: 0.2),
-                  AppColors.accentLight.withValues(alpha: 0.12),
-                ],
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: 12),
               _weekTile(
                 icon: CupertinoIcons.scope,
                 value: '${weekAnalysis.importantEventHours}h',
                 label: _t('calendar_week_important'),
                 color: AppColors.warning,
-                emphasizeBorder: true,
-                gradient: [
-                  AppColors.warning.withValues(alpha: 0.2),
-                  AppColors.warning.withValues(alpha: 0.1),
-                ],
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
           Row(
             children: [
               _weekTile(
@@ -1588,46 +1563,15 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 value: '${weekAnalysis.freeTimeHours}h',
                 label: _t('calendar_week_free_time'),
                 color: AppColors.success,
-                emphasizeBorder: true,
-                gradient: [
-                  AppColors.success.withValues(alpha: 0.18),
-                  AppColors.success.withValues(alpha: 0.1),
-                ],
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: 12),
               _weekTile(
                 icon: CupertinoIcons.arrow_up_right,
                 value: '${weekAnalysis.percentageImportant}%',
                 label: _t('calendar_week_priority'),
                 color: AppColors.rankAccent,
-                gradient: [
-                  AppColors.rankAccent.withValues(alpha: 0.18),
-                  AppColors.rankAccent.withValues(alpha: 0.1),
-                ],
               ),
             ],
-          ),
-          const SizedBox(height: 12),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(14),
-              color: AppColors.pillBackground,
-              border: Border.all(color: AppColors.pillBorder, width: 0.8),
-            ),
-            child: Text(
-              _t(
-                'calendar_week_free_hours',
-              ).replaceAll('{percent}', '${weekAnalysis.percentageFree}'),
-              textAlign: TextAlign.center,
-              style: AppTypography.footnote.copyWith(
-                fontSize: 11,
-                color: AppColors.secondaryLabel.withValues(alpha: 0.86),
-                fontWeight: FontWeight.w700,
-                letterSpacing: 0.6,
-              ),
-            ),
           ),
         ],
       ),
@@ -1639,56 +1583,42 @@ class _CalendarScreenState extends State<CalendarScreen> {
     required String value,
     required String label,
     required Color color,
-    required List<Color> gradient,
-    bool emphasizeBorder = false,
   }) {
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+        constraints: const BoxConstraints(minHeight: 110),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(18),
+          color: AppColors.backgroundLight.withValues(alpha: 0.42),
           border: Border.all(
-            color: emphasizeBorder
-                ? color.withValues(alpha: 0.34)
-                : AppColors.borderStrong.withValues(alpha: 0.72),
-            width: 0.85,
+            color: AppColors.glassBorder.withValues(alpha: 0.38),
+            width: 0.5,
           ),
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: gradient,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.glassShadowSoft.withValues(
-                alpha: AppColors.isDark ? 0.14 : 0.08,
-              ),
-              blurRadius: AppColors.isDark ? 12 : 10,
-              offset: Offset(0, AppColors.isDark ? 5 : 4),
-              spreadRadius: -8,
-            ),
-          ],
         ),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon, color: color, size: 22),
-            const SizedBox(height: 8),
+            Icon(icon, color: color, size: 18),
+            const SizedBox(height: 10),
             Text(
               value,
-              style: AppTypography.title1.copyWith(
-                fontSize: 31,
-                fontWeight: FontWeight.w700,
+              style: AppTypography.title3.copyWith(
+                fontSize: 26,
+                fontWeight: FontWeight.w800,
                 color: AppColors.label,
+                height: 0.95,
+                letterSpacing: -0.4,
               ),
             ),
             const SizedBox(height: 6),
             Text(
               label.toUpperCase(),
               style: AppTypography.overline.copyWith(
-                fontSize: 9,
-                color: color.withValues(alpha: 0.84),
+                fontSize: 10,
+                color: AppColors.secondaryLabel,
                 fontWeight: FontWeight.w800,
-                letterSpacing: 1.3,
+                letterSpacing: 1.2,
               ),
             ),
           ],

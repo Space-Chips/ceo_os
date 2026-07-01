@@ -1,9 +1,0 @@
-*** Begin Patch
-*** Update File: /Users/timo/ceo_os/lib/features/home/home_screen.dart
-@@
-                   _CeoModeCard(
-                     statusLabel: ceoProvider.homeCardLabel,
--                    isActive: ceoProvider.isSessionActive,
-                     onOpenCeoMode: () => context.push('/ceo-mode'),
-                   ),
-*** End Patch

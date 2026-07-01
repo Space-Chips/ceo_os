@@ -1,9 +1,0 @@
-*** Begin Patch
-*** Update File: /Users/timo/ceo_os/lib/features/habits/habits_screen.dart
-@@
-         child: SafeArea(
-           child: Padding(
--            padding: const EdgeInsets.fromLTRB(14, 8, 14, 10),
-+            padding: const EdgeInsets.fromLTRB(10, 6, 10, 8),
-             child: Column(
-*** End Patch

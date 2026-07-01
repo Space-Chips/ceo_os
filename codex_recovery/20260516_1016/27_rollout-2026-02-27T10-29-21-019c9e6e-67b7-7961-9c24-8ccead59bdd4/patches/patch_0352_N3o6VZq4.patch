@@ -1,9 +1,0 @@
-*** Begin Patch
-*** Update File: /Users/timo/ceo_os/lib/features/legacy/win_streak_screen.dart
-@@
-         gradientColors: [
-           AppColors.primaryOrange.withValues(alpha: 0.18),
-           AppColors.backgroundLight.withValues(alpha: 0.92),
--        ),
-+        ],
-*** End Patch

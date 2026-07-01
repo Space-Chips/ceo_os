@@ -1,8 +1,0 @@
-*** Begin Patch
-*** Update File: /Users/timo/ceo_os/pubspec.yaml
-@@
--version: 1.0.0+1
-+version: 1.0.0+2
-@@
--  installed_apps: ^2.1.1
-*** End Patch

@@ -5,10 +5,12 @@ import 'dart:math';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../config/supabase_config.dart';
+import '../repositories/user_repository.dart';
 import '../services/write_queue.dart';
 
 class AuthSignupResult {
@@ -19,36 +21,167 @@ class AuthSignupResult {
 
 /// Auth state management using Supabase.
 class AuthProvider extends ChangeNotifier {
+  // Must mirror `ControlCenterSetupStore._keyCompleted`. We duplicate it here
+  // instead of importing the store to avoid pulling a screen-level dependency
+  // into a core provider. The key format is `<base>::<userId>`.
+  static const _setupCompletedKey = 'control_center.setup_completed.v1';
+
+  // Age gate (RGPD art.8 / COPPA). Device-scoped flag so the 13+ check is only
+  // shown once per device, before the very first account is created. We store
+  // the boolean result, not the date of birth, to keep the footprint minimal.
+  static const _ageVerifiedKey = 'auth.age_verified.v1';
+
+  /// Minimum age required to create an account. 13 is the global floor
+  /// (COPPA / Apple / Google). Can be raised later without touching callers.
+  static const int minimumSignupAge = 13;
+
   final _supabase = Supabase.instance.client;
   User? _user;
   bool _hasCompletedOnboarding = false;
+  bool _hasCompletedSetup = false;
+  DateTime? _pendingDeletionDate;
   StreamSubscription<AuthState>? _authSubscription;
 
   AuthProvider() {
     _user = _supabase.auth.currentUser;
     _listenToAuthChanges();
+    if (_user != null) {
+      unawaited(_refreshSetupCompletedFlag().then((_) => notifyListeners()));
+    }
   }
 
   User? get user => _user;
   bool get isAuthenticated => _user != null;
   bool get hasCompletedOnboarding => _hasCompletedOnboarding;
+
+  /// `true` when this device has already walked the current user through
+  /// `/control-center-setup` at least once. Read synchronously from
+  /// SharedPreferences and kept fresh via the auth-change listener.
+  ///
+  /// The router uses this to send returning users straight to `/home` when
+  /// they sign in via Apple/Google on the `/signup` screen (which would
+  /// otherwise be treated as a brand-new signup).
+  bool get hasCompletedSetup => _hasCompletedSetup;
+
+  /// `true` when the signed-in user's profile carries a future
+  /// `deletion_scheduled_at`, i.e. they previously requested a soft account
+  /// deletion that has not yet been purged. Post-login UI uses this to offer a
+  /// "cancel deletion" dialog so the user can recover their account.
+  bool get hasPendingDeletion => _pendingDeletionDate != null;
+
+  /// The date the account is scheduled to be permanently deleted, or `null`
+  /// when no deletion is pending. Resolved from `profiles.deletion_scheduled_at`
+  /// on each auth refresh.
+  DateTime? get pendingDeletionDate => _pendingDeletionDate;
+
   String? get userName =>
       _user?.userMetadata?['full_name'] ?? _user?.email?.split('@').first;
   String? get userEmail => _user?.email;
 
+  /// `true` once the user has passed the 13+ age gate on this device. Read
+  /// from SharedPreferences. The gate is intentionally device-scoped (not
+  /// user-scoped) since it runs before any account exists.
+  Future<bool> isAgeVerified() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getBool(_ageVerifiedKey) ?? false;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Persist that the age gate has been cleared, so we never ask again on
+  /// this device.
+  Future<void> setAgeVerified() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(_ageVerifiedKey, true);
+    } catch (_) {
+      // Best effort — if persistence fails the gate simply shows again next
+      // time, which is the safe direction.
+    }
+  }
+
+  Future<void> _refreshSetupCompletedFlag() async {
+    final userId = _user?.id;
+    if (userId == null) {
+      _hasCompletedSetup = false;
+      _pendingDeletionDate = null;
+      return;
+    }
+
+    // Local (offline) value first: read synchronously-cached SharedPreferences
+    // so we always have a fallback even if the network read below fails.
+    var localCompleted = false;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      localCompleted = prefs.getBool('$_setupCompletedKey::$userId') ?? false;
+    } catch (_) {
+      localCompleted = false;
+    }
+    _hasCompletedSetup = localCompleted;
+
+    // Then consult the server: an existing user reinstalling on a new device
+    // has no local flag yet, but `profiles.setup_completed` survives. If the
+    // server says setup is done, trust it and refresh the local cache for
+    // offline. On any network failure, keep the local value resolved above.
+    try {
+      final profile = await UserRepository().getProfile();
+      if (profile != null && profile.setupCompleted) {
+        _hasCompletedSetup = true;
+        if (!localCompleted) {
+          try {
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setBool('$_setupCompletedKey::$userId', true);
+          } catch (_) {
+            // Best effort — the server remains the source of truth.
+          }
+        }
+      }
+
+      // Surface a pending soft-deletion so post-login UI can offer to cancel it.
+      // Only treat a deletion scheduled in the FUTURE as recoverable; a past
+      // timestamp means the cron is about to purge (or has purged) the account.
+      final scheduledAt = profile?.deletionScheduledAt;
+      _pendingDeletionDate =
+          (scheduledAt != null &&
+              scheduledAt.isAfter(DateTime.now().toUtc()))
+          ? scheduledAt
+          : null;
+    } catch (_) {
+      // Network read failed — fall back to the local value already set.
+    }
+  }
+
+  /// Cancel a pending soft-deletion (clears `deletion_scheduled_at` /
+  /// `deletion_reason` on the user's profile) and drop the local flag so the
+  /// UI stops prompting. Safe to call even when nothing is pending.
+  Future<void> cancelScheduledDeletion() async {
+    await UserRepository().cancelScheduledDeletion();
+    _pendingDeletionDate = null;
+    notifyListeners();
+  }
+
   void _listenToAuthChanges() {
     _authSubscription?.cancel();
-    _authSubscription = _supabase.auth.onAuthStateChange.listen((data) {
+    _authSubscription = _supabase.auth.onAuthStateChange.listen((data) async {
       // Only clear _user on explicit sign-out. Token refresh failures (e.g.
       // when offline) emit a null session that would otherwise log the user
       // out — instead we keep their cached session active until they regain
       // network and either refresh or hit an explicit signedOut event.
       if (data.event == AuthChangeEvent.signedOut) {
         _user = null;
+        _hasCompletedSetup = false;
       } else {
         final session = data.session;
         if (session != null) {
           _user = session.user;
+          // Refresh the flag BEFORE notifying listeners so the router's
+          // redirect callback (driven by AuthProvider as its refreshListenable)
+          // sees up-to-date `hasCompletedSetup`. Otherwise a returning user
+          // signing in via Apple on the /signup screen would be sent through
+          // /control-center-setup again.
+          await _refreshSetupCompletedFlag();
         }
       }
       notifyListeners();

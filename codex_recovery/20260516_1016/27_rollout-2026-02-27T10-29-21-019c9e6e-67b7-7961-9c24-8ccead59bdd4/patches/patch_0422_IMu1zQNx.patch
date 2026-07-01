@@ -1,6 +1,0 @@
-*** Begin Patch
-*** Update File: /Users/timo/ceo_os/lib/features/tasks/tasks_screen.dart
-@@
--            final widthFactor = (1 - (index * 0.03)).clamp(0.88, 1.0);
-+            final widthFactor = (1 - (index * 0.03)).clamp(0.88, 1.0).toDouble();
-*** End Patch

@@ -329,6 +329,46 @@ class _NotesScreenState extends State<NotesScreen> {
     }
   }
 
+  Future<void> _confirmDeleteSelected() async {
+    final note = _selected;
+    if (note == null) return;
+    final title = (note.title ?? '').trim();
+    final content = (note.content ?? '').trim();
+    final preview = title.isNotEmpty
+        ? title
+        : (content.isNotEmpty ? content.split('\n').first : 'this note');
+    final shortPreview = preview.length > 60
+        ? '${preview.substring(0, 60)}…'
+        : preview;
+    final confirmed = await showCupertinoDialog<bool>(
+      context: context,
+      builder: (ctx) => CupertinoAlertDialog(
+        title: const Text('Delete note?'),
+        content: Padding(
+          padding: const EdgeInsets.only(top: 8),
+          child: Text(
+            '"$shortPreview"\n\nThis action cannot be undone.',
+            style: const TextStyle(height: 1.35),
+          ),
+        ),
+        actions: [
+          CupertinoDialogAction(
+            child: const Text('Cancel'),
+            onPressed: () => Navigator.of(ctx).pop(false),
+          ),
+          CupertinoDialogAction(
+            isDestructiveAction: true,
+            child: const Text('Delete'),
+            onPressed: () => Navigator.of(ctx).pop(true),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      await _deleteSelected();
+    }
+  }
+
   Future<void> _deleteSelected() async {
     await _flushAutosaveIfPending();
     final note = _selected;
@@ -769,20 +809,20 @@ class _NotesScreenState extends State<NotesScreen> {
                                     ),
                                   ),
                                   Positioned(
-                                    top: 10,
-                                    right: 10,
+                                    top: 12,
+                                    right: 12,
                                     child: GestureDetector(
                                       onTap: selected == null
                                           ? null
-                                          : _deleteSelected,
+                                          : _confirmDeleteSelected,
                                       child: Opacity(
                                         opacity: selected == null ? 0.35 : 1,
                                         child: Container(
-                                          width: 58,
-                                          height: 58,
+                                          width: 40,
+                                          height: 40,
                                           decoration: BoxDecoration(
                                             borderRadius: BorderRadius.circular(
-                                              16,
+                                              12,
                                             ),
                                             color: AppColors.backgroundLight
                                                 .withValues(alpha: 0.72),
@@ -795,7 +835,7 @@ class _NotesScreenState extends State<NotesScreen> {
                                           child: Icon(
                                             CupertinoIcons.delete,
                                             color: AppColors.tertiaryLabel,
-                                            size: 24,
+                                            size: 18,
                                           ),
                                         ),
                                       ),

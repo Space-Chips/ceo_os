@@ -1,12 +1,12 @@
 # Terms of Service — WakeApp
 
-_Last updated: 28 May 2026_
+_Last updated: 27 June 2026_
 
 By using WakeApp, you agree to these Terms. If you do not agree, do not use the app.
 
 ## 1. The service
 
-WakeApp is a personal productivity application for iOS that helps you track tasks, habits, focus sessions, screen time and goals. WakeApp is provided by The CEO Company.
+WakeApp is a personal productivity application for iOS that helps you track tasks, habits, focus sessions, screen time and goals, and to connect with friends on a leaderboard. WakeApp is provided by Indy François (sole proprietor / entreprise individuelle, France).
 
 ## 2. Account
 
@@ -29,7 +29,11 @@ WakeApp is a personal productivity application for iOS that helps you track task
 - You grant us a limited licence to store, process and display your content for the sole purpose of providing the service.
 - You are responsible for the legality of the content you create.
 
-## 5. Acceptable use
+## 5. Friends and leaderboard
+
+WakeApp lets you add friends by email and compare progress on a leaderboard. When you connect with someone, your display name, rank, streaks and scores become visible to that person. Only add as friends people you are comfortable sharing this information with. You can remove a friend connection at any time in the app. Do not add people without a legitimate reason or use the feature to harass others.
+
+## 6. Acceptable use
 
 You agree not to:
 - Reverse-engineer or attempt to extract source code
@@ -38,25 +42,25 @@ You agree not to:
 - Scrape, automate or overload our infrastructure
 - Resell or sublicence access to WakeApp
 
-## 6. Service availability
+## 7. Service availability
 
 - We aim for high availability but do not guarantee uptime.
 - We may suspend the service for maintenance with reasonable notice.
 - We may modify or discontinue features at any time. Material changes will be announced at least 14 days in advance.
 
-## 7. Termination
+## 8. Termination
 
-- You can delete your account at any time via Settings → Delete Account.
+- You can delete your account at any time via Profile → Settings → Delete Account.
 - We may terminate your access immediately if you breach these Terms.
 - Upon termination, your data is deleted within 7 days (except where retention is required by law — see Privacy Policy).
 
-## 8. Disclaimers
+## 9. Disclaimers
 
 The service is provided "as is". We do not warrant that the service will be uninterrupted, error-free or meet your specific expectations.
 
 WakeApp is a productivity tool. It is not medical, psychological or therapeutic advice. If you struggle with attention, addiction or mental health, please consult a qualified professional.
 
-## 9. Limitation of liability
+## 10. Limitation of liability
 
 To the maximum extent permitted by law, our total liability for any claim related to the service is limited to the amount you paid us in the 12 months preceding the claim.
 
@@ -64,16 +68,16 @@ We are not liable for indirect, incidental, consequential or punitive damages.
 
 These limitations do not exclude liability that cannot be excluded by law (e.g. gross negligence, intentional misconduct, statutory consumer rights).
 
-## 10. Governing law
+## 11. Governing law
 
 These Terms are governed by French law. Disputes will be brought before the courts of the place of your habitual residence (for EU consumers) or otherwise the courts of Paris, France.
 
-## 11. Changes to these Terms
+## 12. Changes to these Terms
 
 We may update these Terms. The "Last updated" date will change. Material changes will be notified in-app or by email at least 14 days before they take effect.
 
-## 12. Contact
+## 13. Contact
 
-For any question about these Terms: **timofrmac@gmail.com**
+For any question about these Terms: `contact@the-wakeapp.com`
 
-The CEO Company — France.
+Indy François — 222 chemin de la Brague, 06410 Biot, France.

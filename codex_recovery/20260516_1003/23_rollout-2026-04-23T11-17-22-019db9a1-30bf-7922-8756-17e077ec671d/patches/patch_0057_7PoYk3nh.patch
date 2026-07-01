@@ -1,6 +1,0 @@
-*** Begin Patch
-*** Update File: lib/features/home/stats_screen.dart
-@@
--  String _t(String key) => context.read<LanguageProvider>().t(key);
-+  String _t(String key) => context.watch<LanguageProvider>().t(key);
-*** End Patch

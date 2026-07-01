@@ -1,7 +1,0 @@
-*** Begin Patch
-*** Update File: lib/components/components.dart
-@@
- export 'floating_nav_bar.dart';
- export 'ambient_backdrop.dart';
-+export 'premium_gate_dialog.dart';
-*** End Patch

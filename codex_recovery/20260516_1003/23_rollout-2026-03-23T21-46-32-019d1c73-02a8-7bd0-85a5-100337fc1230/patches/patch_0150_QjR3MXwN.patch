@@ -1,8 +1,0 @@
-*** Begin Patch
-*** Update File: /Users/timo/ceo_os/android/app/src/main/kotlin/com/wakeapp/ceoos/AppBlockingService.kt
-@@
--@Deprecated("Use WakeAccessibilityService instead.")
--class AppBlockingService : WakeAccessibilityService()
-+@Deprecated("Use BlockingAccessibilityService instead.")
-+class AppBlockingService : BlockingAccessibilityService()
-*** End Patch

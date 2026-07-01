@@ -1,9 +1,0 @@
-*** Begin Patch
-*** Update File: /Users/timo/ceo_os/lib/features/setup/setup_flow_screen.dart
-@@
- class _BulletLine extends StatelessWidget {
-@@
-   }
- }
--                          Text(t('setup_welcome_title'), style: AppTypography.title1),
-*** End Patch

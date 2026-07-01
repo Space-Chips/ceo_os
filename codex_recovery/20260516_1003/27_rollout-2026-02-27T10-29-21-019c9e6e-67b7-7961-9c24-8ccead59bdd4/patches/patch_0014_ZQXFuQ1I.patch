@@ -1,9 +1,0 @@
-*** Begin Patch
-*** Update File: /Users/timo/ceo_os/lib/features/home/home_screen.dart
-@@
--                  return const GlassCard(
-+                  return GlassCard(
-                     padding: EdgeInsets.all(18),
-                     borderRadius: 20,
-                     child: Center(
-*** End Patch

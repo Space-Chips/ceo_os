@@ -1,7 +1,0 @@
-*** Begin Patch
-*** Update File: /Users/timo/ceo_os/android/app/build.gradle.kts
-@@
-     testImplementation("junit:junit:4.13.2")
-+    testImplementation("androidx.arch.core:core-testing:2.2.0")
-     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
-*** End Patch

@@ -603,6 +603,61 @@ class FocusService {
     }
   }
 
+  /// Same as [openFamilyActivityPicker] but preserves the `appName` and
+  /// `bundleIdentifier` metadata that the native side returns for each picked
+  /// item. Using this avoids the round-trip via `describeAppSelectionPayload`
+  /// and prevents the blocked apps list from showing a generic
+  /// "screen time blocked app" placeholder when the label is available
+  /// straight from the picker callback.
+  Future<List<IosFamilyActivitySelection>?>
+  openFamilyActivityPickerWithMetadata() async {
+    const method = 'openFamilyActivityPicker';
+    if (_shouldSkipMissingMethod(method)) return null;
+    try {
+      final List<dynamic>? raw = await _channel.invokeMethod(method);
+      if (raw == null) return null;
+      final selections = <IosFamilyActivitySelection>[];
+      for (final item in raw) {
+        String? payload;
+        String? appName;
+        String? bundleIdentifier;
+        if (item is String) {
+          payload = item;
+        } else if (item is Map) {
+          final p = item['payload'];
+          payload = p is String ? p : null;
+          final n = item['appName'];
+          appName = n is String ? n : null;
+          final b = item['bundleIdentifier'];
+          bundleIdentifier = b is String ? b : null;
+        }
+        if (payload == null) continue;
+        final trimmedPayload = payload.trim();
+        if (trimmedPayload.isEmpty) continue;
+        final trimmedAppName = appName?.trim();
+        final trimmedBundle = bundleIdentifier?.trim();
+        selections.add(
+          IosFamilyActivitySelection(
+            payload: trimmedPayload,
+            preferredLabel: (trimmedAppName != null && trimmedAppName.isNotEmpty)
+                ? trimmedAppName
+                : null,
+            bundleIdentifier: (trimmedBundle != null && trimmedBundle.isNotEmpty)
+                ? trimmedBundle
+                : null,
+          ),
+        );
+      }
+      return selections;
+    } on PlatformException catch (e) {
+      AppLogger.error("Failed to open picker: '${e.message}'.");
+      return null;
+    } on MissingPluginException {
+      _markMissingMethod(method);
+      return null;
+    }
+  }
+
   Future<List<IosFamilyActivitySelection>?>
   openFamilyActivityWebsitePickerWithMetadata() async {
     const method = 'openFamilyActivityWebsitePicker';

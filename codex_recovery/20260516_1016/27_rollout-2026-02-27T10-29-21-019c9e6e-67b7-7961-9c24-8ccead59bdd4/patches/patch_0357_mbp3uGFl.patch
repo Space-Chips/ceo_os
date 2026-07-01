@@ -1,9 +1,0 @@
-*** Begin Patch
-*** Update File: /Users/timo/ceo_os/lib/features/home/stats_screen.dart
-@@
-           _StatsItem(
-             'Validated yesterday',
--            '${_yesterdayHabits.isEmpty ? 'Yes' : 'No'}',
-+            _yesterdayHabits.isEmpty ? 'Yes' : 'No',
-           ),
-*** End Patch

@@ -1,7 +1,0 @@
-*** Begin Patch
-*** Update File: /Users/timo/ceo_os/lib/features/tasks/add_task_sheet.dart
-@@
-                   decoration: BoxDecoration(
--                    color: AppColors.backgroundLight.withOpacity(0.5),
-+                    color: AppColors.backgroundLight.withValues(alpha: 0.5),
-*** End Patch

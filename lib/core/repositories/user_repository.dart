@@ -46,6 +46,60 @@ class UserRepository {
     }
   }
 
+  /// Persist the "control center setup completed" flag server-side so a
+  /// returning user reinstalling on a new device is not routed through setup
+  /// again. Resilient: a network error is logged but never thrown, so local
+  /// completion is not blocked.
+  Future<void> markSetupCompletedRemote() async {
+    try {
+      await _client
+          .from('profiles')
+          .update({'setup_completed': true})
+          .eq('id', _currentUserId);
+    } catch (e) {
+      AppLogger.error('Error marking setup completed remotely.', e);
+    }
+  }
+
+  /// Soft-delete request: flag the user's own profile for deletion in 3 days
+  /// instead of hard-deleting immediately. A daily server-side cron purges
+  /// accounts whose `deletion_scheduled_at` is in the past. The user can cancel
+  /// during the grace period simply by signing back in.
+  Future<void> requestAccountDeletion({String? reason}) async {
+    try {
+      final scheduledAt = DateTime.now()
+          .toUtc()
+          .add(const Duration(days: 3))
+          .toIso8601String();
+      await _client
+          .from('profiles')
+          .update({
+            'deletion_scheduled_at': scheduledAt,
+            'deletion_reason': reason,
+          })
+          .eq('id', _currentUserId);
+    } catch (e) {
+      AppLogger.error('Error requesting account deletion.', e);
+      rethrow;
+    }
+  }
+
+  /// Cancel a pending soft-deletion by clearing both schedule columns.
+  Future<void> cancelScheduledDeletion() async {
+    try {
+      await _client
+          .from('profiles')
+          .update({
+            'deletion_scheduled_at': null,
+            'deletion_reason': null,
+          })
+          .eq('id', _currentUserId);
+    } catch (e) {
+      AppLogger.error('Error cancelling scheduled deletion.', e);
+      rethrow;
+    }
+  }
+
   Future<UserRank?> getUserRank() async {
     try {
       final response = await _client

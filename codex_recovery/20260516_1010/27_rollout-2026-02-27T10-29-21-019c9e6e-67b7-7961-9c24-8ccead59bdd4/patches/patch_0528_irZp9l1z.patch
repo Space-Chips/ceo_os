@@ -1,6 +1,0 @@
-*** Begin Patch
-*** Update File: /Users/timo/ceo_os/lib/core/repositories/insights_repository.dart
-@@
--        insights: const [],
-+        insights: [],
-*** End Patch

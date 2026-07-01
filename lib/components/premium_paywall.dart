@@ -192,6 +192,7 @@ class _PremiumPaywallContentState extends State<PremiumPaywallContent> {
       BillingService().getPackageOptions();
   String? _selectedIdentifier;
   bool _purchaseInFlight = false;
+  bool _restoreInFlight = false;
 
   bool get _isAndroid =>
       !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
@@ -243,6 +244,54 @@ class _PremiumPaywallContentState extends State<PremiumPaywallContent> {
 
   Future<void> _openPrivacy() async {
     await LegalDocumentSheet.showPrivacyPolicy(context, isFr: widget.isFr);
+  }
+
+  Future<void> _restorePurchases() async {
+    if (_restoreInFlight) return;
+    setState(() => _restoreInFlight = true);
+    try {
+      final result = await BillingService().restorePurchases();
+      if (!mounted) return;
+
+      final String title;
+      final String message;
+      if (result.succeeded) {
+        title = widget.isFr ? 'Achats restaurés' : 'Purchases restored';
+        message = widget.isFr
+            ? 'Ton accès Premium a été restauré sur ce compte.'
+            : 'Your Premium access has been restored on this account.';
+      } else if (result.status == BillingPurchaseStatus.failed ||
+          result.status == BillingPurchaseStatus.unavailable) {
+        title = widget.isFr ? 'Restauration impossible' : 'Restore failed';
+        message = widget.isFr
+            ? "La restauration n'a pas pu être effectuée. Vérifie ta connexion et réessaie."
+            : "We couldn't restore your purchases. Check your connection and try again.";
+      } else {
+        title = widget.isFr ? 'Rien à restaurer' : 'Nothing to restore';
+        message = widget.isFr
+            ? "Aucun achat Premium n'a été trouvé pour ce compte $_storeName."
+            : 'No previous Premium purchase was found for this $_storeName account.';
+      }
+
+      await showCupertinoDialog<void>(
+        context: context,
+        builder: (_) => CupertinoAlertDialog(
+          title: Text(title),
+          content: Text(message),
+          actions: [
+            CupertinoDialogAction(
+              isDefaultAction: true,
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _restoreInFlight = false);
+      }
+    }
   }
 
   String _purchaseButtonLabel(BillingPackageOption? selected) {
@@ -558,6 +607,30 @@ class _PremiumPaywallContentState extends State<PremiumPaywallContent> {
                           }
                         : null),
             ),
+            if (!widget.runtime.resolved.isPremiumUser) ...[
+              const SizedBox(height: 8),
+              Center(
+                child: CupertinoButton(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                  minSize: 0,
+                  onPressed: _restoreInFlight ? null : _restorePurchases,
+                  child: _restoreInFlight
+                      ? const CupertinoActivityIndicator(radius: 9)
+                      : Text(
+                          widget.isFr
+                              ? 'Restaurer les achats'
+                              : 'Restore Purchases',
+                          style: AppTypography.subhead.copyWith(
+                            color: AppColors.accentText,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                ),
+              ),
+            ],
             const SizedBox(height: 14),
             Text(
               widget.isFr
@@ -566,6 +639,56 @@ class _PremiumPaywallContentState extends State<PremiumPaywallContent> {
               style: AppTypography.caption1.copyWith(
                 color: AppColors.secondaryLabel.withValues(alpha: 0.72),
                 height: 1.35,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              widget.isFr
+                  ? "L'abonnement est facturé via ton compte $_storeName. Il se renouvelle automatiquement au même tarif sauf annulation au moins 24 h avant la fin de la période en cours. Gérable et résiliable dans les réglages de ton compte."
+                  : 'Billed via your $_storeName account. Auto-renews at the same price unless cancelled at least 24h before the end of the current period. Manage or cancel anytime in your account settings.',
+              style: AppTypography.caption1.copyWith(
+                color: AppColors.secondaryLabel.withValues(alpha: 0.72),
+                height: 1.35,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Center(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  GestureDetector(
+                    onTap: _openTerms,
+                    child: Text(
+                      widget.isFr ? "Conditions d'utilisation" : 'Terms of Use',
+                      style: AppTypography.caption1.copyWith(
+                        color: AppColors.accentText.withValues(alpha: 0.9),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: Text(
+                      '·',
+                      style: AppTypography.caption1.copyWith(
+                        color: AppColors.secondaryLabel.withValues(alpha: 0.6),
+                      ),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: _openPrivacy,
+                    child: Text(
+                      widget.isFr
+                          ? 'Politique de confidentialité'
+                          : 'Privacy Policy',
+                      style: AppTypography.caption1.copyWith(
+                        color: AppColors.accentText.withValues(alpha: 0.9),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],

@@ -1,11 +1,8 @@
-import 'dart:ui';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_typography.dart';
-import 'glass_card.dart';
 
 class LegalDocumentSheet {
   const LegalDocumentSheet._();
@@ -84,114 +81,136 @@ class LegalDocumentSheet {
   }) async {
     await showCupertinoModalPopup<void>(
       context: context,
-      barrierColor: AppColors.overlayScrim.withValues(alpha: 0.76),
-      builder: (popupContext) => BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
-        child: SafeArea(
-          top: false,
-          child: Align(
-            alignment: Alignment.bottomCenter,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(12, 12, 12, 10),
-              child: GlassCard(
-                borderRadius: 28,
-                level: GlassCardLevel.elevated,
-                textured: true,
-                padding: const EdgeInsets.fromLTRB(18, 16, 18, 18),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
+      // Stronger scrim so the page behind doesn't bleed colour through the
+      // sheet — keeps the legal text readable in both light and dark themes.
+      barrierColor: AppColors.overlayScrim.withValues(alpha: 0.88),
+      builder: (popupContext) => SafeArea(
+        top: false,
+        child: Align(
+          alignment: Alignment.bottomCenter,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(12, 12, 12, 10),
+            // Opaque themed container instead of translucent GlassCard +
+            // BackdropFilter. Glass blur over a white app surface in light
+            // theme produced near-white text-on-white; using `background`
+            // guarantees a solid contrast surface in every theme.
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(28),
+                color: AppColors.background,
+                border: Border.all(
+                  color: AppColors.glassBorder.withValues(alpha: 0.55),
+                  width: 0.5,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.glassShadow.withValues(
+                      alpha: AppColors.isDark ? 0.32 : 0.14,
+                    ),
+                    blurRadius: 28,
+                    offset: const Offset(0, 12),
+                    spreadRadius: -10,
+                  ),
+                ],
+              ),
+              padding: const EdgeInsets.fromLTRB(18, 16, 18, 18),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              title,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppTypography.headline.copyWith(
+                                color: AppColors.label,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              subtitle,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppTypography.caption1.copyWith(
+                                color: AppColors.secondaryLabel,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      CupertinoButton(
+                        padding: EdgeInsets.zero,
+                        onPressed: () => Navigator.of(popupContext).pop(),
+                        child: Icon(
+                          CupertinoIcons.xmark_circle_fill,
+                          color: AppColors.secondaryLabel,
+                          size: 26,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxHeight: MediaQuery.of(context).size.height * 0.62,
+                    ),
+                    child: ListView.separated(
+                      shrinkWrap: true,
+                      itemCount: sections.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 10),
+                      itemBuilder: (_, index) {
+                        final section = sections[index];
+                        return Container(
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(18),
+                            // Solid themed card surface (not translucent) so
+                            // body text always sits on an opaque background.
+                            color: AppColors.cardBase,
+                            border: Border.all(
+                              color: AppColors.border.withValues(alpha: 0.45),
+                              width: 0.5,
+                            ),
+                          ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                title,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: AppTypography.headline.copyWith(
-                                  color: AppColors.label,
+                                section.title,
+                                style: AppTypography.overline.copyWith(
+                                  fontSize: 11,
+                                  color: AppColors.primaryOrange,
                                   fontWeight: FontWeight.w800,
+                                  letterSpacing: 1.6,
                                 ),
                               ),
-                              const SizedBox(height: 4),
+                              const SizedBox(height: 8),
                               Text(
-                                subtitle,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: AppTypography.caption1.copyWith(
-                                  color: AppColors.secondaryLabel
-                                      .withValues(alpha: 0.78),
+                                section.body,
+                                style: AppTypography.body.copyWith(
+                                  fontSize: 13,
+                                  height: 1.5,
+                                  // Use `label` (primary text) instead of
+                                  // `secondaryLabel`. Secondary tones risk
+                                  // low contrast on themed surfaces; primary
+                                  // text is always WCAG-compliant.
+                                  color: AppColors.label,
                                 ),
                               ),
                             ],
                           ),
-                        ),
-                        const SizedBox(width: 8),
-                        CupertinoButton(
-                          padding: EdgeInsets.zero,
-                          onPressed: () => Navigator.of(popupContext).pop(),
-                          child: Icon(
-                            CupertinoIcons.xmark_circle_fill,
-                            color: AppColors.secondaryLabel
-                                .withValues(alpha: 0.82),
-                            size: 26,
-                          ),
-                        ),
-                      ],
+                        );
+                      },
                     ),
-                    const SizedBox(height: 12),
-                    ConstrainedBox(
-                      constraints: BoxConstraints(
-                        maxHeight: MediaQuery.of(context).size.height * 0.62,
-                      ),
-                      child: ListView.separated(
-                        shrinkWrap: true,
-                        itemCount: sections.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: 10),
-                        itemBuilder: (_, index) {
-                          final section = sections[index];
-                          return Container(
-                            padding: const EdgeInsets.all(14),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(18),
-                              color: AppColors.sectionBackground.withValues(
-                                alpha: 0.55,
-                              ),
-                              border: Border.all(
-                                color: AppColors.border.withValues(alpha: 0.22),
-                              ),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  section.title,
-                                  style: AppTypography.overline.copyWith(
-                                    fontSize: 11,
-                                    color: AppColors.primaryOrange,
-                                    letterSpacing: 1.6,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  section.body,
-                                  style: AppTypography.body.copyWith(
-                                    fontSize: 13,
-                                    height: 1.45,
-                                    color: AppColors.secondaryLabel,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),

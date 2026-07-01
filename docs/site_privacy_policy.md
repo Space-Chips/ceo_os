@@ -1,6 +1,6 @@
 # WakeApp Privacy Policy
 
-Last updated: March 28, 2026
+Last updated: June 27, 2026
 
 WakeApp ("WakeApp", "we", "our", or "us") provides productivity, focus, planning, and digital wellbeing tools. This Privacy Policy explains what information we process, why we process it, how we use it, when we share it, how long we keep it, and what choices you have.
 
@@ -8,11 +8,11 @@ If you do not agree with this Privacy Policy, please do not use WakeApp.
 
 ## 1. Who We Are
 
-Controller / operator: `INSERT LEGAL ENTITY NAME`  
-Business address: `INSERT ADDRESS`  
-Privacy contact: `INSERT PRIVACY EMAIL`  
-Support contact: `timofrmac@gmail.com`  
-Website: `INSERT WEBSITE URL`
+Controller / operator: Indy François (sole proprietor / entreprise individuelle, France)  
+Business address: 222 chemin de la Brague, 06410 Biot, France  
+Privacy contact: `contact@the-wakeapp.com`  
+Support contact: `contact@the-wakeapp.com`  
+Website: https://the-wakeapp.com
 
 ## 2. What WakeApp Does
 
@@ -35,7 +35,7 @@ Depending on how you use WakeApp, we may process the following categories of inf
 
 ### Authentication Information
 - login credentials for email/password sign-in
-- Google Sign-In account data if you choose Google Sign-In
+- Apple Sign-In or Google Sign-In account data if you choose one of those methods
 - tokens and session information required to keep you signed in securely
 
 ### App Settings and Preferences
@@ -52,6 +52,10 @@ Depending on how you use WakeApp, we may process the following categories of inf
 - app-created planning records
 - focus sessions
 - goals and similar personal productivity records
+
+### Social and Friend Connections
+- friend connections you create (by adding another user's email)
+- leaderboard and ranking data shared between connected friends, such as display name, rank, streaks, and scores
 
 ### Blocking and Digital Wellbeing Configuration
 - selected apps or categories you choose to restrict
@@ -88,7 +92,7 @@ We do not use your data for targeted advertising in WakeApp.
 
 ## 5. Apple Screen Time / Family Controls on iPhone
 
-On iPhone, CEO OS may use Apple's official `Family Controls`, `ManagedSettings`, and `DeviceActivity` frameworks to support app and website restriction features.
+On iPhone, WakeApp may use Apple's official `Family Controls`, `ManagedSettings`, and `DeviceActivity` frameworks to support app and website restriction features.
 
 These features are:
 - initiated by the user
@@ -99,7 +103,7 @@ These features are:
 
 We may store configuration related to these features, such as selected apps, websites, schedules, and related settings, in order to provide continuity, syncing, history, or product functionality where applicable.
 
-CEO OS does not claim that these system-based restrictions are stronger than what Apple's platform APIs actually enforce.
+WakeApp does not claim that these system-based restrictions are stronger than what Apple's platform APIs actually enforce.
 
 ## 6. Android Protection Permissions
 
@@ -132,13 +136,16 @@ Where applicable law requires a legal basis, we rely on one or more of the follo
 We may use third-party service providers to operate WakeApp. Depending on your use of the app, these may include:
 
 ### Supabase
-Used for account infrastructure, authentication, database services, and cloud synchronization.
+Used for account infrastructure, authentication, database services, and cloud synchronization. Our database is hosted in the European Union (Frankfurt, Germany).
 
-### Google Sign-In
-Used only if you choose to sign in with Google.
+### Apple Sign-In and Google Sign-In
+Used only if you choose to sign in with Apple or Google.
 
 ### RevenueCat
 Used to help manage subscription infrastructure and entitlement state.
+
+### Resend
+Used to send transactional emails such as signup confirmation and password reset.
 
 ### Apple
 Used for App Store purchases, platform billing, system APIs, Screen Time / Family Controls, notifications, widgets, and related system-level capabilities.
@@ -160,7 +167,17 @@ We may share information:
 
 We do not sell personal information to data brokers.
 
-## 10. Data Processed on Device
+## 10. Friend Connections and Leaderboard
+
+WakeApp includes optional social features that let you connect with friends and compare progress on a leaderboard.
+
+- You add a friend by entering the email address associated with their WakeApp account. A connection is established only between WakeApp users.
+- When you and another person are connected as friends, certain information becomes visible to that person, including your display name, your rank, your streaks, and your scores.
+- This visibility is the intended purpose of the feature: leaderboards and friend comparisons require sharing this progress data between connected users.
+- Adding a friend does not give them access to your tasks, notes, account email, blocking configuration, or other private content beyond the leaderboard data listed above.
+- You can remove a friend connection at any time inside the app. Once removed, your leaderboard data is no longer shared with that person going forward.
+
+## 11. Data Processed on Device
 
 Some information may be processed only on your device.
 
@@ -168,7 +185,7 @@ If data is processed locally and is not transmitted off-device in a retained for
 
 If derived data is later transmitted or stored server-side, that server-side data may still be processed under this Privacy Policy.
 
-## 11. Data Retention
+## 12. Data Retention
 
 We retain information for as long as reasonably necessary to:
 - provide the service
@@ -177,22 +194,29 @@ We retain information for as long as reasonably necessary to:
 - resolve disputes
 - comply with legal, tax, accounting, or regulatory obligations
 
+Indicative retention periods:
+- Account and in-app data (tasks, habits, notes, focus sessions, stats, streaks, friend connections): kept until you delete your account, then permanently removed from our systems within 7 days.
+- Subscription / billing webhook events: up to 24 months, anonymised after account deletion where applicable.
+- Service logs: about 30 days.
+
 Retention periods may vary depending on the type of data and the reason it is processed.
 
-## 12. Account Deletion
+## 13. Account Deletion and Right to Erasure
 
-You can initiate account deletion from within the app.
+You can initiate account deletion from within the app at any time (Profile → Settings → Delete Account). You can also request deletion by email if you no longer have access to the app (see Section 21 — Contact Us).
 
 When your account is deleted:
 - your account record is removed from our systems
-- associated app data is deleted unless we are legally required to retain certain information
-- deletion may take a limited amount of time to complete in some cases
+- associated app data — including tasks, habits, notes, focus sessions, stats, streaks, and friend connections — is permanently deleted from our systems within 7 days, unless we are legally required to retain certain information
+- once your account is deleted, your data is no longer shared with friends through the leaderboard
+
+This reflects your right to erasure ("right to be forgotten") under Article 17 of the EU General Data Protection Regulation (GDPR), where applicable.
 
 If you have an auto-renewable subscription purchased through Apple or Google Play, deleting your WakeApp account does not automatically cancel store billing. You must manage or cancel your subscription through your Apple account or Google Play account if you no longer want to be charged.
 
 Where supported, we may also provide information directing you to the relevant subscription management page.
 
-## 13. Security
+## 14. Security
 
 We use reasonable technical and organizational safeguards designed to protect information against unauthorized access, disclosure, alteration, misuse, and destruction.
 
@@ -206,29 +230,30 @@ These safeguards may include:
 
 No method of transmission or storage is completely secure, and we cannot guarantee absolute security.
 
-## 14. International Transfers
+## 15. International Transfers
 
-Your information may be processed in countries other than the one in which you live, including countries where our service providers operate. Where required by law, we rely on appropriate safeguards for international transfers.
+Our primary database and authentication infrastructure (Supabase) is hosted in the European Union (Frankfurt, Germany). Some service providers (such as RevenueCat and our email provider) may process limited information outside your country. Where required by law, we rely on appropriate safeguards for international transfers, such as the EU-US Data Privacy Framework or Standard Contractual Clauses.
 
-## 15. Children
+## 16. Children
 
-WakeApp is not intended for unlawful collection of personal data from children. If you believe a child has provided personal data inappropriately, contact us and we will review the request.
+WakeApp is not intended for children under 13, and is not intended for unlawful collection of personal data from children. We do not knowingly collect data from children. If you believe a child has provided personal data inappropriately, contact us and we will review and delete the request.
 
-## 16. Your Rights and Choices
+## 17. Your Rights and Choices
 
-Depending on your location and applicable law, you may have rights to:
+Depending on your location and applicable law (including the GDPR for EU/EEA users), you may have rights to:
 - access your personal data
 - correct inaccurate data
-- request deletion
+- request deletion / erasure (GDPR Article 17)
 - request restriction of certain processing
 - object to certain processing
 - request data portability where applicable
+- withdraw consent for optional processing at any time
 
-You may also be able to manage some information directly inside the app, including account deletion and settings preferences.
+You may also manage some information directly inside the app, including account deletion (Profile → Settings → Delete Account) and settings preferences. EU/EEA users also have the right to lodge a complaint with their national data protection authority (in France, the CNIL).
 
-To exercise privacy rights, contact: `INSERT PRIVACY EMAIL`
+To exercise privacy rights, contact: `contact@the-wakeapp.com`
 
-## 17. Privacy Choices
+## 18. Privacy Choices
 
 You may have privacy choices available through:
 - account settings inside the app
@@ -236,28 +261,22 @@ You may have privacy choices available through:
 - device permission settings
 - Apple subscription management tools
 - Google Play subscription management tools
-- direct contact with us at `INSERT PRIVACY EMAIL`
+- direct contact with us at `contact@the-wakeapp.com`
 
-## 18. Website Technologies
+## 19. Website Technologies
 
-If your website uses cookies, analytics, embedded video, or marketing tools, you should add a separate website cookie section or Cookie Policy here.
+Our website (the-wakeapp.com) may use standard website technologies such as essential cookies or server logs. We do not use advertising or cross-site tracking technologies. If we introduce analytics or marketing tools in the future, we will describe them here or in a separate Cookie Policy.
 
-If your website does not use those tools, remove this section.
-
-Suggested placeholder:
-
-"We may use standard website technologies such as cookies or server logs on our website. Any website-specific data practices should be described in a separate Cookie Policy or Website Privacy Notice."
-
-## 19. Changes to This Policy
+## 20. Changes to This Policy
 
 We may update this Privacy Policy from time to time to reflect changes in the product, our service providers, legal requirements, or our privacy practices.
 
 When we make material changes, we will update the "Last updated" date and may provide additional notice where appropriate.
 
-## 20. Contact Us
+## 21. Contact Us
 
 For privacy questions, requests, or concerns, contact:
 
-`INSERT LEGAL ENTITY NAME`  
-`INSERT PRIVACY EMAIL`  
-`INSERT ADDRESS`
+Indy François (sole proprietor / entreprise individuelle, France)  
+`contact@the-wakeapp.com`  
+222 chemin de la Brague, 06410 Biot, France

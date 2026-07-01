@@ -341,11 +341,13 @@ class _WinStreakScreenState extends State<WinStreakScreen> {
             const SizedBox(height: 6),
             Text(
               label,
+              maxLines: 1,
+              overflow: TextOverflow.visible,
               style: AppTypography.caption1.copyWith(
-                fontSize: 12,
+                fontSize: 10,
                 color: AppColors.tertiaryLabel.withValues(alpha: 0.7),
-                fontWeight: FontWeight.w600,
-                letterSpacing: 1,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.9,
               ),
             ),
           ],

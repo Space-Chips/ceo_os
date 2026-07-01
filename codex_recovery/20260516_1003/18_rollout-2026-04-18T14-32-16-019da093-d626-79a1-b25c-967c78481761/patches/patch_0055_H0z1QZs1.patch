@@ -1,9 +1,0 @@
-*** Begin Patch
-*** Update File: /Users/timo/ceo_os/lib/features/home/home_screen.dart
-@@
-       final scheduledYesterday =
-           habit.isDaily ||
-           (habit.specificDays != null &&
--              habit.specificDays!.contains(yesterdayNum));
-+              (habit.specificDays?.contains(yesterdayNum) ?? false));
-*** End Patch

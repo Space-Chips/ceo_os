@@ -1,6 +1,0 @@
-*** Begin Patch
-*** Update File: /Users/timo/ceo_os/lib/components/liquid_button.dart
-@@
--      onTap: widget.onPressed,
-+      onTap: isDisabled ? null : widget.onPressed,
-*** End Patch

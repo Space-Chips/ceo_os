@@ -1,6 +1,0 @@
-*** Begin Patch
-*** Update File: lib/core/providers/language_provider.dart
-@@
--    'screen_time_manager': '屏幕时间管理',
-+    'screen_time_manager': '屏幕使用时间管理',
-*** End Patch

@@ -9,6 +9,7 @@ import '../../core/providers/auth_provider.dart';
 import '../../core/providers/language_provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
+import '../../core/utils/app_logger.dart';
 import 'auth_support.dart';
 
 /// Apple "Sign in with Apple" button — rendered with the Apple-prescribed
@@ -46,7 +47,20 @@ class _AppleSignInButtonState extends State<AppleSignInButton> {
     try {
       await context.read<AuthProvider>().signInWithApple();
       widget.onSuccess?.call();
-    } catch (e) {
+    } catch (e, stack) {
+      // Always log the raw error + stack to the device console so we can
+      // diagnose. The humanized message we show to the user erases the
+      // root cause ("Something went wrong"), which makes Apple Sign In
+      // bugs (provider not enabled, bundle ID mismatch, nonce rejected,
+      // etc.) effectively invisible without these logs.
+      AppLogger.error(
+        '[AppleSignIn] failure — type=${e.runtimeType} '
+        'message=${e.toString()}',
+        e,
+      );
+      // Mirror stack trace separately — AppLogger.error only takes one
+      // error param.
+      AppLogger.error('[AppleSignIn] stack trace', stack);
       if (!mounted) return;
       final language = context.read<LanguageProvider>();
       // sign_in_with_apple raises a SignInWithAppleAuthorizationException
@@ -56,10 +70,17 @@ class _AppleSignInButtonState extends State<AppleSignInButton> {
         // User backed out of the Apple sheet on purpose — silent no-op.
         return;
       }
+      // Append the raw error type + first line to the dialog while we're
+      // diagnosing (controlled by kDebugMode so production users still
+      // see the friendly message only).
+      final humanized = humanizeAuthError(e, language: language);
+      final detail = kDebugMode
+          ? '\n\n— debug —\n${e.runtimeType}: ${e.toString().split('\n').first}'
+          : '';
       await showAuthDialog(
         context,
         title: language.t('auth_error_title'),
-        message: humanizeAuthError(e, language: language),
+        message: '$humanized$detail',
       );
     } finally {
       if (mounted) setState(() => _loading = false);

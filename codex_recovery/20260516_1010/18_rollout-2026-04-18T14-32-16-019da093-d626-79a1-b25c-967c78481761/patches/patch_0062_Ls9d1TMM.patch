@@ -1,6 +1,0 @@
-*** Begin Patch
-*** Update File: /Users/timo/ceo_os/ios/Runner.xcodeproj/project.pbxproj
-@@
--	objectVersion = 70;
-+	objectVersion = 60;
-*** End Patch

@@ -526,6 +526,21 @@ const Map<String, Map<String, String>> _translations = {
     'deletion_failed': 'DELETION_FAILED',
     'deletion_failed_message':
         'We could not permanently delete your account right now. Please try again in a moment or contact support.',
+    'deletion_scheduled_grace_hint':
+        'Your account will be deleted. You have 3 days to change your mind — just log back in within 3 days to recover it. After that, your account and cloud data are permanently removed.',
+    'deletion_reason_label': 'Tell us why (optional)',
+    'deletion_reason_placeholder': 'Your feedback helps us improve (optional)',
+    'account_deletion_requested': 'ACCOUNT_DELETION_REQUESTED',
+    'account_deletion_requested_message':
+        'Your account is being deleted. You will now be signed out. Log back in within 3 days if you change your mind.',
+    'pending_deletion_title': 'ACCOUNT SCHEDULED FOR DELETION',
+    'pending_deletion_message':
+        'Your account is scheduled for deletion on {date}. Do you want to cancel the deletion and keep your account?',
+    'pending_deletion_cancel_action': 'Cancel deletion',
+    'pending_deletion_keep_deleting': 'Keep deleting',
+    'deletion_cancelled': 'DELETION_CANCELLED',
+    'deletion_cancelled_message':
+        'Your account deletion has been cancelled. Welcome back.',
     'on': 'ON',
     'off': 'OFF',
     'debug': 'DEBUG',
@@ -881,6 +896,22 @@ const Map<String, Map<String, String>> _translations = {
     'deletion_failed': 'ÉCHEC_SUPPRESSION',
     'deletion_failed_message':
         "Nous n'avons pas pu supprimer votre compte pour le moment. Réessayez dans un instant ou contactez le support.",
+    'deletion_scheduled_grace_hint':
+        'Votre compte va être supprimé. Vous avez 3 jours pour changer d\'avis : reconnectez-vous dans les 3 jours pour le récupérer. Passé ce délai, votre compte et vos données cloud seront définitivement supprimés.',
+    'deletion_reason_label': 'Dites-nous pourquoi (facultatif)',
+    'deletion_reason_placeholder':
+        'Votre retour nous aide à nous améliorer (facultatif)',
+    'account_deletion_requested': 'SUPPRESSION_DEMANDÉE',
+    'account_deletion_requested_message':
+        'Votre compte est en cours de suppression. Vous allez être déconnecté. Reconnectez-vous dans les 3 jours si vous changez d\'avis.',
+    'pending_deletion_title': 'COMPTE PROGRAMMÉ POUR SUPPRESSION',
+    'pending_deletion_message':
+        'Votre compte est programmé pour suppression le {date}. Voulez-vous annuler la suppression et conserver votre compte ?',
+    'pending_deletion_cancel_action': 'Annuler la suppression',
+    'pending_deletion_keep_deleting': 'Maintenir la suppression',
+    'deletion_cancelled': 'SUPPRESSION_ANNULÉE',
+    'deletion_cancelled_message':
+        'La suppression de votre compte a été annulée. Bon retour.',
     'on': 'ON',
     'off': 'OFF',
     'debug': 'DEBUG',

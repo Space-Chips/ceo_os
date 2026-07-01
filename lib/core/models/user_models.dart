@@ -3,6 +3,8 @@ class Profile {
   final String? email;
   final String? fullName;
   final String? avatarUrl;
+  final bool setupCompleted;
+  final DateTime? deletionScheduledAt;
   final DateTime createdAt;
 
   Profile({
@@ -10,6 +12,8 @@ class Profile {
     this.email,
     this.fullName,
     this.avatarUrl,
+    this.setupCompleted = false,
+    this.deletionScheduledAt,
     required this.createdAt,
   });
 
@@ -19,6 +23,10 @@ class Profile {
       email: json['email'],
       fullName: json['full_name'],
       avatarUrl: json['avatar_url'],
+      setupCompleted: json['setup_completed'] as bool? ?? false,
+      deletionScheduledAt: json['deletion_scheduled_at'] == null
+          ? null
+          : DateTime.parse(json['deletion_scheduled_at']),
       createdAt: DateTime.parse(json['created_at']),
     );
   }
@@ -29,6 +37,8 @@ class Profile {
       'email': email,
       'full_name': fullName,
       'avatar_url': avatarUrl,
+      'setup_completed': setupCompleted,
+      'deletion_scheduled_at': deletionScheduledAt?.toIso8601String(),
       'created_at': createdAt.toIso8601String(),
     };
   }

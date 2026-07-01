@@ -20,8 +20,10 @@ import '../../core/theme/app_typography.dart';
 import '../../core/utils/android_protection_disclosure.dart';
 import '../../core/utils/domain_utils.dart';
 import '../../components/ambient_backdrop.dart';
+import '../../components/blocked_token_views.dart';
 import '../../components/glass_card.dart';
 import '../../components/liquid_button.dart';
+import 'manage_blocked_item_sheet.dart';
 import '../focus/app_selection_sheet.dart';
 
 class ScreenTimeScreen extends StatefulWidget {
@@ -328,6 +330,7 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
     }
 
     final websiteBindings = await _classicLocalStore.loadWebsiteBindings();
+    final newlyCreatedIds = <String>[];
 
     await _runMutation(() async {
       final existingPayloads = _blockedWebsites
@@ -375,8 +378,24 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
         if (normalizedDomain != null && normalizedDomain.isNotEmpty) {
           existingDomains.add(normalizedDomain);
         }
+        newlyCreatedIds.add(record.id);
       }
     });
+
+    // Same UX as apps: send the user straight to the daily-limit picker
+    // for each freshly added site.
+    for (final id in newlyCreatedIds) {
+      if (!mounted) break;
+      BlockedWebsite? site;
+      for (final s in _blockedWebsites) {
+        if (s.id == id) {
+          site = s;
+          break;
+        }
+      }
+      if (site == null) continue;
+      await _openManageBlockedWebsite(site, isInitialSetup: true);
+    }
   }
 
   bool get _usesModernBlockingLayout => true;
@@ -644,6 +663,24 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
     return withSpaces.isEmpty ? trimmed : withSpaces;
   }
 
+  String _formatDailyLimit(int minutes) {
+    if (minutes <= 0) return 'Always';
+    if (minutes < 60) return '${minutes}m';
+    final h = minutes ~/ 60;
+    final r = minutes % 60;
+    return r == 0 ? '${h}h' : '${h}h${r.toString().padLeft(2, '0')}';
+  }
+
+  String _displayNameForBlockedWebsite(BlockedWebsite site) {
+    final domain = site.urlDomain?.trim();
+    if (domain != null && domain.isNotEmpty && !domain.startsWith('selected-website-')) {
+      return domain;
+    }
+    final binding = _websiteBindings[site.id]?.nativeIdentifier?.trim();
+    if (binding != null && binding.isNotEmpty) return binding;
+    return 'Selected website';
+  }
+
   String _displayNameForBlockedApp(BlockedApp app) {
     final explicit = app.appName?.trim();
     if (explicit != null &&
@@ -796,9 +833,16 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
           return;
         }
       }
-      final selection = await _focusService.openFamilyActivityPicker();
-      final payload = _firstNonEmpty(selection);
-      if (payload == null) {
+      // Use the picker variant that preserves appName + bundleIdentifier so
+      // each selected app keeps its real display label. The bare
+      // `openFamilyActivityPicker()` (List<String>) loses that metadata and
+      // falls back to the generic "Selected app" placeholder.
+      final selections =
+          await _focusService.openFamilyActivityPickerWithMetadata();
+      final picked = (selections ?? [])
+          .where((s) => s.payload.trim().isNotEmpty)
+          .toList(growable: false);
+      if (picked.isEmpty) {
         await _showNotice(
           title: 'Selection canceled',
           message:
@@ -807,21 +851,45 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
         return;
       }
 
-      final described = await _focusService.describeAppSelectionPayload(
-        payload,
-      );
-      final label = described == null
-          ? _nextAppSelectionLabel()
-          : _resolvedAppLabel(described);
+      final appBindings = await _classicLocalStore.loadAppBindings();
+      final newlyCreatedIds = <String>[];
       await _runMutation(() async {
-        final record = await _repo.createBlockedAppRecord(label);
-        if (record == null) return;
-        await _classicLocalStore.saveAppBinding(
-          rowId: record.id,
-          nativeIdentifier: described?.bundleIdentifier,
-          nativePayload: payload,
-        );
+        final existingPayloads = _blockedApps
+            .map((app) => appBindings[app.id]?.nativePayload?.trim())
+            .whereType<String>()
+            .where((p) => p.isNotEmpty)
+            .toSet();
+        for (final selected in picked) {
+          final payload = selected.payload.trim();
+          if (payload.isEmpty || existingPayloads.contains(payload)) continue;
+          final resolvedLabel = _resolvedAppLabel(selected);
+          final record = await _repo.createBlockedAppRecord(resolvedLabel);
+          if (record == null) continue;
+          await _classicLocalStore.saveAppBinding(
+            rowId: record.id,
+            nativeIdentifier: selected.bundleIdentifier,
+            nativePayload: payload,
+          );
+          existingPayloads.add(payload);
+          newlyCreatedIds.add(record.id);
+        }
       });
+
+      // Direct the user to pick a daily duration for each app they just
+      // added. Sequential modal opens — the next sheet only fires after
+      // they close the previous one.
+      for (final id in newlyCreatedIds) {
+        if (!mounted) break;
+        BlockedApp? app;
+        for (final a in _blockedApps) {
+          if (a.id == id) {
+            app = a;
+            break;
+          }
+        }
+        if (app == null) continue;
+        await _openManageBlockedApp(app, isInitialSetup: true);
+      }
       return;
     }
 
@@ -857,6 +925,7 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
         return;
       }
 
+      String? createdId;
       await _runMutation(() async {
         final record = await _repo.createBlockedWebsiteRecord(value);
         if (record == null) return;
@@ -864,9 +933,39 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
           rowId: record.id,
           nativePayload: payload,
         );
+        createdId = record.id;
       });
+
+      if (createdId != null && mounted) {
+        BlockedWebsite? site;
+        for (final s in _blockedWebsites) {
+          if (s.id == createdId) {
+            site = s;
+            break;
+          }
+        }
+        if (site != null) {
+          await _openManageBlockedWebsite(site, isInitialSetup: true);
+        }
+      }
     } else {
-      await _runMutation(() => _repo.createBlockedWebsite(value));
+      String? createdId;
+      await _runMutation(() async {
+        final record = await _repo.createBlockedWebsiteRecord(value);
+        createdId = record?.id;
+      });
+      if (createdId != null && mounted) {
+        BlockedWebsite? site;
+        for (final s in _blockedWebsites) {
+          if (s.id == createdId) {
+            site = s;
+            break;
+          }
+        }
+        if (site != null) {
+          await _openManageBlockedWebsite(site, isInitialSetup: true);
+        }
+      }
     }
 
     _siteCtrl.clear();
@@ -2213,22 +2312,30 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
                     _chooseAppsCard(),
                     if (_blockedApps.isNotEmpty) ...[
                       const SizedBox(height: 10),
-                      ..._blockedApps.map(
-                        (app) => Padding(
+                      ..._blockedApps.map((app) {
+                        final fallback = _displayNameForBlockedApp(app);
+                        final payload = _appBindings[app.id]?.nativePayload?.trim();
+                        final limit = app.timeLimitMinutes ?? 0;
+                        return Padding(
                           padding: const EdgeInsets.only(bottom: 7),
                           child: _modernBlockedItemCard(
-                            title: app.appName ?? 'Unknown app',
-                            onDelete: _saving
+                            title: fallback,
+                            trailingHint: limit > 0
+                                ? _formatDailyLimit(limit)
+                                : 'Always',
+                            leadingTokenLabel:
+                                (Platform.isIOS && payload != null && payload.isNotEmpty)
+                                    ? BlockedAppTokenLabel(
+                                        payload: payload,
+                                        fallbackTitle: fallback,
+                                      )
+                                    : null,
+                            onTap: _saving
                                 ? null
-                                : () => _runMutation(() async {
-                                    await _repo.deleteBlockedApp(app.id);
-                                    await _classicLocalStore.removeAppBinding(
-                                      app.id,
-                                    );
-                                  }),
+                                : () => _openManageBlockedApp(app),
                           ),
-                        ),
-                      ),
+                        );
+                      }),
                     ],
                     const SizedBox(height: 36),
                     _modernSectionTitle(
@@ -2250,21 +2357,26 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
                     ],
                     if (_blockedWebsites.isNotEmpty) ...[
                       const SizedBox(height: 10),
-                      ..._blockedWebsites.map(
-                        (site) => Padding(
+                      ..._blockedWebsites.map((site) {
+                        final fallback = _displayNameForBlockedWebsite(site);
+                        final payload = _websiteBindings[site.id]?.nativePayload?.trim();
+                        return Padding(
                           padding: const EdgeInsets.only(bottom: 7),
                           child: _modernBlockedItemCard(
-                            title: site.urlDomain ?? 'Unknown website',
-                            onDelete: _saving
+                            title: fallback,
+                            leadingTokenLabel:
+                                (Platform.isIOS && payload != null && payload.isNotEmpty)
+                                    ? BlockedWebsiteTokenLabel(
+                                        payload: payload,
+                                        fallbackTitle: fallback,
+                                      )
+                                    : null,
+                            onTap: _saving
                                 ? null
-                                : () => _runMutation(() async {
-                                    await _repo.deleteBlockedWebsite(site.id);
-                                    await _classicLocalStore
-                                        .removeWebsiteBinding(site.id);
-                                  }),
+                                : () => _openManageBlockedWebsite(site),
                           ),
-                        ),
-                      ),
+                        );
+                      }),
                     ],
                     const SizedBox(height: 36),
                     _modernSectionTitle(key: _pausesSectionKey, title: 'Pause'),
@@ -2333,51 +2445,45 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
       padding: EdgeInsets.zero,
       onPressed: _saving ? null : _addBlockedApp,
       child: Container(
-        padding: const EdgeInsets.fromLTRB(22, 20, 18, 20),
-        decoration: _modernPanelDecoration(radius: 24),
+        // Thicker vertical padding + slightly stronger border give this CTA
+        // a "hero" presence compared to the slim blocked-item rows below it
+        // (which use vertical 13 + border alpha 0.5). Apple-style: clean
+        // unicolor surface, no gradient, slightly elevated border.
+        padding: const EdgeInsets.fromLTRB(20, 28, 18, 28),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(22),
+          color: AppColors.backgroundLight.withValues(alpha: 0.62),
+          border: Border.all(
+            color: AppColors.glassBorder.withValues(alpha: 0.72),
+            width: 0.6,
+          ),
+        ),
         child: Row(
           children: [
             Icon(
               CupertinoIcons.add_circled,
-              size: 20,
+              size: 22,
               color: AppColors.secondaryLabel,
             ),
-            const SizedBox(width: 22),
+            const SizedBox(width: 18),
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Choose apps to\nblock',
-                    style: AppTypography.title3.copyWith(
-                      fontSize: 18,
-                      height: 1.12,
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.label,
-                    ),
-                  ),
-                ],
+              child: Text(
+                'Choose apps to\nblock',
+                maxLines: 2,
+                style: AppTypography.title3.copyWith(
+                  fontSize: 16,
+                  height: 1.18,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.label,
+                  letterSpacing: -0.2,
+                ),
               ),
             ),
-            const SizedBox(width: 14),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'Choose apps',
-                  style: AppTypography.callout.copyWith(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.secondaryLabel.withValues(alpha: 0.86),
-                  ),
-                ),
-                const SizedBox(width: 6),
-                Icon(
-                  CupertinoIcons.chevron_right,
-                  size: 15,
-                  color: AppColors.secondaryLabel.withValues(alpha: 0.74),
-                ),
-              ],
+            const SizedBox(width: 10),
+            Icon(
+              CupertinoIcons.chevron_right,
+              size: 16,
+              color: AppColors.secondaryLabel.withValues(alpha: 0.7),
             ),
           ],
         ),
@@ -2704,7 +2810,7 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
       await _showNotice(
         title: 'Trop tard pour planifier',
         message:
-            'Une pause doit être planifiée au moins 3 h à l'avance. Choisis une heure de départ plus éloignée.',
+            "Une pause doit être planifiée au moins 3 h à l'avance. Choisis une heure de départ plus éloignée.",
       );
       return;
     }
@@ -3058,38 +3164,216 @@ class _ScreenTimeScreenState extends State<ScreenTimeScreen> {
 
   Widget _modernBlockedItemCard({
     required String title,
-    required VoidCallback? onDelete,
+    required VoidCallback? onTap,
+    Widget? leadingTokenLabel,
+    String? trailingHint,
   }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 13),
-      decoration: _modernPanelDecoration(radius: 15),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              title,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: AppTypography.callout.copyWith(
-                fontSize: 15,
-                fontWeight: FontWeight.w700,
-                color: AppColors.label,
+    final fallbackTextStyle = AppTypography.callout.copyWith(
+      fontSize: 15,
+      fontWeight: FontWeight.w700,
+      color: AppColors.label,
+    );
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 13),
+        decoration: _modernPanelDecoration(radius: 15),
+        child: Row(
+          children: [
+            Expanded(
+              child: leadingTokenLabel != null
+                  ? DefaultTextStyle.merge(
+                      style: fallbackTextStyle,
+                      child: leadingTokenLabel,
+                    )
+                  : Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: fallbackTextStyle,
+                    ),
+            ),
+            if (trailingHint != null) ...[
+              const SizedBox(width: 8),
+              Text(
+                trailingHint,
+                style: AppTypography.caption1.copyWith(
+                  fontSize: 11,
+                  color: AppColors.tertiaryLabel.withValues(alpha: 0.85),
+                  fontWeight: FontWeight.w600,
+                ),
               ),
+            ],
+            const SizedBox(width: 6),
+            Icon(
+              CupertinoIcons.chevron_right,
+              size: 14,
+              color: AppColors.tertiaryLabel.withValues(alpha: 0.55),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openManageBlockedApp(
+    dynamic app, {
+    bool isInitialSetup = false,
+  }) async {
+    final fallback = _displayNameForBlockedApp(app);
+    final payload = _appBindings[app.id]?.nativePayload?.trim();
+    final currentLimit = (app.timeLimitMinutes is int)
+        ? app.timeLimitMinutes as int
+        : 0;
+    await showCupertinoModalPopup<void>(
+      context: context,
+      builder: (_) => ManageBlockedItemSheet(
+        itemId: app.id,
+        fallbackTitle: fallback,
+        nativePayload: payload,
+        currentDailyLimitMinutes: currentLimit,
+        isWebsite: false,
+        isInitialSetup: isInitialSetup,
+        resolveDisplayName: Platform.isIOS
+            ? (p) async {
+                final desc = await _focusService.describeAppSelectionPayload(p);
+                // Mirror the list row's name resolution: never surface a
+                // generic placeholder (e.g. "blocked app"). Prefer a real
+                // label, then a prettified bundle id, otherwise return null
+                // so the sheet keeps the good `fallbackTitle`.
+                final label = desc?.preferredLabel?.trim();
+                if (label != null &&
+                    label.isNotEmpty &&
+                    !_isGenericAppName(label)) {
+                  return label;
+                }
+                final bundle = desc?.bundleIdentifier?.trim();
+                if (bundle != null && bundle.isNotEmpty) {
+                  final pretty = _prettyBundleLabel(bundle);
+                  if (pretty.isNotEmpty) return pretty;
+                }
+                return null;
+              }
+            : null,
+        onSetDailyLimit: (minutes) async {
+          await _runMutation(() => _repo.setBlockedAppTime(app.id, minutes));
+        },
+        onRemove: () async {
+          await _runMutation(() async {
+            await _repo.deleteBlockedApp(app.id);
+            await _classicLocalStore.removeAppBinding(app.id);
+          });
+        },
+      ),
+    );
+  }
+
+  Future<void> _openManageBlockedWebsite(
+    dynamic site, {
+    bool isInitialSetup = false,
+  }) async {
+    final fallback = _displayNameForBlockedWebsite(site);
+    final payload = _websiteBindings[site.id]?.nativePayload?.trim();
+    final currentLimit = (site.timeLimitMinutes is int)
+        ? site.timeLimitMinutes as int
+        : 0;
+    await showCupertinoModalPopup<void>(
+      context: context,
+      builder: (_) => ManageBlockedItemSheet(
+        itemId: site.id,
+        fallbackTitle: fallback,
+        nativePayload: payload,
+        currentDailyLimitMinutes: currentLimit,
+        isWebsite: true,
+        isInitialSetup: isInitialSetup,
+        resolveDisplayName: Platform.isIOS
+            ? (p) async {
+                final desc =
+                    await _focusService.describeWebsiteSelectionPayload(p);
+                final domain = desc?.domain?.trim();
+                // Return null on an empty/missing domain so the sheet keeps
+                // the good `fallbackTitle` instead of a blank header.
+                if (domain != null && domain.isNotEmpty) return domain;
+                return null;
+              }
+            : null,
+        // Apple's DeviceActivity API doesn't expose a per-domain threshold
+        // event, so the enforcement on websites is best-effort: the chosen
+        // daily limit is persisted via setBlockedWebsiteTime + re-applied
+        // through the classic shield syncer. (Behavior parity with apps
+        // from the user's perspective, even though Apple gives us coarser
+        // hooks under the hood.)
+        onSetDailyLimit: (minutes) async {
+          await _runMutation(
+            () => _repo.setBlockedWebsiteTime(site.id, minutes),
+          );
+        },
+        onRemove: () async {
+          await _runMutation(() async {
+            await _repo.deleteBlockedWebsite(site.id);
+            await _classicLocalStore.removeWebsiteBinding(site.id);
+          });
+        },
+      ),
+    );
+  }
+
+  Future<void> _confirmRemoveBlockedItem({
+    required String label,
+    required VoidCallback onConfirm,
+  }) async {
+    // Two-step destructive flow to prevent accidental removal of a blocked
+    // app or website (the lists are intentionally hard to leave).
+    final picked = await showCupertinoModalPopup<String>(
+      context: context,
+      builder: (ctx) => CupertinoActionSheet(
+        title: Text('Manage block'),
+        message: Text(
+          'You are about to stop blocking "$label". Confirm twice to remove.',
+        ),
+        actions: [
+          CupertinoActionSheetAction(
+            isDestructiveAction: true,
+            onPressed: () => Navigator.of(ctx).pop('remove'),
+            child: const Text('Remove from block list'),
           ),
-          CupertinoButton(
-            padding: EdgeInsets.zero,
-            minimumSize: const Size(32, 32),
-            onPressed: onDelete,
-            child: Icon(
-              CupertinoIcons.xmark_circle,
-              size: 19,
-              color: AppColors.secondaryLabel,
-            ),
+        ],
+        cancelButton: CupertinoActionSheetAction(
+          onPressed: () => Navigator.of(ctx).pop(null),
+          child: const Text('Cancel'),
+        ),
+      ),
+    );
+    if (picked != 'remove' || !mounted) return;
+
+    final confirmed = await showCupertinoDialog<bool>(
+      context: context,
+      builder: (ctx) => CupertinoAlertDialog(
+        title: const Text('Are you sure?'),
+        content: Padding(
+          padding: const EdgeInsets.only(top: 8),
+          child: Text(
+            'This will immediately unblock "$label". You can re-add it later.',
+            style: const TextStyle(height: 1.35),
+          ),
+        ),
+        actions: [
+          CupertinoDialogAction(
+            child: const Text('Keep blocked'),
+            onPressed: () => Navigator.of(ctx).pop(false),
+          ),
+          CupertinoDialogAction(
+            isDestructiveAction: true,
+            child: const Text('Remove'),
+            onPressed: () => Navigator.of(ctx).pop(true),
           ),
         ],
       ),
     );
+    if (confirmed == true) {
+      onConfirm();
+    }
   }
 
   BoxDecoration _modernPanelDecoration({

@@ -6,5 +6,7 @@ class TesterConfig {
 
   /// DEV ONLY — force premium access on simulator/dev builds.
   /// MUST be `false` before any TestFlight / App Store build.
-  static const bool devForcePremium = true;
+  /// Locked to `false`: never ship premium-for-everyone. Flip locally only
+  /// while developing, and revert before committing.
+  static const bool devForcePremium = false;
 }

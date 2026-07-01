@@ -1,6 +1,0 @@
-*** Begin Patch
-*** Update File: lib/core/providers/language_provider.dart
-@@
--    'open_screen_manager': '打开屏幕时间管理器',
-+    'open_screen_manager': '打开屏幕使用时间管理器',
-*** End Patch

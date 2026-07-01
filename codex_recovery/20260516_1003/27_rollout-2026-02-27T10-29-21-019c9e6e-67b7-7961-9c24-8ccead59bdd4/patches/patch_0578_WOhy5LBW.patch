@@ -1,8 +1,0 @@
-*** Begin Patch
-*** Update File: /Users/timo/ceo_os/lib/features/home/home_screen.dart
-@@
--    final normalized = configured == null
--        ? null
--        : configured.where(_validPrimaryApps.contains).toSet();
-+    final normalized = configured?.where(_validPrimaryApps.contains).toSet();
-*** End Patch

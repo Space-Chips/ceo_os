@@ -1,8 +1,0 @@
-*** Begin Patch
-*** Update File: lib/core/providers/language_provider.dart
-@@
-     'profile_settings': 'Profile & Settings',
-     'widget_configuration': 'Widget Configuration',
-+    'upgrade': 'Upgrade',
-     'widget_configuration_widgets': 'WIDGETS',
-*** End Patch

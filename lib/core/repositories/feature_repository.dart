@@ -613,6 +613,15 @@ class FeatureRepository {
   Future<BlockedWebsite?> createBlockedWebsiteRecord(String urlDomain) async {
     final trimmedDomain = urlDomain.trim();
     if (trimmedDomain.isEmpty) return null;
+    // Mirror createBlockedAppRecord: when the local Family Controls store is
+    // active, persist there instead of forcing a Supabase insert that would
+    // silently fail (RLS, missing auth, offline…) and swallow the new site.
+    if (_useLocalFamilyControlsStorage) {
+      return _familyControlsLocalStore.createBlockedWebsiteRecord(
+        createdBy: _currentUserId,
+        urlDomain: trimmedDomain,
+      );
+    }
     final payload = {
       'id': const Uuid().v4(),
       'created_by': _currentUserId,

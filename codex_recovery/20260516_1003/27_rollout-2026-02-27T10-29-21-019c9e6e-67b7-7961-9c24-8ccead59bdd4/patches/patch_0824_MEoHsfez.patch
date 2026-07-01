@@ -1,9 +1,0 @@
-*** Begin Patch
-*** Update File: /Users/timo/ceo_os/lib/features/dashboard/dashboard_screen.dart
-@@
-   Future<void> _completeTask(ParetoTask task) async {
--    await _taskRepository.completeTask(task.id);
-+    await context.read<TaskProvider>().completeTask(task.id);
-     await _load();
-   }
-*** End Patch

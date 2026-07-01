@@ -1,8 +1,0 @@
-*** Begin Patch
-*** Update File: /Users/timo/ceo_os/lib/core/theme/app_colors.dart
-@@
-   static const Color success = Color(0xFF2CB67D);
-   static const Color warning = Color(0xFFF5A524);
-   static const Color error = Color(0xFFEA5E67);
-+  static const Color info = Color(0xFF4F8CFF);
-*** End Patch

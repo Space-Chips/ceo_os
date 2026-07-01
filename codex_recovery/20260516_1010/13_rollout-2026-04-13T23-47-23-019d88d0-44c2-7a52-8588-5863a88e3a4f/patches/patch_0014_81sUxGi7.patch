@@ -1,6 +1,0 @@
-*** Begin Patch
-*** Add File: android/app/src/main/res/interpolator/block_gate_accelerate.xml
-+<?xml version="1.0" encoding="utf-8"?>
-+<accelerateInterpolator xmlns:android="http://schemas.android.com/apk/res/android"
-+    android:factor="1.1" />
-*** End Patch

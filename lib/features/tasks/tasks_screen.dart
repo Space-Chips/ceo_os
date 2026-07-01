@@ -32,7 +32,6 @@ class _TasksScreenState extends State<TasksScreen> {
   final PremiumRepository _premiumRepository = PremiumRepository();
   final PageController _pageController = PageController();
   _TaskTab _activeTab = _TaskTab.list;
-  int _tabDirection = 1;
 
   @override
   void initState() {
@@ -264,23 +263,18 @@ class _TasksScreenState extends State<TasksScreen> {
   void _setActiveTab(_TaskTab nextTab) {
     if (_activeTab == nextTab) return;
     final tabs = _TaskTab.values;
-    final currentIndex = tabs.indexOf(_activeTab);
     final nextIndex = tabs.indexOf(nextTab);
-    setState(() {
-      _tabDirection = nextIndex >= currentIndex ? 1 : -1;
-      _activeTab = nextTab;
-    });
-  }
-
-  void _handleTabSwipe(DragEndDetails details) {
-    final velocity = details.primaryVelocity ?? 0;
-    if (velocity.abs() < 160) return;
-    final tabs = _TaskTab.values;
-    final currentIndex = tabs.indexOf(_activeTab);
-    final nextIndex = velocity < 0
-        ? (currentIndex + 1).clamp(0, tabs.length - 1)
-        : (currentIndex - 1).clamp(0, tabs.length - 1);
-    _setActiveTab(tabs[nextIndex]);
+    // Drive the PageView so tab-button taps stay in sync with the finger-
+    // linked scroll. onPageChanged will then update _activeTab.
+    if (_pageController.hasClients) {
+      _pageController.animateToPage(
+        nextIndex,
+        duration: const Duration(milliseconds: 320),
+        curve: Curves.easeOutCubic,
+      );
+    } else {
+      setState(() => _activeTab = nextTab);
+    }
   }
 
   @override
@@ -315,80 +309,69 @@ class _TasksScreenState extends State<TasksScreen> {
                 (t) => !_isImportant(t) && !_isQuick(t),
               );
 
-              return GestureDetector(
-                onHorizontalDragEnd: _handleTabSwipe,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 10, 20, 12),
-                  child: Column(
-                    children: [
-                      _topRow(language),
-                      const SizedBox(height: AppSpacing.sm),
-                      _titleBlock(language),
-                      const SizedBox(height: AppSpacing.md),
-                      Expanded(
-                        child: AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 260),
-                          switchInCurve: Curves.easeOutCubic,
-                          switchOutCurve: Curves.easeInCubic,
-                          transitionBuilder: (child, animation) {
-                            final begin = _tabDirection < 0
-                                ? const Offset(0.2, 0)
-                                : const Offset(-0.2, 0);
-                            final slide = Tween<Offset>(
-                              begin: begin,
-                              end: Offset.zero,
-                            ).animate(animation);
-                            return FadeTransition(
-                              opacity: animation,
-                              child: SlideTransition(
-                                position: slide,
-                                child: child,
-                              ),
-                            );
-                          },
-                          child: _activeTab == _TaskTab.list
-                              ? _buildListTab(
-                                  key: const ValueKey('list'),
-                                  language: language,
-                                  topFive: topFive,
-                                  others: others,
-                                  onAdd: _showAddTask,
-                                  onOpenTask: _showTaskDetail,
-                                )
-                              : _activeTab == _TaskTab.matrix
-                              ? _buildMatrixTab(
-                                  key: const ValueKey('matrix'),
-                                  language: language,
-                                  quickImportant: quickImportant.toList(),
-                                  slowImportant: slowImportant.toList(),
-                                  quickNotImportant: quickNotImportant.toList(),
-                                  slowNotImportant: slowNotImportant.toList(),
-                                  onOpenTask: _showTaskDetail,
-                                )
-                              : _buildHistoryTab(
-                                  key: const ValueKey('history'),
-                                  language: language,
-                                  tasks: recentWeekTasks,
-                                  onToggle: (task) async {
-                                    if (task.completed) {
-                                      await prov.uncompleteTask(task.id);
-                                    } else {
-                                      await prov.completeTask(task.id);
-                                    }
-                                  },
-                                ),
-                        ),
+              // PageView gives the same finger-linked, calm horizontal scroll
+              // as the Habits screen — both panels move together with the
+              // gesture rather than fading in on drag-end. This unifies the
+              // scroll grammar across Habits / Tasks / Calendar.
+              return Padding(
+                padding: const EdgeInsets.fromLTRB(20, 10, 20, 12),
+                child: Column(
+                  children: [
+                    _topRow(language),
+                    const SizedBox(height: AppSpacing.sm),
+                    _titleBlock(language),
+                    const SizedBox(height: AppSpacing.md),
+                    Expanded(
+                      child: PageView(
+                        controller: _pageController,
+                        physics: const BouncingScrollPhysics(),
+                        onPageChanged: (index) {
+                          final tabs = _TaskTab.values;
+                          if (index < 0 || index >= tabs.length) return;
+                          setState(() => _activeTab = tabs[index]);
+                        },
+                        children: [
+                          _buildListTab(
+                            key: const ValueKey('list'),
+                            language: language,
+                            topFive: topFive,
+                            others: others,
+                            onAdd: _showAddTask,
+                            onOpenTask: _showTaskDetail,
+                          ),
+                          _buildMatrixTab(
+                            key: const ValueKey('matrix'),
+                            language: language,
+                            quickImportant: quickImportant.toList(),
+                            slowImportant: slowImportant.toList(),
+                            quickNotImportant: quickNotImportant.toList(),
+                            slowNotImportant: slowNotImportant.toList(),
+                            onOpenTask: _showTaskDetail,
+                          ),
+                          _buildHistoryTab(
+                            key: const ValueKey('history'),
+                            language: language,
+                            tasks: recentWeekTasks,
+                            onToggle: (task) async {
+                              if (task.completed) {
+                                await prov.uncompleteTask(task.id);
+                              } else {
+                                await prov.completeTask(task.id);
+                              }
+                            },
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        _swipeHint(language),
-                        style: AppTypography.caption1.copyWith(
-                          fontSize: 12,
-                          color: AppColors.tertiaryLabel.withValues(alpha: 0.5),
-                        ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      _swipeHint(language),
+                      style: AppTypography.caption1.copyWith(
+                        fontSize: 12,
+                        color: AppColors.tertiaryLabel.withValues(alpha: 0.5),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               );
             },

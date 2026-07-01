@@ -1,9 +1,0 @@
-*** Begin Patch
-*** Update File: lib/features/ceo_mode/ceo_mode_screen.dart
-@@
--                            ceo.setDuration(_durationOptions[index]);
-+                            final value = _durationOptions[index];
-+                            ceo.setDuration(value);
-+                            unawaited(_persistWidgetDuration(value));
-                           },
-*** End Patch

@@ -1,9 +1,0 @@
-*** Begin Patch
-*** Delete File: android/app/src/main/kotlin/com/wakeapp/ceoos/blocking/BlockStateCache.kt
-*** Delete File: android/app/src/main/kotlin/com/wakeapp/ceoos/blocking/BlockingNavigator.kt
-*** Delete File: android/app/src/main/kotlin/com/wakeapp/ceoos/blocking/ForegroundBlockInterceptor.kt
-*** Delete File: android/app/src/main/kotlin/com/wakeapp/ceoos/blocking/LauncherIconTarget.kt
-*** Delete File: android/app/src/main/kotlin/com/wakeapp/ceoos/blocking/LauncherIconTracker.kt
-*** Delete File: android/app/src/main/kotlin/com/wakeapp/ceoos/blocking/LauncherOverlayController.kt
-*** Delete File: android/app/src/main/kotlin/com/wakeapp/ceoos/blocking/LauncherPackageResolver.kt
-*** End Patch

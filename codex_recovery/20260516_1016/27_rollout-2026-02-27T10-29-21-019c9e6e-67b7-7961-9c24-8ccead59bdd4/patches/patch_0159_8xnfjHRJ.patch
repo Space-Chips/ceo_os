@@ -1,6 +1,0 @@
-*** Begin Patch
-*** Update File: /Users/timo/ceo_os/lib/components/components.dart
-@@
- export 'floating_nav_bar.dart';
-+export 'ambient_backdrop.dart';
-*** End Patch

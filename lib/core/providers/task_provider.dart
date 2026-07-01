@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../utils/app_logger.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 import '../models/premium_models.dart';
@@ -102,7 +103,7 @@ class TaskProvider extends ChangeNotifier {
       _tasks = await _repository.getTasks(includeCompleted: includeCompleted);
       await _flushPendingIfAny();
     } catch (e) {
-      print('Error loading tasks: $e');
+      AppLogger.error('loading tasks', e);
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -114,7 +115,7 @@ class TaskProvider extends ChangeNotifier {
       _groups = await _repository.getTaskGroups();
       notifyListeners();
     } catch (e) {
-      print('Error loading task groups: $e');
+      AppLogger.error('loading task groups', e);
     }
   }
 
@@ -154,7 +155,7 @@ class TaskProvider extends ChangeNotifier {
       await loadEvents();
       return const PremiumCheckResult.allowed();
     } catch (e) {
-      print('Error adding task: $e');
+      AppLogger.error('adding task', e);
       // Offline-first fallback: store a pending create and surface it locally.
       final uid = Supabase.instance.client.auth.currentUser?.id ?? 'local';
       final local = ParetoTask(
@@ -192,7 +193,7 @@ class TaskProvider extends ChangeNotifier {
       await _repository.addTaskGroup(name, color: color);
       await loadGroups();
     } catch (e) {
-      print('Error adding group: $e');
+      AppLogger.error('adding group', e);
     }
   }
 
@@ -201,7 +202,7 @@ class TaskProvider extends ChangeNotifier {
       await _repository.completeTask(id);
       await loadTasksWithCompleted(includeCompleted: true);
     } catch (e) {
-      print('Error completing task: $e');
+      AppLogger.error('completing task', e);
     }
   }
 
@@ -210,7 +211,7 @@ class TaskProvider extends ChangeNotifier {
       await _repository.uncompleteTask(id);
       await loadTasksWithCompleted(includeCompleted: true);
     } catch (e) {
-      print('Error uncompleting task: $e');
+      AppLogger.error('uncompleting task', e);
     }
   }
 
@@ -220,7 +221,7 @@ class TaskProvider extends ChangeNotifier {
       _tasks.removeWhere((t) => t.id == id);
       notifyListeners();
     } catch (e) {
-      print('Error deleting task: $e');
+      AppLogger.error('deleting task', e);
     }
   }
 
@@ -230,7 +231,7 @@ class TaskProvider extends ChangeNotifier {
     try {
       _events = await _repository.getAllEvents();
     } catch (e) {
-      print('Error loading events: $e');
+      AppLogger.error('loading events', e);
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -262,7 +263,7 @@ class TaskProvider extends ChangeNotifier {
       );
       await loadEvents();
     } catch (e) {
-      print('Error adding event: $e');
+      AppLogger.error('adding event', e);
     }
   }
 }

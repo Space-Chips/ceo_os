@@ -56,6 +56,7 @@ app.*.map.json
 # Local recovery / temp artefacts (not part of the app)
 codex_recovery/
 .tmp_v1/
+CEOV1/
 private/
 fichiertxt.txt
 *_recovery_report.txt

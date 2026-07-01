@@ -1,6 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 import '../models/task_models.dart';
+import '../utils/app_logger.dart';
 import '../services/offline_cache.dart';
 import '../services/supabase_service.dart';
 import '../services/write_queue.dart';
@@ -237,7 +238,7 @@ class TaskRepository {
           .map((data) => TaskGroup.fromJson(data))
           .toList();
     } catch (e) {
-      print('Error getting task groups: $e');
+      AppLogger.error('getting task groups', e);
       return [];
     }
   }
@@ -299,7 +300,7 @@ class TaskRepository {
         horizonDate: horizonDate,
       );
     } catch (e) {
-      print('Error getting events: $e');
+      AppLogger.error('getting events', e);
       return [];
     }
   }

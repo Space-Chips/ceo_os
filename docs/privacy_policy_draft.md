@@ -1,8 +1,8 @@
 # Privacy Policy — WakeApp
 
-_Last updated: 28 May 2026_
+_Last updated: 27 June 2026_
 
-WakeApp ("we", "us") is operated by The CEO Company. This Privacy Policy explains what personal data we collect when you use the WakeApp iOS application and how we use it.
+WakeApp ("we", "us") is operated by Indy François (sole proprietor / entreprise individuelle, France). This Privacy Policy explains what personal data we collect when you use the WakeApp iOS application and how we use it.
 
 ## 1. Data we collect
 
@@ -22,52 +22,57 @@ We do **not** collect: precise location, contacts, photos (unless you explicitly
 
 If you grant Screen Time permission, WakeApp uses Apple's Family Controls API to enforce focus sessions you configure (blocking apps and websites you select). The list of apps and websites stays on your device — Apple's API returns opaque tokens, not human-readable names, and these tokens never leave your phone.
 
-## 3. Lawful bases (GDPR)
+## 3. Friend connections and leaderboard
+
+WakeApp lets you connect with friends and compare progress on a leaderboard. You add a friend by entering the email address linked to their WakeApp account. Once you are connected, that person can see your **display name, rank, streaks and scores**. This sharing is the purpose of the feature. Adding a friend does not expose your tasks, notes, account email or other private content. You can remove a friend connection at any time in the app; afterwards your leaderboard data is no longer shared with that person.
+
+## 4. Lawful bases (GDPR)
 
 - **Performance of a contract**: account, subscription, in-app data
 - **Legitimate interest**: crash reports, abuse detection
 - **Consent**: optional analytics or marketing emails (you can opt out at any time)
 
-## 4. Service providers
+## 5. Service providers
 
-- **Supabase** (Supabase Inc., USA, EU servers): backend database + authentication
+- **Supabase** (Supabase Inc., USA — EU servers, Frankfurt): backend database + authentication
 - **RevenueCat** (RevenueCat Inc., USA): subscription management
+- **Apple Sign-In / Google Sign-In**: optional third-party authentication if you choose them
 - **Resend** (Resend Inc., USA): transactional emails (signup confirmation, password reset)
-- **Apple App Store**: payment processing for subscriptions
+- **Apple App Store / Google Play**: payment processing for subscriptions
 
 All providers operate under EU-US Data Privacy Framework or equivalent SCCs.
 
-## 5. Data retention
+## 6. Data retention
 
-- Account + in-app data: until you delete your account (Settings → Delete Account)
+- Account + in-app data: until you delete your account (Profile → Settings → Delete Account), then permanently removed within 7 days
 - Billing webhook events: 24 months (anonymised after account deletion)
 - Logs: 30 days
 
-## 6. Your rights
+## 7. Your rights
 
 You can at any time:
 - **Access** your data (in-app or by emailing us)
 - **Correct** your data (in-app)
-- **Delete** your account and all associated data (Settings → Delete Account, which permanently removes all your records from our systems within 7 days)
+- **Delete** your account and all associated data (Profile → Settings → Delete Account, which permanently removes all your records from our systems within 7 days — your right to erasure under GDPR Article 17). You can also email us if you no longer have app access.
 - **Export** your data (email us at the address below)
 - **Withdraw consent** for optional processing
 
-EU users can also lodge a complaint with their national data protection authority.
+EU users can also lodge a complaint with their national data protection authority (in France, the CNIL).
 
-## 7. Children
+## 8. Children
 
 WakeApp is not intended for children under 13. We do not knowingly collect data from children. If you believe a child has created an account, contact us and we will delete it.
 
-## 8. Security
+## 9. Security
 
 Data is encrypted in transit (TLS 1.2+) and at rest (AES-256). Authentication uses PKCE OAuth 2.0. Row-level security ensures one user can never read another user's data.
 
-## 9. Changes
+## 10. Changes
 
 We will notify you in-app or by email at least 14 days before any material change.
 
-## 10. Contact
+## 11. Contact
 
-For any privacy question: **timofrmac@gmail.com**
+For any privacy question: `contact@the-wakeapp.com`
 
-The CEO Company — France.
+Indy François — 222 chemin de la Brague, 06410 Biot, France.

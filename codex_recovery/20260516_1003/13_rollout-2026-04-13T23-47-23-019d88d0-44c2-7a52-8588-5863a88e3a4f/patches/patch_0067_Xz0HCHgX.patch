@@ -1,9 +1,0 @@
-*** Begin Patch
-*** Update File: /Users/timo/ceo_os/ios/Runner/AppDelegate.swift
-@@
-         case "openFamilyActivityPicker":
-             presentFamilyActivityPicker(result: result)
-+        case "openFamilyActivityWebsitePicker":
-+            presentFamilyActivityPicker(result: result, requiresWebDomains: true)
-         case "openSystemSettings":
-*** End Patch

@@ -33,6 +33,9 @@ import purchases_flutter
 #if canImport(shared_preferences_foundation)
 import shared_preferences_foundation
 #endif
+#if canImport(sign_in_with_apple)
+import sign_in_with_apple
+#endif
 #if canImport(url_launcher_ios)
 import url_launcher_ios
 #endif
@@ -1130,7 +1133,7 @@ public class FocusEngine: NSObject {
         result(encoded)
     }
 
-    private func describeAppSelectionPayload(args: [String: Any]?, result: FlutterResult) {
+    private func describeAppSelectionPayload(args: [String: Any]?, result: @escaping FlutterResult) {
         guard let payload = (args?["payload"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines),
               !payload.isEmpty else {
             result(nil)
@@ -1142,15 +1145,22 @@ public class FocusEngine: NSObject {
             return
         }
         let app = Application(token: token)
-        let appName = app.localizedDisplayName?.trimmingCharacters(in: .whitespacesAndNewlines)
-        let bundleIdentifier = app.bundleIdentifier?.trimmingCharacters(in: .whitespacesAndNewlines)
-        result([
-            "appName": appName ?? "",
-            "bundleIdentifier": bundleIdentifier ?? ""
-        ])
+        let bundleIdentifier = app.bundleIdentifier?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let directName = app.localizedDisplayName?.trimmingCharacters(in: .whitespacesAndNewlines)
+        if let directName, !directName.isEmpty {
+            result(["appName": directName, "bundleIdentifier": bundleIdentifier])
+            return
+        }
+        // `localizedDisplayName` is almost always nil for picked tokens. Render
+        // the system `Label(token)` off-screen and read the resolved name from
+        // the UILabel SwiftUI produces — this gives the real name as plain text
+        // so the header can render it without any PlatformView/Apple capsule.
+        Self.resolveTokenDisplayName(label: Label(token).labelStyle(.titleOnly)) { name in
+            result(["appName": name ?? "", "bundleIdentifier": bundleIdentifier])
+        }
     }
 
-    private func describeWebsiteSelectionPayload(args: [String: Any]?, result: FlutterResult) {
+    private func describeWebsiteSelectionPayload(args: [String: Any]?, result: @escaping FlutterResult) {
         guard let payload = (args?["payload"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines),
               !payload.isEmpty else {
             result(nil)
@@ -1161,10 +1171,73 @@ public class FocusEngine: NSObject {
             result(nil)
             return
         }
-        let domain = WebDomain(token: token).domain?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-        result([
-            "domain": domain
-        ])
+        let directDomain = WebDomain(token: token).domain?.trimmingCharacters(in: .whitespacesAndNewlines)
+        if let directDomain, !directDomain.isEmpty {
+            result(["domain": directDomain])
+            return
+        }
+        Self.resolveTokenDisplayName(label: Label(token).labelStyle(.titleOnly)) { name in
+            result(["domain": name ?? ""])
+        }
+    }
+
+    /// Renders a Family Controls `Label(token)` off-screen and extracts the
+    /// resolved display name from the `UILabel` SwiftUI produces. The name
+    /// usually resolves asynchronously on first render, so we retry once after
+    /// a short delay before giving up.
+    private static func resolveTokenDisplayName<L: View>(label: L, completion: @escaping (String?) -> Void) {
+        let host = UIHostingController(rootView: label.fixedSize())
+        host.view.frame = CGRect(x: -10_000, y: -10_000, width: 400, height: 80)
+        host.view.backgroundColor = .clear
+        let window = UIApplication.shared.connectedScenes
+            .compactMap { ($0 as? UIWindowScene)?.windows.first(where: { $0.isKeyWindow }) }
+            .first
+            ?? UIApplication.shared.connectedScenes
+                .compactMap { ($0 as? UIWindowScene)?.windows.first }
+                .first
+        window?.addSubview(host.view)
+
+        // Family Controls resolves the token name asynchronously on first
+        // render, so poll a few times before giving up.
+        let delays: [Double] = [0.0, 0.35, 0.8, 1.4]
+        func attempt(_ index: Int) {
+            host.view.setNeedsLayout()
+            host.view.layoutIfNeeded()
+            if let name = firstResolvedName(in: host.view) {
+                host.view.removeFromSuperview()
+                completion(name)
+                return
+            }
+            if index + 1 < delays.count {
+                DispatchQueue.main.asyncAfter(deadline: .now() + (delays[index + 1] - delays[index])) {
+                    attempt(index + 1)
+                }
+            } else {
+                host.view.removeFromSuperview()
+                completion(nil)
+            }
+        }
+        attempt(0)
+    }
+
+    /// SwiftUI renders Family Controls token names without a plain `UILabel`,
+    /// but it sets the accessibility label of the rendered view to the resolved
+    /// name (for VoiceOver). We read a `UILabel`'s text when present, otherwise
+    /// fall back to the first non-empty `accessibilityLabel` in the hierarchy.
+    private static func firstResolvedName(in view: UIView) -> String? {
+        if let label = view as? UILabel,
+           let text = label.text?.trimmingCharacters(in: .whitespacesAndNewlines),
+           !text.isEmpty {
+            return text
+        }
+        if let a11y = view.accessibilityLabel?.trimmingCharacters(in: .whitespacesAndNewlines),
+           !a11y.isEmpty {
+            return a11y
+        }
+        for sub in view.subviews {
+            if let found = firstResolvedName(in: sub) { return found }
+        }
+        return nil
     }
 
     private func syncClassicPauseSchedule(args: [String: Any]?, result: FlutterResult) {
@@ -1359,15 +1432,22 @@ private struct NativeBlockedWebsiteTokenLabelView: View {
     let token: WebDomainToken
     let textColor: UIColor?
     let isDarkTheme: Bool
+    let showIcon: Bool
 
     var body: some View {
-        Label(token)
-            .labelStyle(.titleAndIcon)
-            .font(.system(size: 16, weight: .semibold))
-            .foregroundColor(textColor.map { Color(uiColor: $0) } ?? .primary)
-            .lineLimit(1)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .environment(\.colorScheme, isDarkTheme ? .dark : .light)
+        Group {
+            if showIcon {
+                Label(token).labelStyle(.titleAndIcon)
+            } else {
+                Label(token).labelStyle(.titleOnly)
+            }
+        }
+        .font(.system(size: 16, weight: .semibold))
+        .foregroundColor(textColor.map { Color(uiColor: $0) } ?? .primary)
+        .lineLimit(1)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.clear)
+        .environment(\.colorScheme, isDarkTheme ? .dark : .light)
     }
 }
 
@@ -1378,6 +1458,7 @@ private final class BlockedWebsiteTokenLabelPlatformView: NSObject, FlutterPlatf
     init(frame: CGRect, viewId: Int64, args: Any?) {
         container = UIView(frame: frame)
         container.backgroundColor = .clear
+        container.isOpaque = false
         super.init()
 
         let arguments = args as? [String: Any]
@@ -1386,26 +1467,45 @@ private final class BlockedWebsiteTokenLabelPlatformView: NSObject, FlutterPlatf
         let textColorHex = (arguments?["textColorHex"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines)
         let textColor = (textColorHex?.isEmpty == false) ? UIColor(hexString: textColorHex!) : nil
         let isDarkTheme = (arguments?["isDarkTheme"] as? Bool) ?? true
+        let showIcon = (arguments?["showIcon"] as? Bool) ?? true
 
         if let token = Self.decodeWebsiteToken(from: payload) {
             let host = UIHostingController(
                 rootView: NativeBlockedWebsiteTokenLabelView(
                     token: token,
                     textColor: textColor,
-                    isDarkTheme: isDarkTheme
+                    isDarkTheme: isDarkTheme,
+                    showIcon: showIcon
                 )
             )
             host.view.backgroundColor = .clear
+            host.view.isOpaque = false
             host.view.overrideUserInterfaceStyle = isDarkTheme ? .dark : .light
             host.overrideUserInterfaceStyle = isDarkTheme ? .dark : .light
+            host.sizingOptions = [.intrinsicContentSize]
             host.view.translatesAutoresizingMaskIntoConstraints = false
             container.addSubview(host.view)
+            // Size the hosting view to its text height and center it, instead
+            // of stretching it to fill the container. Stretching left an empty
+            // band that the hosting UIView tinted gray onto the card border
+            // below; centering keeps the empty space inside the `.clear`
+            // container so no gray artifact bleeds out.
             NSLayoutConstraint.activate([
                 host.view.leadingAnchor.constraint(equalTo: container.leadingAnchor),
                 host.view.trailingAnchor.constraint(equalTo: container.trailingAnchor),
-                host.view.topAnchor.constraint(equalTo: container.topAnchor),
-                host.view.bottomAnchor.constraint(equalTo: container.bottomAnchor),
+                host.view.centerYAnchor.constraint(equalTo: container.centerYAnchor),
             ])
+            // iOS resets UIHostingController.view.backgroundColor to the system
+            // color once the view enters the hierarchy, redrawing a dark gray
+            // rectangle that the `.clear` set above does not survive. Re-clear
+            // it (and the container) on the next runloop tick.
+            let hostView: UIView = host.view
+            let containerView = container
+            DispatchQueue.main.async {
+                hostView.backgroundColor = .clear
+                hostView.isOpaque = false
+                containerView.backgroundColor = .clear
+            }
         } else {
             let label = UILabel(frame: frame)
             label.text = fallbackTitle
@@ -1580,6 +1680,7 @@ private final class BlockedAppTokenLabelPlatformView: NSObject, FlutterPlatformV
     init(frame: CGRect, viewId: Int64, args: Any?) {
         container = UIView(frame: frame)
         container.backgroundColor = .clear
+        container.isOpaque = false
         super.init()
 
         let arguments = args as? [String: Any]
@@ -1588,26 +1689,45 @@ private final class BlockedAppTokenLabelPlatformView: NSObject, FlutterPlatformV
         let textColorHex = (arguments?["textColorHex"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines)
         let textColor = (textColorHex?.isEmpty == false) ? UIColor(hexString: textColorHex!) : nil
         let isDarkTheme = (arguments?["isDarkTheme"] as? Bool) ?? true
+        let showIcon = (arguments?["showIcon"] as? Bool) ?? true
 
         if let token = Self.decodeApplicationToken(from: payload) {
             let host = UIHostingController(
                 rootView: NativeBlockedAppTokenLabelView(
                     token: token,
                     textColor: textColor,
-                    isDarkTheme: isDarkTheme
+                    isDarkTheme: isDarkTheme,
+                    showIcon: showIcon
                 )
             )
             host.view.backgroundColor = .clear
+            host.view.isOpaque = false
             host.view.overrideUserInterfaceStyle = isDarkTheme ? .dark : .light
             host.overrideUserInterfaceStyle = isDarkTheme ? .dark : .light
+            host.sizingOptions = [.intrinsicContentSize]
             host.view.translatesAutoresizingMaskIntoConstraints = false
             container.addSubview(host.view)
+            // Size the hosting view to its text height and center it, instead
+            // of stretching it to fill the container. Stretching left an empty
+            // band that the hosting UIView tinted gray onto the card border
+            // below; centering keeps the empty space inside the `.clear`
+            // container so no gray artifact bleeds out.
             NSLayoutConstraint.activate([
                 host.view.leadingAnchor.constraint(equalTo: container.leadingAnchor),
                 host.view.trailingAnchor.constraint(equalTo: container.trailingAnchor),
-                host.view.topAnchor.constraint(equalTo: container.topAnchor),
-                host.view.bottomAnchor.constraint(equalTo: container.bottomAnchor),
+                host.view.centerYAnchor.constraint(equalTo: container.centerYAnchor),
             ])
+            // iOS resets UIHostingController.view.backgroundColor to the system
+            // color once the view enters the hierarchy, redrawing a dark gray
+            // rectangle that the `.clear` set above does not survive. Re-clear
+            // it (and the container) on the next runloop tick.
+            let hostView: UIView = host.view
+            let containerView = container
+            DispatchQueue.main.async {
+                hostView.backgroundColor = .clear
+                hostView.isOpaque = false
+                containerView.backgroundColor = .clear
+            }
         } else {
             let label = UILabel(frame: frame)
             label.text = fallbackTitle
@@ -1642,15 +1762,27 @@ private struct NativeBlockedAppTokenLabelView: View {
     let token: ApplicationToken
     let textColor: UIColor?
     let isDarkTheme: Bool
+    let showIcon: Bool
 
     var body: some View {
-        Label(token)
-            .labelStyle(.titleAndIcon)
-            .font(.system(size: 16, weight: .semibold))
-            .foregroundColor(textColor.map { Color(uiColor: $0) } ?? .primary)
-            .lineLimit(1)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .environment(\.colorScheme, isDarkTheme ? .dark : .light)
+        Group {
+            if showIcon {
+                Label(token).labelStyle(.titleAndIcon)
+            } else {
+                // Title-only: Apple's `Label(token)` with `.titleOnly`
+                // resolves the real app name through Family Controls, but
+                // skips rendering the icon — which is the source of the
+                // residual gray rectangle/placeholder the user reported in
+                // the ManageBlockedItemSheet header.
+                Label(token).labelStyle(.titleOnly)
+            }
+        }
+        .font(.system(size: 16, weight: .semibold))
+        .foregroundColor(textColor.map { Color(uiColor: $0) } ?? .primary)
+        .lineLimit(1)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.clear)
+        .environment(\.colorScheme, isDarkTheme ? .dark : .light)
     }
 }
 
@@ -1945,13 +2077,20 @@ private extension UIColor {
     registerPlugin("SharedPreferencesPlugin") { SharedPreferencesPlugin.register(with: $0) }
     #endif
 
+    // Sign in with Apple and url_launcher only respond to method calls (no
+    // startup work), so they are safe to register on iOS 26+ — and REQUIRED:
+    // without them, Sign in with Apple and "Manage subscription" throw
+    // MissingPluginException. Only Workmanager is skipped on iOS 26 below.
+    #if canImport(sign_in_with_apple)
+    registerPlugin("SignInWithApplePlugin") { SignInWithApplePlugin.register(with: $0) }
+    #endif
+    #if canImport(url_launcher_ios)
+    registerPlugin("URLLauncherPlugin") { URLLauncherPlugin.register(with: $0) }
+    #endif
+
     if #available(iOS 26.0, *) {
-      NSLog("[PluginReg] SKIP URLLauncherPlugin on iOS 26+ (startup crash mitigation)")
       NSLog("[PluginReg] SKIP WorkmanagerPlugin on iOS 26+ (startup crash mitigation)")
     } else {
-      #if canImport(url_launcher_ios)
-      registerPlugin("URLLauncherPlugin") { URLLauncherPlugin.register(with: $0) }
-      #endif
       #if canImport(workmanager_apple)
       registerPlugin("WorkmanagerPlugin") { WorkmanagerPlugin.register(with: $0) }
       #endif

@@ -1,9 +1,0 @@
-*** Begin Patch
-*** Update File: /Users/timo/ceo_os/lib/components/glass_card.dart
-@@
- import 'dart:math' as math;
- import 'dart:ui';
--import 'package:flutter/cupertino.dart';
- import 'package:flutter/material.dart';
- import '../core/theme/app_colors.dart';
-*** End Patch

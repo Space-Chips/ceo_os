@@ -1,9 +1,0 @@
-*** Begin Patch
-*** Update File: ios/Runner/AppDelegate.swift
-@@
-   ) -> Bool {
-     
-     print("WakeApp Native Launching...")
-+    GeneratedPluginRegistrant.register(with: self)
-     UNUserNotificationCenter.current().delegate = self
-*** End Patch

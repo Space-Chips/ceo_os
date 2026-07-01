@@ -1,5 +1,0 @@
-*** Begin Patch
-*** Update File: /Users/timo/ceo_os/ios/Runner.xcodeproj/project.pbxproj
-@@
--		6A3F8A8E4D9C41A5B7C1D201 /* ScreenTimeReportExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 5D1E7B6C3A9F4D1E8C2B1001 /* ScreenTimeReportExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-*** End Patch

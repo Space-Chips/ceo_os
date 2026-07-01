@@ -1,7 +1,0 @@
-*** Begin Patch
-*** Update File: lib/features/home/home_screen.dart
-@@
--  bool _isEnabled(String moduleId) => _activeApps.contains(moduleId);
--
-   String _localizedRankDisplay(LanguageProvider language, String rawRankName) {
-*** End Patch

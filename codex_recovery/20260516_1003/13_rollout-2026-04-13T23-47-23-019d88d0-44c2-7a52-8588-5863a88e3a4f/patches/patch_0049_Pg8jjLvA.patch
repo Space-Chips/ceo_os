@@ -1,7 +1,0 @@
-*** Begin Patch
-*** Update File: /Users/timo/ceo_os/ios/Runner/AppDelegate.swift
-@@
--@available(iOS 15.0, *)
-+@available(iOS 16.0, *)
- struct PickerWrapperView: View {
-*** End Patch

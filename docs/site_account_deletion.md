@@ -1,6 +1,6 @@
 # WakeApp Account Deletion
 
-Last updated: March 28, 2026
+Last updated: June 27, 2026
 
 This page explains how to request deletion of your WakeApp account and associated data.
 
@@ -19,7 +19,7 @@ This in-app path is the primary account deletion flow.
 
 If you no longer have access to the app, you can request account deletion by contacting:
 
-`INSERT SUPPORT OR PRIVACY EMAIL`
+`contact@the-wakeapp.com`
 
 Recommended subject line:
 
@@ -34,10 +34,13 @@ To help identify your account, include:
 
 When your deletion request is completed:
 - your WakeApp account is deleted from our systems
-- associated app data is deleted unless we are legally required to retain certain information
+- associated app data — including tasks, habits, notes, focus sessions, stats, streaks, and friend connections — is permanently deleted from our systems within 7 days, unless we are legally required to retain certain information
+- once your account is deleted, your data is no longer shared with friends through the leaderboard
 - some data may be retained for security, fraud prevention, accounting, or legal compliance where applicable
 
 If retention is required for those reasons, it will be limited to what is reasonably necessary.
+
+This reflects your right to erasure ("right to be forgotten") under Article 17 of the EU General Data Protection Regulation (GDPR), where applicable.
 
 ## 4. Store subscriptions are not canceled automatically
 
@@ -49,16 +52,16 @@ You must also manage or cancel your subscription through the relevant store:
 
 If you need help locating the correct store management page, contact:
 
-`INSERT SUPPORT OR PRIVACY EMAIL`
+`contact@the-wakeapp.com`
 
 ## 5. Response timing
 
-We aim to process deletion requests within a reasonably prompt period, subject to verification and any applicable legal or operational requirements.
+We process deletion requests promptly. Account deletions initiated in the app are completed, and associated data permanently removed from our systems, within 7 days. Email requests are subject to verification and any applicable legal or operational requirements.
 
 ## 6. Contact
 
 For account deletion and privacy requests, contact:
 
-`INSERT LEGAL ENTITY NAME`  
-`INSERT SUPPORT OR PRIVACY EMAIL`  
-`INSERT WEBSITE URL`
+Indy François (sole proprietor / entreprise individuelle, France)  
+`contact@the-wakeapp.com`  
+https://the-wakeapp.com

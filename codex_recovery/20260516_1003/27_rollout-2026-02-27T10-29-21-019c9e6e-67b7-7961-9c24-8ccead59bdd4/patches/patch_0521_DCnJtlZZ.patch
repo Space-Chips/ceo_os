@@ -1,9 +1,0 @@
-*** Begin Patch
-*** Update File: /Users/timo/ceo_os/lib/core/repositories/family_time_repository.dart
-@@
-   String _makeInviteToken() {
-     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
--    final rand = Random();
-+    final rand = Random.secure();
-     final buffer = StringBuffer();
-*** End Patch

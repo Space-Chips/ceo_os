@@ -1,6 +1,0 @@
-*** Begin Patch
-*** Update File: /Users/timo/ceo_os/lib/core/providers/ceo_mode_provider.dart
-@@
--  static const List<String> approvedApps = ['Phone', 'Messages', 'Calendar'];
-+  static const List<String> approvedApps = [];
-*** End Patch

@@ -1,6 +1,0 @@
-*** Begin Patch
-*** Update File: lib/core/providers/language_provider.dart
-@@
--    'prepare_home_screen_blackout': '为 Blackout 准备主屏幕',
-+    'prepare_home_screen_blackout': '为封屏准备主屏幕',
-*** End Patch

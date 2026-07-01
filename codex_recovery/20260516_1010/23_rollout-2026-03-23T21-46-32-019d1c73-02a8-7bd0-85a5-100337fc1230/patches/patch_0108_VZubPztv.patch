@@ -1,8 +1,0 @@
-*** Begin Patch
-*** Add File: /Users/timo/ceo_os/.vscode/settings.json
-+{
-+  "dart.flutterRunAdditionalArgs": [
-+    "--dart-define-from-file=.vscode/supabase.local.json"
-+  ]
-+}
-*** End Patch

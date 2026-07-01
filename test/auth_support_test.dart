@@ -21,7 +21,7 @@ void main() {
 
       expect(
         humanizeAuthError(error),
-        'The email or password is incorrect.',
+        'The email or password is incorrect. Please try again.',
       );
     });
 
@@ -30,14 +30,14 @@ void main() {
 
       expect(
         humanizeAuthError(error),
-        'Please confirm your email address before signing in.',
+        'You need to confirm your email first. Check your inbox for the confirmation link.',
       );
     });
 
     test('falls back to a safe generic message for unknown failures', () {
       expect(
         humanizeAuthError(Exception('Unexpected failure')),
-        'Something went wrong. Please try again.',
+        'Something went wrong. Please try again in a moment.',
       );
     });
   });

@@ -310,15 +310,20 @@ class AppRouter {
         //      → first-time user, send through /control-center-setup so they
         //        configure the app.
         //    - Coming from /login → returning user, jump straight to /home.
-        //      (If they happen to need config again they can reach it from
-        //      Settings; we avoid showing the setup screen to people who
-        //      already finished it once.)
+        //    - EXCEPTION: a returning user that already completed setup on
+        //      this device (e.g. tapping "Sign in with Apple" on the /signup
+        //      screen because /signup is the default landing) must go to
+        //      /home, not setup. We detect this via auth.hasCompletedSetup,
+        //      which AuthProvider keeps fresh from SharedPreferences.
         if (auth.isAuthenticated && (loggingIn || onboarding)) {
           final fromSignup =
               state.matchedLocation == '/signup' ||
               state.matchedLocation == '/signup-email-sent' ||
               onboarding;
-          return fromSignup ? '/control-center-setup' : '/home';
+          if (fromSignup && !auth.hasCompletedSetup) {
+            return '/control-center-setup';
+          }
+          return '/home';
         }
 
         if (auth.isAuthenticated && (setupFlow || setupGate)) {

@@ -1,9 +1,0 @@
-*** Begin Patch
-*** Update File: /Users/timo/ceo_os/lib/features/home/stats_screen.dart
-@@
-               snapshot: _snapshot!,
-               dashboardSnapshot: _dashboardSnapshot,
-+              habits: _habits,
-+              habitYearCompletions: _habitYearCompletions,
-               page: _page,
-*** End Patch

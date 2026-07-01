@@ -17,7 +17,6 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/widgets/rank_art.dart';
 import '../../components/ambient_backdrop.dart';
-import '../../components/glass_card.dart';
 
 class ScreenTimeManagerScreen extends StatefulWidget {
   const ScreenTimeManagerScreen({super.key});
@@ -533,7 +532,11 @@ class _ScreenTimeManagerScreenState extends State<ScreenTimeManagerScreen> {
                   valueColor: AppColors.rankAccent,
                   leading: RankArt(
                     rankName: privateRankLabel,
-                    size: RankArtSize.xs,
+                    // Load the `sm` variant (higher-res source PNG) even
+                    // though we render at 22px. On retina 3x the xs asset
+                    // is upscaled and appears pixelated; sm resamples down
+                    // cleanly with FilterQuality.high.
+                    size: RankArtSize.sm,
                     dimension: 22,
                   ),
                   onTap: () => context.push('/rank'),
@@ -685,35 +688,40 @@ class _ScreenTimeManagerScreenState extends State<ScreenTimeManagerScreen> {
     required VoidCallback onTap,
     bool locked = false,
   }) {
+    // Flat, Apple-style menu rows. No gradient, no glass, no hero treatment
+    // — that's reserved for the Focus Mode card at the top. Each row is a
+    // single solid fill with a thin hairline white border, like the cells
+    // in Settings.app. This creates a clean hierarchy: ONE hero card, then
+    // a stack of equal-weight navigation rows below.
     return _ScreenTimePressScale(
       onTap: onTap,
-      child: GlassCard(
+      child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        borderRadius: 18,
-        // Darker gradient than the default card so these "menu" rows blend
-        // more into the page background — less contrast, calmer hierarchy.
-        gradientColors: [
-          AppColors.cardBackgroundStrong,
-          AppColors.background,
-        ],
-        level: GlassCardLevel.subtle,
-        border: Border.all(
-          color: AppColors.glassBorder.withValues(alpha: 0.28),
-          width: 0.5,
+        decoration: BoxDecoration(
+          color: AppColors.cardBase,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(
+            color: const Color(0xFFFFFFFF).withValues(alpha: 0.10),
+            width: 0.5,
+          ),
         ),
         child: Row(
           children: [
             Container(
-              width: 46,
-              height: 46,
+              width: 38,
+              height: 38,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                color: AppColors.secondaryLabel.withValues(alpha: 0.55),
+                borderRadius: BorderRadius.circular(10),
+                color: const Color(0xFFFFFFFF).withValues(alpha: 0.06),
+                border: Border.all(
+                  color: const Color(0xFFFFFFFF).withValues(alpha: 0.08),
+                  width: 0.5,
+                ),
               ),
               child: Icon(
                 icon,
-                color: AppColors.background,
-                size: 22,
+                color: AppColors.label.withValues(alpha: 0.92),
+                size: 19,
               ),
             ),
             const SizedBox(width: 14),
@@ -727,12 +735,13 @@ class _ScreenTimeManagerScreenState extends State<ScreenTimeManagerScreen> {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: AppTypography.headline.copyWith(
-                      fontSize: 19,
-                      fontWeight: FontWeight.w700,
+                      fontSize: 17,
+                      fontWeight: FontWeight.w600,
                       color: AppColors.label,
+                      letterSpacing: -0.2,
                     ),
                   ),
-                  const SizedBox(height: 3),
+                  const SizedBox(height: 2),
                   Text(
                     subtitle,
                     maxLines: 2,
@@ -740,7 +749,7 @@ class _ScreenTimeManagerScreenState extends State<ScreenTimeManagerScreen> {
                     style: AppTypography.subhead.copyWith(
                       fontSize: 13,
                       color: AppColors.secondaryLabel,
-                      fontWeight: FontWeight.w500,
+                      fontWeight: FontWeight.w400,
                       height: 1.25,
                     ),
                   ),
@@ -749,9 +758,9 @@ class _ScreenTimeManagerScreenState extends State<ScreenTimeManagerScreen> {
             ),
             const SizedBox(width: 10),
             Icon(
-              locked ? CupertinoIcons.lock : CupertinoIcons.arrow_right,
-              color: AppColors.tertiaryLabel.withValues(alpha: 0.85),
-              size: 18,
+              locked ? CupertinoIcons.lock : CupertinoIcons.chevron_right,
+              color: AppColors.tertiaryLabel.withValues(alpha: 0.75),
+              size: 15,
             ),
           ],
         ),

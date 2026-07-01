@@ -43,10 +43,78 @@ class _FocusShieldSnapshot {
   bool get hasAnyTarget => blockedAppCount > 0 || blockedWebsiteCount > 0;
 }
 
-class FocusProvider extends ChangeNotifier {
+class FocusProvider extends ChangeNotifier with WidgetsBindingObserver {
   FocusProvider() {
+    // Listen to app lifecycle so we can re-sync the session clock when the
+    // OS resumes us from background. Without this, `Timer.periodic` is
+    // suspended while the app is backgrounded and the countdown drifts
+    // (user reported: "I leave with 1 minute left, come back 20 s later,
+    // still 1 minute left"). On resume we recompute the remaining time
+    // from `_sessionStartTime` (the wall-clock truth) and fire completion
+    // if the deadline has already passed while we were suspended.
+    WidgetsBinding.instance.addObserver(this);
     // Kick off async restore without blocking constructor (matches CeoModeProvider).
     Future.microtask(_restoreSession);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state != AppLifecycleState.resumed) return;
+    // Only relevant when a session is currently in progress. Other states
+    // (idle, requestingBreak) don't have a running countdown to re-sync.
+    final isTimedState = _state == FocusState.focusing ||
+        _state == FocusState.shortBreak ||
+        _state == FocusState.longBreak;
+    if (!isTimedState && _state != FocusState.exitPending) return;
+
+    _recomputeRemainingFromWallClock();
+
+    if (isTimedState && _remainingSeconds <= 0) {
+      _timer?.cancel();
+      unawaited(_onTimerComplete());
+      return;
+    }
+    // Ensure the periodic ticker is running (it may have been cancelled
+    // by the OS or simply gone quiet during suspension).
+    _startTimer();
+    notifyListeners();
+  }
+
+  /// Source-of-truth recomputation of `_remainingSeconds` from the wall
+  /// clock. Called from the lifecycle observer (resume) and from every
+  /// tick of [_startTimer] so that even a foreground app stays accurate
+  /// across long pauses (e.g. main-thread jank, sleep/wake mini-pauses).
+  void _recomputeRemainingFromWallClock() {
+    final start = _sessionStartTime;
+    if (start == null) return;
+    final int totalSeconds;
+    switch (_state) {
+      case FocusState.focusing:
+      case FocusState.exitPending:
+        totalSeconds = focusDurationMinutes * 60;
+        break;
+      case FocusState.shortBreak:
+      case FocusState.longBreak:
+      case FocusState.idle:
+      case FocusState.requestingBreak:
+      case FocusState.breakOptionsMenu:
+        // Breaks don't store their own start time today. We deliberately
+        // skip wall-clock recompute for break states and let the periodic
+        // ticker keep counting — breaks are short and almost always
+        // happen with the app in foreground. If we ever need accurate
+        // background breaks, we'd add `_breakStartTime`/`_breakEndAt`.
+        return;
+    }
+    final elapsed = DateTime.now().difference(start).inSeconds;
+    final remaining = totalSeconds - elapsed;
+    _remainingSeconds = remaining > 0 ? remaining : 0;
   }
 
   // ── Persistence keys (must stay in sync across versions) ──
@@ -393,8 +461,20 @@ class FocusProvider extends ChangeNotifier {
   void _startTimer() {
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (_remainingSeconds > 0) {
+      // For the main focus phases we treat the wall clock as ground
+      // truth so background drift (Timer.periodic is suspended by iOS
+      // while the app is paused) is self-healing — when the OS resumes
+      // the tick, we read DateTime.now() and snap remaining back to
+      // reality. For break states we fall back to the legacy decrement
+      // because they don't store a `_breakStartTime` today.
+      final isWallClockState = _state == FocusState.focusing ||
+          _state == FocusState.exitPending;
+      if (isWallClockState && _sessionStartTime != null) {
+        _recomputeRemainingFromWallClock();
+      } else if (_remainingSeconds > 0) {
         _remainingSeconds--;
+      }
+      if (_remainingSeconds > 0) {
         notifyListeners();
       } else {
         timer.cancel();
@@ -873,11 +953,5 @@ class FocusProvider extends ChangeNotifier {
         })
         .toList(growable: false);
     await _focusService.syncPlannedSessions(payload);
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
   }
 }

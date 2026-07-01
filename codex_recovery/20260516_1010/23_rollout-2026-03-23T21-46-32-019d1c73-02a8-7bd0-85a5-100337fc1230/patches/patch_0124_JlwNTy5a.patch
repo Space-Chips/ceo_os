@@ -1,8 +1,0 @@
-*** Begin Patch
-*** Update File: lib/features/legacy/screen_time_screen.dart
-@@
-   bool _adultContentShieldEnabled = false;
-   FocusProtectionStatus _protectionStatus = FocusProtectionStatus.unknown;
-+  FocusPermissionState _accessibilityState = FocusPermissionState.unknown;
-+  FocusPermissionState _usageAccessState = FocusPermissionState.unknown;
-*** End Patch

@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import '../../core/repositories/user_repository.dart';
 import 'control_center_setup_models.dart';
 import 'control_center_setup_store.dart';
 
@@ -113,6 +114,14 @@ class ControlCenterSetupViewModel extends ChangeNotifier {
       _state = _state.copyWith(hasCompletedSetup: true);
       final config = ControlCenterConfiguration.fromState(_state);
       await _store!.save(config);
+      // Also persist the flag server-side so a returning user reinstalling on
+      // a new device is not routed through setup again. Failure here must not
+      // block local completion.
+      try {
+        await UserRepository().markSetupCompletedRemote();
+      } catch (_) {
+        // Best effort — local completion already succeeded above.
+      }
     } finally {
       _isPersisting = false;
       notifyListeners();

@@ -1,6 +1,0 @@
-*** Begin Patch
-*** Update File: lib/core/providers/language_overrides.dart
-@@
--    'notes': '备注',
-+    'notes': '笔记',
-*** End Patch

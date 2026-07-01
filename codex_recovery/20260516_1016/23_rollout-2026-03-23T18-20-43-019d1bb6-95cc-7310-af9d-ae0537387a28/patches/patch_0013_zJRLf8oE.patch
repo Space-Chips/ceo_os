@@ -1,9 +1,0 @@
-*** Begin Patch
-*** Update File: /Users/timo/ceo_os/lib/core/providers/focus_provider.dart
-@@
-   Future<void> _refreshProtectionStatus() async {
-     _protectionStatus = await _focusService.getProtectionStatus();
-     _isAuthorized = _protectionStatus.isAuthorized;
--    notifyListeners();
-   }
-*** End Patch

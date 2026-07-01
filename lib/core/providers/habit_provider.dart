@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import '../utils/app_logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/habit_models.dart';
@@ -196,7 +197,7 @@ class HabitProvider extends ChangeNotifier {
       _completions.remove(habitId);
       notifyListeners();
     } catch (e) {
-      print('Error deleting habit: $e');
+      AppLogger.error('deleting habit', e);
       await loadData();
     }
   }
@@ -257,7 +258,7 @@ class HabitProvider extends ChangeNotifier {
       // We might need historical completions for streaks, but let's handle that later or separately
       await _flushPendingIfAny();
     } catch (e) {
-      print('Error loading habit data: $e');
+      AppLogger.error('loading habit data', e);
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -318,7 +319,7 @@ class HabitProvider extends ChangeNotifier {
       }
       return const PremiumCheckResult.allowed();
     } catch (e) {
-      print('Error creating habit: $e');
+      AppLogger.error('creating habit', e);
       // Never fail-open on premium gating.
       return const PremiumCheckResult.blocked(reason: 'habits');
     }
@@ -372,7 +373,7 @@ class HabitProvider extends ChangeNotifier {
       }
       notifyListeners();
     } catch (e) {
-      print('Error toggling habit: $e');
+      AppLogger.error('toggling habit', e);
       // Revert if needed
       await loadData();
     }

@@ -1,8 +1,0 @@
-*** Begin Patch
-*** Delete File: lib/core/providers/launcher_provider.dart
-*** Delete File: lib/features/launcher/launcher_screen.dart
-*** Delete File: android/app/src/main/kotlin/com/wakeapp/ceoos/LauncherActivity.kt
-*** Delete File: android/app/src/main/kotlin/com/wakeapp/ceoos/HardAppBlockManager.kt
-*** Delete File: android/app/src/main/kotlin/com/wakeapp/ceoos/WakeDeviceAdminReceiver.kt
-*** Delete File: android/app/src/main/res/xml/wake_device_admin_receiver.xml
-*** End Patch

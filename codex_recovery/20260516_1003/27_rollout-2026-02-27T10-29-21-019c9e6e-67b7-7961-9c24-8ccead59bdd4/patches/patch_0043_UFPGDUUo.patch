@@ -1,6 +1,0 @@
-*** Begin Patch
-*** Update File: /Users/timo/ceo_os/lib/features/dashboard/dashboard_screen.dart
-@@
--                              minimumSize: 0,
-+                              minimumSize: Size.zero,
-*** End Patch

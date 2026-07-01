@@ -317,12 +317,123 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Future<void> _openDataDeletionFlow() {
-    return _showInfoDialog(
-      title: _t('data_deletion'),
-      message:
-          'To request deletion, contact support from the email linked to this account.',
+  /// Soft account deletion with a 3-day grace period. We present it as the
+  /// account "being deleted", but technically we schedule deletion 3 days out
+  /// (`requestAccountDeletion`) then sign the user out. They can recover by
+  /// logging back in within the window. A "Type DELETE" gate plus an optional
+  /// reason field guard the action.
+  Future<void> _openDataDeletionFlow() async {
+    final confirmCtrl = TextEditingController();
+    final reasonCtrl = TextEditingController();
+
+    final confirmed = await showCupertinoDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (dialogContext, setDialogState) {
+            final canDelete =
+                confirmCtrl.text.trim().toUpperCase() == 'DELETE';
+            return CupertinoAlertDialog(
+              title: Text(_t('data_deletion'), style: AppTypography.mono),
+              content: Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      _t('deletion_scheduled_grace_hint'),
+                      style: AppTypography.mono.copyWith(
+                        fontSize: 12,
+                        color: AppColors.secondaryLabel,
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    Text(
+                      _t('deletion_reason_label'),
+                      style: AppTypography.mono.copyWith(
+                        fontSize: 11,
+                        color: AppColors.tertiaryLabel,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    CupertinoTextField(
+                      controller: reasonCtrl,
+                      placeholder: _t('deletion_reason_placeholder'),
+                      maxLines: 3,
+                      minLines: 2,
+                      style: AppTypography.mono.copyWith(fontSize: 12),
+                    ),
+                    const SizedBox(height: 14),
+                    CupertinoTextField(
+                      controller: confirmCtrl,
+                      placeholder: _t('type_delete'),
+                      autocorrect: false,
+                      textCapitalization: TextCapitalization.characters,
+                      onChanged: (_) => setDialogState(() {}),
+                      style: AppTypography.mono.copyWith(fontSize: 14),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                CupertinoDialogAction(
+                  onPressed: () => Navigator.of(dialogContext).pop(false),
+                  child: Text(
+                    _t('cancel'),
+                    style: AppTypography.mono.copyWith(
+                      color: AppColors.secondaryLabel,
+                    ),
+                  ),
+                ),
+                CupertinoDialogAction(
+                  isDestructiveAction: true,
+                  onPressed: canDelete
+                      ? () => Navigator.of(dialogContext).pop(true)
+                      : null,
+                  child: Text(
+                    _t('delete'),
+                    style: AppTypography.mono.copyWith(
+                      color: canDelete
+                          ? AppColors.error
+                          : AppColors.tertiaryLabel,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
+
+    final reason = reasonCtrl.text.trim();
+    confirmCtrl.dispose();
+    reasonCtrl.dispose();
+
+    if (confirmed != true || !mounted) return;
+
+    final auth = context.read<AuthProvider>();
+    try {
+      await _userRepository.requestAccountDeletion(
+        reason: reason.isEmpty ? null : reason,
+      );
+    } catch (_) {
+      if (!mounted) return;
+      await _showInfoDialog(
+        title: _t('deletion_failed'),
+        message: _t('deletion_failed_message'),
+      );
+      return;
+    }
+
+    if (mounted) {
+      await _showInfoDialog(
+        title: _t('account_deletion_requested'),
+        message: _t('account_deletion_requested_message'),
+      );
+    }
+    await auth.logout();
   }
 
   Future<void> _showInfoDialog({
