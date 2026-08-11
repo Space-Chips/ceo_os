@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import '../../components/components.dart';
 import '../theme/app_colors.dart';
+import '../../components/glass_card.dart';
 
 class CeoCard extends StatelessWidget {
   final Widget child;
@@ -34,7 +35,7 @@ class CeoCard extends StatelessWidget {
             ? Border(
                 left: BorderSide(
                   color: accentStripColor ?? AppColors.electricCyan,
-                  width: 4,
+                  width: 2,
                 ),
                 top: BorderSide(color: AppColors.glassBorder, width: 0.5),
                 right: BorderSide(color: AppColors.glassBorder, width: 0.5),

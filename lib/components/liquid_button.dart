@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/cupertino.dart';
 
 import '../core/theme/app_colors.dart';
@@ -8,8 +10,11 @@ class LiquidButton extends StatefulWidget {
   final VoidCallback? onPressed;
   final bool isLoading;
   final IconData? icon;
+  final TextStyle? labelStyle;
   final bool fullWidth;
   final List<Color>? gradient;
+  final double height;
+  final double borderRadius;
 
   const LiquidButton({
     super.key,
@@ -17,8 +22,11 @@ class LiquidButton extends StatefulWidget {
     this.onPressed,
     this.isLoading = false,
     this.icon,
+    this.labelStyle,
     this.fullWidth = false,
     this.gradient,
+    this.height = 52,
+    this.borderRadius = 16,
   });
 
   @override
@@ -30,17 +38,19 @@ class _LiquidButtonState extends State<LiquidButton>
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
 
+  bool get _pressed => _controller.value > 0.01;
+
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 150),
+      duration: const Duration(milliseconds: 120),
     );
     _scaleAnimation = Tween<double>(
-      begin: 1.0,
-      end: 0.96,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutBack));
+      begin: 1,
+      end: 0.98,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
   }
 
   @override
@@ -51,87 +61,123 @@ class _LiquidButtonState extends State<LiquidButton>
 
   @override
   Widget build(BuildContext context) {
-    final isDisabled = widget.onPressed == null || widget.isLoading;
+    final disabled = widget.onPressed == null || widget.isLoading;
+    final colors =
+        widget.gradient ?? [AppColors.focusPrimary, AppColors.focusSecondary];
+    final textStyle =
+        widget.labelStyle ??
+        AppTypography.callout.copyWith(fontWeight: FontWeight.w600);
+    final radius = BorderRadius.circular(widget.borderRadius);
 
     return GestureDetector(
-      onTapDown: isDisabled ? null : (_) => _controller.forward(),
-      onTapUp: isDisabled ? null : (_) => _controller.reverse(),
-      onTapCancel: isDisabled ? null : () => _controller.reverse(),
-      onTap: widget.onPressed,
+      onTapDown: disabled ? null : (_) => _controller.forward(),
+      onTapUp: disabled ? null : (_) => _controller.reverse(),
+      onTapCancel: disabled ? null : () => _controller.reverse(),
+      onTap: disabled ? null : widget.onPressed,
       child: ScaleTransition(
         scale: _scaleAnimation,
-        child: Container(
-          width: widget.fullWidth ? double.infinity : null,
-          height: 60,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            gradient: LinearGradient(
-              colors: isDisabled
-                  ? [AppColors.glassBase, AppColors.glassBase]
-                  : (widget.gradient ??
-                        [
-                          AppColors.primaryOrange,
-                          AppColors.primaryOrange.withRed(200),
-                        ]),
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            boxShadow: [
-              if (!isDisabled)
+        child: AnimatedOpacity(
+          duration: const Duration(milliseconds: 140),
+          opacity: disabled ? 0.55 : 1,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 140),
+            curve: Curves.easeOutCubic,
+            width: widget.fullWidth ? double.infinity : null,
+            height: widget.height,
+            decoration: BoxDecoration(
+              borderRadius: radius,
+              boxShadow: [
                 BoxShadow(
-                  color: AppColors.primaryOrange.withValues(alpha: 0.4),
-                  blurRadius: 25,
-                  offset: const Offset(0, 12),
-                  spreadRadius: -5,
+                  color: AppColors.glassShadow.withValues(alpha: 0.28),
+                  blurRadius: _pressed ? 9 : 15,
+                  offset: Offset(0, _pressed ? 3 : 8),
+                  spreadRadius: -8,
                 ),
-            ],
-          ),
-          child: Stack(
-            children: [
-              // Liquid reflection effect
-              Positioned(
-                top: 2,
-                left: 10,
-                right: 10,
-                child: Container(
-                  height: 20,
+                if (!disabled)
+                  BoxShadow(
+                    color: colors.first.withValues(
+                      alpha: _pressed ? 0.16 : 0.24,
+                    ),
+                    blurRadius: _pressed ? 12 : 18,
+                    offset: const Offset(0, 8),
+                    spreadRadius: -12,
+                  ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: radius,
+              child: BackdropFilter(
+                filter: ImageFilter.blur(
+                  sigmaX: AppColors.isDark ? 8 : 4,
+                  sigmaY: AppColors.isDark ? 8 : 4,
+                ),
+                child: DecoratedBox(
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [
-                        AppColors.white.withValues(alpha: 0.15),
-                        AppColors.white.withValues(alpha: 0),
-                      ],
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: disabled
+                          ? [AppColors.cardBackgroundAlt, AppColors.surface]
+                          : colors,
                     ),
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(16),
+                    borderRadius: radius,
+                    border: Border.all(
+                      color: disabled
+                          ? AppColors.border
+                          : AppColors.selectionOutline.withValues(alpha: 0.52),
+                      width: 1,
                     ),
+                  ),
+                  child: Stack(
+                    children: [
+                      Positioned(
+                        top: 0,
+                        left: 8,
+                        right: 8,
+                        child: IgnorePointer(
+                          child: Container(
+                            height: 1,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(999),
+                              color: AppColors.white.withValues(alpha: 0.24),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Center(
+                        child: widget.isLoading
+                            ? CupertinoActivityIndicator(
+                                color: AppColors.onAccent,
+                              )
+                            : Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  if (widget.icon != null) ...[
+                                    Icon(
+                                      widget.icon,
+                                      color: disabled
+                                          ? AppColors.secondaryLabel
+                                          : AppColors.onAccent,
+                                      size: 18,
+                                    ),
+                                    const SizedBox(width: 8),
+                                  ],
+                                  Text(
+                                    widget.label,
+                                    style: textStyle.copyWith(
+                                      color: disabled
+                                          ? AppColors.secondaryLabel
+                                          : AppColors.onAccent,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                      ),
+                    ],
                   ),
                 ),
               ),
-              Center(
-                child: widget.isLoading
-                    ? const CupertinoActivityIndicator(color: AppColors.white)
-                    : Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (widget.icon != null) ...[
-                            Icon(widget.icon, color: AppColors.white, size: 20),
-                            const SizedBox(width: 10),
-                          ],
-                          Text(
-                            widget.label.toUpperCase(),
-                            style: AppTypography.headline.copyWith(
-                              color: AppColors.white,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: 1.2,
-                            ),
-                          ),
-                        ],
-                      ),
-              ),
-            ],
+            ),
           ),
         ),
       ),

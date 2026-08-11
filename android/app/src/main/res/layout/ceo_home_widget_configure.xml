@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#0B0B0F"
+    android:gravity="center_horizontal"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="18dp"
+        android:text="Widget"
+        android:textColor="#EDEDF2"
+        android:textSize="20sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="20dp"
+        android:text="Choose what this widget shows."
+        android:textColor="#AEB0BA"
+        android:textSize="13sp" />
+
+    <Button
+        android:id="@+id/btn_mode_todo"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:layout_marginBottom="12dp"
+        android:backgroundTint="#1E1E26"
+        android:text="To‑Do"
+        android:textAllCaps="false"
+        android:textColor="#EDEDF2"
+        android:textStyle="bold" />
+
+    <Button
+        android:id="@+id/btn_mode_dashboard"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:layout_marginBottom="12dp"
+        android:backgroundTint="#1E1E26"
+        android:text="Dashboard"
+        android:textAllCaps="false"
+        android:textColor="#EDEDF2"
+        android:textStyle="bold" />
+
+    <Button
+        android:id="@+id/btn_mode_habits"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:backgroundTint="#1E1E26"
+        android:text="Habits"
+        android:textAllCaps="false"
+        android:textColor="#EDEDF2"
+        android:textStyle="bold" />
+
+</LinearLayout>

@@ -1,0 +1,901 @@
+import 'package:intl/intl.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+import '../models/advanced_stats_models.dart';
+import '../models/block_list_model.dart';
+import '../models/stats_event_models.dart';
+import '../repositories/advanced_stats_repository.dart';
+import '../repositories/ceo_mode_repository.dart';
+import '../repositories/family_time_repository.dart';
+import '../repositories/feature_repository.dart';
+import '../repositories/focus_repository.dart';
+import '../repositories/habit_repository.dart';
+import '../repositories/settings_repository.dart';
+import '../repositories/task_repository.dart';
+import '../repositories/user_repository.dart';
+import '../services/supabase_service.dart';
+
+enum DatabaseDebugTestStatus { pending, running, passed, failed, skipped }
+
+class DatabaseDebugTestCase {
+  final String id;
+  final String title;
+  final String description;
+
+  const DatabaseDebugTestCase({
+    required this.id,
+    required this.title,
+    required this.description,
+  });
+}
+
+class DatabaseDebugTestResult {
+  final String id;
+  final String title;
+  final DatabaseDebugTestStatus status;
+  final String message;
+  final Duration duration;
+
+  const DatabaseDebugTestResult({
+    required this.id,
+    required this.title,
+    required this.status,
+    required this.message,
+    required this.duration,
+  });
+
+  DatabaseDebugTestResult copyWith({
+    DatabaseDebugTestStatus? status,
+    String? message,
+    Duration? duration,
+  }) {
+    return DatabaseDebugTestResult(
+      id: id,
+      title: title,
+      status: status ?? this.status,
+      message: message ?? this.message,
+      duration: duration ?? this.duration,
+    );
+  }
+}
+
+class DatabaseDebugService {
+  DatabaseDebugService({
+    SupabaseService? supabaseService,
+    UserRepository? userRepository,
+    SettingsRepository? settingsRepository,
+    FeatureRepository? featureRepository,
+    TaskRepository? taskRepository,
+    HabitRepository? habitRepository,
+    FocusRepository? focusRepository,
+    FamilyTimeRepository? familyTimeRepository,
+    AdvancedStatsRepository? advancedStatsRepository,
+    CeoModeRepository? ceoModeRepository,
+  }) : _supabaseService = supabaseService ?? SupabaseService(),
+       _userRepository = userRepository ?? UserRepository(),
+       _settingsRepository = settingsRepository ?? SettingsRepository(),
+       _featureRepository = featureRepository ?? FeatureRepository(),
+       _taskRepository = taskRepository ?? TaskRepository(),
+       _habitRepository = habitRepository ?? HabitRepository(),
+       _focusRepository = focusRepository ?? FocusRepository(),
+       _familyTimeRepository = familyTimeRepository ?? FamilyTimeRepository(),
+       _advancedStatsRepository =
+           advancedStatsRepository ?? AdvancedStatsRepository(),
+       _ceoModeRepository = ceoModeRepository ?? CeoModeRepository();
+
+  final SupabaseService _supabaseService;
+  final UserRepository _userRepository;
+  final SettingsRepository _settingsRepository;
+  final FeatureRepository _featureRepository;
+  final TaskRepository _taskRepository;
+  final HabitRepository _habitRepository;
+  final FocusRepository _focusRepository;
+  final FamilyTimeRepository _familyTimeRepository;
+  final AdvancedStatsRepository _advancedStatsRepository;
+  final CeoModeRepository _ceoModeRepository;
+
+  SupabaseClient get _client => _supabaseService.client;
+  String get _userId =>
+      _client.auth.currentUser?.id ??
+      (throw StateError('Authenticated user required for database debug tests.'));
+
+  List<DatabaseDebugTestCase> get testCases => const [
+    DatabaseDebugTestCase(
+      id: 'settings_profile',
+      title: 'Settings & profile writes',
+      description: 'Profiles + app_settings upserts and restores.',
+    ),
+    DatabaseDebugTestCase(
+      id: 'notes_objectives',
+      title: 'Notes & objectives',
+      description: 'Creates, updates and removes user content rows.',
+    ),
+    DatabaseDebugTestCase(
+      id: 'event_types',
+      title: 'Event types',
+      description: 'Creates and deletes event type records.',
+    ),
+    DatabaseDebugTestCase(
+      id: 'tasks_calendar',
+      title: 'Tasks & calendar',
+      description: 'Exercises task CRUD and calendar event writes.',
+    ),
+    DatabaseDebugTestCase(
+      id: 'habits_completion',
+      title: 'Habits & completions',
+      description: 'Creates habits, marks completion, archives and cleans up.',
+    ),
+    DatabaseDebugTestCase(
+      id: 'screen_time_controls',
+      title: 'Screen Time controls',
+      description: 'Blocked apps, blocked sites, rest periods, weekly contract.',
+    ),
+    DatabaseDebugTestCase(
+      id: 'focus_systems',
+      title: 'Focus systems',
+      description: 'Block lists and focus session logging.',
+    ),
+    DatabaseDebugTestCase(
+      id: 'ceo_mode',
+      title: 'Blackout Mode sessions',
+      description: 'Creates and closes Blackout mode sessions.',
+    ),
+    DatabaseDebugTestCase(
+      id: 'family_time',
+      title: 'Family Time',
+      description: 'Group, sanction, blocked items and session lifecycle.',
+    ),
+    DatabaseDebugTestCase(
+      id: 'advanced_stats',
+      title: 'Advanced stats',
+      description: 'Events plus daily/weekly/monthly/lifetime aggregate writes.',
+    ),
+  ];
+
+  DatabaseDebugTestResult pendingResult(DatabaseDebugTestCase testCase) {
+    return DatabaseDebugTestResult(
+      id: testCase.id,
+      title: testCase.title,
+      status: DatabaseDebugTestStatus.pending,
+      message: testCase.description,
+      duration: Duration.zero,
+    );
+  }
+
+  Future<DatabaseDebugTestResult> runTestCase(String id) async {
+    final testCase = testCases.firstWhere((item) => item.id == id);
+    final watch = Stopwatch()..start();
+    try {
+      switch (id) {
+        case 'settings_profile':
+          await _testSettingsAndProfile();
+          break;
+        case 'notes_objectives':
+          await _testNotesAndObjectives();
+          break;
+        case 'event_types':
+          await _testEventTypes();
+          break;
+        case 'tasks_calendar':
+          await _testTasksAndCalendar();
+          break;
+        case 'habits_completion':
+          await _testHabitsAndCompletions();
+          break;
+        case 'screen_time_controls':
+          await _testScreenTimeControls();
+          break;
+        case 'focus_systems':
+          await _testFocusSystems();
+          break;
+        case 'ceo_mode':
+          await _testCeoModeSessions();
+          break;
+        case 'family_time':
+          await _testFamilyTime();
+          break;
+        case 'advanced_stats':
+          await _testAdvancedStats();
+          break;
+        default:
+          throw UnsupportedError('Unknown debug test: $id');
+      }
+      watch.stop();
+      return DatabaseDebugTestResult(
+        id: testCase.id,
+        title: testCase.title,
+        status: DatabaseDebugTestStatus.passed,
+        message: 'Write, read-back verification and cleanup completed.',
+        duration: watch.elapsed,
+      );
+    } catch (error) {
+      watch.stop();
+      return DatabaseDebugTestResult(
+        id: testCase.id,
+        title: testCase.title,
+        status: DatabaseDebugTestStatus.failed,
+        message: _humanizeError(error),
+        duration: watch.elapsed,
+      );
+    }
+  }
+
+  Future<void> _testSettingsAndProfile() async {
+    final originalProfile = await _userRepository.getProfile();
+    final originalSettings = await _settingsRepository.getAppSettings();
+    final marker = _marker('settings');
+    final tempLanguage = (originalSettings?.languageCode ?? 'en') == 'en'
+        ? 'fr'
+        : 'en';
+    final createdSettingsId = <String?>[null];
+
+    try {
+      await _userRepository.updateProfile(avatarUrl: 'debug://$marker');
+      final updatedProfile = await _userRepository.getProfile();
+      _ensure(
+        updatedProfile?.avatarUrl == 'debug://$marker',
+        'Profile update was not persisted.',
+      );
+
+      await _settingsRepository.updateLanguageCode(tempLanguage);
+      final settingsId = await _featureRepository.saveActiveAppsFast(const [
+        'dashboard',
+        'tasks',
+        'calendar',
+      ]);
+      createdSettingsId[0] = settingsId;
+
+      final updatedSettings = await _settingsRepository.getAppSettings();
+      _ensure(updatedSettings != null, 'app_settings row was not created.');
+      _ensure(
+        updatedSettings!.languageCode == tempLanguage,
+        'Language write did not round-trip.',
+      );
+      _ensure(
+        (updatedSettings.activeApps ?? const []).contains('tasks'),
+        'Active apps write did not round-trip.',
+      );
+    } finally {
+      await _userRepository.updateProfile(
+        fullName: originalProfile?.fullName,
+        avatarUrl: originalProfile?.avatarUrl,
+      );
+
+      if (originalSettings == null) {
+        final settingsId = createdSettingsId[0];
+        if (settingsId != null) {
+          await _client
+              .from('app_settings')
+              .delete()
+              .eq('id', settingsId)
+              .eq('created_by', _userId);
+        }
+      } else {
+        await _client
+            .from('app_settings')
+            .update({
+              'active_apps': originalSettings.activeApps,
+              'theme_preset': originalSettings.themePreset,
+              'language_code': originalSettings.languageCode,
+              'notifications_enabled': originalSettings.notificationsEnabled,
+              'habit_notifications_enabled':
+                  originalSettings.habitNotificationsEnabled,
+              'calendar_notifications_enabled':
+                  originalSettings.calendarNotificationsEnabled,
+              'focus_notifications_enabled':
+                  originalSettings.focusNotificationsEnabled,
+              'onboarding_goal': originalSettings.onboardingGoal,
+              'onboarding_discipline': originalSettings.onboardingDiscipline,
+              'onboarding_focus_challenge':
+                  originalSettings.onboardingFocusChallenge,
+              'theme_updated_at': originalSettings.themeUpdatedAt
+                  ?.toIso8601String(),
+            })
+            .eq('id', originalSettings.id)
+            .eq('created_by', _userId);
+      }
+    }
+  }
+
+  Future<void> _testNotesAndObjectives() async {
+    final marker = _marker('note');
+    String? noteId;
+    String? objectiveId;
+    try {
+      noteId = await _featureRepository.createNote(
+        marker,
+        'Debug note content for $marker',
+      );
+      await _featureRepository.updateNote(
+        noteId,
+        '$marker-updated',
+        'Updated debug note content.',
+      );
+      final notes = await _featureRepository.getNotes();
+      final note = notes.cast<dynamic>().firstWhere(
+        (item) => item.id == noteId,
+        orElse: () => null,
+      );
+      _ensure(note != null, 'Note write did not round-trip.');
+
+      final objective = await _featureRepository.createObjective(marker);
+      _ensure(objective != null, 'Objective create returned null.');
+      objectiveId = objective!.id;
+    } finally {
+      if (noteId != null) {
+        await _client
+            .from('notes')
+            .delete()
+            .eq('id', noteId)
+            .eq('created_by', _userId);
+      }
+      if (objectiveId != null) {
+        await _client
+            .from('objectives')
+            .delete()
+            .eq('id', objectiveId)
+            .eq('created_by', _userId);
+      }
+    }
+  }
+
+  Future<void> _testEventTypes() async {
+    final marker = _marker('event-type');
+    String? eventTypeId;
+    try {
+      await _featureRepository.createEventType(marker, '#4C7DFF', 'briefcase');
+      final types = await _featureRepository.getEventTypes();
+      final created = types.cast<dynamic>().firstWhere(
+        (item) => item.name == marker,
+        orElse: () => null,
+      );
+      _ensure(created != null, 'Event type write did not round-trip.');
+      eventTypeId = created.id as String;
+    } finally {
+      if (eventTypeId != null) {
+        await _client
+            .from('event_types')
+            .delete()
+            .eq('id', eventTypeId)
+            .eq('created_by', _userId);
+      }
+    }
+  }
+
+  Future<void> _testTasksAndCalendar() async {
+    final marker = _marker('task');
+    String? groupId;
+    String? taskId;
+    final eventIds = <String>[];
+    try {
+      final group = await _taskRepository.addTaskGroup('$marker-group');
+      groupId = group.id;
+
+      final tomorrow = DateTime.now().add(const Duration(days: 1));
+      await _taskRepository.addTask(
+        marker,
+        importance: 'critical',
+        duration: '1 hour',
+        groupId: groupId,
+        deadline: tomorrow,
+        description: 'Debug task validation',
+        syncToCalendar: true,
+      );
+
+      final tasks = await _taskRepository.getTasks(includeCompleted: true);
+      final createdTask = tasks.cast<dynamic>().firstWhere(
+        (item) => item.title == marker,
+        orElse: () => null,
+      );
+      _ensure(createdTask != null, 'Task write did not round-trip.');
+      final createdTaskId = createdTask.id as String;
+      taskId = createdTaskId;
+
+      await _taskRepository.completeTask(createdTaskId);
+      await _taskRepository.uncompleteTask(createdTaskId);
+
+      final events = await _taskRepository.getAllEvents();
+      for (final event in events.where((item) => item.title == marker)) {
+        eventIds.add((event as dynamic).id as String);
+      }
+      _ensure(eventIds.isNotEmpty, 'Calendar sync write did not round-trip.');
+    } finally {
+      if (eventIds.isNotEmpty) {
+        await _client
+            .from('calendar_events')
+            .delete()
+            .eq('created_by', _userId)
+            .inFilter('id', eventIds);
+      }
+      if (taskId != null) {
+        await _client
+            .from('pareto_tasks')
+            .delete()
+            .eq('id', taskId)
+            .eq('created_by', _userId);
+      }
+      if (groupId != null) {
+        await _client
+            .from('task_groups')
+            .delete()
+            .eq('id', groupId)
+            .eq('created_by', _userId);
+      }
+    }
+  }
+
+  Future<void> _testHabitsAndCompletions() async {
+    final marker = _marker('habit');
+    String? habitId;
+    final targetDate = DateTime.now();
+    try {
+      final habit = await _habitRepository.createHabit(
+        marker,
+        icon: 'target',
+        quote: 'Debug habit',
+      );
+      _ensure(habit != null, 'Habit create returned null.');
+      final createdHabit = habit!;
+      final createdHabitId = createdHabit.id;
+      habitId = createdHabitId;
+
+      await _habitRepository.setCompletionForDate(
+        habitId: createdHabitId,
+        date: targetDate,
+        completed: true,
+        state: 'debug',
+      );
+
+      final completions = await _habitRepository.getCompletionsForDate(targetDate);
+      final completion = completions.cast<dynamic>().firstWhere(
+        (item) => item.habitId == habitId,
+        orElse: () => null,
+      );
+      _ensure(completion != null, 'Habit completion write did not round-trip.');
+
+      await _habitRepository.archiveHabit(createdHabitId);
+      final row = await _client
+          .from('habits')
+          .select('archived')
+          .eq('id', habitId)
+          .eq('created_by', _userId)
+          .maybeSingle();
+      _ensure(row?['archived'] == true, 'Habit archive did not round-trip.');
+    } finally {
+      if (habitId != null) {
+        await _client
+            .from('habit_completions')
+            .delete()
+            .eq('habit_id', habitId)
+            .eq('created_by', _userId);
+        await _client
+            .from('habits')
+            .delete()
+            .eq('id', habitId)
+            .eq('created_by', _userId);
+      }
+    }
+  }
+
+  Future<void> _testScreenTimeControls() async {
+    final marker = _marker('screen');
+    String? blockedAppId;
+    String? blockedSiteId;
+    String? restPeriodId;
+    final originalContract = await _featureRepository.getCurrentWeeklyContract();
+    try {
+      await _featureRepository.createBlockedApp(marker);
+      final blockedApps = await _featureRepository.getBlockedApps();
+      final app = blockedApps.cast<dynamic>().firstWhere(
+        (item) => item.appName == marker,
+        orElse: () => null,
+      );
+      _ensure(app != null, 'Blocked app write did not round-trip.');
+      final createdBlockedAppId = app.id as String;
+      blockedAppId = createdBlockedAppId;
+      await _featureRepository.setBlockedAppTime(createdBlockedAppId, 25);
+
+      await _featureRepository.createBlockedWebsite('$marker.com');
+      final blockedSites = await _featureRepository.getBlockedWebsites();
+      final site = blockedSites.cast<dynamic>().firstWhere(
+        (item) => item.urlDomain == '$marker.com',
+        orElse: () => null,
+      );
+      _ensure(site != null, 'Blocked website write did not round-trip.');
+      final createdBlockedSiteId = site.id as String;
+      blockedSiteId = createdBlockedSiteId;
+      await _featureRepository.setBlockedWebsiteTime(createdBlockedSiteId, 15);
+
+      final start = DateTime.now().add(const Duration(hours: 3));
+      final end = start.add(const Duration(minutes: 45));
+      await _featureRepository.createRestPeriod(startTime: start, endTime: end);
+      final restPeriods = await _featureRepository.getRestPeriods();
+      final rest = restPeriods.cast<dynamic>().firstWhere(
+        (item) =>
+            item.startTime?.toIso8601String() == start.toIso8601String(),
+        orElse: () => null,
+      );
+      _ensure(rest != null, 'Rest period write did not round-trip.');
+      final createdRestPeriodId = rest.id as String;
+      restPeriodId = createdRestPeriodId;
+      await _featureRepository.updateRestPeriodActive(createdRestPeriodId, false);
+
+      await _featureRepository.upsertCurrentWeeklyContract(
+        reward: 'Debug reward',
+        sanction: 'Debug sanction',
+        threshold: 87,
+        committed: true,
+      );
+      final contract = await _featureRepository.getCurrentWeeklyContract();
+      _ensure(contract != null, 'Weekly contract write did not round-trip.');
+      _ensure(
+        contract!.successThresholdPercentage == 87,
+        'Weekly contract threshold mismatch.',
+      );
+    } finally {
+      if (blockedAppId != null) {
+        await _client
+            .from('blocked_apps')
+            .delete()
+            .eq('id', blockedAppId)
+            .eq('created_by', _userId);
+      }
+      if (blockedSiteId != null) {
+        await _client
+            .from('blocked_websites')
+            .delete()
+            .eq('id', blockedSiteId)
+            .eq('created_by', _userId);
+      }
+      if (restPeriodId != null) {
+        await _client
+            .from('rest_periods')
+            .delete()
+            .eq('id', restPeriodId)
+            .eq('created_by', _userId);
+      }
+      await _restoreWeeklyContract(originalContract);
+    }
+  }
+
+  Future<void> _testFocusSystems() async {
+    final marker = _marker('focus');
+    final blockListId = 'debug-$marker';
+    try {
+      await _focusRepository.saveBlockList(
+        BlockList(
+          id: blockListId,
+          name: marker,
+          blockedPackageNames: const ['com.example.debug'],
+          blockedCategories: const ['social'],
+        ),
+      );
+      await _focusRepository.updateActiveBlockList(blockListId);
+      final blockLists = await _focusRepository.getBlockLists();
+      final list = blockLists.cast<dynamic>().firstWhere(
+        (item) => item.id == blockListId,
+        orElse: () => null,
+      );
+      _ensure(list != null, 'Block list write did not round-trip.');
+      _ensure(list.isActive == true, 'Active block list update failed.');
+
+      final endTime = DateTime.now();
+      final startTime = endTime.subtract(const Duration(minutes: 25));
+      await _focusRepository.logFocusSession(
+        startTime: startTime,
+        endTime: endTime,
+        durationMinutes: 25,
+        blockListId: blockListId,
+        completed: true,
+      );
+      final sessions = await _focusRepository.getRecentSessions();
+      final session = sessions.firstWhere(
+        (item) => item['block_list_id'] == blockListId,
+        orElse: () => <String, dynamic>{},
+      );
+      _ensure(session.isNotEmpty, 'Focus session write did not round-trip.');
+    } finally {
+      await _client
+          .from('focus_sessions')
+          .delete()
+          .eq('created_by', _userId)
+          .eq('block_list_id', blockListId);
+      await _client
+          .from('block_lists')
+          .delete()
+          .eq('id', blockListId)
+          .eq('created_by', _userId);
+    }
+  }
+
+  Future<void> _testCeoModeSessions() async {
+    String? sessionId;
+    try {
+      sessionId = await _ceoModeRepository.createSession(
+        startTime: DateTime.now(),
+        durationMinutes: 30,
+        approvedAppsCount: 3,
+      );
+      _ensure(sessionId != null, 'Blackout mode session create returned null.');
+      final createdSessionId = sessionId!;
+
+      await _ceoModeRepository.endSession(
+        sessionId: createdSessionId,
+        endTime: DateTime.now().add(const Duration(minutes: 30)),
+      );
+      final row = await _client
+          .from('ceo_mode_sessions')
+          .select('active, end_time')
+          .eq('id', createdSessionId)
+          .eq('created_by', _userId)
+          .maybeSingle();
+      _ensure(row != null, 'Blackout mode session row not found.');
+      final sessionRow = row!;
+      _ensure(
+        sessionRow['active'] == false,
+        'Blackout mode session did not close.',
+      );
+    } finally {
+      if (sessionId != null) {
+        await _client
+            .from('ceo_mode_sessions')
+            .delete()
+            .eq('id', sessionId)
+            .eq('created_by', _userId);
+      }
+    }
+  }
+
+  Future<void> _testFamilyTime() async {
+    final marker = _marker('family');
+    String? groupId;
+    String? sessionId;
+    try {
+      final group = await _familyTimeRepository.createGroup(marker);
+      _ensure(group != null, 'Family Time group create returned null.');
+      final createdGroup = group!;
+      final createdGroupId = createdGroup.id;
+      groupId = createdGroupId;
+
+      final sanctionSaved = await _familyTimeRepository.updateGroupSanction(
+        groupId: createdGroupId,
+        sanctionText: 'Debug sanction',
+      );
+      _ensure(sanctionSaved, 'Family Time sanction update failed.');
+
+      final appAdded = await _familyTimeRepository.addBlockedApp(
+        groupId: createdGroupId,
+        appName: 'Debug App',
+      );
+      final siteAdded = await _familyTimeRepository.addBlockedSite(
+        groupId: createdGroupId,
+        domain: 'debug.family',
+      );
+      _ensure(appAdded && siteAdded, 'Family Time blocked items write failed.');
+
+      final session = await _familyTimeRepository.startSession(
+        groupId: createdGroupId,
+        durationMinutes: 15,
+      );
+      _ensure(session != null, 'Family Time session create returned null.');
+      final createdSession = session!;
+      final createdFamilySessionId = createdSession.id;
+      sessionId = createdFamilySessionId;
+
+      final accepted = await _familyTimeRepository.acceptSession(
+        sessionId: createdFamilySessionId,
+        groupId: createdGroupId,
+      );
+      _ensure(accepted, 'Family Time session accept failed.');
+
+      final latest = await _familyTimeRepository.getLatestSession(createdGroupId);
+      _ensure(latest != null, 'Family Time latest session read failed.');
+    } finally {
+      if (sessionId != null) {
+        await _client
+            .from('family_time_session_events')
+            .delete()
+            .eq('session_id', sessionId);
+        await _client
+            .from('family_time_session_participants')
+            .delete()
+            .eq('session_id', sessionId);
+        await _client
+            .from('family_time_sessions')
+            .delete()
+            .eq('id', sessionId);
+      }
+      if (groupId != null) {
+        await _client
+            .from('family_time_blocked_apps')
+            .delete()
+            .eq('group_id', groupId);
+        await _client
+            .from('family_time_blocked_sites')
+            .delete()
+            .eq('group_id', groupId);
+        await _client
+            .from('family_time_members')
+            .delete()
+            .eq('group_id', groupId);
+        await _client
+            .from('family_time_groups')
+            .delete()
+            .eq('id', groupId);
+      }
+    }
+  }
+
+  Future<void> _testAdvancedStats() async {
+    final marker = _marker('stats');
+    final now = DateTime.now();
+    final uid = _userId;
+    final monday = _weekStart(now);
+    try {
+      await _advancedStatsRepository.logEvent(
+        StatsEventInput(
+          eventType: StatsEventType.dashboardOpened,
+          eventTime: now,
+          sourceKey: marker,
+          payload: const {'source': 'debug'},
+        ),
+      );
+      final events = await _advancedStatsRepository.getEventsForDay(now);
+      _ensure(
+        events.any((event) => event.sourceKey == marker),
+        'Advanced stats event write did not round-trip.',
+      );
+
+      final daily = DailyStats.empty(createdBy: uid, date: now);
+      final weekly = WeeklyStats(
+        createdBy: uid,
+        weekStartDate: monday,
+        weekEndDate: monday.add(const Duration(days: 6)),
+        weeklyAttentionScore: 50,
+        totalFocusTimeMinutes: 25,
+        totalCeoTimeMinutes: 0,
+        totalDeepWorkTimeMinutes: 25,
+        totalTimeRecoveredMinutes: 5,
+        totalDistractionsBlocked: 1,
+        totalScreenTimeMinutes: 30,
+        averageFocusSessionLengthMinutes: 25,
+        consistencyPercent: 50,
+        completionRate: 50,
+        bestDayAttentionScore: 50,
+        worstDayAttentionScore: 50,
+        percentile: 10,
+        screenTimeTrend: -5,
+        weeklyTransformationDelta: 3,
+      );
+      final month = DateFormat('yyyy-MM').format(now);
+      final monthly = MonthlyStats(
+        createdBy: uid,
+        month: month,
+        monthlyAttentionScore: 50,
+        totalFocusTimeMinutes: 25,
+        totalCeoTimeMinutes: 0,
+        totalDeepWorkTimeMinutes: 25,
+        totalTimeRecoveredMinutes: 5,
+        totalScreenTimeMinutes: 30,
+        consistencyPercent: 50,
+        totalSessionsCompleted: 1,
+        totalSessionsBroken: 0,
+        totalHabitsCompleted: 1,
+        bestWeekAttentionScore: 50,
+        lowestScreenTimeDay: DateFormat('yyyy-MM-dd').format(now),
+        longestSessionOfMonth: 25,
+        rankChange: 0,
+      );
+      final lifetime = LifetimeStats.empty(createdBy: uid);
+
+      await _advancedStatsRepository.upsertDailyStats(daily);
+      await _advancedStatsRepository.upsertWeeklyStats(weekly);
+      await _advancedStatsRepository.upsertMonthlyStats(monthly);
+      await _advancedStatsRepository.upsertLifetimeStats(lifetime);
+
+      _ensure(
+        await _advancedStatsRepository.getDailyStats(now) != null,
+        'Daily stats upsert did not round-trip.',
+      );
+      _ensure(
+        await _advancedStatsRepository.getWeeklyStats(monday) != null,
+        'Weekly stats upsert did not round-trip.',
+      );
+      _ensure(
+        await _advancedStatsRepository.getMonthlyStats(month) != null,
+        'Monthly stats upsert did not round-trip.',
+      );
+      _ensure(
+        await _advancedStatsRepository.getLifetimeStats() != null,
+        'Lifetime stats upsert did not round-trip.',
+      );
+    } finally {
+      await _client
+          .from('advanced_stats_events')
+          .delete()
+          .eq('created_by', uid)
+          .eq('source_key', marker);
+      await _client
+          .from('advanced_daily_stats')
+          .delete()
+          .eq('created_by', uid)
+          .eq('date', DateFormat('yyyy-MM-dd').format(now));
+      await _client
+          .from('advanced_weekly_stats')
+          .delete()
+          .eq('created_by', uid)
+          .eq('week_start_date', DateFormat('yyyy-MM-dd').format(monday));
+      await _client
+          .from('advanced_monthly_stats')
+          .delete()
+          .eq('created_by', uid)
+          .eq('month', DateFormat('yyyy-MM').format(now));
+      await _client
+          .from('advanced_lifetime_stats')
+          .delete()
+          .eq('created_by', uid);
+    }
+  }
+
+  Future<void> _restoreWeeklyContract(dynamic originalContract) async {
+    if (originalContract == null) {
+      final monday = _weekStart(DateTime.now());
+      final sunday = monday.add(const Duration(days: 6));
+      await _client
+          .from('weekly_contracts')
+          .delete()
+          .eq('created_by', _userId)
+          .eq('week_start_date', DateFormat('yyyy-MM-dd').format(monday))
+          .eq('week_end_date', DateFormat('yyyy-MM-dd').format(sunday));
+      return;
+    }
+
+    await _client
+        .from('weekly_contracts')
+        .update({
+          'reward_text': originalContract.rewardText,
+          'sanction_text': originalContract.sanctionText,
+          'success_threshold_percentage':
+              originalContract.successThresholdPercentage,
+          'committed': originalContract.committed,
+          'evaluated': originalContract.evaluated,
+          'outcome_grade': originalContract.outcomeGrade,
+          'actual_success_percentage': originalContract.actualSuccessPercentage,
+          'evaluated_date': originalContract.evaluatedDate?.toIso8601String(),
+        })
+        .eq('id', originalContract.id)
+        .eq('created_by', _userId);
+  }
+
+  DateTime _weekStart(DateTime date) {
+    final normalized = DateTime(date.year, date.month, date.day);
+    return normalized.subtract(Duration(days: normalized.weekday - 1));
+  }
+
+  String _marker(String scope) =>
+      '__debug_${scope}_${DateTime.now().millisecondsSinceEpoch}__';
+
+  void _ensure(bool condition, String message) {
+    if (!condition) {
+      throw StateError(message);
+    }
+  }
+
+  String _humanizeError(Object error) {
+    if (error is PostgrestException) {
+      switch (error.code) {
+        case '42P01':
+          return 'Missing table or view in Supabase schema: ${error.message}';
+        case '42501':
+          return 'RLS / permissions failure: ${error.message}';
+        case 'PGRST204':
+        case '42703':
+          return 'Schema mismatch with app code: ${error.message}';
+      }
+      if (error.message.trim().isNotEmpty) {
+        return error.message.trim();
+      }
+    }
+    return error.toString();
+  }
+}

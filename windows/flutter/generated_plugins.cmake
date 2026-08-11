@@ -4,7 +4,9 @@
 
 list(APPEND FLUTTER_PLUGIN_LIST
   app_links
-  screen_time
+  connectivity_plus
+  file_selector_windows
+  permission_handler_windows
   url_launcher_windows
 )
 

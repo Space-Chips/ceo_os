@@ -1,5 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
+import '../../lib/src/widgets/adaptive_app.dart';
+import '../../lib/src/widgets/adaptive_app_bar.dart';
+import '../../lib/src/widgets/adaptive_bottom_navigation_bar.dart';
+import '../../lib/src/widgets/adaptive_scaffold.dart';
+import '../../lib/src/widgets/adaptive_scaffold.dart';
 
 void main() {
   runApp(const MyApp());

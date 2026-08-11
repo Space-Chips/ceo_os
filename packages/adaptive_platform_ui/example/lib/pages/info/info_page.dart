@@ -3,6 +3,9 @@ import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:adaptive_platform_ui_example/utils/global_variables.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import '../../../../lib/src/widgets/adaptive_app_bar.dart';
+import '../../../../lib/src/widgets/adaptive_scaffold.dart';
+import '../../../../lib/src/platform/platform_info.dart';
 
 class InfoPage extends StatefulWidget {
   const InfoPage({super.key});

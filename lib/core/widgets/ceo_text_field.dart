@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import '../../components/components.dart';
+import '../../components/glass_input_field.dart';
 
 class CeoTextField extends StatelessWidget {
   final String? label;
@@ -40,7 +41,7 @@ class CeoTextField extends StatelessWidget {
             padding: const EdgeInsets.only(left: 4, bottom: 8),
             child: Text(
               label!,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
                 color: Color(0x99FFFFFF),

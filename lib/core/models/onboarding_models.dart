@@ -1,0 +1,13 @@
+class OnboardingSetupData {
+  final String goal;
+  final String discipline;
+  final String focusChallenge;
+  final String themePresetId;
+
+  const OnboardingSetupData({
+    required this.goal,
+    required this.discipline,
+    required this.focusChallenge,
+    required this.themePresetId,
+  });
+}

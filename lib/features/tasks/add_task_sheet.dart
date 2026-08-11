@@ -1,10 +1,10 @@
 import 'dart:ui';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../../components/components.dart';
-import '../../core/models/task_models.dart';
 import '../../core/providers/task_provider.dart';
+import '../../core/providers/theme_provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 
@@ -17,71 +17,51 @@ class AddTaskSheet extends StatefulWidget {
 
 class _AddTaskSheetState extends State<AddTaskSheet> {
   final _titleCtrl = TextEditingController();
-  final _descCtrl = TextEditingController();
-  final _groupCtrl = TextEditingController();
   String _importance = 'crucial';
   String _duration = '1_hour';
-  TaskGroup? _selectedGroup;
   DateTime? _deadline;
   bool _syncToCalendar = true;
 
-  final _importances = ['crucial', 'essential', 'average', 'low'];
-  final _durations = [
+  static const _importances = ['crucial', 'essential', 'average', 'optional'];
+  static const _durations = [
     'less_than_30min',
     '1_hour',
     '2_hours',
     'half_day',
-    '1_day',
-    'several_days',
   ];
 
-  String _labelForImportance(String value) {
+  static const Map<String, String> _importanceLabels = {
+    'crucial': 'Crucial',
+    'essential': 'Essential',
+    'average': 'Average',
+    'optional': 'Optional',
+  };
+
+  static const Map<String, String> _durationLabels = {
+    'less_than_30min': 'Under 30 min',
+    '1_hour': '1 hour',
+    '2_hours': '2 hours',
+    'half_day': 'Half day',
+  };
+
+  Color _importanceColor(String value) {
     switch (value) {
       case 'crucial':
-        return 'Crucial';
+        return const Color(0xFFA02E2E);
       case 'essential':
-        return 'Essential';
+        return const Color(0xFFA6562B);
       case 'average':
-        return 'Average';
-      case 'low':
-        return 'Low';
+        return const Color(0xFF9C7B28);
+      case 'optional':
+        return const Color(0xFF7A6E5E);
       default:
-        return value;
+        return AppColors.secondaryLabel;
     }
-  }
-
-  String _labelForDuration(String value) {
-    switch (value) {
-      case 'less_than_30min':
-        return '< 30 min';
-      case '1_hour':
-        return '1 hour';
-      case '2_hours':
-        return '2 hours';
-      case 'half_day':
-        return 'Half day';
-      case '1_day':
-        return '1 day';
-      case 'several_days':
-        return 'Several days';
-      default:
-        return value;
-    }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<TaskProvider>().loadGroups();
-    });
   }
 
   @override
   void dispose() {
     _titleCtrl.dispose();
-    _descCtrl.dispose();
-    _groupCtrl.dispose();
     super.dispose();
   }
 
@@ -92,9 +72,7 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
       _titleCtrl.text.trim(),
       importance: _importance,
       duration: _duration,
-      groupId: _selectedGroup?.id,
       deadline: _deadline,
-      description: _descCtrl.text.trim().isEmpty ? null : _descCtrl.text.trim(),
       syncToCalendar: _deadline != null && _syncToCalendar,
     );
 
@@ -121,9 +99,9 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
                   CupertinoButton(
                     padding: EdgeInsets.zero,
                     child: Text(
-                      'CLEAR',
-                      style: AppTypography.mono.copyWith(
-                        fontSize: 12,
+                      'Clear',
+                      style: AppTypography.callout.copyWith(
+                        fontSize: 15,
                         color: AppColors.error,
                       ),
                     ),
@@ -135,10 +113,11 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
                   CupertinoButton(
                     padding: EdgeInsets.zero,
                     child: Text(
-                      'DONE',
-                      style: AppTypography.mono.copyWith(
-                        fontSize: 12,
+                      'Done',
+                      style: AppTypography.callout.copyWith(
+                        fontSize: 15,
                         color: AppColors.primaryOrange,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                     onPressed: () => Navigator.pop(context),
@@ -160,358 +139,234 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
     );
   }
 
-  void _showAddGroup() {
-    showCupertinoDialog(
-      context: context,
-      builder: (context) => BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-        child: CupertinoAlertDialog(
-          title: Text(
-            'NEW_GROUP_PROTOCOL',
-            style: AppTypography.mono.copyWith(fontSize: 14),
-          ),
-          content: Padding(
-            padding: const EdgeInsets.only(top: 12),
-            child: CupertinoTextField(
-              controller: _groupCtrl,
-              placeholder: 'GROUP_NAME',
-              style: AppTypography.mono.copyWith(color: Colors.white),
-              placeholderStyle: AppTypography.mono.copyWith(
-                color: AppColors.tertiaryLabel,
-              ),
-              decoration: BoxDecoration(
-                color: AppColors.backgroundLight,
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-          ),
-          actions: [
-            CupertinoDialogAction(
-              child: const Text(
-                'CANCEL',
-                style: TextStyle(color: AppColors.secondaryLabel),
-              ),
-              onPressed: () => Navigator.pop(context),
-            ),
-            CupertinoDialogAction(
-              isDefaultAction: true,
-              child: const Text(
-                'CREATE',
-                style: TextStyle(color: AppColors.primaryOrange),
-              ),
-              onPressed: () async {
-                if (_groupCtrl.text.isNotEmpty) {
-                  await context.read<TaskProvider>().addTaskGroup(
-                    _groupCtrl.text,
-                  );
-                  _groupCtrl.clear();
-                  if (mounted) Navigator.pop(context);
-                }
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   String _formatDeadline(DateTime d) {
     const months = [
-      'JAN',
-      'FEB',
-      'MAR',
-      'APR',
-      'MAY',
-      'JUN',
-      'JUL',
-      'AUG',
-      'SEP',
-      'OCT',
-      'NOV',
-      'DEC',
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     return '${months[d.month - 1]} ${d.day}, ${d.year}';
   }
 
+  BoxDecoration _fieldDecoration({bool primary = false}) => BoxDecoration(
+    color: AppColors.cardBackgroundStrong.withValues(
+      alpha: primary ? 0.55 : 0.32,
+    ),
+    borderRadius: BorderRadius.circular(16),
+    border: Border.all(
+      color: AppColors.glassBorder.withValues(alpha: primary ? 0.38 : 0.18),
+      width: primary ? 0.8 : 0.5,
+    ),
+  );
+
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeProvider>();
+    context.watch<TaskProvider>();
+    const ctaLabel = 'Create task';
+
     return BackdropFilter(
-      filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+      filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
       child: Container(
         padding: EdgeInsets.only(
           bottom: MediaQuery.of(context).viewInsets.bottom,
         ),
         decoration: BoxDecoration(
-          color: AppColors.background.withOpacity(0.8),
+          color: AppColors.background.withValues(alpha: 0.82),
           borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-          border: const Border(
-            top: BorderSide(color: AppColors.glassBorder, width: 0.5),
+          border: Border(
+            top: BorderSide(
+              color: AppColors.glassBorder.withValues(alpha: 0.30),
+              width: 0.5,
+            ),
           ),
         ),
         child: SafeArea(
+          top: false,
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Center(
                   child: Container(
-                    width: 40,
-                    height: 4,
+                    width: 36,
+                    height: 5,
                     decoration: BoxDecoration(
-                      color: AppColors.glassBorder,
-                      borderRadius: BorderRadius.circular(2),
+                      color: AppColors.tertiaryLabel.withValues(alpha: 0.55),
+                      borderRadius: BorderRadius.circular(2.5),
                     ),
                   ),
                 ),
-                const SizedBox(height: 24),
-
-                const NeoMonoText(
-                  'NEW_TASK_INPUT',
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+                const SizedBox(height: 28),
+                Text(
+                  'New Task',
+                  style: AppTypography.largeTitle.copyWith(
+                    fontSize: 38,
+                    height: 1.1,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -0.9,
+                    color: AppColors.label,
+                  ),
                 ),
-                const SizedBox(height: 24),
-
-                GlassInputField(
-                  placeholder: 'TASK_TITLE...',
-                  controller: _titleCtrl,
-                  autofocus: true,
-                ),
-                const SizedBox(height: 16),
-
-                // Description
-                _sectionLabel('DESCRIPTION'),
-                const SizedBox(height: 8),
+                const SizedBox(height: 26),
                 Container(
-                  decoration: BoxDecoration(
-                    color: AppColors.backgroundLight.withOpacity(0.5),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: AppColors.glassBorder,
-                      width: 0.5,
-                    ),
-                  ),
+                  height: 64,
+                  decoration: _fieldDecoration(primary: true),
+                  alignment: Alignment.center,
                   child: CupertinoTextField(
-                    controller: _descCtrl,
-                    placeholder: 'OPTIONAL_DETAILS...',
-                    maxLines: 3,
-                    minLines: 2,
-                    style: AppTypography.mono.copyWith(
-                      fontSize: 13,
+                    controller: _titleCtrl,
+                    placeholder: 'Task title',
+                    autofocus: true,
+                    style: AppTypography.callout.copyWith(
+                      fontSize: 17,
                       color: AppColors.label,
+                      fontWeight: FontWeight.w500,
                     ),
-                    placeholderStyle: AppTypography.mono.copyWith(
-                      fontSize: 13,
+                    placeholderStyle: AppTypography.callout.copyWith(
+                      fontSize: 17,
                       color: AppColors.tertiaryLabel,
+                      fontWeight: FontWeight.w400,
                     ),
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.symmetric(horizontal: 18),
                     decoration: null,
+                    cursorColor: AppColors.primaryOrange,
                   ),
                 ),
-                const SizedBox(height: 20),
-
-                // Deadline
-                _sectionLabel('DEADLINE'),
-                const SizedBox(height: 8),
+                const SizedBox(height: 12),
                 GestureDetector(
+                  behavior: HitTestBehavior.opaque,
                   onTap: _showDeadlinePicker,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
-                    ),
-                    decoration: BoxDecoration(
-                      color: _deadline != null
-                          ? AppColors.primaryOrange.withOpacity(0.1)
-                          : AppColors.backgroundLight.withOpacity(0.5),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: _deadline != null
-                            ? AppColors.primaryOrange.withOpacity(0.4)
-                            : AppColors.glassBorder,
-                        width: 0.5,
-                      ),
-                    ),
+                    height: 48,
+                    padding: const EdgeInsets.symmetric(horizontal: 18),
+                    decoration: _fieldDecoration(),
                     child: Row(
                       children: [
                         Icon(
                           CupertinoIcons.calendar,
-                          size: 16,
+                          size: 19,
                           color: _deadline != null
-                              ? AppColors.primaryOrange
+                              ? AppColors.label
                               : AppColors.tertiaryLabel,
                         ),
-                        const SizedBox(width: 10),
-                        Text(
-                          _deadline != null
-                              ? _formatDeadline(_deadline!)
-                              : 'SET_DEADLINE',
-                          style: AppTypography.mono.copyWith(
-                            fontSize: 12,
-                            color: _deadline != null
-                                ? AppColors.primaryOrange
-                                : AppColors.tertiaryLabel,
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            _deadline != null
+                                ? _formatDeadline(_deadline!)
+                                : 'Set deadline',
+                            style: AppTypography.callout.copyWith(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w500,
+                              color: _deadline != null
+                                  ? AppColors.label
+                                  : AppColors.tertiaryLabel,
+                            ),
                           ),
                         ),
-                        const Spacer(),
                         if (_deadline != null)
                           GestureDetector(
                             onTap: () => setState(() => _deadline = null),
-                            child: const Icon(
+                            child: Icon(
                               CupertinoIcons.xmark_circle_fill,
-                              size: 16,
-                              color: AppColors.secondaryLabel,
+                              size: 18,
+                              color: AppColors.tertiaryLabel,
                             ),
                           ),
                       ],
                     ),
                   ),
                 ),
-                const SizedBox(height: 20),
-
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'SYNC_DEADLINE_TO_CALENDAR',
-                      style: AppTypography.mono.copyWith(
-                        fontSize: 10,
-                        color: AppColors.secondaryLabel,
-                      ),
-                    ),
-                    CupertinoSwitch(
-                      value: _syncToCalendar,
-                      activeColor: AppColors.primaryOrange,
-                      onChanged: (value) =>
-                          setState(() => _syncToCalendar = value),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-
-                // Group Selection
-                _sectionLabel('ASSIGN_GROUP'),
                 const SizedBox(height: 12),
-                Consumer<TaskProvider>(
-                  builder: (context, prov, _) => SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: [
-                        _GroupChip(
-                          label: 'NONE',
-                          isSelected: _selectedGroup == null,
-                          onTap: () => setState(() => _selectedGroup = null),
-                        ),
-                        ...prov.groups.map(
-                          (g) => _GroupChip(
-                            label: g.name.toUpperCase(),
-                            isSelected: _selectedGroup?.id == g.id,
-                            onTap: () => setState(() => _selectedGroup = g),
+                Container(
+                  height: 48,
+                  padding: const EdgeInsets.symmetric(horizontal: 18),
+                  decoration: _fieldDecoration(),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Sync deadline to calendar',
+                          style: AppTypography.callout.copyWith(
+                            fontSize: 17,
+                            color: AppColors.label,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
-                        GestureDetector(
-                          onTap: _showAddGroup,
-                          child: Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: AppColors.primaryOrange.withOpacity(0.5),
-                              ),
-                            ),
-                            child: const Icon(
-                              CupertinoIcons.plus,
-                              size: 14,
-                              color: AppColors.primaryOrange,
-                            ),
+                      ),
+                      Transform.scale(
+                        scale: 0.92,
+                        child: CupertinoSwitch(
+                          value: _syncToCalendar,
+                          activeTrackColor: const Color(0xFF34C759),
+                          inactiveTrackColor: AppColors.glassBorder.withValues(
+                            alpha: 0.40,
                           ),
+                          thumbColor: AppColors.label,
+                          onChanged: (value) =>
+                              setState(() => _syncToCalendar = value),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 24),
-
+                const SizedBox(height: 32),
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _sectionLabel('PRIORITY_LEVEL'),
-                          const SizedBox(height: 12),
-                          SizedBox(
-                            height: 100,
-                            child: CupertinoPicker(
-                              itemExtent: 32,
-                              onSelectedItemChanged: (i) {
-                                setState(() => _importance = _importances[i]);
-                              },
-                              children: _importances
-                                  .map(
-                                    (e) => Center(
-                                      child: Text(
-                                        _labelForImportance(e).toUpperCase(),
-                                        style: AppTypography.mono.copyWith(
-                                          fontSize: 12,
-                                          color: AppColors.label,
-                                        ),
-                                      ),
-                                    ),
-                                  )
-                                  .toList(),
-                            ),
-                          ),
-                        ],
+                      child: _StackedSelectorCard(
+                        label: 'Priority',
+                        items: _importances,
+                        selected: _importance,
+                        labelFor: (v) => _importanceLabels[v] ?? v,
+                        colorFor: _importanceColor,
+                        onSelect: (v) => setState(() => _importance = v),
                       ),
                     ),
-                    const SizedBox(width: 24),
+                    const SizedBox(width: 14),
                     Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _sectionLabel('EST_DURATION'),
-                          const SizedBox(height: 12),
-                          SizedBox(
-                            height: 100,
-                            child: CupertinoPicker(
-                              itemExtent: 32,
-                              scrollController: FixedExtentScrollController(
-                                initialItem: 1,
-                              ),
-                              onSelectedItemChanged: (i) {
-                                setState(() => _duration = _durations[i]);
-                              },
-                              children: _durations
-                                  .map(
-                                    (e) => Center(
-                                      child: Text(
-                                        _labelForDuration(e).toUpperCase(),
-                                        style: AppTypography.mono.copyWith(
-                                          fontSize: 12,
-                                          color: AppColors.label,
-                                        ),
-                                      ),
-                                    ),
-                                  )
-                                  .toList(),
-                            ),
-                          ),
-                        ],
+                      child: _StackedSelectorCard(
+                        label: 'Estimated duration',
+                        items: _durations,
+                        selected: _duration,
+                        labelFor: (v) => _durationLabels[v] ?? v,
+                        colorFor: null,
+                        onSelect: (v) => setState(() => _duration = v),
                       ),
                     ),
                   ],
                 ),
-
                 const SizedBox(height: 32),
                 LiquidButton(
-                  label: 'INITIALIZE_TASK',
+                  label: ctaLabel,
                   fullWidth: true,
                   onPressed: _addTask,
+                  height: 56,
+                  borderRadius: 28,
+                  gradient: [
+                    AppColors.label.withValues(alpha: 0.96),
+                    AppColors.label.withValues(alpha: 0.74),
+                  ],
+                  labelStyle: AppTypography.callout.copyWith(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.background,
+                    letterSpacing: -0.2,
+                  ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 8),
               ],
             ),
           ),
@@ -519,57 +374,132 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
       ),
     );
   }
-
-  Widget _sectionLabel(String label) => Text(
-    label,
-    style: AppTypography.mono.copyWith(
-      fontSize: 10,
-      color: AppColors.tertiaryLabel,
-      letterSpacing: 1.5,
-    ),
-  );
 }
 
-class _GroupChip extends StatelessWidget {
+class _StackedSelectorCard extends StatefulWidget {
   final String label;
-  final bool isSelected;
-  final VoidCallback onTap;
+  final List<String> items;
+  final String selected;
+  final String Function(String) labelFor;
+  final Color Function(String)? colorFor;
+  final ValueChanged<String> onSelect;
 
-  const _GroupChip({
+  const _StackedSelectorCard({
     required this.label,
-    required this.isSelected,
-    required this.onTap,
+    required this.items,
+    required this.selected,
+    required this.labelFor,
+    required this.colorFor,
+    required this.onSelect,
   });
 
   @override
+  State<_StackedSelectorCard> createState() => _StackedSelectorCardState();
+}
+
+class _StackedSelectorCardState extends State<_StackedSelectorCard> {
+  late FixedExtentScrollController _ctrl;
+
+  int get _initialIndex {
+    final i = widget.items.indexOf(widget.selected);
+    return i < 0 ? 0 : i;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = FixedExtentScrollController(initialItem: _initialIndex);
+  }
+
+  @override
+  void didUpdateWidget(covariant _StackedSelectorCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final newIndex = widget.items.indexOf(widget.selected);
+    if (newIndex >= 0 &&
+        _ctrl.hasClients &&
+        _ctrl.selectedItem != newIndex) {
+      _ctrl.animateToItem(
+        newIndex,
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOutCubic,
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        margin: const EdgeInsets.only(right: 8),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? AppColors.primaryOrange.withOpacity(0.2)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isSelected ? AppColors.primaryOrange : AppColors.glassBorder,
-            width: 0.5,
+    final selectedIndex = widget.items.indexOf(widget.selected);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          height: 160,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                AppColors.cardBackgroundStrong.withValues(alpha: 0.40),
+                AppColors.cardBase.withValues(alpha: 0.28),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(
+              color: AppColors.glassBorder.withValues(alpha: 0.32),
+              width: 0.7,
+            ),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(18),
+            child: CupertinoPicker.builder(
+              scrollController: _ctrl,
+              itemExtent: 38,
+              diameterRatio: 1.7,
+              squeeze: 1.0,
+              magnification: 1.0,
+              useMagnifier: false,
+              selectionOverlay: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 22),
+                decoration: BoxDecoration(
+                  color: AppColors.label.withValues(alpha: 0.06),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: AppColors.label.withValues(alpha: 0.85),
+                    width: 1.0,
+                  ),
+                ),
+              ),
+              onSelectedItemChanged: (i) {
+                widget.onSelect(widget.items[i]);
+              },
+              childCount: widget.items.length,
+              itemBuilder: (context, index) {
+                final item = widget.items[index];
+                final isSelected = index == selectedIndex;
+                final color =
+                    widget.colorFor?.call(item) ?? AppColors.label;
+                return Center(
+                  child: Text(
+                    widget.labelFor(item),
+                    style: AppTypography.callout.copyWith(
+                      fontSize: 15,
+                      fontWeight:
+                          isSelected ? FontWeight.w700 : FontWeight.w400,
+                      color: color,
+                    ),
+                  ),
+                );
+              },
+            ),
           ),
         ),
-        child: Text(
-          label,
-          style: AppTypography.mono.copyWith(
-            fontSize: 10,
-            color: isSelected
-                ? AppColors.primaryOrange
-                : AppColors.secondaryLabel,
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-          ),
-        ),
-      ),
+      ],
     );
   }
 }

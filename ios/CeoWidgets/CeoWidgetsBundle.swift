@@ -11,11 +11,14 @@ import SwiftUI
 @main
 struct CeoWidgetsBundle: WidgetBundle {
     var body: some Widget {
-        CeoWidgets()
+        CeoTodoWidget()
+        CeoDashboardWidget()
+        CeoHabitsWidget()
+        CeoFocusWidget()
+        CeoBlackoutWidget()
         if #available(iOSApplicationExtension 18.0, *) {
             CeoWidgetsControl()
             CeoWidgetsLiveActivity()
         }
     }
 }
-

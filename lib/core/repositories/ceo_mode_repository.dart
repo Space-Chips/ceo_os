@@ -1,0 +1,78 @@
+import 'package:intl/intl.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+import '../services/supabase_service.dart';
+
+class CeoModeRepository {
+  final SupabaseService _supabaseService;
+
+  CeoModeRepository({SupabaseService? supabaseService})
+    : _supabaseService = supabaseService ?? SupabaseService();
+
+  SupabaseClient get _client => _supabaseService.client;
+  String? get _currentUserId => _client.auth.currentUser?.id;
+
+  Future<String?> createSession({
+    required DateTime startTime,
+    required int durationMinutes,
+    required int approvedAppsCount,
+  }) async {
+    final uid = _currentUserId;
+    if (uid == null) return null;
+
+    try {
+      final row = await _client
+          .from('ceo_mode_sessions')
+          .insert({
+            'created_by': uid,
+            'active': true,
+            'start_time': startTime.toIso8601String(),
+            'duration_minutes': durationMinutes,
+            'approved_apps_count': approvedAppsCount,
+          })
+          .select('id')
+          .single();
+      return row['id'] as String?;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<void> endSession({
+    required String sessionId,
+    required DateTime endTime,
+  }) async {
+    try {
+      await _client
+          .from('ceo_mode_sessions')
+          .update({'active': false, 'end_time': endTime.toIso8601String()})
+          .eq('id', sessionId);
+    } catch (_) {}
+  }
+
+  Future<int> countSessionsThisWeek() async {
+    final uid = _currentUserId;
+    if (uid == null) return 0;
+
+    try {
+      final now = DateTime.now();
+      final weekStart = DateTime(
+        now.year,
+        now.month,
+        now.day,
+      ).subtract(Duration(days: now.weekday - 1));
+      final lowerBound =
+          '${DateFormat('yyyy-MM-dd').format(weekStart)}T00:00:00';
+
+      final rows = await _client
+          .from('ceo_mode_sessions')
+          .select('id')
+          .eq('created_by', uid)
+          .gte('start_time', lowerBound);
+
+      return (rows as List).length;
+    } catch (_) {
+      return 0;
+    }
+  }
+}

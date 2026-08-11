@@ -1,0 +1,1471 @@
+import 'dart:async';
+
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+
+import '../../components/components.dart';
+import '../../core/models/family_time_models.dart';
+import '../../core/providers/language_provider.dart';
+import '../../core/providers/theme_provider.dart';
+import '../../core/repositories/family_time_repository.dart';
+import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_typography.dart';
+import '../../components/ambient_backdrop.dart';
+
+class FamilyTimeScreen extends StatefulWidget {
+  const FamilyTimeScreen({super.key});
+
+  @override
+  State<FamilyTimeScreen> createState() => _FamilyTimeScreenState();
+}
+
+class _FamilyTimeScreenState extends State<FamilyTimeScreen> {
+  final FamilyTimeRepository _repo = FamilyTimeRepository();
+
+  final TextEditingController _newGroupCtrl = TextEditingController();
+  final TextEditingController _joinTokenCtrl = TextEditingController();
+
+  List<FamilyTimeGroupBundle> _groups = const [];
+  bool _loading = true;
+  bool _saving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _reload();
+  }
+
+  @override
+  void dispose() {
+    _newGroupCtrl.dispose();
+    _joinTokenCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _showNotice(String title, String message) {
+    return showCupertinoDialog<void>(
+      context: context,
+      builder: (ctx) => CupertinoAlertDialog(
+        title: Text(title),
+        content: Padding(
+          padding: const EdgeInsets.only(top: 8),
+          child: Text(message),
+        ),
+        actions: [
+          CupertinoDialogAction(
+            isDefaultAction: true,
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text(context.read<LanguageProvider>().t('ok')),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _reload() async {
+    if (mounted) {
+      setState(() => _loading = true);
+    }
+    final groups = await _repo.getMyGroups();
+    if (!mounted) return;
+    setState(() {
+      _groups = groups;
+      _loading = false;
+    });
+  }
+
+  Future<void> _createGroup() async {
+    final name = _newGroupCtrl.text.trim();
+    if (name.isEmpty || _saving) return;
+    setState(() => _saving = true);
+    try {
+      final created = await _repo.createGroup(name);
+      if (created == null) {
+        await _showNotice('Group creation failed', 'Please retry.');
+      } else {
+        _newGroupCtrl.clear();
+      }
+    } on FamilyTimeRepositoryException catch (error) {
+      await _showNotice('Group creation failed', error.message);
+    } catch (_) {
+      await _showNotice('Group creation failed', 'Please retry.');
+    } finally {
+      if (mounted) {
+        setState(() => _saving = false);
+      }
+      await _reload();
+    }
+  }
+
+  Future<void> _joinByToken() async {
+    final token = _joinTokenCtrl.text.trim();
+    if (token.isEmpty || _saving) return;
+    setState(() => _saving = true);
+    try {
+      final group = await _repo.joinGroupByToken(token: token);
+      if (group == null) {
+        await _showNotice(
+          'Invalid invite',
+          'Token not found or access denied.',
+        );
+      } else {
+        _joinTokenCtrl.clear();
+      }
+    } on FamilyTimeRepositoryException catch (error) {
+      await _showNotice('Join failed', error.message);
+    } catch (_) {
+      await _showNotice('Join failed', 'Please retry.');
+    } finally {
+      if (mounted) {
+        setState(() => _saving = false);
+      }
+      await _reload();
+    }
+  }
+
+  Future<void> _openGroup(FamilyTimeGroupBundle bundle) async {
+    await Navigator.of(context).push(
+      CupertinoPageRoute<void>(
+        builder: (_) =>
+            _FamilyTimeGroupDetailScreen(repo: _repo, initialBundle: bundle),
+      ),
+    );
+    if (mounted) {
+      await _reload();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    context.watch<ThemeProvider>();
+    context.watch<LanguageProvider>().languageCode;
+    return CupertinoPageScaffold(
+      backgroundColor: AppColors.background,
+      child: AmbientBackdrop(
+        child: SafeArea(
+          child: _loading
+              ? Center(
+                  child: CupertinoActivityIndicator(
+                    color: AppColors.primaryOrange,
+                  ),
+                )
+              : ListView(
+                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+                  children: _buildHomeChildren(),
+                ),
+        ),
+      ),
+    );
+  }
+
+  List<Widget> _buildHomeChildren() {
+    final children = <Widget>[
+      _header(),
+      const SizedBox(height: 20),
+      _groupAccessCard(),
+      const SizedBox(height: 24),
+      Text(
+        'YOUR GROUPS',
+        style: AppTypography.mono.copyWith(
+          fontSize: 11,
+          letterSpacing: 2,
+          color: AppColors.secondaryLabel.withValues(alpha: 0.5),
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+      const SizedBox(height: 12),
+    ];
+
+    if (_groups.isEmpty) {
+      children.add(
+        _CardSurface(
+          padding: const EdgeInsets.all(20),
+          child: Text(
+            'No groups yet. Create or join one to start using Offline Together.',
+            style: AppTypography.body.copyWith(
+              fontSize: 14,
+              color: AppColors.secondaryLabel,
+              height: 1.4,
+            ),
+          ),
+        ),
+      );
+      return children;
+    }
+
+    for (final bundle in _groups) {
+      children.add(
+        Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: _PressScale(
+            onTap: () => _openGroup(bundle),
+            scale: 0.98,
+            child: Container(
+              height: 64,
+              padding: const EdgeInsets.symmetric(horizontal: 18),
+              decoration: _cardDecoration(),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      bundle.group.name,
+                      style: AppTypography.body.copyWith(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.label,
+                      ),
+                    ),
+                  ),
+                  Icon(
+                    CupertinoIcons.chevron_right,
+                    size: 18,
+                    color: AppColors.tertiaryLabel,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return children;
+  }
+
+  Widget _header() {
+    return SizedBox(
+      height: 44,
+      child: Row(
+        children: [
+          CupertinoButton(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+            minimumSize: Size.zero,
+            onPressed: () => context.go('/screen-time-manager'),
+            child: Row(
+              children: [
+                Icon(
+                  CupertinoIcons.back,
+                  size: 20,
+                  color: AppColors.secondaryLabel,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  'Screen Time',
+                  style: AppTypography.body.copyWith(
+                    fontSize: 16,
+                    color: AppColors.secondaryLabel,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Center(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  'OFFLINE TOGETHER',
+                  maxLines: 1,
+                  style: AppTypography.title2.copyWith(
+                    fontSize: 26,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.label,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          CupertinoButton(
+            padding: EdgeInsets.zero,
+            minimumSize: const Size(32, 32),
+            onPressed: _saving ? null : _reload,
+            child: Icon(
+              CupertinoIcons.refresh,
+              size: 18,
+              color: _saving ? AppColors.tertiaryLabel : AppColors.accent,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _groupAccessCard() {
+    return _CardSurface(
+      padding: const EdgeInsets.all(18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Create group',
+            style: AppTypography.body.copyWith(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: AppColors.label,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _inputField(
+                  controller: _newGroupCtrl,
+                  placeholder: 'Group name',
+                  onSubmitted: (_) => _createGroup(),
+                ),
+              ),
+              const SizedBox(width: 10),
+              _actionButton(
+                label: 'Create',
+                onTap: _saving ? null : _createGroup,
+                primaryColor: AppColors.familyCreateAccent,
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          Text(
+            'Join group',
+            style: AppTypography.body.copyWith(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: AppColors.label,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _inputField(
+                  controller: _joinTokenCtrl,
+                  placeholder: 'Invite token',
+                  textCapitalization: TextCapitalization.characters,
+                  onSubmitted: (_) => _joinByToken(),
+                ),
+              ),
+              const SizedBox(width: 10),
+              _actionButton(
+                label: 'Join',
+                onTap: _saving ? null : _joinByToken,
+                primary: false,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FamilyTimeGroupDetailScreen extends StatefulWidget {
+  final FamilyTimeRepository repo;
+  final FamilyTimeGroupBundle initialBundle;
+
+  const _FamilyTimeGroupDetailScreen({
+    required this.repo,
+    required this.initialBundle,
+  });
+
+  @override
+  State<_FamilyTimeGroupDetailScreen> createState() =>
+      _FamilyTimeGroupDetailScreenState();
+}
+
+class _FamilyTimeGroupDetailScreenState
+    extends State<_FamilyTimeGroupDetailScreen> {
+  final TextEditingController _inviteEmailCtrl = TextEditingController();
+  final TextEditingController _sanctionCtrl = TextEditingController();
+  final TextEditingController _appCtrl = TextEditingController();
+  final TextEditingController _siteCtrl = TextEditingController();
+
+  late FamilyTimeGroupBundle _bundle;
+  List<FamilyTimeMember> _members = const [];
+  List<FamilyTimeBlockedApp> _blockedApps = const [];
+  List<FamilyTimeBlockedSite> _blockedSites = const [];
+  FamilyTimeSession? _session;
+  List<FamilyTimeSessionParticipant> _participants = const [];
+  List<FamilyTimeSessionEvent> _events = const [];
+
+  bool _loading = true;
+  bool _saving = false;
+  int _sessionDuration = 60;
+  Timer? _pollTimer;
+
+  bool get _isAdmin => _bundle.myMembership.isAdmin;
+
+  FamilyTimeMember? get _myMember {
+    for (final member in _members) {
+      if (member.id == _bundle.myMembership.id) return member;
+    }
+    return _bundle.myMembership;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _bundle = widget.initialBundle;
+    _sanctionCtrl.text = _bundle.group.sanctionText ?? '';
+    _reload();
+    _pollTimer = Timer.periodic(const Duration(seconds: 15), (_) {
+      _reload(silent: true);
+    });
+  }
+
+  @override
+  void dispose() {
+    _pollTimer?.cancel();
+    _inviteEmailCtrl.dispose();
+    _sanctionCtrl.dispose();
+    _appCtrl.dispose();
+    _siteCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _showNotice(String title, String message) {
+    return showCupertinoDialog<void>(
+      context: context,
+      builder: (ctx) => CupertinoAlertDialog(
+        title: Text(title),
+        content: Padding(
+          padding: const EdgeInsets.only(top: 8),
+          child: Text(message),
+        ),
+        actions: [
+          CupertinoDialogAction(
+            isDefaultAction: true,
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text(context.read<LanguageProvider>().t('ok')),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _reload({bool silent = false}) async {
+    if (!silent && mounted) {
+      setState(() => _loading = true);
+    }
+
+    final groups = await widget.repo.getMyGroups();
+    FamilyTimeGroupBundle? refreshedBundle;
+    for (final bundle in groups) {
+      if (bundle.group.id == _bundle.group.id) {
+        refreshedBundle = bundle;
+        break;
+      }
+    }
+    if (refreshedBundle == null) {
+      if (mounted) Navigator.of(context).pop();
+      return;
+    }
+
+    final groupId = refreshedBundle.group.id;
+    final members = await widget.repo.getMembers(groupId);
+    final blockedApps = await widget.repo.getBlockedApps(groupId);
+    final blockedSites = await widget.repo.getBlockedSites(groupId);
+    final session = await widget.repo.getLatestSession(groupId);
+    List<FamilyTimeSessionParticipant> participants = const [];
+    List<FamilyTimeSessionEvent> events = const [];
+    if (session != null) {
+      participants = await widget.repo.getSessionParticipants(session.id);
+      events = await widget.repo.getSessionEvents(session.id);
+    }
+
+    if (!mounted) return;
+    setState(() {
+      _bundle = refreshedBundle!;
+      _members = members;
+      _blockedApps = blockedApps;
+      _blockedSites = blockedSites;
+      _session = session;
+      _participants = participants;
+      _events = events;
+      _loading = false;
+    });
+    _sanctionCtrl.text = _bundle.group.sanctionText ?? '';
+  }
+
+  Future<void> _runSave(Future<bool> Function() action) async {
+    if (_saving) return;
+    setState(() => _saving = true);
+    try {
+      final ok = await action();
+      if (!ok && mounted) {
+        await _showNotice(
+          'Action failed',
+          'Please verify permissions and retry.',
+        );
+      }
+      await _reload(silent: true);
+    } finally {
+      if (mounted) {
+        setState(() => _saving = false);
+      }
+    }
+  }
+
+  Future<bool> _confirmLeaveCountdown() async {
+    final remaining = ValueNotifier<int>(60);
+    Timer? timer;
+    timer = Timer.periodic(const Duration(seconds: 1), (t) {
+      final next = remaining.value - 1;
+      if (next <= 0) {
+        t.cancel();
+        if (mounted) Navigator.of(context, rootNavigator: true).pop(true);
+      } else {
+        remaining.value = next;
+      }
+    });
+
+    final shouldLeave = await showCupertinoDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => ValueListenableBuilder<int>(
+        valueListenable: remaining,
+        builder: (context, secs, _) {
+          return CupertinoAlertDialog(
+            title: Text(
+              context.read<LanguageProvider>().t(
+                'family_time_exit_group_session_title',
+              ),
+            ),
+            content: Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Text(
+                context
+                    .read<LanguageProvider>()
+                    .t('family_time_exit_group_session_body')
+                    .replaceAll('{secs}', '$secs'),
+              ),
+            ),
+            actions: [
+              CupertinoDialogAction(
+                isDefaultAction: true,
+                onPressed: () => Navigator.of(ctx).pop(false),
+                child: Text(
+                  context.read<LanguageProvider>().t(
+                    'family_time_stay_in_session',
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+
+    timer.cancel();
+    remaining.dispose();
+    return shouldLeave == true;
+  }
+
+  Future<void> _copyInviteLink() async {
+    final link = widget.repo.buildInviteLink(_bundle.group.inviteToken);
+    await Clipboard.setData(ClipboardData(text: link));
+    if (!mounted) return;
+    await _showNotice(
+      context.read<LanguageProvider>().t('family_time_invite_copied'),
+      link,
+    );
+  }
+
+  String _memberLabel(String memberId) {
+    for (final member in _members) {
+      if (member.id == memberId) return member.label;
+    }
+    return 'Member';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    context.watch<ThemeProvider>();
+    return CupertinoPageScaffold(
+      backgroundColor: AppColors.background,
+      child: AmbientBackdrop(
+        child: SafeArea(
+          child: _loading
+              ? Center(
+                  child: CupertinoActivityIndicator(
+                    color: AppColors.primaryOrange,
+                  ),
+                )
+              : ListView(
+                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+                  children: [
+                    _detailHeader(),
+                    const SizedBox(height: 18),
+                    _sectionLabel('SESSION CONTROL'),
+                    _sectionCard(
+                      title: 'Group session',
+                      subtitle:
+                          'Launch and manage the shared distraction-free session.',
+                      featured: true,
+                      child: _sessionContent(),
+                    ),
+                    _sectionLabel('GROUP CORE'),
+                    _sectionCard(
+                      title: 'Blocked apps & sites',
+                      subtitle:
+                          'These apps and sites are shared across the whole group.',
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _inputField(
+                                  controller: _appCtrl,
+                                  placeholder: 'Add blocked app',
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              _actionButton(
+                                label: '+ App',
+                                onTap: !_isAdmin || _saving
+                                    ? null
+                                    : () {
+                                        final appName = _appCtrl.text.trim();
+                                        if (appName.isEmpty) return;
+                                        _runSave(
+                                          () => widget.repo.addBlockedApp(
+                                            groupId: _bundle.group.id,
+                                            appName: appName,
+                                          ),
+                                        );
+                                        _appCtrl.clear();
+                                      },
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          _chipsWrapApps(),
+                          const SizedBox(height: 16),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _inputField(
+                                  controller: _siteCtrl,
+                                  placeholder: 'Add blocked site',
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              _actionButton(
+                                label: '+ Site',
+                                onTap: !_isAdmin || _saving
+                                    ? null
+                                    : () {
+                                        final domain = _siteCtrl.text.trim();
+                                        if (domain.isEmpty) return;
+                                        _runSave(
+                                          () => widget.repo.addBlockedSite(
+                                            groupId: _bundle.group.id,
+                                            domain: domain,
+                                          ),
+                                        );
+                                        _siteCtrl.clear();
+                                      },
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          _chipsWrapSites(),
+                        ],
+                      ),
+                    ),
+                    _sectionCard(
+                      title: 'Members',
+                      subtitle:
+                          'See who is in the group and manage invitations.',
+                      child: Column(
+                        children: [
+                          if (_isAdmin) ...[
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _inputField(
+                                    controller: _inviteEmailCtrl,
+                                    placeholder: 'Invite by email',
+                                    keyboardType: TextInputType.emailAddress,
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                _actionButton(
+                                  label: 'Invite',
+                                  onTap: _saving
+                                      ? null
+                                      : () {
+                                          final email = _inviteEmailCtrl.text
+                                              .trim();
+                                          if (email.isEmpty) return;
+                                          _runSave(
+                                            () =>
+                                                widget.repo.inviteMemberByEmail(
+                                                  groupId: _bundle.group.id,
+                                                  email: email,
+                                                ),
+                                          );
+                                          _inviteEmailCtrl.clear();
+                                        },
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 14),
+                          ],
+                          ..._members.map(
+                            (member) => Padding(
+                              padding: const EdgeInsets.only(bottom: 10),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                  vertical: 12,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppColors.white.withValues(
+                                    alpha: 0.04,
+                                  ),
+                                  borderRadius: BorderRadius.circular(14),
+                                  border: Border.all(
+                                    color: AppColors.white.withValues(
+                                      alpha: 0.08,
+                                    ),
+                                  ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            '${member.label}${member.id == _myMember?.id ? ' (You)' : ''}',
+                                            style: AppTypography.body.copyWith(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w600,
+                                              color: AppColors.label,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            '${member.role.toUpperCase()} • Quit points: ${member.quitPoints}',
+                                            style: AppTypography.body.copyWith(
+                                              fontSize: 12,
+                                              color: AppColors.secondaryLabel,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    if (_isAdmin && member.id != _myMember?.id)
+                                      CupertinoButton(
+                                        padding: EdgeInsets.zero,
+                                        minimumSize: const Size(28, 28),
+                                        onPressed: _saving
+                                            ? null
+                                            : () => _runSave(
+                                                () => widget.repo.removeMember(
+                                                  groupId: _bundle.group.id,
+                                                  memberId: member.id,
+                                                ),
+                                              ),
+                                        child: Icon(
+                                          CupertinoIcons.minus_circle,
+                                          size: 18,
+                                          color: AppColors.error,
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    _sectionLabel('GROUP SETTINGS'),
+                    _sectionCard(
+                      title: 'Sanction rule',
+                      subtitle: 'Define what happens if someone quits first.',
+                      child: Column(
+                        children: [
+                          _inputField(
+                            controller: _sanctionCtrl,
+                            placeholder:
+                                'Ex: dishes for 3 days, no dessert, 20 pushups...',
+                            maxLines: 2,
+                          ),
+                          const SizedBox(height: 12),
+                          _sectionButton(
+                            label: 'Save sanction',
+                            onTap: !_isAdmin || _saving
+                                ? null
+                                : () => _runSave(
+                                    () => widget.repo.updateGroupSanction(
+                                      groupId: _bundle.group.id,
+                                      sanctionText: _sanctionCtrl.text,
+                                    ),
+                                  ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    _sectionCard(
+                      title: 'Invite link',
+                      subtitle:
+                          'Share this link so other people can join this group.',
+                      child: _sectionButton(
+                        label: 'Copy invite link',
+                        onTap: _copyInviteLink,
+                      ),
+                    ),
+                    _sectionLabel('ACTIVITY'),
+                    _sectionCard(
+                      title: 'Session feed',
+                      subtitle:
+                          'Recent group activity, confirmations and exits.',
+                      child: _eventsContent(),
+                    ),
+                  ],
+                ),
+        ),
+      ),
+    );
+  }
+
+  Widget _detailHeader() {
+    return Row(
+      children: [
+        CupertinoButton(
+          padding: EdgeInsets.zero,
+          minimumSize: const Size(32, 32),
+          onPressed: () => Navigator.of(context).pop(),
+          child: Icon(
+            CupertinoIcons.back,
+            size: 20,
+            color: AppColors.secondaryLabel,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            _bundle.group.name,
+            style: AppTypography.title2.copyWith(
+              fontSize: 26,
+              fontWeight: FontWeight.w700,
+              color: AppColors.label,
+            ),
+          ),
+        ),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10),
+            color: _isAdmin
+                ? AppColors.accent.withValues(alpha: 0.12)
+                : AppColors.pillBackground,
+            border: Border.all(
+              color: _isAdmin
+                  ? AppColors.accent.withValues(alpha: 0.35)
+                  : AppColors.pillBorder,
+            ),
+          ),
+          child: Text(
+            _isAdmin ? 'ADMIN' : 'MEMBER',
+            style: AppTypography.mono.copyWith(
+              fontSize: 10,
+              fontWeight: FontWeight.w800,
+              color: _isAdmin ? AppColors.accent : AppColors.secondaryLabel,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _sectionCard({
+    required String title,
+    required Widget child,
+    String? subtitle,
+    bool featured = false,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 18),
+      child: _CardSurface(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          color: featured
+              ? AppColors.accent.withValues(alpha: 0.06)
+              : AppColors.cardBackgroundAlt,
+          border: Border.all(
+            color: featured
+                ? AppColors.accent.withValues(alpha: 0.24)
+                : AppColors.border,
+            width: 1,
+          ),
+          boxShadow: featured
+              ? [
+                  BoxShadow(
+                    color: AppColors.accent.withValues(alpha: 0.12),
+                    blurRadius: 24,
+                    offset: const Offset(0, 10),
+                    spreadRadius: -12,
+                  ),
+                ]
+              : null,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: AppTypography.body.copyWith(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: AppColors.label,
+              ),
+            ),
+            if (subtitle != null) ...[
+              const SizedBox(height: 6),
+              Text(
+                subtitle,
+                style: AppTypography.body.copyWith(
+                  fontSize: 13,
+                  color: AppColors.secondaryLabel,
+                  height: 1.35,
+                ),
+              ),
+            ],
+            const SizedBox(height: 14),
+            child,
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _sectionLabel(String label) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Text(
+        label,
+        style: AppTypography.mono.copyWith(
+          fontSize: 11,
+          letterSpacing: 2,
+          color: AppColors.secondaryLabel.withValues(alpha: 0.5),
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+
+  Widget _chipsWrapApps() {
+    if (_blockedApps.isEmpty) {
+      return Text(
+        'No blocked apps yet.',
+        style: AppTypography.body.copyWith(
+          fontSize: 13,
+          color: AppColors.secondaryLabel,
+        ),
+      );
+    }
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: _blockedApps
+          .map(
+            (app) => _chip(
+              label: app.appName,
+              removable: _isAdmin,
+              onRemove: !_isAdmin || _saving
+                  ? null
+                  : () => _runSave(
+                      () => widget.repo.removeBlockedApp(
+                        groupId: _bundle.group.id,
+                        appId: app.id,
+                      ),
+                    ),
+            ),
+          )
+          .toList(growable: false),
+    );
+  }
+
+  Widget _chipsWrapSites() {
+    if (_blockedSites.isEmpty) {
+      return Text(
+        'No blocked sites yet.',
+        style: AppTypography.body.copyWith(
+          fontSize: 13,
+          color: AppColors.secondaryLabel,
+        ),
+      );
+    }
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: _blockedSites
+          .map(
+            (site) => _chip(
+              label: site.urlDomain,
+              removable: _isAdmin,
+              onRemove: !_isAdmin || _saving
+                  ? null
+                  : () => _runSave(
+                      () => widget.repo.removeBlockedSite(
+                        groupId: _bundle.group.id,
+                        siteId: site.id,
+                      ),
+                    ),
+            ),
+          )
+          .toList(growable: false),
+    );
+  }
+
+  Widget _sessionContent() {
+    final session = _session;
+    if (session == null || session.isCompleted) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              for (final d in const [30, 60, 90, 120])
+                Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: _PressScale(
+                    onTap: () => setState(() => _sessionDuration = d),
+                    scale: 0.98,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        color: _sessionDuration == d
+                            ? AppColors.accent.withValues(alpha: 0.12)
+                            : AppColors.pillBackground,
+                        border: Border.all(
+                          color: _sessionDuration == d
+                              ? AppColors.accent.withValues(alpha: 0.35)
+                              : AppColors.pillBorder,
+                        ),
+                      ),
+                      child: Text(
+                        '${d}m',
+                        style: AppTypography.body.copyWith(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.label,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          _sectionButton(
+            label: _isAdmin
+                ? 'Launch group session'
+                : 'Only admins can launch sessions',
+            onTap: !_isAdmin || _saving
+                ? null
+                : () => _runSave(() async {
+                    final started = await widget.repo.startSession(
+                      groupId: _bundle.group.id,
+                      durationMinutes: _sessionDuration,
+                    );
+                    return started != null;
+                  }),
+          ),
+        ],
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Status: ${session.status.toUpperCase()} • ${session.durationMinutes} min',
+          style: AppTypography.body.copyWith(
+            fontSize: 13,
+            color: AppColors.secondaryLabel,
+          ),
+        ),
+        if (session.startsAt != null) ...[
+          const SizedBox(height: 4),
+          Builder(
+            builder: (_) {
+              final startedAt = session.startsAt;
+              if (startedAt == null) return const SizedBox.shrink();
+              return Text(
+                "Started ${DateFormat('MMM d HH:mm').format(startedAt.toLocal())}",
+                style: AppTypography.body.copyWith(
+                  fontSize: 12,
+                  color: AppColors.tertiaryLabel,
+                ),
+              );
+            },
+          ),
+        ],
+        const SizedBox(height: 14),
+        ..._participants.map((participant) {
+          final label = _memberLabel(participant.memberId);
+          final accepted = participant.acceptedAt != null;
+          final left = participant.leftAt != null;
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    label,
+                    style: AppTypography.body.copyWith(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.label,
+                    ),
+                  ),
+                ),
+                Text(
+                  left
+                      ? 'LEFT'
+                      : accepted
+                      ? 'READY'
+                      : 'WAITING',
+                  style: AppTypography.mono.copyWith(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
+                    color: left
+                        ? AppColors.error
+                        : accepted
+                        ? AppColors.success
+                        : AppColors.warning,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }),
+        const SizedBox(height: 14),
+        Row(
+          children: [
+            Expanded(
+              child: _sectionButton(
+                label: session.isPending
+                    ? 'Confirm start'
+                    : 'Session already started',
+                onTap: _saving || !session.isPending
+                    ? null
+                    : () => _runSave(
+                        () => widget.repo.acceptSession(
+                          sessionId: session.id,
+                          groupId: _bundle.group.id,
+                        ),
+                      ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: _sectionButton(
+                label: 'Leave (1 min)',
+                onTap: _saving
+                    ? null
+                    : () async {
+                        final leave = await _confirmLeaveCountdown();
+                        if (!leave || !mounted) return;
+                        await _runSave(
+                          () => widget.repo.leaveSessionAfterCountdown(
+                            sessionId: session.id,
+                            groupId: _bundle.group.id,
+                          ),
+                        );
+                      },
+                destructive: true,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _eventsContent() {
+    if (_events.isEmpty) {
+      return Text(
+        'No events yet.',
+        style: AppTypography.body.copyWith(
+          fontSize: 13,
+          color: AppColors.secondaryLabel,
+        ),
+      );
+    }
+    return Column(
+      children: _events
+          .take(12)
+          .map((event) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 12,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.cardBackgroundAlt,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.border),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      event.message,
+                      style: AppTypography.body.copyWith(
+                        fontSize: 13,
+                        color: AppColors.label,
+                        height: 1.35,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      DateFormat(
+                        'MMM d • HH:mm',
+                      ).format(event.createdAt.toLocal()),
+                      style: AppTypography.body.copyWith(
+                        fontSize: 12,
+                        color: AppColors.tertiaryLabel,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          })
+          .toList(growable: false),
+    );
+  }
+
+  Widget _chip({
+    required String label,
+    required bool removable,
+    VoidCallback? onRemove,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(10),
+        color: AppColors.pillBackground,
+        border: Border.all(color: AppColors.pillBorder),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            label,
+            style: AppTypography.body.copyWith(
+              fontSize: 12,
+              color: AppColors.label,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          if (removable && onRemove != null) ...[
+            const SizedBox(width: 6),
+            GestureDetector(
+              onTap: onRemove,
+              child: Icon(
+                CupertinoIcons.clear_circled_solid,
+                size: 14,
+                color: AppColors.error,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+BoxDecoration _cardDecoration() {
+  return BoxDecoration(
+    borderRadius: BorderRadius.circular(20),
+    color: AppColors.cardBackgroundAlt,
+    border: Border.all(color: AppColors.border, width: 1),
+    boxShadow: [
+      BoxShadow(
+        color: AppColors.glassShadowSoft.withValues(alpha: 0.18),
+        blurRadius: 18,
+        offset: const Offset(0, 8),
+      ),
+    ],
+  );
+}
+
+class _CardSurface extends StatelessWidget {
+  final Widget child;
+  final EdgeInsetsGeometry padding;
+  final BoxDecoration? decoration;
+
+  const _CardSurface({
+    required this.child,
+    required this.padding,
+    this.decoration,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: padding,
+      decoration: decoration ?? _cardDecoration(),
+      child: child,
+    );
+  }
+}
+
+Widget _inputField({
+  required TextEditingController controller,
+  required String placeholder,
+  ValueChanged<String>? onSubmitted,
+  TextInputType? keyboardType,
+  TextCapitalization textCapitalization = TextCapitalization.none,
+  int maxLines = 1,
+}) {
+  return CupertinoTextField(
+    controller: controller,
+    placeholder: placeholder,
+    onSubmitted: onSubmitted,
+    keyboardType: keyboardType,
+    textCapitalization: textCapitalization,
+    maxLines: maxLines,
+    style: AppTypography.body.copyWith(fontSize: 14, color: AppColors.label),
+    placeholderStyle: AppTypography.body.copyWith(
+      fontSize: 14,
+      color: AppColors.secondaryLabel.withValues(alpha: 0.7),
+    ),
+    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+    decoration: BoxDecoration(
+      color: AppColors.inputBackground,
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(color: AppColors.inputBorder),
+    ),
+  );
+}
+
+Widget _actionButton({
+  required String label,
+  required VoidCallback? onTap,
+  bool primary = true,
+  Color? primaryColor,
+}) {
+  final resolvedPrimary = primaryColor ?? AppColors.accent;
+  return _PressScale(
+    onTap: onTap,
+    scale: 0.98,
+    child: Container(
+      height: 44,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        color: primary ? resolvedPrimary : AppColors.pillBackground,
+        border: Border.all(
+          color: primary
+              ? resolvedPrimary.withValues(alpha: 0.35)
+              : AppColors.pillBorder,
+        ),
+      ),
+      alignment: Alignment.center,
+      child: Text(
+        label,
+        style: AppTypography.body.copyWith(
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          color: primary ? AppColors.onAccent : AppColors.label,
+        ),
+      ),
+    ),
+  );
+}
+
+Widget _sectionButton({
+  required String label,
+  required VoidCallback? onTap,
+  bool destructive = false,
+}) {
+  return _PressScale(
+    onTap: onTap,
+    scale: 0.98,
+    child: Container(
+      height: 44,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        color: destructive
+            ? AppColors.error.withValues(alpha: 0.14)
+            : AppColors.pillBackground,
+        border: Border.all(
+          color: destructive
+              ? AppColors.error.withValues(alpha: 0.28)
+              : AppColors.white.withValues(alpha: 0.08),
+        ),
+      ),
+      alignment: Alignment.center,
+      child: Text(
+        label,
+        style: AppTypography.body.copyWith(
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          color: destructive ? AppColors.error : AppColors.label,
+        ),
+      ),
+    ),
+  );
+}
+
+class _PressScale extends StatefulWidget {
+  final Widget child;
+  final VoidCallback? onTap;
+  final double scale;
+
+  const _PressScale({
+    required this.child,
+    required this.onTap,
+    required this.scale,
+  });
+
+  @override
+  State<_PressScale> createState() => _PressScaleState();
+}
+
+class _PressScaleState extends State<_PressScale> {
+  bool _pressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: widget.onTap,
+      onTapDown: widget.onTap == null
+          ? null
+          : (_) => setState(() => _pressed = true),
+      onTapUp: widget.onTap == null
+          ? null
+          : (_) => setState(() => _pressed = false),
+      onTapCancel: widget.onTap == null
+          ? null
+          : () => setState(() => _pressed = false),
+      child: AnimatedScale(
+        scale: _pressed ? widget.scale : 1,
+        duration: const Duration(milliseconds: 120),
+        curve: Curves.easeOut,
+        child: widget.child,
+      ),
+    );
+  }
+}

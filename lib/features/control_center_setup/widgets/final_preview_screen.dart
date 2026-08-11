@@ -1,0 +1,136 @@
+import 'dart:ui';
+
+import 'package:flutter/cupertino.dart';
+import 'package:provider/provider.dart';
+
+import '../../../components/liquid_button.dart';
+import '../../../core/providers/theme_provider.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_typography.dart';
+import '../control_center_setup_models.dart';
+import 'control_center_preview.dart';
+
+class FinalPreviewScreen extends StatefulWidget {
+  final ControlCenterSetupState state;
+  final VoidCallback onPrimary;
+  final VoidCallback onSecondary;
+
+  const FinalPreviewScreen({
+    super.key,
+    required this.state,
+    required this.onPrimary,
+    required this.onSecondary,
+  });
+
+  @override
+  State<FinalPreviewScreen> createState() => _FinalPreviewScreenState();
+}
+
+class _FinalPreviewScreenState extends State<FinalPreviewScreen>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 520),
+  )..forward();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    context.watch<ThemeProvider>();
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(18, 4, 18, 18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Ton centre de contrôle est prêt',
+            style: AppTypography.largeTitle.copyWith(
+              fontSize: 30,
+              fontWeight: FontWeight.w800,
+              letterSpacing: -0.9,
+              color: AppColors.label,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Tu peux tout modifier plus tard depuis le menu.',
+            style: AppTypography.subhead.copyWith(
+              color: AppColors.secondaryLabel.withValues(alpha: 0.72),
+              height: 1.35,
+            ),
+          ),
+          const SizedBox(height: 16),
+          AnimatedBuilder(
+            animation: _controller,
+            builder: (context, child) {
+              final t = Curves.easeOutCubic.transform(_controller.value);
+              final scale = lerpDouble(1.02, 1.0, t)!;
+              return Transform.scale(scale: scale, child: child);
+            },
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: IgnorePointer(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(26),
+                        gradient: RadialGradient(
+                          center: Alignment.topCenter,
+                          radius: 1.2,
+                          colors: [
+                            AppColors.accent.withValues(alpha: 0.08),
+                            AppColors.themeGlow.withValues(alpha: 0.0),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                ControlCenterPreview(state: widget.state, showDashboard: true),
+              ],
+            ),
+          ),
+          const Spacer(),
+          LiquidButton(label: 'Activer mon centre', onPressed: widget.onPrimary),
+          const SizedBox(height: 10),
+          _SecondaryButton(label: 'Modifier', onTap: widget.onSecondary),
+        ],
+      ),
+    );
+  }
+}
+
+class _SecondaryButton extends StatelessWidget {
+  final String label;
+  final VoidCallback onTap;
+
+  const _SecondaryButton({required this.label, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: 52,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          color: AppColors.white.withValues(alpha: 0.06),
+          border: Border.all(color: AppColors.white.withValues(alpha: 0.08)),
+        ),
+        child: Text(
+          label,
+          style: AppTypography.headline.copyWith(
+            color: AppColors.label,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ),
+    );
+  }
+}

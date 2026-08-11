@@ -1,6 +1,7 @@
 import 'dart:ui';
+
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart' show Colors;
+
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_typography.dart';
 
@@ -8,10 +9,7 @@ class FloatingNavBarItem {
   final IconData icon;
   final String label;
 
-  const FloatingNavBarItem({
-    required this.icon,
-    required this.label,
-  });
+  const FloatingNavBarItem({required this.icon, required this.label});
 }
 
 class FloatingNavBar extends StatelessWidget {
@@ -32,39 +30,47 @@ class FloatingNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final radius = BorderRadius.circular(22);
+
     return Positioned(
-      bottom: 24, // Adjust distance from bottom
-      left: 16,
-      right: 16,
+      bottom: 14,
+      left: 14,
+      right: 14,
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Nav Tabs Pill
           Expanded(
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(30),
+              borderRadius: radius,
               child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
                 child: Container(
-                  height: 60,
+                  height: 54,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF2A2A2A).withOpacity(0.85), // Dark pill color matching mockup
-                    borderRadius: BorderRadius.circular(30),
-                    border: Border.all(
-                        color: AppColors.glassBorder.withOpacity(0.1), width: 0.5),
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: AppColors.floatingGlassGradient,
+                    ),
+                    borderRadius: radius,
+                    border: Border.all(color: AppColors.border, width: 0.9),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.glassShadow.withValues(alpha: 0.22),
+                        blurRadius: 16,
+                        offset: const Offset(0, 8),
+                        spreadRadius: -10,
+                      ),
+                    ],
                   ),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: List.generate(items.length, (index) {
                       final item = items[index];
                       final isSelected = selectedIndex == index;
                       return GestureDetector(
                         onTap: () => onItemSelected(index),
                         behavior: HitTestBehavior.opaque,
-                        child: _NavBarTab(
-                          item: item,
-                          isSelected: isSelected,
-                        ),
+                        child: _NavBarTab(item: item, isSelected: isSelected),
                       );
                     }),
                   ),
@@ -72,29 +78,23 @@ class FloatingNavBar extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(width: 16),
-          // Action Button Circle
+          const SizedBox(width: 10),
           ClipRRect(
-            borderRadius: BorderRadius.circular(30),
+            borderRadius: BorderRadius.circular(16),
             child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+              filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
               child: Container(
-                width: 60,
-                height: 60,
+                width: 54,
+                height: 54,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF2A2A2A).withOpacity(0.85),
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                      color: AppColors.glassBorder.withOpacity(0.1), width: 0.5),
+                  gradient: LinearGradient(colors: AppColors.floatingGlassGradient),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppColors.border, width: 0.9),
                 ),
                 child: CupertinoButton(
                   padding: EdgeInsets.zero,
                   onPressed: onActionPressed,
-                  child: Icon(
-                    actionIcon,
-                    color: AppColors.label,
-                    size: 24,
-                  ),
+                  child: Icon(actionIcon, color: AppColors.label, size: 22),
                 ),
               ),
             ),
@@ -109,35 +109,35 @@ class _NavBarTab extends StatelessWidget {
   final FloatingNavBarItem item;
   final bool isSelected;
 
-  const _NavBarTab({
-    required this.item,
-    required this.isSelected,
-  });
+  const _NavBarTab({required this.item, required this.isSelected});
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Column(
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 140),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        color: isSelected ? AppColors.accentSoft.withValues(alpha: 0.18) : null,
+      ),
+      child: Row(
         mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
             item.icon,
-            color: isSelected ? AppColors.primaryOrange : const Color(0xFFB0B0B0), // Lighter grey for unselected
-            size: 24,
+            color: isSelected ? AppColors.accent : AppColors.secondaryLabel,
+            size: 20,
           ),
           if (isSelected) ...[
-             const SizedBox(height: 2),
-             Text(
-               item.label,
-               style: AppTypography.caption2.copyWith(
-                 color: AppColors.primaryOrange,
-                 fontWeight: FontWeight.w600,
-                 fontSize: 10,
-               ),
-             ),
-          ]
+            const SizedBox(width: 6),
+            Text(
+              item.label,
+              style: AppTypography.caption1.copyWith(
+                color: AppColors.accent,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
         ],
       ),
     );

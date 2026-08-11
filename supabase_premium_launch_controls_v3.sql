@@ -1,0 +1,168 @@
+begin;
+
+insert into public.app_configs (config_key, config_value)
+values (
+  'premium',
+  jsonb_build_object(
+    'launch_mode_enabled', true,
+    'launch_started_at', '2026-03-20T00:00:00+01:00',
+    'launch_ends_at', '2026-04-20T00:00:00+02:00',
+    'paywall_enabled', false,
+    'launch_premium_labels_enabled', true,
+    'grandfathering_enabled', true,
+    'early_discount_enabled', true,
+    'early_discount_kind', 'percentage',
+    'early_discount_percent', 20,
+    'early_discount_price_id', null
+  )
+)
+on conflict (config_key) do update
+set config_value = coalesce(public.app_configs.config_value, '{}'::jsonb) || excluded.config_value;
+
+alter table public.user_entitlements enable row level security;
+
+drop policy if exists "user_entitlements_own" on public.user_entitlements;
+drop policy if exists "user_entitlements_select_own" on public.user_entitlements;
+
+create policy "user_entitlements_select_own"
+  on public.user_entitlements
+  for select
+  to authenticated
+  using (auth.uid() = created_by);
+
+create or replace function public.sync_launch_entitlements()
+returns public.user_entitlements
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_uid uuid := auth.uid();
+  v_config jsonb := '{}'::jsonb;
+  v_launch_started_at timestamptz;
+  v_launch_ends_at timestamptz;
+  v_grandfathering_enabled boolean := true;
+  v_early_discount_enabled boolean := true;
+  v_discount_kind text;
+  v_discount_percent integer;
+  v_discount_price_id text;
+  v_profile_created_at timestamptz;
+  v_qualified boolean := false;
+  v_existing public.user_entitlements%rowtype;
+  v_result public.user_entitlements%rowtype;
+begin
+  if v_uid is null then
+    raise exception 'Not authenticated';
+  end if;
+
+  select config_value
+    into v_config
+  from public.app_configs
+  where config_key = 'premium'
+  limit 1;
+
+  v_config := coalesce(v_config, '{}'::jsonb);
+  v_launch_started_at := nullif(v_config->>'launch_started_at', '')::timestamptz;
+  v_launch_ends_at := nullif(v_config->>'launch_ends_at', '')::timestamptz;
+  v_grandfathering_enabled := coalesce((v_config->>'grandfathering_enabled')::boolean, true);
+  v_early_discount_enabled := coalesce((v_config->>'early_discount_enabled')::boolean, true);
+  v_discount_kind := nullif(v_config->>'early_discount_kind', '');
+  v_discount_percent := nullif(v_config->>'early_discount_percent', '')::integer;
+  v_discount_price_id := nullif(v_config->>'early_discount_price_id', '');
+
+  select created_at
+    into v_profile_created_at
+  from public.profiles
+  where id = v_uid
+  limit 1;
+
+  if v_profile_created_at is not null then
+    v_qualified :=
+      (v_launch_started_at is null or v_profile_created_at >= v_launch_started_at)
+      and (v_launch_ends_at is null or v_profile_created_at < v_launch_ends_at);
+  end if;
+
+  select *
+    into v_existing
+  from public.user_entitlements
+  where created_by = v_uid
+  limit 1;
+
+  if not found then
+    insert into public.user_entitlements (
+      created_by,
+      early_launch_user,
+      early_launch_qualified_at,
+      is_grandfathered,
+      grandfather_reason,
+      theme_bundle_granted,
+      theme_bundle_source,
+      discount_eligible,
+      discount_kind,
+      discount_percent,
+      discount_price_id,
+      badge_code
+    )
+    values (
+      v_uid,
+      v_qualified,
+      case when v_qualified then coalesce(v_profile_created_at, now()) end,
+      v_qualified and v_grandfathering_enabled,
+      case when v_qualified and v_grandfathering_enabled then 'launch_early_user' end,
+      v_qualified and v_grandfathering_enabled,
+      case when v_qualified and v_grandfathering_enabled then 'launch_early_user' end,
+      v_qualified and v_early_discount_enabled,
+      case when v_qualified and v_early_discount_enabled then v_discount_kind end,
+      case when v_qualified and v_early_discount_enabled then v_discount_percent end,
+      case when v_qualified and v_early_discount_enabled then v_discount_price_id end,
+      case when v_qualified then 'early_user' end
+    )
+    returning *
+    into v_result;
+  else
+    update public.user_entitlements
+    set
+      early_launch_user = v_existing.early_launch_user or v_qualified,
+      early_launch_qualified_at = coalesce(
+        v_existing.early_launch_qualified_at,
+        case when v_qualified then coalesce(v_profile_created_at, now()) end
+      ),
+      is_grandfathered = v_existing.is_grandfathered or (v_qualified and v_grandfathering_enabled),
+      grandfather_reason = coalesce(
+        v_existing.grandfather_reason,
+        case when v_qualified and v_grandfathering_enabled then 'launch_early_user' end
+      ),
+      theme_bundle_granted = v_existing.theme_bundle_granted or (v_qualified and v_grandfathering_enabled),
+      theme_bundle_source = coalesce(
+        v_existing.theme_bundle_source,
+        case when v_qualified and v_grandfathering_enabled then 'launch_early_user' end
+      ),
+      discount_eligible = v_existing.discount_eligible or (v_qualified and v_early_discount_enabled),
+      discount_kind = coalesce(
+        v_existing.discount_kind,
+        case when v_qualified and v_early_discount_enabled then v_discount_kind end
+      ),
+      discount_percent = coalesce(
+        v_existing.discount_percent,
+        case when v_qualified and v_early_discount_enabled then v_discount_percent end
+      ),
+      discount_price_id = coalesce(
+        v_existing.discount_price_id,
+        case when v_qualified and v_early_discount_enabled then v_discount_price_id end
+      ),
+      badge_code = coalesce(
+        v_existing.badge_code,
+        case when v_qualified then 'early_user' end
+      )
+    where created_by = v_uid
+    returning *
+    into v_result;
+  end if;
+
+  return v_result;
+end;
+$$;
+
+grant execute on function public.sync_launch_entitlements() to authenticated;
+
+commit;

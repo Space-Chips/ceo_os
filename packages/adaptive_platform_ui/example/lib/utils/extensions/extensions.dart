@@ -1,6 +1,7 @@
 import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import '../../../../lib/src/platform/platform_info.dart';
 
 extension CheckThemeMode on BuildContext {
   bool isDarkMode() => PlatformInfo.isIOS

@@ -1,8 +1,9 @@
 import 'dart:ui';
+
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart' show Colors, TimeOfDay, Divider;
+import 'package:flutter/material.dart' show Colors;
 import 'package:provider/provider.dart';
-import 'package:intl/intl.dart';
+
 import '../../components/components.dart';
 import '../../core/providers/habit_provider.dart';
 import '../../core/repositories/feature_repository.dart';
@@ -11,6 +12,7 @@ import '../../core/theme/app_typography.dart';
 
 class AddHabitSheet extends StatefulWidget {
   final Map<String, String>? preset;
+
   const AddHabitSheet({super.key, this.preset});
 
   @override
@@ -19,84 +21,278 @@ class AddHabitSheet extends StatefulWidget {
 
 class _AddHabitSheetState extends State<AddHabitSheet> {
   final FeatureRepository _featureRepository = FeatureRepository();
-  final _nameCtrl = TextEditingController();
-  final _quoteCtrl = TextEditingController();
-  final _targetValueCtrl = TextEditingController();
-  final _customUnitCtrl = TextEditingController();
-  final _goalCtrl = TextEditingController();
+  final TextEditingController _habitNameCtrl = TextEditingController();
+  final TextEditingController _goalCtrl = TextEditingController();
+  final TextEditingController _goalNoteCtrl = TextEditingController();
 
-  // Frequency
-  String _frequencyType = 'daily'; // daily, specific_days, interval
-  int _intervalDays = 2;
-  List<int> _selectedWeekdays = [1, 2, 3, 4, 5, 6, 7]; // 1=Mon, 7=Sun
-
-  // Goal
-  String _targetType = 'all'; // all, amount
-  String _targetUnit = 'min'; // min, hr, km, page, cup...
-
-  // Schedule
-  DateTime _startDate = DateTime.now();
-  DateTime? _endDate;
-  TimeOfDay? _reminderTime;
-
-  // Settings
-  bool _autoPopup = false;
-  bool _syncToCalendar = true;
-  String _selectedIcon = 'bolt';
-  List<String> _goals = [];
-  String? _selectedGoal;
-
-  final List<String> _icons = [
-    'bolt',
-    'flame',
-    'drop',
-    'heart',
-    'star',
-    'timer',
-    'briefcase',
-    'book',
-    'leaf',
-    'moon',
-    'sun',
-    'water',
-    'dumbbell',
-    'run',
-    'walk',
-    'brain',
-    'meditation',
-    'money',
-    'code',
-    'phone_off',
-    'book_open',
-    'camera',
-    'music',
-    'sleep',
-    'apple',
-    'calendar',
-    'check',
+  static const String _goalSeparator = '|||';
+  static const List<String> _goalIcons = [
     'target',
+    'briefcase',
+    'bolt',
+    'book',
+    'heart',
+    'dumbbell',
+    'chart',
+    'star',
   ];
-  final List<String> _units = [
-    'min',
-    'hr',
-    'km',
-    'm',
-    'page',
-    'cup',
-    'glass',
-    'step',
-    'cal',
-    'custom',
-  ];
+
+  static const Map<String, List<Map<String, String>>> _presetCategories = {
+    'LIFE': [
+      {
+        'title': 'Daily Check-in',
+        'quote': 'Try a little harder to be a little better',
+        'icon': 'check',
+      },
+      {
+        'title': 'Learn Musical Instruments',
+        'quote': 'Get some inspirations from your own melody',
+        'icon': 'music',
+      },
+      {
+        'title': 'Listen to Music',
+        'quote': 'Get in the right mood',
+        'icon': 'headphones',
+      },
+      {
+        'title': 'Watch a Movie',
+        'quote': 'Experience life in another way',
+        'icon': 'film',
+      },
+      {
+        'title': 'Reduce Screen Time',
+        'quote': 'Disconnect from the phone and reconnect to...',
+        'icon': 'phone_off',
+      },
+      {
+        'title': 'Learn new words',
+        'quote': 'Small number, big result',
+        'icon': 'book',
+      },
+      {
+        'title': 'Learn a new language',
+        'quote': 'Open up a new window to look at the world',
+        'icon': 'globe',
+      },
+      {
+        'title': 'Read',
+        'quote': 'A chapter a day will light your way',
+        'icon': 'book_open',
+      },
+      {
+        'title': 'Write',
+        'quote': 'Note down some inspirations',
+        'icon': 'pencil',
+      },
+      {
+        'title': 'Keep a Diary',
+        'quote': 'Keep a diary and someday it will keep you',
+        'icon': 'notebook',
+      },
+      {
+        'title': 'Track expenses',
+        'quote': 'Get some financial wisdom',
+        'icon': 'money',
+      },
+      {
+        'title': 'Connect a Loved One',
+        'quote': 'It\'s always good to get in touch',
+        'icon': 'heart',
+      },
+      {
+        'title': 'No Video Games',
+        'quote': 'Break free from game addiction',
+        'icon': 'game_controller_off',
+      },
+      {
+        'title': 'Help Others',
+        'quote': 'It is better to give than to take',
+        'icon': 'hand_heart',
+      },
+      {
+        'title': 'Take photos',
+        'quote': 'Capture your happy moments',
+        'icon': 'camera',
+      },
+      {
+        'title': 'Clean up',
+        'quote': 'Ready for best productivity',
+        'icon': 'broom',
+      },
+      {
+        'title': 'Do Housework',
+        'quote': 'Live away from a mess',
+        'icon': 'home',
+      },
+      {
+        'title': 'Water Flowers',
+        'quote': 'Every flower is a soul blossoming in nature',
+        'icon': 'flower',
+      },
+      {
+        'title': 'Walk the Dog',
+        'quote': 'Happiness Is a long walk with your dog',
+        'icon': 'dog',
+      },
+      {
+        'title': 'Be a Good Cat Keeper',
+        'quote': 'Comfort yourself by comforting your cat',
+        'icon': 'cat',
+      },
+      {
+        'title': 'Watch a Documentary',
+        'quote': 'Explore the magic and the unknown world',
+        'icon': 'tv',
+      },
+      {
+        'title': 'Get News Updates',
+        'quote': 'Stay-informed about the world',
+        'icon': 'newspaper',
+      },
+      {'title': 'Watch TV Shows', 'quote': 'Spice up your life', 'icon': 'tv'},
+      {
+        'title': 'Watch Soap Opera',
+        'quote': 'Stop thinking, just have fun',
+        'icon': 'tv',
+      },
+    ],
+    'HEALTH': [
+      {
+        'title': 'Take Medicine',
+        'quote': 'Never forget to take your pills again',
+        'icon': 'pill',
+      },
+      {
+        'title': 'Take Care of Eyes',
+        'quote': 'Eyes are windows to the soul',
+        'icon': 'eye',
+      },
+      {
+        'title': 'Brush Teeth',
+        'quote': 'Teeth are always in style',
+        'icon': 'smile',
+      },
+      {'title': 'Take a Shower', 'quote': 'Wash off the day', 'icon': 'drop'},
+      {
+        'title': 'Do Skincare',
+        'quote': 'May your day be as flawless as your skin',
+        'icon': 'sparkles',
+      },
+      {
+        'title': 'Keep fit',
+        'quote': 'Keep fit for your life, not just for summer',
+        'icon': 'fitness',
+      },
+      {
+        'title': 'Quit Smoking',
+        'quote': 'Smoke away from worries, not your lungs',
+        'icon': 'smoke_off',
+      },
+      {
+        'title': 'Quit alcohol',
+        'quote': 'Stay clean headed',
+        'icon': 'no_drink',
+      },
+    ],
+    'SPORTS': [
+      {'title': 'Swim', 'quote': 'Let waves be your company', 'icon': 'waves'},
+      {
+        'title': 'Exercise',
+        'quote': 'Energize your body and sharpen your mind',
+        'icon': 'dumbell',
+      },
+      {'title': 'Take a Walk', 'quote': 'Walkers live longer', 'icon': 'walk'},
+      {
+        'title': 'Stand',
+        'quote': 'See this world from another perspective',
+        'icon': 'stand',
+      },
+      {
+        'title': 'Do Neck Exercises',
+        'quote': 'For a healthier and more beautiful neck',
+        'icon': 'body',
+      },
+    ],
+    'MINDSET': [
+      {
+        'title': 'Complain Less',
+        'quote': 'Complain never makes anything better',
+        'icon': 'mouth_off',
+      },
+      {
+        'title': 'Self Reflection',
+        'quote': 'Pain plus reflection equals progress',
+        'icon': 'mirror',
+      },
+      {
+        'title': 'Plan your day',
+        'quote': 'Today is going to be a positive day',
+        'icon': 'calendar',
+      },
+      {
+        'title': 'Stay Positive',
+        'quote': "Tough times don't last, but tough people do",
+        'icon': 'sun',
+      },
+      {
+        'title': 'Groom Yourself',
+        'quote': 'Dress the way you want to be addressed',
+        'icon': 'shirt',
+      },
+      {
+        'title': 'No Dirty Words',
+        'quote': 'You are what you say',
+        'icon': 'chat_off',
+      },
+      {
+        'title': 'Say I Love You',
+        'quote': 'Most powerful three words',
+        'icon': 'heart_text',
+      },
+      {
+        'title': 'Smile to yourself',
+        'quote': 'Good luck comes to you when you smile',
+        'icon': 'smile_face',
+      },
+    ],
+  };
+
+  List<String> _goals = const [];
+  String? _selectedGoal;
+  bool _isDaily = false;
+  final List<int> _selectedWeekdays = [];
+  bool _saving = false;
+  String _selectedIcon = 'check';
+  String? _selectedQuote;
+
+  List<_HabitPresetItem> get _presetItems {
+    return _presetCategories.entries
+        .expand(
+          (entry) => entry.value.map(
+            (item) => _HabitPresetItem(
+              category: entry.key,
+              title: item['title'] ?? '',
+              quote: item['quote'] ?? '',
+              icon: item['icon'] ?? 'check',
+            ),
+          ),
+        )
+        .toList();
+  }
 
   @override
   void initState() {
     super.initState();
     _loadGoals();
     if (widget.preset != null) {
-      _nameCtrl.text = widget.preset!['title'] ?? '';
-      _quoteCtrl.text = widget.preset!['quote'] ?? '';
-      _selectedIcon = widget.preset!['icon'] ?? 'bolt';
+      _applyPreset(
+        _HabitPresetItem(
+          category: 'PRESET',
+          title: widget.preset!['title'] ?? '',
+          quote: widget.preset!['quote'] ?? '',
+          icon: widget.preset!['icon'] ?? 'check',
+        ),
+      );
     }
   }
 
@@ -105,20 +301,38 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
     if (!mounted) return;
     setState(() {
       _goals = objectives
-          .map((o) => (o.title ?? '').trim())
+          .map((o) => _parseGoalName(o.title))
           .where((t) => t.isNotEmpty)
           .toList();
-      if (_selectedGoal == null && _goals.isNotEmpty) {
-        _selectedGoal = _goals.first;
-      }
     });
   }
 
-  Future<void> _createGoal() async {
+  String _parseGoalName(String? rawTitle) {
+    final raw = (rawTitle ?? '').trim();
+    if (raw.isEmpty) return '';
+    return raw.split(_goalSeparator).first.trim();
+  }
+
+  String _serializeGoal({
+    required String name,
+    String icon = '',
+    String note = '',
+  }) {
+    final cleanName = name.replaceAll(_goalSeparator, ' ').trim();
+    final cleanIcon = icon.replaceAll(_goalSeparator, ' ').trim();
+    final cleanNote = note.replaceAll(_goalSeparator, ' ').trim();
+    if (cleanIcon.isEmpty && cleanNote.isEmpty) return cleanName;
+    return '$cleanName$_goalSeparator$cleanIcon$_goalSeparator$cleanNote';
+  }
+
+  Future<void> _createGoal({required String icon, required String note}) async {
     final title = _goalCtrl.text.trim();
     if (title.isEmpty) return;
-    await _featureRepository.createObjective(title);
+    await _featureRepository.createObjective(
+      _serializeGoal(name: title, icon: icon, note: note),
+    );
     _goalCtrl.clear();
+    _goalNoteCtrl.clear();
     await _loadGoals();
     if (!mounted) return;
     setState(() => _selectedGoal = title);
@@ -126,828 +340,862 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
   }
 
   void _showCreateGoalDialog() {
-    showCupertinoDialog(
+    _goalCtrl.clear();
+    _goalNoteCtrl.clear();
+    var selectedIcon = 'target';
+    var creating = false;
+
+    showCupertinoModalPopup(
       context: context,
-      builder: (_) => CupertinoAlertDialog(
-        title: Text(
-          'NEW_GOAL',
-          style: AppTypography.mono.copyWith(fontSize: 13),
-        ),
-        content: Padding(
-          padding: const EdgeInsets.only(top: 12),
-          child: CupertinoTextField(
-            controller: _goalCtrl,
-            placeholder: 'GOAL_NAME...',
-            style: AppTypography.mono.copyWith(color: AppColors.label),
-            placeholderStyle: AppTypography.mono.copyWith(
-              color: AppColors.tertiaryLabel,
+      builder: (sheetContext) => StatefulBuilder(
+        builder: (context, setModalState) => SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+            child: Container(
+              padding: const EdgeInsets.all(18),
+              decoration: _sheetDecoration(),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Create Goal',
+                    style: AppTypography.title2.copyWith(
+                      fontSize: 18,
+                      color: AppColors.label,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  _sheetTextField(
+                    controller: _goalCtrl,
+                    placeholder: 'Goal name (required)',
+                    autofocus: true,
+                  ),
+                  const SizedBox(height: 12),
+                  _sheetTextField(
+                    controller: _goalNoteCtrl,
+                    placeholder: 'Small precision (optional)',
+                    maxLines: 2,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Icon (optional)',
+                    style: AppTypography.overline.copyWith(
+                      fontSize: 12,
+                      letterSpacing: 2,
+                      color: AppColors.secondaryLabel.withValues(alpha: 0.6),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 12,
+                    runSpacing: 12,
+                    children: _goalIcons.map((iconName) {
+                      final selected = selectedIcon == iconName;
+                      return _MiniPressScale(
+                        onTap: () =>
+                            setModalState(() => selectedIcon = iconName),
+                        child: Container(
+                          width: 52,
+                          height: 52,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(14),
+                            color: selected
+                                ? AppColors.white.withValues(alpha: 0.1)
+                                : AppColors.white.withValues(alpha: 0.04),
+                            border: Border.all(
+                              color: selected
+                                  ? AppColors.selectionOutline
+                                  : AppColors.white.withValues(alpha: 0.08),
+                              width: 1,
+                            ),
+                          ),
+                          child: Icon(
+                            _goalIconData(iconName),
+                            size: 30,
+                            color: selected
+                                ? AppColors.accentIcon
+                                : AppColors.secondaryLabel,
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 18),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _SheetActionButton(
+                          label: 'Cancel',
+                          dark: true,
+                          onPressed: creating
+                              ? null
+                              : () => Navigator.of(sheetContext).pop(),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: _SheetActionButton(
+                          label: creating ? 'Creating...' : 'Create',
+                          onPressed: creating
+                              ? null
+                              : () async {
+                                  if (_goalCtrl.text.trim().isEmpty) return;
+                                  setModalState(() => creating = true);
+                                  await _createGoal(
+                                    icon: selectedIcon,
+                                    note: _goalNoteCtrl.text.trim(),
+                                  );
+                                },
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-            decoration: BoxDecoration(
-              color: AppColors.backgroundLight,
-              borderRadius: BorderRadius.circular(8),
-            ),
           ),
         ),
-        actions: [
-          CupertinoDialogAction(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('CANCEL'),
-          ),
-          CupertinoDialogAction(
-            onPressed: _createGoal,
-            child: const Text('CREATE'),
-          ),
-        ],
       ),
     );
+  }
+
+  IconData _goalIconData(String? iconName) {
+    switch ((iconName ?? '').toLowerCase()) {
+      case 'briefcase':
+        return CupertinoIcons.briefcase;
+      case 'bolt':
+        return CupertinoIcons.bolt;
+      case 'book':
+        return CupertinoIcons.book;
+      case 'heart':
+        return CupertinoIcons.heart;
+      case 'dumbbell':
+        return CupertinoIcons.sportscourt;
+      case 'chart':
+        return CupertinoIcons.chart_bar;
+      case 'star':
+        return CupertinoIcons.star;
+      case 'target':
+      default:
+        return CupertinoIcons.scope;
+    }
+  }
+
+  IconData _presetIcon(String iconName) {
+    switch (iconName) {
+      case 'check':
+        return CupertinoIcons.check_mark_circled;
+      case 'music':
+        return CupertinoIcons.music_note_2;
+      case 'headphones':
+        return CupertinoIcons.headphones;
+      case 'film':
+      case 'tv':
+        return CupertinoIcons.tv;
+      case 'phone_off':
+        return CupertinoIcons.phone_down_fill;
+      case 'book':
+      case 'book_open':
+      case 'notebook':
+        return CupertinoIcons.book;
+      case 'globe':
+        return CupertinoIcons.globe;
+      case 'pencil':
+        return CupertinoIcons.pencil;
+      case 'money':
+        return CupertinoIcons.money_dollar_circle;
+      case 'heart':
+      case 'heart_text':
+      case 'hand_heart':
+        return CupertinoIcons.heart;
+      case 'camera':
+        return CupertinoIcons.camera;
+      case 'home':
+        return CupertinoIcons.home;
+      case 'flower':
+      case 'leaf':
+        return CupertinoIcons.leaf_arrow_circlepath;
+      case 'dog':
+        return CupertinoIcons.paw;
+      case 'cat':
+        return CupertinoIcons.paw_solid;
+      case 'newspaper':
+        return CupertinoIcons.news;
+      case 'pill':
+        return CupertinoIcons.bandage;
+      case 'eye':
+        return CupertinoIcons.eye;
+      case 'drop':
+      case 'water':
+        return CupertinoIcons.drop;
+      case 'fitness':
+      case 'dumbell':
+        return CupertinoIcons.sportscourt;
+      case 'smoke_off':
+      case 'no_drink':
+      case 'game_controller_off':
+        return CupertinoIcons.nosign;
+      case 'waves':
+        return CupertinoIcons.waveform_path;
+      case 'walk':
+      case 'stand':
+      case 'body':
+        return CupertinoIcons.person;
+      case 'calendar':
+        return CupertinoIcons.calendar;
+      case 'sun':
+        return CupertinoIcons.sun_max;
+      case 'moon':
+        return CupertinoIcons.moon;
+      case 'sparkles':
+      case 'smile_face':
+      case 'mirror':
+        return CupertinoIcons.sparkles;
+      case 'smile':
+        return CupertinoIcons.smiley;
+      case 'broom':
+      case 'shirt':
+      case 'mouth_off':
+      default:
+        return CupertinoIcons.star;
+    }
+  }
+
+  void _applyPreset(_HabitPresetItem preset) {
+    setState(() {
+      _habitNameCtrl.text = preset.title;
+      _selectedIcon = preset.icon;
+      _selectedQuote = preset.quote;
+    });
+  }
+
+  bool get _canCreate =>
+      _habitNameCtrl.text.trim().isNotEmpty &&
+      _selectedGoal != null &&
+      (_isDaily || _selectedWeekdays.isNotEmpty);
+
+  Future<void> _addHabit() async {
+    if (_saving || !_canCreate) return;
+    setState(() => _saving = true);
+    final result = await context.read<HabitProvider>().createHabit(
+      _habitNameCtrl.text.trim(),
+      isDaily: _isDaily,
+      icon: _selectedIcon,
+      category: _selectedGoal,
+      quote: _selectedQuote,
+      frequencyType: _isDaily ? 'daily' : 'specific_days',
+      specificDays: _isDaily ? null : List<int>.from(_selectedWeekdays),
+      targetType: 'all',
+    );
+
+    if (!mounted) return;
+    setState(() => _saving = false);
+    if (!result.allowed) {
+      await showPremiumGateDialog(context, result);
+      return;
+    }
+    Navigator.of(context).pop();
   }
 
   @override
   void dispose() {
-    _nameCtrl.dispose();
-    _quoteCtrl.dispose();
-    _targetValueCtrl.dispose();
-    _customUnitCtrl.dispose();
+    _habitNameCtrl.dispose();
     _goalCtrl.dispose();
+    _goalNoteCtrl.dispose();
     super.dispose();
   }
 
-  void _addHabit() {
-    if (_nameCtrl.text.trim().isEmpty) return;
-
-    final reminderStr = _reminderTime != null
-        ? '${_reminderTime!.hour.toString().padLeft(2, '0')}:${_reminderTime!.minute.toString().padLeft(2, '0')}'
-        : null;
-
-    final unit = _targetUnit == 'custom'
-        ? _customUnitCtrl.text.trim()
-        : _targetUnit;
-
-    context.read<HabitProvider>().createHabit(
-      _nameCtrl.text.trim(),
-      isDaily: _frequencyType == 'daily',
-      icon: _selectedIcon,
-      category: _selectedGoal,
-      quote: _quoteCtrl.text.trim(),
-      frequencyType: _frequencyType,
-      intervalDays: _frequencyType == 'interval' ? _intervalDays : null,
-      targetType: _targetType,
-      targetValue: int.tryParse(_targetValueCtrl.text),
-      targetUnit: unit.isEmpty ? null : unit,
-      reminderTime: reminderStr,
-      autoPopup: _autoPopup,
-      colorTheme: 'orange', // Default for now
-      specificDays: _frequencyType == 'specific_days'
-          ? _selectedWeekdays
-          : null,
-      syncToCalendar: _syncToCalendar,
-    );
-    Navigator.of(context).pop();
-  }
-
-  IconData _getIconData(String iconName) {
-    // extensive mapping or simplified fallback
-    switch (iconName) {
-      case 'bolt':
-        return CupertinoIcons.bolt_fill;
-      case 'flame':
-        return CupertinoIcons.flame_fill;
-      case 'drop':
-        return CupertinoIcons.drop_fill;
-      case 'heart':
-        return CupertinoIcons.heart_fill;
-      case 'star':
-        return CupertinoIcons.star_fill;
-      case 'timer':
-        return CupertinoIcons.timer;
-      case 'briefcase':
-        return CupertinoIcons.briefcase_fill;
-      case 'book':
-        return CupertinoIcons.book_fill;
-      case 'leaf':
-        return CupertinoIcons.refresh;
-      case 'moon':
-        return CupertinoIcons.moon_fill;
-      case 'sun':
-        return CupertinoIcons.sun_max_fill;
-      case 'water':
-        return CupertinoIcons.drop_fill; // distinct from drop?
-      case 'dumbbell':
-        return CupertinoIcons.sportscourt_fill;
-      case 'run':
-        return CupertinoIcons.hare_fill;
-      case 'walk':
-        return CupertinoIcons.person;
-      case 'brain':
-        return CupertinoIcons.lightbulb_fill;
-      case 'meditation':
-        return CupertinoIcons.sparkles;
-      case 'money':
-        return CupertinoIcons.money_dollar_circle_fill;
-      case 'code':
-        return CupertinoIcons.chevron_left_slash_chevron_right;
-      case 'phone_off':
-        return CupertinoIcons.phone_down_fill;
-      case 'book_open':
-        return CupertinoIcons.book_circle_fill;
-      case 'camera':
-        return CupertinoIcons.camera_fill;
-      case 'music':
-        return CupertinoIcons.music_note_2;
-      case 'sleep':
-        return CupertinoIcons.moon_stars_fill;
-      case 'apple':
-        return CupertinoIcons.shopping_cart;
-      case 'calendar':
-        return CupertinoIcons.calendar;
-      case 'check':
-        return CupertinoIcons.check_mark_circled_solid;
-      case 'target':
-        return CupertinoIcons.scope;
-      default:
-        return CupertinoIcons.bolt_fill;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.92,
-      decoration: BoxDecoration(
-        color: AppColors.background.withOpacity(0.95),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-      ),
-      child: ClipRRect(
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-          child: Column(
-            children: [
-              // Header
-              Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  children: [
-                    Container(
-                      width: 40,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: AppColors.glassBorder,
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
+    final days = const ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+    final media = MediaQuery.of(context);
 
-                    // Goal selection
-                    _sectionHeader('GOAL_LINK'),
-                    GlassCard(
-                      padding: const EdgeInsets.all(12),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (_goals.isEmpty)
-                            Text(
-                              'No goals yet. Create your first goal.',
-                              style: AppTypography.mono.copyWith(
-                                fontSize: 10,
-                                color: AppColors.tertiaryLabel,
-                              ),
-                            )
-                          else
-                            Wrap(
-                              spacing: 8,
-                              runSpacing: 8,
-                              children: _goals.map((goal) {
-                                final selected = _selectedGoal == goal;
-                                return GestureDetector(
-                                  onTap: () =>
-                                      setState(() => _selectedGoal = goal),
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 10,
-                                      vertical: 8,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: selected
-                                          ? AppColors.primaryOrange.withOpacity(
-                                              0.2,
-                                            )
-                                          : Colors.transparent,
-                                      borderRadius: BorderRadius.circular(8),
-                                      border: Border.all(
-                                        color: selected
-                                            ? AppColors.primaryOrange
-                                            : AppColors.glassBorder,
-                                      ),
-                                    ),
-                                    child: Text(
-                                      goal.toUpperCase(),
-                                      style: AppTypography.mono.copyWith(
-                                        fontSize: 10,
-                                        color: selected
-                                            ? AppColors.primaryOrange
-                                            : AppColors.secondaryLabel,
-                                      ),
+    return BackdropFilter(
+      filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+      child: Container(
+        constraints: BoxConstraints(maxHeight: media.size.height * 0.88),
+        padding: EdgeInsets.only(bottom: media.viewInsets.bottom),
+        decoration: BoxDecoration(
+          color: AppColors.background.withValues(alpha: 0.88),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+          border: Border(
+            top: BorderSide(
+              color: AppColors.border.withValues(alpha: 0.30),
+              width: 0.5,
+            ),
+          ),
+        ),
+        child: SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 14, 24, 14),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Center(
+                  child: Container(
+                    width: 42,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: AppColors.border.withValues(alpha: 0.45),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 18),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Create Habit',
+                    style: AppTypography.mono.copyWith(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w900,
+                      color: AppColors.label,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Flexible(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _sectionLabel('Goal'),
+                        const SizedBox(height: 8),
+                        if (_goals.isEmpty)
+                          Container(
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: AppColors.inputBackground,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: AppColors.inputBorder),
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    'Create a goal first to attach this habit.',
+                                    style: AppTypography.footnote.copyWith(
+                                      fontSize: 13,
+                                      color: AppColors.secondaryLabel,
                                     ),
                                   ),
-                                );
-                              }).toList(),
+                                ),
+                                const SizedBox(width: 12),
+                                _InlineTextAction(
+                                  label: '+ Create Goal',
+                                  onTap: _showCreateGoalDialog,
+                                ),
+                              ],
                             ),
+                          )
+                        else
+                          Wrap(
+                            spacing: 10,
+                            runSpacing: 10,
+                            children: _goals.map((goal) {
+                              final selected = _selectedGoal == goal;
+                              return _MiniPressScale(
+                                onTap: () => setState(() => _selectedGoal = goal),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 10,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: selected
+                                        ? AppColors.accentSurfaceSoft
+                                        : AppColors.inputBackground,
+                                    borderRadius: BorderRadius.circular(14),
+                                    border: Border.all(
+                                      color: selected
+                                          ? AppColors.selectionOutline
+                                          : AppColors.inputBorder,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    goal,
+                                    style: AppTypography.caption1.copyWith(
+                                      fontSize: 12,
+                                      color: selected
+                                          ? AppColors.label
+                                          : AppColors.secondaryLabel,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                        if (_goals.isNotEmpty) ...[
                           const SizedBox(height: 10),
-                          GestureDetector(
+                          _InlineTextAction(
+                            label: '+ Create Goal',
                             onTap: _showCreateGoalDialog,
-                            child: Text(
-                              '+ CREATE_GOAL',
-                              style: AppTypography.mono.copyWith(
-                                fontSize: 10,
-                                color: AppColors.primaryOrange,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
                           ),
                         ],
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    const NeoMonoText(
-                      'CUSTOM_PROTOCOL_INIT',
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ],
-                ),
-              ),
-
-              // Scrollable Content
-              Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                  ).copyWith(bottom: 120),
-                  children: [
-                    // 1. Identity
-                    _sectionHeader('IDENTITY_MATRIX'),
-                    GlassInputField(
-                      placeholder: 'PROTOCOL_NAME...',
-                      controller: _nameCtrl,
-                      autofocus: widget.preset == null,
-                    ),
-                    const SizedBox(height: 16),
-                    GlassInputField(
-                      placeholder: 'INSPIRATIONAL_QUOTE...',
-                      controller: _quoteCtrl,
-                      maxLines: 2,
-                    ),
-                    const SizedBox(height: 24),
-
-                    // 2. Icon Selection
-                    _sectionHeader('VISUAL_IDENTIFIER'),
-                    SizedBox(
-                      height: 50,
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: _icons.length,
-                        itemBuilder: (context, i) {
-                          final iconName = _icons[i];
-                          final isSelected = _selectedIcon == iconName;
-                          return GestureDetector(
-                            onTap: () =>
-                                setState(() => _selectedIcon = iconName),
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 200),
-                              margin: const EdgeInsets.only(right: 12),
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: isSelected
-                                    ? AppColors.primaryOrange.withOpacity(0.2)
-                                    : Colors.transparent,
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: isSelected
-                                      ? AppColors.primaryOrange
-                                      : AppColors.glassBorder,
-                                  width: 0.5,
+                        const SizedBox(height: 18),
+                        _sheetTextField(
+                          controller: _habitNameCtrl,
+                          placeholder: 'Habit name (required)',
+                          autofocus: widget.preset == null,
+                          onChanged: (_) => setState(() {}),
+                        ),
+                        const SizedBox(height: 18),
+                        Text(
+                          'Schedule',
+                          style: AppTypography.overline.copyWith(
+                            fontSize: 12,
+                            letterSpacing: 2,
+                            color: AppColors.secondaryLabel.withValues(
+                              alpha: 0.6,
+                            ),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Container(
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: AppColors.inputBackground,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: AppColors.inputBorder),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _MiniPressScale(
+                                onTap: () {
+                                  setState(() {
+                                    _isDaily = !_isDaily;
+                                    if (_isDaily) _selectedWeekdays.clear();
+                                  });
+                                },
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    AnimatedContainer(
+                                      duration: const Duration(milliseconds: 140),
+                                      width: 20,
+                                      height: 20,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(6),
+                                        color: _isDaily
+                                            ? AppColors.accentSurfaceStrong
+                                            : AppColors.cardBackgroundStrong,
+                                        border: Border.all(
+                                          color: _isDaily
+                                              ? AppColors.selectionOutline
+                                              : AppColors.inputBorder,
+                                          width: 1,
+                                        ),
+                                      ),
+                                      child: _isDaily
+                                          ? Icon(
+                                              CupertinoIcons.checkmark,
+                                              size: 13,
+                                              color: AppColors.onAccent,
+                                            )
+                                          : null,
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Text(
+                                      'Daily',
+                                      style: AppTypography.body.copyWith(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                        color: AppColors.label,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                              child: Icon(
-                                _getIconData(iconName),
-                                size: 20,
-                                color: isSelected
-                                    ? AppColors.primaryOrange
-                                    : AppColors.secondaryLabel,
+                              const SizedBox(height: 14),
+                              Wrap(
+                                spacing: 8,
+                                runSpacing: 8,
+                                children: List.generate(7, (index) {
+                                  final day = index + 1;
+                                  final selected = _selectedWeekdays.contains(day);
+                                  final disabled = _isDaily;
+                                  return _MiniPressScale(
+                                    onTap: disabled
+                                        ? null
+                                        : () {
+                                            setState(() {
+                                              if (selected) {
+                                                _selectedWeekdays.remove(day);
+                                              } else {
+                                                _selectedWeekdays.add(day);
+                                              }
+                                            });
+                                          },
+                                    child: Opacity(
+                                      opacity: disabled ? 0.45 : 1,
+                                      child: Container(
+                                        width: 34,
+                                        height: 34,
+                                        alignment: Alignment.center,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: selected
+                                              ? AppColors.accentSurfaceSoft
+                                              : AppColors.cardBackgroundStrong,
+                                          border: Border.all(
+                                            color: selected
+                                                ? AppColors.selectionOutline
+                                                : AppColors.inputBorder,
+                                            width: 1,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          days[index],
+                                          style: AppTypography.caption1.copyWith(
+                                            fontSize: 12,
+                                            color: selected
+                                                ? AppColors.label
+                                                : AppColors.secondaryLabel,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                }),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 18),
+                        Text(
+                          'Preset habits',
+                          style: AppTypography.overline.copyWith(
+                            fontSize: 12,
+                            letterSpacing: 2,
+                            color: AppColors.secondaryLabel.withValues(
+                              alpha: 0.6,
+                            ),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        ..._presetItems.map((preset) {
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 10),
+                            child: _MiniPressScale(
+                              onTap: () => _applyPreset(preset),
+                              child: Container(
+                                padding: const EdgeInsets.all(14),
+                                decoration: BoxDecoration(
+                                  color: AppColors.cardBackgroundAlt,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(color: AppColors.border),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      width: 42,
+                                      height: 42,
+                                      decoration: BoxDecoration(
+                                        color: AppColors.moduleIconBackground,
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Icon(
+                                        _presetIcon(preset.icon),
+                                        size: 20,
+                                        color: AppColors.accentIcon,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            preset.title,
+                                            style: AppTypography.body.copyWith(
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.w600,
+                                              color: AppColors.label,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            preset.quote,
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: AppTypography.footnote.copyWith(
+                                              fontSize: 12,
+                                              color: AppColors.secondaryLabel
+                                                  .withValues(alpha: 0.72),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Text(
+                                      preset.category,
+                                      style: AppTypography.caption1.copyWith(
+                                        fontSize: 10,
+                                        color: AppColors.tertiaryLabel
+                                            .withValues(alpha: 0.72),
+                                        fontWeight: FontWeight.w600,
+                                        letterSpacing: 1.2,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           );
-                        },
+                        }),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 18),
+                Row(
+                  children: [
+                    Expanded(
+                      child: CupertinoButton(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        color: AppColors.backgroundLight.withValues(alpha: 0.6),
+                        borderRadius: BorderRadius.circular(14),
+                        onPressed: _saving
+                            ? null
+                            : () => Navigator.of(context).pop(),
+                        child: Text(
+                          'Cancel',
+                          style: AppTypography.mono.copyWith(
+                            fontSize: 14,
+                            color: AppColors.label,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 24),
-
-                    // 3. Frequency Container
-                    _sectionHeader('TEMPORAL_SETTINGS'),
-                    GlassCard(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              _FrequencyOption(
-                                'DAILY',
-                                'daily',
-                                _frequencyType,
-                                (v) => setState(() => _frequencyType = v),
-                              ),
-                              _FrequencyOption(
-                                'SPECIFIC',
-                                'specific_days',
-                                _frequencyType,
-                                (v) => setState(() => _frequencyType = v),
-                              ),
-                              _FrequencyOption(
-                                'INTERVAL',
-                                'interval',
-                                _frequencyType,
-                                (v) => setState(() => _frequencyType = v),
-                              ),
-                            ],
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: CupertinoButton(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(14),
+                        onPressed: _canCreate && !_saving ? _addHabit : null,
+                        child: Text(
+                          _saving ? 'Creating…' : 'Create',
+                          style: AppTypography.mono.copyWith(
+                            fontSize: 14,
+                            color: Colors.black,
+                            fontWeight: FontWeight.w900,
                           ),
-                          const SizedBox(height: 16),
-
-                          if (_frequencyType == 'specific_days')
-                            Wrap(
-                              spacing: 8,
-                              runSpacing: 8,
-                              children: List.generate(7, (index) {
-                                final day = index + 1;
-                                final isSelected = _selectedWeekdays.contains(
-                                  day,
-                                );
-                                final days = [
-                                  'M',
-                                  'T',
-                                  'W',
-                                  'T',
-                                  'F',
-                                  'S',
-                                  'S',
-                                ];
-                                return GestureDetector(
-                                  onTap: () {
-                                    setState(() {
-                                      if (isSelected) {
-                                        if (_selectedWeekdays.length > 1)
-                                          _selectedWeekdays.remove(day);
-                                      } else {
-                                        _selectedWeekdays.add(day);
-                                      }
-                                    });
-                                  },
-                                  child: Container(
-                                    width: 36,
-                                    height: 36,
-                                    alignment: Alignment.center,
-                                    decoration: BoxDecoration(
-                                      color: isSelected
-                                          ? AppColors.primaryOrange
-                                          : Colors.transparent,
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                        color: isSelected
-                                            ? AppColors.primaryOrange
-                                            : AppColors.glassBorder,
-                                      ),
-                                    ),
-                                    child: Text(
-                                      days[index],
-                                      style: TextStyle(
-                                        color: isSelected
-                                            ? Colors.white
-                                            : AppColors.secondaryLabel,
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              }),
-                            ),
-
-                          if (_frequencyType == 'interval')
-                            Row(
-                              children: [
-                                Text(
-                                  'EVERY',
-                                  style: AppTypography.mono.copyWith(
-                                    fontSize: 12,
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                SizedBox(
-                                  width: 60,
-                                  child: GlassInputField(
-                                    controller: TextEditingController(
-                                      text: _intervalDays.toString(),
-                                    ),
-                                    keyboardType: TextInputType.number,
-                                    onChanged: (v) =>
-                                        _intervalDays = int.tryParse(v) ?? 2,
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Text(
-                                  'DAYS',
-                                  style: AppTypography.mono.copyWith(
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ],
-                            ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-
-                    // 4. Goal Settings
-                    _sectionHeader('OBJECTIVE_PARAMETERS'),
-                    GlassCard(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        children: [
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _GoalOption(
-                                  'ACHIEVE_ALL',
-                                  'all',
-                                  _targetType,
-                                  (v) => setState(() => _targetType = v),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: _GoalOption(
-                                  'REACH_AMOUNT',
-                                  'amount',
-                                  _targetType,
-                                  (v) => setState(() => _targetType = v),
-                                ),
-                              ),
-                            ],
-                          ),
-                          if (_targetType == 'amount') ...[
-                            const SizedBox(height: 16),
-                            Row(
-                              children: [
-                                Expanded(
-                                  flex: 1,
-                                  child: GlassInputField(
-                                    placeholder: '0',
-                                    controller: _targetValueCtrl,
-                                    keyboardType: TextInputType.number,
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  flex: 2,
-                                  child: SizedBox(
-                                    height: 50,
-                                    child: ListView.builder(
-                                      scrollDirection: Axis.horizontal,
-                                      itemCount: _units.length,
-                                      itemBuilder: (context, i) {
-                                        final u = _units[i];
-                                        final isSel = _targetUnit == u;
-                                        return GestureDetector(
-                                          onTap: () =>
-                                              setState(() => _targetUnit = u),
-                                          child: Container(
-                                            alignment: Alignment.center,
-                                            margin: const EdgeInsets.only(
-                                              right: 8,
-                                            ),
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 12,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color: isSel
-                                                  ? AppColors.primaryOrange
-                                                        .withOpacity(0.2)
-                                                  : Colors.transparent,
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                              border: Border.all(
-                                                color: isSel
-                                                    ? AppColors.primaryOrange
-                                                    : AppColors.glassBorder,
-                                              ),
-                                            ),
-                                            child: Text(
-                                              u.toUpperCase(),
-                                              style: AppTypography.mono
-                                                  .copyWith(
-                                                    fontSize: 10,
-                                                    color: isSel
-                                                        ? AppColors
-                                                              .primaryOrange
-                                                        : AppColors
-                                                              .secondaryLabel,
-                                                  ),
-                                            ),
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            if (_targetUnit == 'custom') ...[
-                              const SizedBox(height: 12),
-                              GlassInputField(
-                                placeholder: 'CUSTOM_UNIT_NAME...',
-                                controller: _customUnitCtrl,
-                              ),
-                            ],
-                          ],
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-
-                    // 5. Schedule & Reminder
-                    _sectionHeader('EXECUTION_LOGISTICS'),
-                    GlassCard(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        children: [
-                          _DatePickerRow(
-                            'START_DATE',
-                            _startDate,
-                            (d) => setState(() => _startDate = d),
-                          ),
-                          Divider(color: AppColors.glassBorder, height: 24),
-                          _TimePickerRow(
-                            'REMINDER',
-                            _reminderTime,
-                            (t) => setState(() => _reminderTime = t),
-                          ),
-                          Divider(color: AppColors.glassBorder, height: 24),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                'AUTO_POPUP_LOG',
-                                style: AppTypography.mono.copyWith(
-                                  fontSize: 12,
-                                  color: AppColors.secondaryLabel,
-                                ),
-                              ),
-                              CupertinoSwitch(
-                                value: _autoPopup,
-                                activeColor: AppColors.primaryOrange,
-                                onChanged: (v) =>
-                                    setState(() => _autoPopup = v),
-                              ),
-                            ],
-                          ),
-                          Divider(color: AppColors.glassBorder, height: 24),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                'SYNC_TO_CALENDAR',
-                                style: AppTypography.mono.copyWith(
-                                  fontSize: 12,
-                                  color: AppColors.secondaryLabel,
-                                ),
-                              ),
-                              CupertinoSwitch(
-                                value: _syncToCalendar,
-                                activeColor: AppColors.primaryOrange,
-                                onChanged: (v) =>
-                                    setState(() => _syncToCalendar = v),
-                              ),
-                            ],
-                          ),
-                        ],
+                        ),
                       ),
                     ),
                   ],
                 ),
-              ),
-
-              // Footer Button
-              Padding(
-                padding: const EdgeInsets.all(24),
-                child: LiquidButton(
-                  label: 'INITIATE_PROTOCOL',
-                  fullWidth: true,
-                  onPressed: _addHabit,
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _sectionHeader(String title) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12, left: 4),
-      child: Text(
-        title,
-        style: AppTypography.mono.copyWith(
-          fontSize: 10,
-          color: AppColors.primaryOrange,
-          letterSpacing: 1.5,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-    );
-  }
-}
-
-class _FrequencyOption extends StatelessWidget {
-  final String label;
-  final String value;
-  final String groupValue;
-  final ValueChanged<String> onChanged;
-
-  const _FrequencyOption(
-    this.label,
-    this.value,
-    this.groupValue,
-    this.onChanged,
+  Widget _sectionLabel(String label) => Text(
+    label,
+    style: AppTypography.body.copyWith(
+      fontSize: 12,
+      color: AppColors.secondaryLabel.withValues(alpha: 0.7),
+      letterSpacing: 2,
+      fontWeight: FontWeight.w700,
+    ),
   );
 
-  @override
-  Widget build(BuildContext context) {
-    final isSelected = value == groupValue;
-    return GestureDetector(
-      onTap: () => onChanged(value),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.primaryOrange : Colors.transparent,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: isSelected ? AppColors.primaryOrange : AppColors.glassBorder,
-          ),
-        ),
-        child: Text(
-          label,
-          style: AppTypography.mono.copyWith(
-            fontSize: 10,
-            color: isSelected ? Colors.white : AppColors.secondaryLabel,
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-          ),
-        ),
+  BoxDecoration _sheetDecoration() {
+    return BoxDecoration(
+      gradient: LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [AppColors.cardBackgroundAlt, AppColors.cardBase],
       ),
-    );
-  }
-}
-
-class _GoalOption extends StatelessWidget {
-  final String label;
-  final String value;
-  final String groupValue;
-  final ValueChanged<String> onChanged;
-
-  const _GoalOption(this.label, this.value, this.groupValue, this.onChanged);
-
-  @override
-  Widget build(BuildContext context) {
-    final isSelected = value == groupValue;
-    return GestureDetector(
-      onTap: () => onChanged(value),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: isSelected
-              ? AppColors.primaryOrange.withOpacity(0.2)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: isSelected ? AppColors.primaryOrange : AppColors.glassBorder,
-          ),
-        ),
-        child: Text(
-          label,
-          style: AppTypography.mono.copyWith(
-            fontSize: 10,
-            color: isSelected
-                ? AppColors.primaryOrange
-                : AppColors.secondaryLabel,
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-          ),
-        ),
+      borderRadius: BorderRadius.circular(22),
+      border: Border.all(
+        color: AppColors.border.withValues(alpha: 0.30),
+        width: 0.5,
       ),
-    );
-  }
-}
-
-class _DatePickerRow extends StatelessWidget {
-  final String label;
-  final DateTime date;
-  final ValueChanged<DateTime> onChanged;
-
-  const _DatePickerRow(this.label, this.date, this.onChanged);
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: AppTypography.mono.copyWith(
-            fontSize: 12,
-            color: AppColors.secondaryLabel,
-          ),
-        ),
-        GestureDetector(
-          onTap: () {
-            showCupertinoModalPopup(
-              context: context,
-              builder: (_) => Container(
-                height: 250,
-                color: AppColors.background,
-                child: CupertinoDatePicker(
-                  mode: CupertinoDatePickerMode.date,
-                  initialDateTime: date,
-                  onDateTimeChanged: onChanged,
-                ),
-              ),
-            );
-          },
-          child: Text(
-            DateFormat('MMM dd, yyyy').format(date).toUpperCase(),
-            style: AppTypography.mono.copyWith(
-              fontSize: 12,
-              color: AppColors.primaryOrange,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+      boxShadow: [
+        BoxShadow(
+          color: AppColors.glassShadow.withValues(alpha: 0.24),
+          blurRadius: 26,
+          offset: const Offset(0, 10),
         ),
       ],
     );
   }
 }
 
-class _TimePickerRow extends StatelessWidget {
-  final String label;
-  final TimeOfDay? time;
-  final ValueChanged<TimeOfDay> onChanged;
+class _HabitPresetItem {
+  final String category;
+  final String title;
+  final String quote;
+  final String icon;
 
-  const _TimePickerRow(this.label, this.time, this.onChanged);
+  const _HabitPresetItem({
+    required this.category,
+    required this.title,
+    required this.quote,
+    required this.icon,
+  });
+}
+
+class _MiniPressScale extends StatefulWidget {
+  final Widget child;
+  final VoidCallback? onTap;
+
+  const _MiniPressScale({required this.child, required this.onTap});
+
+  @override
+  State<_MiniPressScale> createState() => _MiniPressScaleState();
+}
+
+class _MiniPressScaleState extends State<_MiniPressScale> {
+  bool _pressed = false;
+
+  void _setPressed(bool value) {
+    if (!mounted || _pressed == value) return;
+    setState(() => _pressed = value);
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: AppTypography.mono.copyWith(
-            fontSize: 12,
-            color: AppColors.secondaryLabel,
-          ),
+    return Listener(
+      onPointerDown: (_) => _setPressed(true),
+      onPointerUp: (_) => _setPressed(false),
+      onPointerCancel: (_) => _setPressed(false),
+      child: AnimatedScale(
+        scale: _pressed ? 0.98 : 1,
+        duration: const Duration(milliseconds: 120),
+        curve: Curves.easeOutCubic,
+        child: GestureDetector(
+          behavior: HitTestBehavior.translucent,
+          onTap: widget.onTap,
+          child: widget.child,
         ),
-        GestureDetector(
-          onTap: () {
-            showCupertinoModalPopup(
-              context: context,
-              builder: (_) => Container(
-                height: 250,
-                color: AppColors.background,
-                child: CupertinoDatePicker(
-                  mode: CupertinoDatePickerMode.time,
-                  initialDateTime: DateTime(
-                    2024,
-                    1,
-                    1,
-                    time?.hour ?? 9,
-                    time?.minute ?? 0,
+      ),
+    );
+  }
+}
+
+class _InlineTextAction extends StatelessWidget {
+  final String label;
+  final VoidCallback onTap;
+
+  const _InlineTextAction({required this.label, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return _MiniPressScale(
+      onTap: onTap,
+      child: Text(
+        label,
+        style: AppTypography.callout.copyWith(
+          fontSize: 13,
+          color: AppColors.accentIcon,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+}
+
+class _SheetActionButton extends StatelessWidget {
+  final String label;
+  final VoidCallback? onPressed;
+  final bool dark;
+
+  const _SheetActionButton({
+    required this.label,
+    required this.onPressed,
+    this.dark = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return _MiniPressScale(
+      onTap: onPressed,
+      child: Opacity(
+        opacity: onPressed == null ? 0.45 : 1,
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+          decoration: BoxDecoration(
+            gradient: dark
+                ? null
+                : LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: AppColors.buttonGradient,
                   ),
-                  onDateTimeChanged: (d) =>
-                      onChanged(TimeOfDay.fromDateTime(d)),
-                ),
-              ),
-            );
-          },
+            color: dark ? AppColors.white.withValues(alpha: 0.06) : null,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: dark
+                  ? AppColors.white.withValues(alpha: 0.08)
+                  : AppColors.white.withValues(alpha: 0.14),
+              width: 1,
+            ),
+          ),
           child: Text(
-            time != null ? time!.format(context) : 'NONE',
-            style: AppTypography.mono.copyWith(
-              fontSize: 12,
-              color: AppColors.primaryOrange,
-              fontWeight: FontWeight.bold,
+            label,
+            textAlign: TextAlign.center,
+            style: AppTypography.callout.copyWith(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: dark ? AppColors.label : AppColors.onAccent,
             ),
           ),
         ),
-      ],
+      ),
     );
   }
+}
+
+Widget _sheetTextField({
+  required TextEditingController controller,
+  required String placeholder,
+  bool autofocus = false,
+  int maxLines = 1,
+  ValueChanged<String>? onChanged,
+}) {
+  return Container(
+    decoration: BoxDecoration(
+      color: AppColors.inputBackground,
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(color: AppColors.inputBorder),
+    ),
+    child: CupertinoTextField(
+      controller: controller,
+      autofocus: autofocus,
+      maxLines: maxLines,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      placeholder: placeholder,
+      onChanged: onChanged,
+      style: AppTypography.body.copyWith(
+        fontSize: 16,
+        color: AppColors.label,
+        fontWeight: FontWeight.w500,
+      ),
+      placeholderStyle: AppTypography.body.copyWith(
+        fontSize: 16,
+        color: AppColors.secondaryLabel.withValues(alpha: 0.72),
+      ),
+      decoration: const BoxDecoration(),
+    ),
+  );
 }

@@ -1,6 +1,8 @@
 import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
+import '../../../../lib/src/widgets/adaptive_app_bar.dart';
+import '../../../../lib/src/widgets/adaptive_scaffold.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});

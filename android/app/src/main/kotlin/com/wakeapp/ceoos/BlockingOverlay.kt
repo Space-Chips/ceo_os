@@ -1,0 +1,59 @@
+package com.wakeapp.ceoos
+
+import android.accessibilityservice.AccessibilityService
+import android.graphics.Color
+import android.os.Build
+import android.view.Gravity
+import android.view.View
+import android.view.WindowManager
+import android.widget.FrameLayout
+
+class BlockingOverlay(
+    private val service: AccessibilityService,
+) {
+    private var overlayView: View? = null
+
+    fun show() {
+        if (overlayView != null) return
+        val windowManager = service.getSystemService(AccessibilityService.WINDOW_SERVICE) as? WindowManager
+            ?: return
+        val view = FrameLayout(service).apply {
+            setBackgroundColor(Color.parseColor("#F00B0D11"))
+            isClickable = true
+            isFocusable = true
+        }
+        val params = WindowManager.LayoutParams(
+            WindowManager.LayoutParams.MATCH_PARENT,
+            WindowManager.LayoutParams.MATCH_PARENT,
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY
+            } else {
+                WindowManager.LayoutParams.TYPE_SYSTEM_ALERT
+            },
+            WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
+                WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+            android.graphics.PixelFormat.TRANSLUCENT,
+        ).apply {
+            gravity = Gravity.TOP or Gravity.START
+        }
+        try {
+            windowManager.addView(view, params)
+            overlayView = view
+        } catch (_: Exception) {
+        }
+    }
+
+    fun hide() {
+        val windowManager = service.getSystemService(AccessibilityService.WINDOW_SERVICE) as? WindowManager
+            ?: return
+        val view = overlayView ?: return
+        try {
+            windowManager.removeView(view)
+        } catch (_: Exception) {
+        } finally {
+            overlayView = null
+        }
+    }
+}

@@ -1,0 +1,36 @@
+-- Link calendar events to event types (for color-coded schedule rendering)
+
+alter table public.calendar_events
+  add column if not exists event_type_id uuid;
+
+update public.calendar_events ce
+set event_type_id = null
+where ce.event_type_id is not null
+  and not exists (
+    select 1
+    from public.event_types et
+    where et.id = ce.event_type_id
+  );
+
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'calendar_events_event_type_id_fkey'
+      and conrelid = 'public.calendar_events'::regclass
+  ) then
+    alter table public.calendar_events
+      add constraint calendar_events_event_type_id_fkey
+      foreign key (event_type_id)
+      references public.event_types(id)
+      on delete set null;
+  end if;
+end
+$$;
+
+create index if not exists idx_calendar_events_event_type_id
+  on public.calendar_events(event_type_id);
+
+create index if not exists idx_calendar_events_user_date_type
+  on public.calendar_events(created_by, event_date, event_type_id);

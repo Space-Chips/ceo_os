@@ -1,0 +1,37 @@
+import 'dart:io';
+
+import 'package:flutter/services.dart';
+
+import '../utils/app_logger.dart';
+
+class AppEnvironmentService {
+  static const MethodChannel _channel = MethodChannel('com.ceoos.app/app_env');
+  static bool? _cachedIsTestFlight;
+
+  static Future<bool> isTestFlight() async {
+    if (!Platform.isIOS) return false;
+    final cached = _cachedIsTestFlight;
+    if (cached != null) return cached;
+
+    try {
+      final bool result = await _channel.invokeMethod('isTestFlight');
+      _cachedIsTestFlight = result;
+      return result;
+    } on MissingPluginException {
+      AppLogger.warning(
+        "Native method 'isTestFlight' is unavailable. Fully restart the app (hot restart doesn't load new native channel methods).",
+      );
+      // Safe default: unknown channel should not change runtime behavior.
+      _cachedIsTestFlight = false;
+      return false;
+    } on PlatformException catch (e) {
+      AppLogger.error("Failed to read TestFlight status: '${e.message}'.");
+      _cachedIsTestFlight = false;
+      return false;
+    } catch (e) {
+      AppLogger.error("Failed to read TestFlight status: '$e'.");
+      _cachedIsTestFlight = false;
+      return false;
+    }
+  }
+}

@@ -2,11 +2,15 @@ import 'dart:ui';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart' show Divider;
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 import '../../components/components.dart';
 import '../../core/models/task_models.dart';
+import '../../core/providers/language_provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
+import 'task_importance_theme.dart';
 
 class TaskDetailSheet extends StatelessWidget {
   final ParetoTask task;
@@ -21,42 +25,15 @@ class TaskDetailSheet extends StatelessWidget {
   });
 
   Color get _priorityColor {
-    switch ((task.importanceLevel ?? '').toLowerCase()) {
-      case 'critical':
-      case 'crucial':
-        return AppColors.error;
-      case 'high':
-      case 'essential':
-        return AppColors.primaryOrange;
-      case 'medium':
-      case 'average':
-        return AppColors.warning;
-      case 'low':
-        return AppColors.secondaryLabel;
-      default:
-        return AppColors.tertiaryLabel;
-    }
+    return TaskImportanceTheme.accent(task.importanceLevel);
   }
 
-  String _formatDate(DateTime d) {
-    const months = [
-      'JAN',
-      'FEB',
-      'MAR',
-      'APR',
-      'MAY',
-      'JUN',
-      'JUL',
-      'AUG',
-      'SEP',
-      'OCT',
-      'NOV',
-      'DEC',
-    ];
-    return '${months[d.month - 1]} ${d.day}, ${d.year}';
+  String _formatDate(DateTime d, LanguageProvider language) {
+    final locale = language.languageCode.toLowerCase();
+    return DateFormat('MMM d, y', locale).format(d);
   }
 
-  String _durationLabel(String? raw) {
+  String _durationLabel(String? raw, LanguageProvider language) {
     switch ((raw ?? '').toLowerCase()) {
       case 'less_than_30min':
       case '15m':
@@ -64,38 +41,24 @@ class TaskDetailSheet extends StatelessWidget {
         return '30m';
       case '1_hour':
       case '1h':
-        return '1h';
+        return language.t('tasks_duration_1_hour');
       case '2_hours':
       case '2h':
-        return '2h';
+        return language.t('tasks_duration_2_hours');
       case 'half_day':
-        return 'Half day';
+        return language.t('tasks_duration_half_day');
       case '1_day':
-        return '1 day';
+        return language.t('tasks_duration_1_day');
       case 'several_days':
       case '4h+':
-        return 'Multi-day';
+        return language.t('tasks_duration_several_days');
       default:
-        return 'Unplanned';
+        return language.t('tasks_duration_unplanned');
     }
   }
 
   String _importanceLabel(String? raw) {
-    switch ((raw ?? '').toLowerCase()) {
-      case 'critical':
-      case 'crucial':
-        return 'Critical';
-      case 'high':
-      case 'essential':
-        return 'High';
-      case 'medium':
-      case 'average':
-        return 'Medium';
-      case 'low':
-        return 'Low';
-      default:
-        return 'None';
-    }
+    return TaskImportanceTheme.detailLabel(raw);
   }
 
   String? _deadlineUrgency(DateTime? d) {
@@ -104,10 +67,10 @@ class TaskDetailSheet extends StatelessWidget {
     final today = DateTime(now.year, now.month, now.day);
     final day = DateTime(d.year, d.month, d.day);
     final diff = day.difference(today).inDays;
-    if (diff < 0) return 'OVERDUE';
-    if (diff == 0) return 'DUE_TODAY';
-    if (diff == 1) return 'DUE_TOMORROW';
-    if (diff <= 3) return 'DUE_SOON';
+    if (diff < 0) return 'tasks_overdue';
+    if (diff == 0) return 'tasks_due_today';
+    if (diff == 1) return 'tasks_due_tomorrow';
+    if (diff <= 3) return 'tasks_due_soon';
     return null;
   }
 
@@ -125,6 +88,7 @@ class TaskDetailSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final language = context.watch<LanguageProvider>();
     final urgencyLabel = _deadlineUrgency(task.deadline);
 
     return BackdropFilter(
@@ -136,7 +100,7 @@ class TaskDetailSheet extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppColors.background.withValues(alpha: 0.9),
           borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-          border: const Border(
+          border: Border(
             top: BorderSide(color: AppColors.glassBorder, width: 0.5),
           ),
         ),
@@ -159,7 +123,7 @@ class TaskDetailSheet extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
                 Text(
-                  task.title.toUpperCase(),
+                  task.title,
                   style: AppTypography.mono.copyWith(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -173,24 +137,24 @@ class TaskDetailSheet extends StatelessWidget {
                   runSpacing: 8,
                   children: [
                     _chip(
-                      _importanceLabel(task.importanceLevel).toUpperCase(),
+                      _importanceLabel(task.importanceLevel),
                       _priorityColor,
                     ),
                     _chip(
-                      _durationLabel(task.timeDuration).toUpperCase(),
+                      _durationLabel(task.timeDuration, language),
                       AppColors.secondaryLabel,
                     ),
                     if (task.deadline != null)
                       _chip(
-                        'DUE ${_formatDate(task.deadline!)}',
-                        urgencyLabel == 'OVERDUE'
+                        '${language.t('tasks_due')} ${_formatDate(task.deadline!, language)}',
+                        urgencyLabel == 'tasks_overdue'
                             ? AppColors.error
                             : AppColors.primaryOrange,
                       ),
                     if (urgencyLabel != null)
                       _chip(
-                        urgencyLabel,
-                        urgencyLabel == 'OVERDUE'
+                        language.t(urgencyLabel),
+                        urgencyLabel == 'tasks_overdue'
                             ? AppColors.error
                             : AppColors.warning,
                       ),
@@ -204,7 +168,7 @@ class TaskDetailSheet extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
                 Text(
-                  'DESCRIPTION',
+                  language.t('tasks_description'),
                   style: AppTypography.mono.copyWith(
                     fontSize: 10,
                     color: AppColors.tertiaryLabel,
@@ -212,13 +176,12 @@ class TaskDetailSheet extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 12),
-                if (task.description != null &&
-                    task.description!.trim().isNotEmpty)
+                if ((task.description ?? '').trim().isNotEmpty)
                   GlassCard(
                     padding: const EdgeInsets.all(20),
                     borderRadius: 16,
                     child: Text(
-                      task.description!,
+                      task.description ?? '',
                       style: AppTypography.mono.copyWith(
                         fontSize: 13,
                         color: AppColors.secondaryLabel,
@@ -230,7 +193,7 @@ class TaskDetailSheet extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     child: Text(
-                      'No description added.',
+                      language.t('tasks_no_description'),
                       style: AppTypography.mono.copyWith(
                         fontSize: 11,
                         color: AppColors.tertiaryLabel,
@@ -242,7 +205,9 @@ class TaskDetailSheet extends StatelessWidget {
                   children: [
                     Expanded(
                       child: LiquidButton(
-                        label: task.completed ? 'REOPEN_TASK' : 'MARK_DONE',
+                        label: task.completed
+                            ? language.t('tasks_reopen_task')
+                            : language.t('tasks_mark_done'),
                         fullWidth: true,
                         onPressed: () async =>
                             _runAndClose(context, onToggleComplete),
@@ -262,7 +227,7 @@ class TaskDetailSheet extends StatelessWidget {
                             width: 0.6,
                           ),
                         ),
-                        child: const Icon(
+                        child: Icon(
                           CupertinoIcons.delete,
                           color: AppColors.error,
                           size: 20,
@@ -273,7 +238,7 @@ class TaskDetailSheet extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'CREATED ${_formatDate(task.createdAt)}',
+                  '${language.t('tasks_created')} ${_formatDate(task.createdAt, language)}',
                   style: AppTypography.mono.copyWith(
                     fontSize: 9,
                     color: AppColors.quaternaryLabel,

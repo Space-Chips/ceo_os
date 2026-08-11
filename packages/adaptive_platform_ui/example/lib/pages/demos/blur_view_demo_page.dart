@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
+import '../../../../lib/src/widgets/adaptive_app_bar.dart';
+import '../../../../lib/src/widgets/adaptive_app_bar_action.dart';
+import '../../../../lib/src/widgets/adaptive_blur_view.dart';
+import '../../../../lib/src/widgets/adaptive_scaffold.dart';
+import '../../../../lib/src/widgets/adaptive_blur_view.dart';
 
 class BlurViewDemoPage extends StatefulWidget {
   const BlurViewDemoPage({super.key});

@@ -3,6 +3,8 @@ class Profile {
   final String? email;
   final String? fullName;
   final String? avatarUrl;
+  final bool setupCompleted;
+  final DateTime? deletionScheduledAt;
   final DateTime createdAt;
 
   Profile({
@@ -10,6 +12,8 @@ class Profile {
     this.email,
     this.fullName,
     this.avatarUrl,
+    this.setupCompleted = false,
+    this.deletionScheduledAt,
     required this.createdAt,
   });
 
@@ -19,6 +23,10 @@ class Profile {
       email: json['email'],
       fullName: json['full_name'],
       avatarUrl: json['avatar_url'],
+      setupCompleted: json['setup_completed'] as bool? ?? false,
+      deletionScheduledAt: json['deletion_scheduled_at'] == null
+          ? null
+          : DateTime.parse(json['deletion_scheduled_at']),
       createdAt: DateTime.parse(json['created_at']),
     );
   }
@@ -29,6 +37,8 @@ class Profile {
       'email': email,
       'full_name': fullName,
       'avatar_url': avatarUrl,
+      'setup_completed': setupCompleted,
+      'deletion_scheduled_at': deletionScheduledAt?.toIso8601String(),
       'created_at': createdAt.toIso8601String(),
     };
   }
@@ -39,12 +49,12 @@ class UserRank {
   final String createdBy;
   final String? rankName;
   final int? rankLevel;
-  final double? screenTimeAvgMinutes;
   final int? winStreakBonus;
   final int? totalRankPoints;
   final int? daysAtCurrentRank;
   final String? previousRankName;
   final String? lastRankChangeDate;
+  final int? screenTimeAvgMinutes;
   final DateTime createdAt;
 
   UserRank({
@@ -52,12 +62,12 @@ class UserRank {
     required this.createdBy,
     this.rankName,
     this.rankLevel,
-    this.screenTimeAvgMinutes,
     this.winStreakBonus,
     this.totalRankPoints,
     this.daysAtCurrentRank,
     this.previousRankName,
     this.lastRankChangeDate,
+    this.screenTimeAvgMinutes,
     required this.createdAt,
   });
 
@@ -67,14 +77,12 @@ class UserRank {
       createdBy: json['created_by'],
       rankName: json['rank_name'],
       rankLevel: json['rank_level'],
-      screenTimeAvgMinutes: json['screen_time_avg_minutes'] != null
-          ? (json['screen_time_avg_minutes'] as num).toDouble()
-          : null,
       winStreakBonus: json['win_streak_bonus'],
       totalRankPoints: json['total_rank_points'],
       daysAtCurrentRank: json['days_at_current_rank'],
       previousRankName: json['previous_rank_name'],
       lastRankChangeDate: json['last_rank_change_date'],
+      screenTimeAvgMinutes: json['screen_time_avg_minutes'],
       createdAt: DateTime.parse(json['created_at']),
     );
   }
@@ -123,7 +131,6 @@ class LeaderboardEntry {
   final int? rankLevel;
   final String? rankName;
   final int? winStreak;
-  final double? screenTimeAvgMinutes;
   final int? percentile;
   final bool optedIn;
   final DateTime? lastSyncDate;
@@ -135,7 +142,6 @@ class LeaderboardEntry {
     this.rankLevel,
     this.rankName,
     this.winStreak,
-    this.screenTimeAvgMinutes,
     this.percentile,
     this.optedIn = true,
     this.lastSyncDate,
@@ -149,9 +155,6 @@ class LeaderboardEntry {
       rankLevel: json['rank_level'],
       rankName: json['rank_name'],
       winStreak: json['win_streak'],
-      screenTimeAvgMinutes: json['screen_time_avg_minutes'] != null
-          ? (json['screen_time_avg_minutes'] as num).toDouble()
-          : null,
       percentile: json['percentile'],
       optedIn: json['opted_in'] ?? true,
       lastSyncDate: json['last_sync_date'] != null

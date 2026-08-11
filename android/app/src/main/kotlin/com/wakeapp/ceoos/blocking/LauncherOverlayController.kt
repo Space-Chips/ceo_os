@@ -1,0 +1,110 @@
+package com.wakeapp.ceoos.blocking
+
+import android.accessibilityservice.AccessibilityService
+import android.graphics.Color
+import android.graphics.PixelFormat
+import android.graphics.Rect
+import android.view.Gravity
+import android.view.MotionEvent
+import android.view.View
+import android.view.WindowManager
+import android.widget.FrameLayout
+
+class LauncherOverlayController(
+    private val service: AccessibilityService,
+    private val onBlockedIconTapped: (String) -> Unit,
+) {
+    private val windowManager: WindowManager? =
+        service.getSystemService(AccessibilityService.WINDOW_SERVICE) as? WindowManager
+
+    private val overlays = mutableMapOf<OverlayKey, View>()
+
+    fun updateOverlays(
+        visibleTargets: List<LauncherIconTarget>,
+        blockedPackages: Set<String>,
+    ) {
+        val desired = visibleTargets.filter { blockedPackages.contains(it.packageName) }
+        val desiredKeys = desired.map { OverlayKey.from(it) }.toSet()
+
+        // Remove stale overlays.
+        val iterator = overlays.entries.iterator()
+        while (iterator.hasNext()) {
+            val entry = iterator.next()
+            if (!desiredKeys.contains(entry.key)) {
+                removeOverlay(entry.value)
+                iterator.remove()
+            }
+        }
+
+        desired.forEach { target ->
+            val key = OverlayKey.from(target)
+            val existing = overlays[key]
+            if (existing == null) {
+                val view = createOverlayView(target.packageName)
+                addOverlay(view, target.bounds)
+                overlays[key] = view
+            } else {
+                updateOverlay(existing, target.bounds)
+            }
+        }
+    }
+
+    fun clear() {
+        overlays.values.forEach { removeOverlay(it) }
+        overlays.clear()
+    }
+
+    private fun createOverlayView(packageName: String): View {
+        val view = FrameLayout(service).apply {
+            setBackgroundColor(Color.argb(120, 30, 30, 30))
+            isClickable = true
+            isFocusable = false
+            setOnTouchListener { _, event ->
+                if (event.action == MotionEvent.ACTION_UP) {
+                    onBlockedIconTapped(packageName)
+                }
+                true
+            }
+        }
+        return view
+    }
+
+    private fun addOverlay(view: View, bounds: Rect) {
+        val params = buildLayoutParams(bounds)
+        try {
+            windowManager?.addView(view, params)
+        } catch (_: Exception) {
+        }
+    }
+
+    private fun updateOverlay(view: View, bounds: Rect) {
+        val params = buildLayoutParams(bounds)
+        try {
+            windowManager?.updateViewLayout(view, params)
+        } catch (_: Exception) {
+        }
+    }
+
+    private fun removeOverlay(view: View) {
+        try {
+            windowManager?.removeViewImmediate(view)
+        } catch (_: Exception) {
+        }
+    }
+
+    private fun buildLayoutParams(bounds: Rect): WindowManager.LayoutParams {
+        return WindowManager.LayoutParams().apply {
+            type = WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY
+            format = PixelFormat.TRANSLUCENT
+            gravity = Gravity.TOP or Gravity.START
+            x = bounds.left
+            y = bounds.top
+            width = bounds.width()
+            height = bounds.height()
+            flags =
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                    WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
+                    WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
+        }
+    }
+}

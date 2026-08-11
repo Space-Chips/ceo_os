@@ -1,6 +1,13 @@
 import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import '../../../../lib/src/widgets/adaptive_app_bar.dart';
+import '../../../../lib/src/widgets/adaptive_button.dart';
+import '../../../../lib/src/widgets/adaptive_button.dart';
+import '../../../../lib/src/widgets/adaptive_card.dart';
+import '../../../../lib/src/widgets/adaptive_scaffold.dart';
+import '../../../../lib/src/widgets/adaptive_time_picker.dart';
+import '../../../../lib/src/platform/platform_info.dart';
 
 class TimePickerDemoPage extends StatefulWidget {
   const TimePickerDemoPage({super.key});

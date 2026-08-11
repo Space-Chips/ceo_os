@@ -1,12 +1,15 @@
 import 'dart:ui';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../components/components.dart';
 import '../../core/providers/auth_provider.dart';
+import '../../core/providers/language_provider.dart';
+import '../../core/providers/theme_provider.dart';
+import 'apple_sign_in_button.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
+import 'auth_support.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -28,41 +31,71 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _showError(dynamic error) async {
     if (!mounted) return;
-    showCupertinoDialog(
-      context: context,
-      builder: (context) => BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-        child: CupertinoAlertDialog(
-          title: Text('AUTH ERROR', style: AppTypography.mono.copyWith(fontSize: 16)),
-          content: Padding(
-            padding: const EdgeInsets.only(top: 8.0),
-            child: Text(error.toString(), style: AppTypography.caption1),
-          ),
-          actions: [
-            CupertinoDialogAction(
-              child: const Text('DISMISS', style: TextStyle(color: AppColors.primaryOrange)),
-              onPressed: () => Navigator.pop(context),
-            ),
-          ],
-        ),
-      ),
+    final language = context.read<LanguageProvider>();
+    await showAuthDialog(
+      context,
+      title: language.t('auth_error_title'),
+      message: humanizeAuthError(error, language: language),
     );
   }
 
   Future<void> _login() async {
-    if (_emailCtrl.text.isEmpty || _passCtrl.text.isEmpty) return;
+    final email = _emailCtrl.text.trim();
+    final password = _passCtrl.text;
+    if (!isValidEmail(email)) {
+      await showAuthDialog(
+        context,
+        title: 'INVALID EMAIL',
+        message: 'Please enter a valid email address.',
+      );
+      return;
+    }
+    if (password.isEmpty) {
+      await showAuthDialog(
+        context,
+        title: 'PASSWORD REQUIRED',
+        message: 'Please enter your password to continue.',
+      );
+      return;
+    }
     setState(() => _loading = true);
     try {
-      await context.read<AuthProvider>().login(_emailCtrl.text, _passCtrl.text);
+      await context.read<AuthProvider>().login(email, password);
     } catch (e) {
-      _showError(e);
+      await _showError(e);
     } finally {
       if (mounted) setState(() => _loading = false);
     }
   }
 
+  Future<void> _resetPassword() async {
+    final email = _emailCtrl.text.trim();
+    if (!isValidEmail(email)) {
+      await showAuthDialog(
+        context,
+        title: 'RESET PASSWORD',
+        message: 'Enter your account email first, then try again.',
+      );
+      return;
+    }
+
+    try {
+      await context.read<AuthProvider>().resetPassword(email);
+      if (!mounted) return;
+      await showAuthDialog(
+        context,
+        title: 'CHECK YOUR EMAIL',
+        message:
+            'If an account exists for $email, a password reset email has been sent.',
+      );
+    } catch (e) {
+      await _showError(e);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeProvider>();
     return CupertinoPageScaffold(
       backgroundColor: AppColors.background,
       child: Stack(
@@ -76,15 +109,15 @@ class _LoginScreenState extends State<LoginScreen> {
               height: 300,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppColors.primaryOrange.withOpacity(0.08),
+                color: AppColors.primaryOrange.withValues(alpha: 0.08),
               ),
               child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 100, sigmaY: 100),
-                child: Container(color: Colors.transparent),
+                child: Container(color: CupertinoColors.transparent),
               ),
             ),
           ),
-          
+
           SafeArea(
             child: Center(
               child: SingleChildScrollView(
@@ -94,26 +127,17 @@ class _LoginScreenState extends State<LoginScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     // Header
-                    Column(
-                      children: [
-                        const NeoMonoText(
-                          'CEO OS',
-                          fontSize: 42,
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.label,
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'SYSTEM INITIALIZING...',
-                          style: AppTypography.mono.copyWith(
-                            color: AppColors.primaryOrange,
-                            fontSize: 12,
-                            letterSpacing: 2,
-                          ),
-                        ),
-                      ],
+                    Text(
+                      'Welcome back',
+                      textAlign: TextAlign.center,
+                      style: AppTypography.largeTitle.copyWith(
+                        fontSize: 31,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.label,
+                        letterSpacing: -0.95,
+                      ),
                     ),
-                    const SizedBox(height: 64),
+                    const SizedBox(height: 48),
 
                     // Auth Form
                     GlassCard(
@@ -121,48 +145,73 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'CREDENTIALS',
-                            style: AppTypography.mono.copyWith(
-                              fontSize: 11,
-                              color: AppColors.tertiaryLabel,
-                              letterSpacing: 1.5,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
                           GlassInputField(
-                            placeholder: 'EMAIL_ADDRESS',
+                            placeholder: 'Email',
                             controller: _emailCtrl,
                             keyboardType: TextInputType.emailAddress,
-                            prefix: const Icon(CupertinoIcons.mail, size: 16, color: AppColors.secondaryLabel),
+                            autocorrect: false,
+                            textInputAction: TextInputAction.next,
+                            autofillHints: const [AutofillHints.username],
+                            prefix: Icon(
+                              CupertinoIcons.mail,
+                              size: 16,
+                              color: AppColors.secondaryLabel,
+                            ),
                           ),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 14),
                           GlassInputField(
-                            placeholder: 'ACCESS_KEY',
+                            placeholder: 'Password',
                             controller: _passCtrl,
                             obscureText: true,
-                            prefix: const Icon(CupertinoIcons.lock, size: 16, color: AppColors.secondaryLabel),
+                            autocorrect: false,
+                            textInputAction: TextInputAction.done,
+                            autofillHints: const [AutofillHints.password],
+                            prefix: Icon(
+                              CupertinoIcons.lock,
+                              size: 16,
+                              color: AppColors.secondaryLabel,
+                            ),
                           ),
-                          const SizedBox(height: 32),
+                          const SizedBox(height: 28),
                           LiquidButton(
-                            label: 'AUTHENTICATE',
+                            label: 'Sign in',
                             fullWidth: true,
                             isLoading: _loading,
                             onPressed: _login,
+                          ),
+                          const SizedBox(height: 14),
+                          Center(
+                            child: CupertinoButton(
+                              padding: EdgeInsets.zero,
+                              minimumSize: Size.zero,
+                              onPressed: _loading ? null : _resetPassword,
+                              child: Text(
+                                'Forgot password?',
+                                style: AppTypography.footnote.copyWith(
+                                  fontSize: 13,
+                                  color: AppColors.primaryOrange,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
                           ),
                         ],
                       ),
                     ),
 
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 18),
+                    // Sign in with Apple — Apple Guideline 4.8 requires this
+                    // to be offered when a third-party login is offered.
+                    const AppleSignInButton(),
+                    const SizedBox(height: 24),
 
                     // Footer
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          "NEW_OPERATOR? ",
-                          style: AppTypography.mono.copyWith(
+                          'New user? ',
+                          style: AppTypography.footnote.copyWith(
                             fontSize: 12,
                             color: AppColors.tertiaryLabel,
                           ),
@@ -170,11 +219,11 @@ class _LoginScreenState extends State<LoginScreen> {
                         GestureDetector(
                           onTap: () => context.go('/signup'),
                           child: Text(
-                            'SIGN_UP',
-                            style: AppTypography.mono.copyWith(
+                            'Sign up',
+                            style: AppTypography.footnote.copyWith(
                               fontSize: 12,
                               color: AppColors.primaryOrange,
-                              fontWeight: FontWeight.bold,
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
                         ),

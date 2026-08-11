@@ -1,11 +1,17 @@
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../components/components.dart';
+import '../../core/models/premium_models.dart';
+import '../../core/providers/theme_provider.dart';
+import '../../core/repositories/premium_repository.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
+import '../../components/glass_card.dart';
+import '../../components/neo_mono_text.dart';
 
 class BiannualReportScreen extends StatefulWidget {
   const BiannualReportScreen({super.key});
@@ -15,11 +21,13 @@ class BiannualReportScreen extends StatefulWidget {
 }
 
 class _BiannualReportScreenState extends State<BiannualReportScreen> {
+  final PremiumRepository _premiumRepository = PremiumRepository();
   bool _loading = true;
   int _completedTasks = 0;
   int _focusMinutes = 0;
   int _habitCompletions = 0;
   String _dominant = 'Gathering data...';
+  PremiumCheckResult? _premiumBlock;
 
   @override
   void initState() {
@@ -28,6 +36,20 @@ class _BiannualReportScreenState extends State<BiannualReportScreen> {
   }
 
   Future<void> _load() async {
+    if (mounted) {
+      setState(() => _loading = true);
+    }
+
+    final premiumCheck = await _premiumRepository.canAccessReports();
+    if (!premiumCheck.allowed) {
+      if (!mounted) return;
+      setState(() {
+        _premiumBlock = premiumCheck;
+        _loading = false;
+      });
+      return;
+    }
+
     final client = Supabase.instance.client;
     final uid = client.auth.currentUser?.id;
     if (uid == null) return;
@@ -75,6 +97,7 @@ class _BiannualReportScreenState extends State<BiannualReportScreen> {
 
     if (!mounted) return;
     setState(() {
+      _premiumBlock = null;
       _completedTasks = completedTasks;
       _habitCompletions = habitCompletions;
       _focusMinutes = focusMinutes;
@@ -98,33 +121,73 @@ class _BiannualReportScreenState extends State<BiannualReportScreen> {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeProvider>();
     return CupertinoPageScaffold(
       backgroundColor: AppColors.background,
       navigationBar: CupertinoNavigationBar(
         leading: CupertinoButton(
-          padding: EdgeInsets.zero,
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+          minimumSize: const Size(44, 44),
           onPressed: () => context.go('/home'),
-          child: const Icon(
-            CupertinoIcons.back,
-            color: AppColors.primaryOrange,
-          ),
+          child: Icon(CupertinoIcons.back, color: AppColors.primaryOrange),
         ),
         middle: const NeoMonoText(
           'BIANNUAL_REPORT',
           fontSize: 18,
           fontWeight: FontWeight.bold,
         ),
+        trailing: CupertinoButton(
+          padding: EdgeInsets.zero,
+          onPressed: _load,
+          child: Icon(
+            CupertinoIcons.refresh,
+            size: 18,
+            color: AppColors.primaryOrange,
+          ),
+        ),
         backgroundColor: AppColors.background,
         border: null,
       ),
       child: _loading
-          ? const Center(
+          ? Center(
               child: CupertinoActivityIndicator(color: AppColors.primaryOrange),
             )
           : SafeArea(
               child: ListView(
                 padding: const EdgeInsets.all(20),
                 children: [
+                  _glowSurface(
+                    glowColor: AppColors.primaryOrange.withValues(alpha: 0.14),
+                    borderRadius: 16,
+                    child: GlassCard(
+                      padding: const EdgeInsets.all(14),
+                      borderRadius: 16,
+                      border: Border.all(
+                        color: AppColors.primaryOrange.withValues(alpha: 0.22),
+                        width: 0.7,
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            CupertinoIcons.chart_bar_alt_fill,
+                            size: 16,
+                            color: AppColors.primaryOrange,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Rolling 180-day performance synthesis.',
+                              style: AppTypography.mono.copyWith(
+                                fontSize: 10,
+                                color: AppColors.secondaryLabel,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
                   GlassCard(
                     padding: const EdgeInsets.all(18),
                     borderRadius: 16,
@@ -143,6 +206,10 @@ class _BiannualReportScreenState extends State<BiannualReportScreen> {
                   GlassCard(
                     padding: const EdgeInsets.all(16),
                     borderRadius: 16,
+                    border: Border.all(
+                      color: AppColors.primaryOrange.withValues(alpha: 0.22),
+                      width: 0.55,
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -167,6 +234,76 @@ class _BiannualReportScreenState extends State<BiannualReportScreen> {
                 ],
               ),
             ),
+    );
+  }
+
+  Widget _buildPremiumLockedCard(PremiumCheckResult check) {
+    final message = premiumMessageForReason(check.reason);
+    return GlassCard(
+      padding: const EdgeInsets.all(16),
+      borderRadius: 16,
+      border: Border.all(
+        color: AppColors.primaryOrange.withValues(alpha: 0.28),
+        width: 0.7,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                CupertinoIcons.lock_shield_fill,
+                size: 16,
+                color: AppColors.primaryOrange,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  message.title.toUpperCase(),
+                  style: AppTypography.mono.copyWith(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.label,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            message.description,
+            style: AppTypography.mono.copyWith(
+              fontSize: 11,
+              color: AppColors.secondaryLabel,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _glowSurface({
+    required Widget child,
+    required Color glowColor,
+    double borderRadius = 16,
+  }) {
+    return Stack(
+      children: [
+        Positioned.fill(
+          child: IgnorePointer(
+            child: Container(
+              margin: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(borderRadius),
+                boxShadow: [
+                  BoxShadow(color: glowColor, blurRadius: 28, spreadRadius: 1),
+                ],
+              ),
+            ),
+          ),
+        ),
+        child,
+      ],
     );
   }
 

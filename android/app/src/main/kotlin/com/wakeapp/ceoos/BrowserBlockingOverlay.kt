@@ -1,0 +1,223 @@
+package com.wakeapp.ceoos
+
+import android.accessibilityservice.AccessibilityService
+import android.graphics.Color
+import android.graphics.PixelFormat
+import android.graphics.Typeface
+import android.graphics.drawable.GradientDrawable
+import android.util.TypedValue
+import android.view.Gravity
+import android.view.View
+import android.view.ViewGroup
+import android.view.WindowManager
+import android.widget.FrameLayout
+import android.widget.LinearLayout
+import android.widget.TextView
+
+class BrowserBlockingOverlay(
+    private val service: AccessibilityService,
+) {
+    private var container: FrameLayout? = null
+    private var titleView: TextView? = null
+    private var subtitleView: TextView? = null
+    private var kickerView: TextView? = null
+    private var attached = false
+    private var lastTop = -1
+    private var lastHeight = -1
+    private var lastDomain: String? = null
+    private var lastReason: String? = null
+    private var lastResolvedTopInset = -1
+
+    fun show(snapshot: ForegroundSnapshot, decision: BlockDecision.BlockUrl) {
+        val windowManager = service.getSystemService(WindowManager::class.java) ?: return
+        val layout = buildLayout(windowManager, snapshot) ?: return
+        ensureView()
+        updateTexts(decision)
+
+        val view = container ?: return
+        if (!attached) {
+            try {
+                windowManager.addView(view, layout)
+                attached = true
+                lastTop = layout.y
+                lastHeight = layout.height
+                lastResolvedTopInset = layout.y
+                return
+            } catch (_: Exception) {
+                attached = false
+                return
+            }
+        }
+
+        val geometryChanged = layout.y != lastTop || layout.height != lastHeight
+        if (geometryChanged) {
+            try {
+                windowManager.updateViewLayout(view, layout)
+                lastTop = layout.y
+                lastHeight = layout.height
+                lastResolvedTopInset = layout.y
+            } catch (_: Exception) {
+            }
+        }
+    }
+
+    fun hide() {
+        if (!attached) return
+        val view = container ?: return
+        val windowManager = service.getSystemService(WindowManager::class.java) ?: return
+        try {
+            windowManager.removeView(view)
+        } catch (_: Exception) {
+        } finally {
+            attached = false
+            lastTop = -1
+            lastHeight = -1
+            lastResolvedTopInset = -1
+            lastDomain = null
+            lastReason = null
+        }
+    }
+
+    private fun buildLayout(
+        windowManager: WindowManager,
+        snapshot: ForegroundSnapshot,
+    ): WindowManager.LayoutParams? {
+        val screenHeight = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+            windowManager.currentWindowMetrics.bounds.height()
+        } else {
+            @Suppress("DEPRECATION")
+            service.resources.displayMetrics.heightPixels
+        }
+        if (screenHeight <= 0) return null
+
+        val topInset = resolveTopInset(snapshot, screenHeight)
+        val overlayHeight = (screenHeight - topInset).coerceAtLeast(dp(180))
+
+        return WindowManager.LayoutParams(
+            WindowManager.LayoutParams.MATCH_PARENT,
+            overlayHeight,
+            WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
+                WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
+            PixelFormat.TRANSLUCENT,
+        ).apply {
+            gravity = Gravity.TOP or Gravity.START
+            x = 0
+            y = topInset
+        }
+    }
+
+    private fun resolveTopInset(snapshot: ForegroundSnapshot, screenHeight: Int): Int {
+        val toolbarBottom = snapshot.browserToolbarBottomPx ?: -1
+        var explicit = if (toolbarBottom in 1 until (screenHeight / 2)) {
+            toolbarBottom + dp(4)
+        } else {
+            -1
+        }
+        if (explicit > 0) {
+            if (lastResolvedTopInset > 0 && kotlin.math.abs(explicit - lastResolvedTopInset) <= dp(6)) {
+                explicit = lastResolvedTopInset
+            }
+            return explicit
+        }
+        if (lastResolvedTopInset > 0) return lastResolvedTopInset
+        return dp(116) + statusBarHeight()
+    }
+
+    private fun ensureView() {
+        if (container != null) return
+        val root = FrameLayout(service).apply {
+            setBackgroundColor(Color.parseColor("#FF0A0B0F"))
+            isClickable = true
+            isFocusable = false
+            importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_YES
+        }
+
+        val card = LinearLayout(service).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(16), dp(16), dp(16), dp(16))
+            background = GradientDrawable().apply {
+                shape = GradientDrawable.RECTANGLE
+                cornerRadius = dp(20).toFloat()
+                setColor(Color.parseColor("#F0171B22"))
+                setStroke(dp(1), Color.parseColor("#33F5F7FA"))
+            }
+        }
+
+        kickerView = TextView(service).apply {
+            setTextColor(Color.parseColor("#FFAA7C"))
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f)
+            typeface = Typeface.DEFAULT_BOLD
+            letterSpacing = 0.15f
+        }
+
+        titleView = TextView(service).apply {
+            setTextColor(Color.parseColor("#FFF5F7FA"))
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 24f)
+            typeface = Typeface.DEFAULT_BOLD
+            setLineSpacing(0f, 1.04f)
+        }
+
+        subtitleView = TextView(service).apply {
+            setTextColor(Color.parseColor("#C9D0D8E2"))
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
+            setLineSpacing(0f, 1.2f)
+        }
+
+        card.addView(kickerView)
+        card.addView(spacer(8))
+        card.addView(titleView)
+        card.addView(spacer(10))
+        card.addView(subtitleView)
+
+        root.addView(
+            card,
+            FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                Gravity.TOP,
+            ).apply {
+                setMargins(dp(14), dp(12), dp(14), 0)
+            },
+        )
+
+        container = root
+    }
+
+    private fun updateTexts(decision: BlockDecision.BlockUrl) {
+        if (lastDomain == decision.target && lastReason == decision.reason) return
+        lastDomain = decision.target
+        lastReason = decision.reason
+        kickerView?.text = when (decision.reason) {
+            "daily_limit" -> "DAILY LIMIT REACHED"
+            "scheduled_pause" -> "SCHEDULED PAUSE"
+            else -> "BLOCKED WEBSITE"
+        }
+        titleView?.text = "${decision.target} is blocked"
+        subtitleView?.text = when (decision.reason) {
+            "daily_limit" -> "You reached today's limit for this website."
+            "scheduled_pause" -> "This website is unavailable during your planned pause."
+            else -> "Change site from the address bar to continue browsing."
+        }
+    }
+
+    private fun statusBarHeight(): Int {
+        val resId = service.resources.getIdentifier("status_bar_height", "dimen", "android")
+        if (resId <= 0) return 0
+        return service.resources.getDimensionPixelSize(resId)
+    }
+
+    private fun dp(value: Int): Int {
+        return (value * service.resources.displayMetrics.density).toInt()
+    }
+
+    private fun spacer(heightDp: Int): View {
+        return View(service).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                dp(heightDp),
+            )
+        }
+    }
+}

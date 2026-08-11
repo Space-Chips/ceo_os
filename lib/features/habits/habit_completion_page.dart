@@ -128,7 +128,7 @@ class _HabitCompletionPageState extends State<HabitCompletionPage> with SingleTi
         ),
         actions: [
           CupertinoDialogAction(
-            child: const Text('CANCEL', style: TextStyle(color: AppColors.secondaryLabel)),
+            child: Text('CANCEL', style: TextStyle(color: AppColors.secondaryLabel)),
             onPressed: () {
               setState(() => _slideValue = 0.0);
               Navigator.pop(context);
@@ -136,7 +136,7 @@ class _HabitCompletionPageState extends State<HabitCompletionPage> with SingleTi
           ),
           CupertinoDialogAction(
             isDefaultAction: true,
-            child: const Text('COMMIT', style: TextStyle(color: AppColors.primaryOrange)),
+            child: Text('COMMIT', style: TextStyle(color: AppColors.primaryOrange)),
             onPressed: () {
               final val = double.tryParse(ctrl.text);
               Navigator.pop(context);
@@ -198,7 +198,7 @@ class _HabitCompletionPageState extends State<HabitCompletionPage> with SingleTi
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       CupertinoButton(
-                        child: const Icon(CupertinoIcons.xmark, color: AppColors.secondaryLabel),
+                        child: Icon(CupertinoIcons.xmark, color: AppColors.secondaryLabel),
                         onPressed: () => Navigator.pop(context),
                       ),
                       NeoMonoText('PROTOCOL_LOG', fontSize: 12, color: themeColor),
@@ -304,7 +304,7 @@ class _HabitCompletionPageState extends State<HabitCompletionPage> with SingleTi
                             child: Container(
                               width: 72,
                               height: 72,
-                              decoration: const BoxDecoration(color: AppColors.success, shape: BoxShape.circle),
+                              decoration: BoxDecoration(color: AppColors.success, shape: BoxShape.circle),
                               child: const Icon(CupertinoIcons.checkmark, color: Colors.white),
                             ),
                           ),

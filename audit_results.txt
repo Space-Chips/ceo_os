@@ -1,0 +1,216 @@
+==========================================
+A. ORPHELINS — fichiers jamais importés
+==========================================
+ORPHAN: lib/core/theme/app_spacing.dart
+ORPHAN: lib/core/services/stats_heatmap_generator.dart
+ORPHAN: lib/core/services/stats_insight_generator.dart
+ORPHAN: lib/core/widgets/ceo_bottom_nav.dart
+ORPHAN: lib/core/widgets/ceo_chip.dart
+ORPHAN: lib/core/widgets/ceo_button.dart
+ORPHAN: lib/core/widgets/ceo_progress_ring.dart
+ORPHAN: lib/core/widgets/ceo_text_field.dart
+ORPHAN: lib/core/widgets/ceo_card.dart
+ORPHAN: lib/features/screen_time_manager/blocking_screen.dart
+ORPHAN: lib/features/launcher/launcher_screen.dart
+ORPHAN: lib/features/tasks/task_detail_sheet.dart
+ORPHAN: lib/features/focus/focus_starter_sheet.dart
+ORPHAN: lib/features/focus/block_list_sheet.dart
+
+==========================================
+B. ROUTAGE — écrans sans route
+==========================================
+-- Total écrans :
+      53
+-- Routes définies :
+lib/core/router/app_router.dart:38
+-- Routes listées :
+          path: '/setup-gate',
+          path: '/setup',
+          path: '/screen-time-setup',
+          path: '/login',
+          path: '/signup',
+          path: '/onboarding',
+          path: '/control-center-setup',
+          path: '/habits/complete',
+              path: '/home',
+              path: '/tasks',
+              path: '/habits',
+              path: '/calendar',
+              path: '/focus',
+              path: '/ceo-mode',
+                path: '/stats',
+              path: '/dashboard',
+              path: '/settings',
+                path: '/debug/database',
+                path: '/debug/blocking',
+                path: '/debug/themes',
+                path: '/debug/widgets',
+              path: '/profile',
+              path: '/rank',
+                path: '/leaderboard',
+              path: '/notes',
+              path: '/widget-configuration',
+              path: '/upgrade',
+              path: '/win-streak',
+              path: '/rewards',
+              path: '/screen-time',
+              path: '/screen-time-manager',
+                path: '/family-time',
+              path: '/event-types',
+              path: '/biannual-report',
+              path: '/app-modules',
+-- Écrans non référencés (potentiellement non routés) :
+  1 ref(s): lib/features/widget_configuration/widget_configuration_screen.dart
+  1 ref(s): lib/features/control_center_setup/control_center_setup_screen.dart
+  1 ref(s): lib/features/control_center_setup/widgets/dashboard_intro_screen.dart
+  1 ref(s): lib/features/control_center_setup/widgets/final_preview_screen.dart
+  1 ref(s): lib/features/control_center_setup/widgets/dashboard_widgets_screen.dart
+  1 ref(s): lib/features/control_center_setup/widgets/shortcut_picker_screen.dart
+  1 ref(s): lib/features/control_center_setup/widgets/permissions_screen.dart
+  1 ref(s): lib/features/control_center_setup/widgets/module_picker_screen.dart
+  1 ref(s): lib/features/settings/settings_screen.dart
+  1 ref(s): lib/features/home/stats_screen.dart
+  0 ref(s): lib/features/screen_time_manager/blocking_screen.dart
+  1 ref(s): lib/features/screen_time_manager/screen_time_manager_screen.dart
+  1 ref(s): lib/features/screen_time_manager/family_time_screen.dart
+  0 ref(s): lib/features/launcher/launcher_screen.dart
+  1 ref(s): lib/features/tasks/tasks_screen.dart
+  1 ref(s): lib/features/calendar/calendar_screen.dart
+  1 ref(s): lib/features/auth/signup_screen.dart
+  1 ref(s): lib/features/auth/onboarding_screen.dart
+  1 ref(s): lib/features/auth/login_screen.dart
+  1 ref(s): lib/features/screen_time_setup/screen_time_setup_screen.dart
+  1 ref(s): lib/features/setup/setup_gate_screen.dart
+  1 ref(s): lib/features/setup/setup_flow_screen.dart
+  1 ref(s): lib/features/habits/habits_screen.dart
+  1 ref(s): lib/features/legacy/biannual_report_screen.dart
+  1 ref(s): lib/features/legacy/notes_screen.dart
+  1 ref(s): lib/features/legacy/win_streak_screen.dart
+  1 ref(s): lib/features/legacy/screen_time_screen.dart
+  1 ref(s): lib/features/legacy/app_modules_screen.dart
+  1 ref(s): lib/features/legacy/rewards_screen.dart
+  1 ref(s): lib/features/legacy/event_types_screen.dart
+  1 ref(s): lib/features/leaderboard/leaderboard_screen.dart
+  1 ref(s): lib/features/ceo_mode/ceo_mode_screen.dart
+  1 ref(s): lib/features/focus/focus_screen.dart
+  1 ref(s): lib/features/dashboard/dashboard_screen.dart
+  1 ref(s): lib/features/premium/upgrade_screen.dart
+  1 ref(s): lib/features/debug/theme_preview_screen.dart
+  1 ref(s): lib/features/debug/database_debug_screen.dart
+  1 ref(s): lib/features/debug/blocking_debug_screen.dart
+  1 ref(s): lib/features/debug/widget_gallery_screen.dart
+
+==========================================
+C. PROVIDERS — déclarés vs enregistrés
+==========================================
+-- Classes Provider/ChangeNotifier déclarées :
+AuthProvider
+CeoModeProvider
+FocusProvider
+HabitProvider
+LanguageProvider
+LauncherProvider
+ScreenTimeSetupController
+SetupFlowController
+TaskProvider
+ThemeProvider
+
+-- Providers présents dans main.dart :
+AuthProvider
+CeoModeProvider
+ChangeNotifierProvider
+FocusProvider
+HabitProvider
+LanguageProvider
+MultiProvider
+ScreenTimeSetupController
+SetupFlowController
+TaskProvider
+ThemeProvider
+
+==========================================
+D. METHOD CHANNELS — Dart vs iOS vs Android
+==========================================
+-- Channels Dart :
+'com.ceoos.app/app_env'
+'com.ceoos.app/focus'
+-- Channels iOS Swift :
+"com.ceoos.app/app_env"
+"com.ceoos.app/focus"
+"World"
+-- Channels Android Kotlin :
+
+==========================================
+E. PREMIUM GATES
+==========================================
+lib/core/services/premium_onboarding_prompt_service.dart:23:    if (runtime.resolved.isPremiumUser) {
+lib/features/profile/profile_screen.dart:235:    if (!isPremiumTheme) {
+lib/features/profile/profile_screen.dart:1080:                                  if (option.isPremium) ...[
+
+==========================================
+F. BRANCHES MORTES — if (false), if (kDebugMode)…
+==========================================
+lib/core/utils/app_logger.dart:7:    if (kDebugMode) {
+lib/core/utils/app_logger.dart:13:    if (kDebugMode) {
+lib/core/utils/app_logger.dart:19:    if (kDebugMode) {
+lib/core/router/app_router.dart:160:            if (kDebugMode)
+lib/core/router/app_router.dart:166:            if (kDebugMode)
+lib/core/router/app_router.dart:172:            if (kDebugMode)
+lib/core/router/app_router.dart:178:            if (kDebugMode)
+
+==========================================
+G. EXCLUDES analyzer/pubspec
+==========================================
+-- analysis_options.yaml exclude :
+  exclude:
+    - codex_recovery/**
+    - packages/adaptive_platform_ui/example/**
+    - packages/adaptive_platform_ui/example/test/**
+    - build/**
+    - .dart_tool/**
+  errors:
+    avoid_print: ignore
+    deprecated_member_use: ignore
+    non_constant_identifier_names: ignore
+    prefer_const_constructors_in_immutables: ignore
+    unnecessary_import: ignore
+    unnecessary_string_interpolations: ignore
+    unused_element: ignore
+    unused_element_parameter: ignore
+    unused_field: ignore
+
+==========================================
+H. CACHE/PREFS qui peuvent skipper des features
+==========================================
+lib/core/providers/theme_provider.dart:244:    await prefs.setString(_pendingOnboardingKey, payload);
+lib/core/services/premium_onboarding_prompt_service.dart:24:      await prefs.setBool(key, true);
+lib/core/services/premium_onboarding_prompt_service.dart:28:    await prefs.setBool(key, true);
+lib/features/control_center_setup/control_center_setup_store.dart:53:    await _prefs.setBool(_scopedKey(_keyCompleted), true);
+
+==========================================
+I. BUILD METHODS SUSPECTS — coquilles vides
+==========================================
+
+==========================================
+J. CLASSES PUBLIQUES JAMAIS INSTANCIÉES
+==========================================
+  UNUSED CLASS: AppColors
+  UNUSED CLASS: AppEnvironmentService
+  UNUSED CLASS: AppleReviewCompliance
+  UNUSED CLASS: AppLogger
+  UNUSED CLASS: AppRouter
+  UNUSED CLASS: AppSpacing
+  UNUSED CLASS: AppTheme
+  UNUSED CLASS: AppTypography
+  UNUSED CLASS: CeoHomeWidgetService
+  UNUSED CLASS: ControlCenterCatalog
+  UNUSED CLASS: ControlCenterSetupStore
+
+==========================================
+K. STUBS LAISSÉS PAR CODEX
+==========================================
+lib/core/services/database_debug_service.dart:201:          throw UnsupportedError('Unknown debug test: $id');
+
+==========================================
+FIN DE L'AUDIT
+==========================================

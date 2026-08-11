@@ -1,7 +1,4 @@
-import 'dart:ui';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart' show Colors;
-import '../../components/components.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import 'add_habit_sheet.dart';
@@ -203,7 +200,7 @@ class HabitGallerySheet extends StatelessWidget {
       },
       {
         'title': 'Stay Positive',
-        'quote': 'Tough times don’t last, but tough people do',
+        'quote': "Tough times don't last, but tough people do",
         'icon': 'sun',
       },
       {
@@ -240,32 +237,32 @@ class HabitGallerySheet extends StatelessWidget {
   IconData _presetIcon(String? iconName) {
     switch (iconName) {
       case 'check':
-        return CupertinoIcons.check_mark_circled_solid;
+        return CupertinoIcons.check_mark_circled;
       case 'music':
         return CupertinoIcons.music_note_2;
       case 'headphones':
         return CupertinoIcons.headphones;
       case 'film':
       case 'tv':
-        return CupertinoIcons.tv_fill;
+        return CupertinoIcons.tv;
       case 'phone_off':
         return CupertinoIcons.phone_down_fill;
       case 'book':
       case 'book_open':
       case 'notebook':
-        return CupertinoIcons.book_fill;
+        return CupertinoIcons.book;
       case 'globe':
         return CupertinoIcons.globe;
       case 'pencil':
         return CupertinoIcons.pencil;
       case 'money':
-        return CupertinoIcons.money_dollar_circle_fill;
+        return CupertinoIcons.money_dollar_circle;
       case 'heart':
       case 'heart_text':
       case 'hand_heart':
-        return CupertinoIcons.heart_fill;
+        return CupertinoIcons.heart;
       case 'camera':
-        return CupertinoIcons.camera_fill;
+        return CupertinoIcons.camera;
       case 'home':
         return CupertinoIcons.home;
       case 'flower':
@@ -276,17 +273,17 @@ class HabitGallerySheet extends StatelessWidget {
       case 'cat':
         return CupertinoIcons.paw_solid;
       case 'newspaper':
-        return CupertinoIcons.news_solid;
+        return CupertinoIcons.news;
       case 'pill':
-        return CupertinoIcons.bandage_fill;
+        return CupertinoIcons.bandage;
       case 'eye':
-        return CupertinoIcons.eye_fill;
+        return CupertinoIcons.eye;
       case 'drop':
       case 'water':
-        return CupertinoIcons.drop_fill;
+        return CupertinoIcons.drop;
       case 'fitness':
       case 'dumbell':
-        return CupertinoIcons.sportscourt_fill;
+        return CupertinoIcons.sportscourt;
       case 'smoke_off':
       case 'no_drink':
         return CupertinoIcons.nosign;
@@ -300,11 +297,11 @@ class HabitGallerySheet extends StatelessWidget {
       case 'calendar':
         return CupertinoIcons.calendar;
       case 'sun':
-        return CupertinoIcons.sun_max_fill;
+        return CupertinoIcons.sun_max;
       case 'moon':
-        return CupertinoIcons.moon_fill;
+        return CupertinoIcons.moon;
       default:
-        return CupertinoIcons.star_fill;
+        return CupertinoIcons.star;
     }
   }
 
@@ -313,7 +310,7 @@ class HabitGallerySheet extends StatelessWidget {
     return Container(
       height: MediaQuery.of(context).size.height * 0.85,
       decoration: BoxDecoration(
-        color: AppColors.background.withOpacity(0.95),
+        color: AppColors.background.withValues(alpha: 0.96),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
       ),
       child: Stack(
@@ -334,17 +331,20 @@ class HabitGallerySheet extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 24),
-                      const NeoMonoText(
-                        'PROTOCOL_GALLERY',
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
+                      Text(
+                        'Protocol Gallery',
+                        style: AppTypography.title2.copyWith(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.label,
+                        ),
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'SELECT_A_BLUEPRINT_OR_CREATE_CUSTOM',
-                        style: AppTypography.mono.copyWith(
-                          fontSize: 10,
-                          color: AppColors.tertiaryLabel,
+                        'Select a blueprint or create custom',
+                        style: AppTypography.caption1.copyWith(
+                          fontSize: 12,
+                          color: AppColors.tertiaryLabel.withValues(alpha: 0.7),
                         ),
                       ),
                       const SizedBox(height: 32),
@@ -364,36 +364,61 @@ class HabitGallerySheet extends StatelessWidget {
                         padding: const EdgeInsets.only(bottom: 12, left: 4),
                         child: Text(
                           entry.key,
-                          style: AppTypography.mono.copyWith(
+                          style: AppTypography.overline.copyWith(
                             fontSize: 12,
-                            color: AppColors.primaryOrange,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1.2,
+                            color: AppColors.secondaryLabel.withValues(
+                              alpha: 0.7,
+                            ),
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 1.4,
                           ),
                         ),
                       ),
                       ...entry.value.map(
                         (item) => Padding(
                           padding: const EdgeInsets.only(bottom: 12),
-                          child: GestureDetector(
+                          child: _HabitSheetPressScale(
                             onTap: () =>
                                 _openCreateSheet(context, preset: item),
-                            child: GlassCard(
+                            child: Container(
                               padding: const EdgeInsets.all(16),
-                              borderRadius: 16,
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  colors: [
+                                    Color(0xFF1A1A1A),
+                                    Color(0xFF111111),
+                                  ],
+                                ),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: AppColors.white.withValues(
+                                    alpha: 0.06,
+                                  ),
+                                  width: 1,
+                                ),
+                              ),
                               child: Row(
                                 children: [
                                   Container(
                                     width: 48,
                                     height: 48,
                                     decoration: BoxDecoration(
-                                      color: AppColors.primaryOrange
-                                          .withOpacity(0.1),
+                                      color: AppColors.white.withValues(
+                                        alpha: 0.04,
+                                      ),
                                       borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(
+                                        color: AppColors.white.withValues(
+                                          alpha: 0.06,
+                                        ),
+                                        width: 1,
+                                      ),
                                     ),
                                     child: Icon(
                                       _presetIcon(item['icon']),
-                                      color: AppColors.primaryOrange,
+                                      color: AppColors.secondaryLabel,
                                       size: 20,
                                     ),
                                   ),
@@ -404,26 +429,29 @@ class HabitGallerySheet extends StatelessWidget {
                                           CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          item['title']!.toUpperCase(),
-                                          style: AppTypography.mono.copyWith(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w600,
-                                          ),
+                                          item['title']!,
+                                          style: AppTypography.headline
+                                              .copyWith(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w600,
+                                              ),
                                         ),
                                         const SizedBox(height: 4),
                                         Text(
                                           item['quote']!,
-                                          style: AppTypography.mono.copyWith(
-                                            fontSize: 10,
-                                            color: AppColors.secondaryLabel,
-                                          ),
+                                          style: AppTypography.caption1
+                                              .copyWith(
+                                                fontSize: 11,
+                                                color: AppColors.secondaryLabel
+                                                    .withValues(alpha: 0.7),
+                                              ),
                                           maxLines: 2,
                                           overflow: TextOverflow.ellipsis,
                                         ),
                                       ],
                                     ),
                                   ),
-                                  const Icon(
+                                  Icon(
                                     CupertinoIcons.chevron_right,
                                     color: AppColors.tertiaryLabel,
                                     size: 16,
@@ -445,36 +473,92 @@ class HabitGallerySheet extends StatelessWidget {
             left: 0,
             right: 0,
             bottom: 0,
-            child: ClipRect(
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+            child: Container(
+              padding: EdgeInsets.fromLTRB(
+                20,
+                20,
+                20,
+                20 + MediaQuery.of(context).padding.bottom,
+              ),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.bottomCenter,
+                  end: Alignment.topCenter,
+                  colors: [
+                    AppColors.background,
+                    AppColors.background.withValues(alpha: 0),
+                  ],
+                ),
+              ),
+              child: _HabitSheetPressScale(
+                onTap: () => _openCreateSheet(context),
                 child: Container(
-                  padding: EdgeInsets.fromLTRB(
-                    20,
-                    20,
-                    20,
-                    20 + MediaQuery.of(context).padding.bottom,
-                  ),
+                  padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.bottomCenter,
-                      end: Alignment.topCenter,
-                      colors: [
-                        AppColors.background,
-                        AppColors.background.withOpacity(0.0),
-                      ],
+                    gradient: const LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [Color(0xFF2A2A2A), Color(0xFF1A1A1A)],
+                    ),
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(
+                      color: AppColors.white.withValues(alpha: 0.08),
+                      width: 1,
                     ),
                   ),
-                  child: LiquidButton(
-                    label: 'CREATE_CUSTOM_PROTOCOL',
-                    fullWidth: true,
-                    onPressed: () => _openCreateSheet(context),
+                  child: Center(
+                    child: Text(
+                      'Create Custom Protocol',
+                      style: AppTypography.callout.copyWith(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.label,
+                      ),
+                    ),
                   ),
                 ),
               ),
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _HabitSheetPressScale extends StatefulWidget {
+  final Widget child;
+  final VoidCallback onTap;
+
+  const _HabitSheetPressScale({required this.child, required this.onTap});
+
+  @override
+  State<_HabitSheetPressScale> createState() => _HabitSheetPressScaleState();
+}
+
+class _HabitSheetPressScaleState extends State<_HabitSheetPressScale> {
+  bool _pressed = false;
+
+  void _setPressed(bool value) {
+    if (!mounted || _pressed == value) return;
+    setState(() => _pressed = value);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Listener(
+      onPointerDown: (_) => _setPressed(true),
+      onPointerUp: (_) => _setPressed(false),
+      onPointerCancel: (_) => _setPressed(false),
+      child: AnimatedScale(
+        scale: _pressed ? 1.01 : 1,
+        duration: const Duration(milliseconds: 120),
+        curve: Curves.easeOutCubic,
+        child: GestureDetector(
+          behavior: HitTestBehavior.translucent,
+          onTap: widget.onTap,
+          child: widget.child,
+        ),
       ),
     );
   }

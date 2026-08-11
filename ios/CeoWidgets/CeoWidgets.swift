@@ -24,7 +24,13 @@ struct Provider: TimelineProvider {
         // Generate a timeline consisting of five entries an hour apart, starting from the current date.
         let currentDate = Date()
         for hourOffset in 0 ..< 5 {
-            let entryDate = Calendar.current.date(byAdding: .hour, value: hourOffset, to: currentDate)!
+            guard let entryDate = Calendar.current.date(
+                byAdding: .hour,
+                value: hourOffset,
+                to: currentDate
+            ) else {
+                continue
+            }
             let entry = SimpleEntry(date: entryDate, emoji: "😀")
             entries.append(entry)
         }
@@ -76,11 +82,5 @@ struct CeoWidgets: Widget {
     }
 }
 
-@available(iOSApplicationExtension 17.0, *)
-#Preview(as: .systemSmall) {
-    CeoWidgets()
-} timeline: {
-    SimpleEntry(date: .now, emoji: "😀")
-    SimpleEntry(date: .now, emoji: "🤩")
-}
+// Previews removed to avoid build-time macro/plugin issues in CI/headless builds.
 
